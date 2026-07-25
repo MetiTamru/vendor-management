@@ -1,0 +1,33 @@
+{
+	"id": "document:read",
+	"description": "Allow read access to documents if user is owner or in the same department",
+	"effect": "allow",
+	"priority": 1,
+	"target": {
+		"resources": ["document"],
+		"actions": ["read"]
+	},
+	"conditions": {
+		"type": "allOf",
+		"conditions": [
+			{
+				"type": "attribute",
+				"attribute": "user.role",
+				"operator": "in",
+				"value": ["editor", "admin"]
+			},
+			{
+				"type": "attribute",
+				"attribute": "resource.ownerId",
+				"operator": "equals",
+				"value": "{{user.id}}"
+			},
+			{
+				"type": "attribute",
+				"attribute": "environment.time",
+				"operator": "between",
+				"value": ["09:00", "17:00"]
+			}
+		]
+	}
+}

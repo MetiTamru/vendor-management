@@ -1,0 +1,139 @@
+{
+	"Error": {
+		"title": "404",
+		"description": "The page you are looking for does not exist.",
+		"GoBack": "Go back to",
+		"dashboard": "dashboard"
+	},
+	"metadata": {
+		"description": "Build More Efficient, Engaging, and Profitable Online Stores: Toorax Enhances your eCommerce with the Power of shadcn/ui, Next.js 15, React 19, and more",
+		"title": {
+			"home": "Home"
+		}
+	},
+	"mode-toggle": {
+		"dark": "Dark",
+		"light": "Light",
+		"system": "System",
+		"toggleTheme": "Toggle Theme"
+	},
+	"LocaleSwitcher": {
+		"changeLanguage": "Change Language",
+		"english": "English",
+		"amharic": "Amharic"
+	},
+	"HomePage": {
+		"title": "Welcome to Toorax",
+		"description": "Build More Efficient, Engaging, and Profitable Online Stores: Toorax Enhances your eCommerce with the Power of shadcn/ui, Next.js 15, React 19, and more",
+		"getStarted": "Get Started",
+		"about": "About",
+		"contact": "Contact"
+	},
+	"Auth": {
+		"loginTitle": "Sign in",
+		"loginDescription": "Enter your credentials to access your account",
+		"signUpTitle": "Create account",
+		"signUpDescription": "Enter your details to get started",
+		"forgotTitle": "Reset password",
+		"forgotDescription": "Enter your email and we'll send reset instructions"
+	},
+	"Admin": {
+		"title": "Admin",
+		"navigation": "Navigation",
+		"offline": "You are offline. Changes will resume when connection is restored.",
+		"nav": {
+			"groups": "Groups",
+			"users": "Users",
+			"roles": "Roles",
+			"settings": "Settings"
+		},
+		"placeholders": {
+			"usersTitle": "Users",
+			"usersDescription": "User management will be available when the API is connected.",
+			"rolesTitle": "Roles",
+			"rolesDescription": "Role management will be available when the API is connected.",
+			"settingsTitle": "Settings",
+			"settingsDescription": "Application settings will be available in a future release."
+		}
+	},
+	"Groups": {
+		"title": "Groups",
+		"subtitle": "Identity groups",
+		"refreshing": "(refreshing…)",
+		"create": "Create group",
+		"searchPlaceholder": "Search groups…",
+		"membershipMode": "Membership mode",
+		"allModes": "All modes",
+		"enumerated": "Enumerated",
+		"definitional": "Definitional",
+		"empty": "No groups match your filters.",
+		"emptyList": "No groups yet. Create your first group to get started.",
+		"deleteConfirm": "Delete this group?",
+		"stats": {
+			"total": "Total groups",
+			"byMode": "By mode",
+			"byModeValue": "{enumerated} enumerated · {definitional} definitional",
+			"pendingSync": "Pending sync"
+		},
+		"table": {
+			"name": "Name",
+			"mode": "Mode",
+			"members": "Members",
+			"sync": "Sync",
+			"actions": "Actions",
+			"view": "View",
+			"edit": "Edit",
+			"delete": "Delete"
+		},
+		"createPage": {
+			"title": "Create group",
+			"submit": "Create group",
+			"success": "Group created"
+		},
+		"editPage": {
+			"title": "Edit group",
+			"submit": "Save changes",
+			"success": "Group updated",
+			"notFound": "Group not found",
+			"backToList": "Back to groups"
+		}
+	},
+	"Users": {
+		"title": "Users",
+		"subtitle": "Account directory",
+		"refreshing": "(refreshing…)",
+		"searchPlaceholder": "Search users…",
+		"emptyList": "No users found.",
+		"table": {
+			"name": "Name",
+			"email": "Email",
+			"roles": "Roles",
+			"status": "Status",
+			"active": "Active",
+			"inactive": "Inactive"
+		}
+	},
+	"Roles": {
+		"title": "Roles",
+		"subtitle": "Role definitions",
+		"refreshing": "(refreshing…)",
+		"searchPlaceholder": "Search roles…",
+		"emptyList": "No roles found.",
+		"table": {
+			"name": "Name",
+			"permissions": "Permissions"
+		}
+	},
+	"Settings": {
+		"title": "Settings",
+		"subtitle": "Application configuration",
+		"refreshing": "(refreshing…)",
+		"searchPlaceholder": "Search settings…",
+		"emptyList": "No settings found.",
+		"table": {
+			"key": "Key",
+			"value": "Value",
+			"category": "Category"
+		}
+	}
+}

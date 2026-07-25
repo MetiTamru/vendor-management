@@ -1,0 +1,9 @@
+# Minimal Docker build context (runtime image only — run pnpm build:docker first)
+*
+!public
+!public/**
+!.next
+!.next/standalone
+!.next/standalone/**
+!.next/static
+!.next/static/**

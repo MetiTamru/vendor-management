@@ -1,0 +1,9 @@
+echo "Starting pre-push checks..."
+
+echo "Running build process..."
+pnpm run build || {
+  echo "Build failed. Fix errors and push again."
+  exit 1
+}
+
+echo "All checks passed. Proceeding with push."

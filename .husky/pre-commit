@@ -1,0 +1,14 @@
+pnpm run check-types || {
+  echo "TypeScript check failed. Please fix the errors before committing."
+  exit 1
+}
+
+pnpm run check-format || {
+  echo "Prettier check failed. Please format your code before committing."
+  exit 1
+}
+
+pnpm run lint || {
+  echo "ESLint check failed. Please fix the errors before committing."
+  exit 1
+}

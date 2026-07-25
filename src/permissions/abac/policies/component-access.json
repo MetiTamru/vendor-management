@@ -1,0 +1,39 @@
+{
+	"policies": [
+		{
+			"name": "AdminDashboardAccess",
+			"effect": "allow",
+			"target": {
+				"resourceType": "component",
+				"resourceName": "admin-dashboard",
+				"action": "view"
+			},
+			"conditions": {
+				"type": "role",
+				"value": "admin"
+			}
+		},
+		{
+			"name": "AdminApiAccess",
+			"effect": "allow",
+			"target": {
+				"resourceType": "api",
+				"pathPattern": "/api/admin/*"
+			},
+			"conditions": {
+				"type": "and",
+				"rules": [
+					{
+						"type": "role",
+						"value": "admin"
+					},
+					{
+						"type": "attribute",
+						"field": "department",
+						"value": "IT"
+					}
+				]
+			}
+		}
+	]
+}

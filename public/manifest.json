@@ -1,0 +1,17 @@
+{
+	"name": "Next.js Starter",
+	"short_name": "Starter",
+	"description": "Frontend-first Next.js admin portal starter",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#ffffff",
+	"icons": [
+		{
+			"src": "/icon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		}
+	]
+}

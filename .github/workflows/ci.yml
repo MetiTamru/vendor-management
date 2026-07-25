@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test-all
+        env:
+          SKIP_ENV_VALIDATION: "true"
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: "true"
+          NEXT_PUBLIC_USE_MOCK_GROUPS: "true"
+          NEXT_PUBLIC_DEV_ADMIN: "true"
+
+      - run: pnpm start &
+        env:
+          SKIP_ENV_VALIDATION: "true"
+          NEXT_PUBLIC_USE_MOCK_GROUPS: "true"
+          NEXT_PUBLIC_DEV_ADMIN: "true"
+
+      - run: pnpm exec wait-on http://localhost:3000 -t 60000
+
+      - run: pnpm exec playwright test
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          CI: "true"

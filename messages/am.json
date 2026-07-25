@@ -1,0 +1,137 @@
+{
+	"Error": {
+		"title": "404",
+		"description": "የተሳሳተ ገጽ ውስጥ ገብተዋል።",
+		"GoBack": "ወደ መነሻ ገጽ ይሂዱ",
+		"dashboard": "መነሻ ገጽ"
+	},
+	"metadata": {
+		"description": "በብሩህ የግብይት መሳሪያዎች እንዲሁም የኔክስት.js 15 እና እንዲሁም የReact 19 እና ሌሎችን ብርቅ ብቁነት ለማሳመም ያለዎትን ንብረት ለመሻሻል አዘጋጅቶ የኤኮማርስ ንብረት አይነት",
+		"title": {
+			"home": "መነሻ ገጽ"
+		}
+	},
+	"PathnamesPage": {
+		"description": "<p>ሪሊቨርስ መጫወቻ | ኔክስት-ኢንትል | አድራሻ አርክሶች በቋንቋ ሊተነቡ ይችላሉ።</p><p>የእንግሊዝኛ ቋንቋ በእርስዎ በነቅናችሁ ከምንቀርባት ጋር ሲሆን፣ በእዚህ ገጽ የእንግሊዝኛ ቋንቋን እየተጠቀሙ በትክክል የሚሰማውን ማድረግ ይችላሉ።</p><p>ቋንቋን ወደ ጀርመን ማሻሻል እንደሚፈልጉት ቋንቋን ቀይር እንደሚሰማ በተንበረከነው እንደሚታወቀ የቋንቋ ምንጭ (ይሄንን እንደገና ሞክሩ)...</p>",
+		"title": "አድራሻ አርክሶች"
+	},
+	"LocaleSwitcher": {
+		"changeLanguage": "ቋንቋን ለውጥ",
+		"english": "እንግሊዝኛ",
+		"amharic": "አማርኛ"
+	},
+	"HomePage": {
+		"title": "አድራሻ አርክሶች",
+		"description": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።",
+		"getStarted": "አድራሻ አርክሶች ገጽ ይሂዱ",
+		"about": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።",
+		"contact": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።"
+	},
+	"Auth": {
+		"loginTitle": "ግባ",
+		"loginDescription": "መለያዎን ለመጠቀም መረጃዎን ያስገቡ",
+		"signUpTitle": "መለያ ፍጠር",
+		"signUpDescription": "ለመጀመር ዝርዝሮችዎን ያስገቡ",
+		"forgotTitle": "የይለፍ ቃል ዳግም አስጀምር",
+		"forgotDescription": "የይለፍ ቃል ለመቀየር መመሪያዎችን እንልክልዎታለን"
+	},
+	"Admin": {
+		"title": "አስተዳደር",
+		"navigation": "ዳሪግ",
+		"offline": "ከመስመር ውጭ ነዎት። ግንኙነት ሲመለስ ለውጦች ይቀጥላሉ።",
+		"nav": {
+			"groups": "ቡድኖች",
+			"users": "ተጠቃሚዎች",
+			"roles": "ሚናዎች",
+			"settings": "ቅንብሮች"
+		},
+		"placeholders": {
+			"usersTitle": "ተጠቃሚዎች",
+			"usersDescription": "የተጠቃሚ አስተዳደር API ሲገናኝ ይገኛል።",
+			"rolesTitle": "ሚናዎች",
+			"rolesDescription": "የሚና አስተዳደር API ሲገናኝ ይገኛል።",
+			"settingsTitle": "ቅንብሮች",
+			"settingsDescription": "የመተግበሪያ ቅንብሮች በሚቀጥለው ስሪት ይገኛሉ።"
+		}
+	},
+	"Groups": {
+		"title": "ቡድኖች",
+		"subtitle": "የማንነት ቡድኖች",
+		"refreshing": "(በማደስ ላይ…)",
+		"create": "ቡድን ፍጠር",
+		"searchPlaceholder": "ቡድኖችን ፈልግ…",
+		"membershipMode": "የአባልነት ሁኔታ",
+		"allModes": "ሁሉም ሁኔታዎች",
+		"enumerated": "የተመዘገበ",
+		"definitional": "የገለጻ",
+		"empty": "ምንም ቡድን ከማጣሪያዎ ጋር አይዛመድም።",
+		"emptyList": "እስካሁን ቡድን የለም። የመጀመሪያ ቡድንዎን ይፍጠሩ።",
+		"deleteConfirm": "ይህን ቡድን ሰርዝ?",
+		"stats": {
+			"total": "ጠቅላላ ቡድኖች",
+			"byMode": "በሁኔታ",
+			"byModeValue": "{enumerated} የተመዘገበ · {definitional} የገለጻ",
+			"pendingSync": "በመጠባበቅ ላይ ማመሳሰል"
+		},
+		"table": {
+			"name": "ስም",
+			"mode": "ሁኔታ",
+			"members": "አባላት",
+			"sync": "ማመሳሰል",
+			"actions": "ድርጊቶች",
+			"view": "ይመልከቱ",
+			"edit": "አርትዕ",
+			"delete": "ሰርዝ"
+		},
+		"createPage": {
+			"title": "ቡድን ፍጠር",
+			"submit": "ቡድን ፍጠር",
+			"success": "ቡድን ተፈጥሯል"
+		},
+		"editPage": {
+			"title": "ቡድን አርትዕ",
+			"submit": "ለውጦችን አስቀምጥ",
+			"success": "ቡድን ተዘምኗል",
+			"notFound": "ቡድን አልተገኘም",
+			"backToList": "ወደ ቡድኖች ተመለስ"
+		}
+	},
+	"Users": {
+		"title": "ተጠቃሚዎች",
+		"subtitle": "የመለያ ማውጫ",
+		"refreshing": "(በማደስ ላይ…)",
+		"searchPlaceholder": "ተጠቃሚዎችን ፈልግ…",
+		"emptyList": "ምንም ተጠቃሚ አልተገኘም።",
+		"table": {
+			"name": "ስም",
+			"email": "ኢሜይል",
+			"roles": "ሚናዎች",
+			"status": "ሁኔታ",
+			"active": "ንቁ",
+			"inactive": "እንቅስቃሴ የለውም"
+		}
+	},
+	"Roles": {
+		"title": "ሚናዎች",
+		"subtitle": "የሚና ትርጉሞች",
+		"refreshing": "(በማደስ ላይ…)",
+		"searchPlaceholder": "ሚናዎችን ፈልግ…",
+		"emptyList": "ምንም ሚና አልተገኘም።",
+		"table": {
+			"name": "ስም",
+			"permissions": "ፈቃዶች"
+		}
+	},
+	"Settings": {
+		"title": "ቅንብሮች",
+		"subtitle": "የመተግበሪያ ውቅር",
+		"refreshing": "(በማደስ ላይ…)",
+		"searchPlaceholder": "ቅንብሮችን ፈልግ…",
+		"emptyList": "ምንም ቅንብር አልተገኘም።",
+		"table": {
+			"key": "ቁልፍ",
+			"value": "ዋጋ",
+			"category": "ምድብ"
+		}
+	}
+}

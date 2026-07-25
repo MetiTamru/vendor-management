@@ -1,0 +1,268 @@
+{
+	"policies": [
+		{
+			"id": "component:groups-list:manager",
+			"description": "Managers can view groups list",
+			"effect": "allow",
+			"priority": 20,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["manager"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:users-list:manager",
+			"description": "Managers can view users list",
+			"effect": "allow",
+			"priority": 20,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["manager"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "users-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:roles-list:manager",
+			"description": "Managers can view roles list",
+			"effect": "allow",
+			"priority": 20,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["manager"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "roles-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:settings-view:manager",
+			"description": "Managers can view settings",
+			"effect": "allow",
+			"priority": 20,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["manager"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "settings-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-list:admin",
+			"description": "Admins can view groups list",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-create:admin",
+			"description": "Admins can create groups",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-edit:admin",
+			"description": "Admins can edit groups",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-edit"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-delete:admin",
+			"description": "Admins can delete groups",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["delete"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-delete"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:users-list:admin",
+			"description": "Admins can view users list",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "users-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:roles-list:admin",
+			"description": "Admins can view roles list",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "roles-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:settings-view:admin",
+			"description": "Admins can view settings",
+			"effect": "allow",
+			"priority": 10,
+			"target": { "resources": ["component"], "actions": ["view"] },
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": ["admin"]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "settings-view"
+					}
+				]
+			}
+		}
+	]
+}
