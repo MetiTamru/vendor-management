@@ -23,9 +23,9 @@ export default function Logo({ className, showWordmark = true }: Props) {
 				priority
 			/>
 			{showWordmark ? (
-					<span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-						Vendor Management
-					</span>
+				<span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+					Vendor Management
+				</span>
 			) : null}
 		</div>
 	);

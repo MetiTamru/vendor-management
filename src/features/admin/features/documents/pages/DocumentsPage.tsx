@@ -71,7 +71,9 @@ function daysUntilExpiry(expiresAt: string | null) {
 	today.setHours(0, 0, 0, 0);
 	const expiry = new Date(expiresAt);
 	expiry.setHours(0, 0, 0, 0);
-	return Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+	return Math.ceil(
+		(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+	);
 }
 
 function expiryTone(days: number | null) {
@@ -235,8 +237,8 @@ export function DocumentsPage() {
 						Document repository
 					</h1>
 					<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-						Central register of supplier compliance files, contracts, tax records,
-						and insurance — with expiry tracking and review workflow.
+						Central register of supplier compliance files, contracts, tax
+						records, and insurance — with expiry tracking and review workflow.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -429,7 +431,9 @@ export function DocumentsPage() {
 				<Card className="border-border/50 bg-card/70 xl:col-span-2">
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">Expiry watchlist</CardTitle>
-						<CardDescription>Documents due for renewal within 45 days</CardDescription>
+						<CardDescription>
+							Documents due for renewal within 45 days
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-2">
 						{expiringList.length === 0 ? (
@@ -446,7 +450,9 @@ export function DocumentsPage() {
 										className="flex items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/50 p-3 transition-colors hover:border-primary/30 hover:bg-background"
 									>
 										<div className="min-w-0">
-											<p className="truncate text-sm font-semibold">{doc.name}</p>
+											<p className="truncate text-sm font-semibold">
+												{doc.name}
+											</p>
 											<p className="truncate text-xs text-muted-foreground">
 												{doc.vendorName}
 											</p>
@@ -505,9 +511,7 @@ export function DocumentsPage() {
 										<TableRow
 											key={row.id}
 											className="cursor-pointer hover:bg-muted/30"
-											onClick={() =>
-												router.push(`/admin/documents/${row.id}`)
-											}
+											onClick={() => router.push(`/admin/documents/${row.id}`)}
 										>
 											<TableCell className="pl-4 sm:pl-6">
 												<div className="flex items-center gap-2.5">
@@ -599,8 +603,7 @@ export function DocumentsPage() {
 					</div>
 					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-3 text-sm text-muted-foreground sm:px-6">
 						<span>
-							Showing{" "}
-							{filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
+							Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
 							{Math.min(page * pageSize, filtered.length)} of {filtered.length}{" "}
 							results
 						</span>

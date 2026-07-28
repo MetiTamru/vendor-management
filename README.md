@@ -14,11 +14,11 @@ pnpm dev -p 3006
 
 Mock flags (on by default):
 
-| Variable | Role |
-| -------- | ---- |
-| `NEXT_PUBLIC_USE_MOCK_AUTH` | Skip Better Auth / NestJS session |
-| `NEXT_PUBLIC_USE_MOCK_VMS` | Vendors, RFX, contracts, POs, invoices, … |
-| `NEXT_PUBLIC_DEV_ADMIN` | Admin ABAC permissions |
+| Variable                    | Role                                      |
+| --------------------------- | ----------------------------------------- |
+| `NEXT_PUBLIC_USE_MOCK_AUTH` | Skip Better Auth / NestJS session         |
+| `NEXT_PUBLIC_USE_MOCK_VMS`  | Vendors, RFX, contracts, POs, invoices, … |
+| `NEXT_PUBLIC_DEV_ADMIN`     | Admin ABAC permissions                    |
 
 ## Modules
 

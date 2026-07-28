@@ -148,8 +148,12 @@ export function AuditTrailPage() {
 
 	const summary = useMemo(() => {
 		const total = filteredRows.length;
-		const reviews = filteredRows.filter((row) => row.category === "review").length;
-		const exceptions = filteredRows.filter((row) => row.category === "exception").length;
+		const reviews = filteredRows.filter(
+			(row) => row.category === "review"
+		).length;
+		const exceptions = filteredRows.filter(
+			(row) => row.category === "exception"
+		).length;
 		const actorsCount = new Set(filteredRows.map((row) => row.actor)).size;
 		const reviewedRuns = FILE_RUNS.filter((run) => run.reviewed).length;
 		return { total, reviews, exceptions, actorsCount, reviewedRuns };
@@ -167,7 +171,8 @@ export function AuditTrailPage() {
 	const registerRows = useMemo(() => {
 		const query = registerSearch.trim().toLowerCase();
 		return filteredRows.filter((row) => {
-			if (registerCategory !== "all" && row.category !== registerCategory) return false;
+			if (registerCategory !== "all" && row.category !== registerCategory)
+				return false;
 			if (!query) return true;
 			return [row.action, row.actor, row.vendor, row.runId]
 				.join(" ")
@@ -331,7 +336,9 @@ export function AuditTrailPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -354,7 +361,10 @@ export function AuditTrailPage() {
 					</CardHeader>
 					<CardContent className="space-y-3 px-4">
 						{actorStats.map((item) => (
-							<div key={item.name} className="rounded-lg border border-border/50 bg-background/50 p-3">
+							<div
+								key={item.name}
+								className="rounded-lg border border-border/50 bg-background/50 p-3"
+							>
 								<div className="flex items-center justify-between gap-3">
 									<p className="text-sm font-semibold">{item.name}</p>
 									<span className="text-sm font-semibold tabular-nums text-primary">
@@ -391,7 +401,9 @@ export function AuditTrailPage() {
 											>
 												{row.category}
 											</span>
-											<p className="truncate text-sm font-semibold">{row.action}</p>
+											<p className="truncate text-sm font-semibold">
+												{row.action}
+											</p>
 										</div>
 										<p className="mt-1 text-xs text-muted-foreground">
 											{row.actor} · {row.vendor} · {row.fileType}
@@ -455,7 +467,9 @@ export function AuditTrailPage() {
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-									<TableHead className="pl-4 text-primary sm:pl-6">When</TableHead>
+									<TableHead className="pl-4 text-primary sm:pl-6">
+										When
+									</TableHead>
 									<TableHead className="text-primary">Actor</TableHead>
 									<TableHead className="text-primary">Category</TableHead>
 									<TableHead className="text-primary">Action</TableHead>
@@ -487,10 +501,14 @@ export function AuditTrailPage() {
 											{row.action}
 										</TableCell>
 										<TableCell>{row.vendor}</TableCell>
-										<TableCell className="font-mono text-xs">{row.runId}</TableCell>
+										<TableCell className="font-mono text-xs">
+											{row.runId}
+										</TableCell>
 										<TableCell className="pr-4 text-right sm:pr-6">
 											<Button variant="ghost" size="sm" asChild>
-												<Link href={`/admin/file-monitoring/${row.fileRunId}`}>Open</Link>
+												<Link href={`/admin/file-monitoring/${row.fileRunId}`}>
+													Open
+												</Link>
 											</Button>
 										</TableCell>
 									</TableRow>
@@ -500,8 +518,10 @@ export function AuditTrailPage() {
 					</div>
 					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 bg-primary/[0.03] px-4 py-3 text-sm text-muted-foreground sm:px-6">
 						<span>
-							Showing {registerRows.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
-							{Math.min(page * pageSize, registerRows.length)} of {registerRows.length} events
+							Showing{" "}
+							{registerRows.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
+							{Math.min(page * pageSize, registerRows.length)} of{" "}
+							{registerRows.length} events
 						</span>
 						<div className="flex items-center gap-1">
 							<Button
@@ -521,7 +541,9 @@ export function AuditTrailPage() {
 								size="sm"
 								className="h-8 px-2"
 								disabled={page >= pageCount}
-								onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+								onClick={() =>
+									setPage((current) => Math.min(pageCount, current + 1))
+								}
 							>
 								›
 							</Button>

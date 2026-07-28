@@ -14,13 +14,7 @@ import {
 	Search,
 	Sparkles,
 } from "lucide-react";
-import {
-	Cell,
-	Pie,
-	PieChart,
-	ResponsiveContainer,
-	Tooltip,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,12 +80,16 @@ export function FileHistoryPage() {
 	}, [direction, search, status, vendor]);
 
 	const summary = useMemo(() => {
-		const successful = filteredRuns.filter((run) => run.status === "success").length;
+		const successful = filteredRuns.filter(
+			(run) => run.status === "success"
+		).length;
 		const failed = filteredRuns.filter((run) => run.status === "failed").length;
 		const warnings = filteredRuns.filter(
 			(run) => run.status === "warning" || run.status === "late"
 		).length;
-		const processing = filteredRuns.filter((run) => run.status === "processing").length;
+		const processing = filteredRuns.filter(
+			(run) => run.status === "processing"
+		).length;
 		const reviewed = filteredRuns.filter((run) => run.reviewed).length;
 		const avgSize = filteredRuns.length
 			? Math.round(
@@ -287,7 +285,9 @@ export function FileHistoryPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -317,21 +317,26 @@ export function FileHistoryPage() {
 								<ResponsiveContainer width="100%" height="100%">
 									<PieChart>
 										<Pie
-											data={pieData.length ? pieData : [{ name: "No Data", value: 1 }]}
+											data={
+												pieData.length
+													? pieData
+													: [{ name: "No Data", value: 1 }]
+											}
 											dataKey="value"
 											nameKey="name"
 											innerRadius={58}
 											outerRadius={82}
 											paddingAngle={2}
 										>
-											{(pieData.length ? pieData : [{ name: "No Data", value: 1 }]).map(
-												(entry, index) => (
-													<Cell
-														key={entry.name}
-														fill={PIE_COLORS[index] ?? "#cbd5e1"}
-													/>
-												)
-											)}
+											{(pieData.length
+												? pieData
+												: [{ name: "No Data", value: 1 }]
+											).map((entry, index) => (
+												<Cell
+													key={entry.name}
+													fill={PIE_COLORS[index] ?? "#cbd5e1"}
+												/>
+											))}
 										</Pie>
 										<Tooltip />
 									</PieChart>
@@ -354,12 +359,16 @@ export function FileHistoryPage() {
 										<div className="flex items-center gap-2">
 											<span
 												className="size-2.5 rounded-full"
-												style={{ backgroundColor: PIE_COLORS[index] ?? "#cbd5e1" }}
+												style={{
+													backgroundColor: PIE_COLORS[index] ?? "#cbd5e1",
+												}}
 											/>
 											<span className="text-sm font-medium">{item.name}</span>
 										</div>
 										<div className="text-right">
-											<p className="text-sm font-semibold tabular-nums">{item.value}</p>
+											<p className="text-sm font-semibold tabular-nums">
+												{item.value}
+											</p>
 											<p className="text-[11px] text-muted-foreground">
 												{summary.total
 													? `${Math.round((item.value / summary.total) * 100)}%`
@@ -386,7 +395,9 @@ export function FileHistoryPage() {
 							>
 								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0">
-										<p className="truncate text-sm font-semibold">{run.fileName ?? run.runId}</p>
+										<p className="truncate text-sm font-semibold">
+											{run.fileName ?? run.runId}
+										</p>
 										<p className="mt-1 text-xs text-muted-foreground">
 											{run.vendor} · {run.fileType}
 										</p>
@@ -433,7 +444,9 @@ export function FileHistoryPage() {
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-									<TableHead className="pl-4 text-primary sm:pl-6">File</TableHead>
+									<TableHead className="pl-4 text-primary sm:pl-6">
+										File
+									</TableHead>
 									<TableHead className="text-primary">Vendor</TableHead>
 									<TableHead className="text-primary">Type</TableHead>
 									<TableHead className="text-primary">Status</TableHead>
@@ -476,7 +489,9 @@ export function FileHistoryPage() {
 												{displayRunStatus(run.status)}
 											</span>
 										</TableCell>
-										<TableCell className="tabular-nums">{run.records ?? "—"}</TableCell>
+										<TableCell className="tabular-nums">
+											{run.records ?? "—"}
+										</TableCell>
 										<TableCell className="tabular-nums">
 											{run.fileSizeKb ?? "—"} KB
 										</TableCell>
@@ -485,14 +500,19 @@ export function FileHistoryPage() {
 										</TableCell>
 										<TableCell className="pr-4 text-right sm:pr-6">
 											<Button variant="ghost" size="sm" asChild>
-												<Link href={`/admin/file-monitoring/${run.id}`}>Open</Link>
+												<Link href={`/admin/file-monitoring/${run.id}`}>
+													Open
+												</Link>
 											</Button>
 										</TableCell>
 									</TableRow>
 								))}
 								{filteredRuns.length === 0 && (
 									<TableRow>
-										<TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+										<TableCell
+											colSpan={8}
+											className="h-24 text-center text-muted-foreground"
+										>
 											No archived files match the current filters.
 										</TableCell>
 									</TableRow>

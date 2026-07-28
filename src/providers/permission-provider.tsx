@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 
 import { authClient } from "@/lib/auth-client";
-import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
+import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { useABAC } from "@/permissions/access/useABAC";
 
 interface PermissionContextType {

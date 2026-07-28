@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * Smoke: VMS admin vendors list loads under e2e session.

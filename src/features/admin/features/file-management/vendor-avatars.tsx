@@ -89,9 +89,9 @@ export const VENDOR_AVATARS: VendorAvatar[] = [
 ];
 
 const BY_ID = new Map(
-	[
-		...VENDOR_AVATARS.filter((a) => a.name !== "Summit Packaging Co."),
-	].map((a) => [a.vendorId, a] as const)
+	[...VENDOR_AVATARS.filter((a) => a.name !== "Summit Packaging Co.")].map(
+		(a) => [a.vendorId, a] as const
+	)
 );
 
 const BY_NAME = new Map(VENDOR_AVATARS.map((a) => [a.name.toLowerCase(), a]));

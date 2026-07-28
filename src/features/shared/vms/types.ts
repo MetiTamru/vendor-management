@@ -178,7 +178,12 @@ export type RfxModel = {
 	updatedAt: string;
 };
 
-export type BidStatus = "draft" | "submitted" | "withdrawn" | "awarded" | "rejected";
+export type BidStatus =
+	| "draft"
+	| "submitted"
+	| "withdrawn"
+	| "awarded"
+	| "rejected";
 
 export type BidModel = {
 	id: string;
@@ -257,7 +262,11 @@ export type ApprovalType =
 	| "purchase_order"
 	| "invoice";
 
-export type ApprovalStatus = "pending" | "approved" | "rejected" | "changes_requested";
+export type ApprovalStatus =
+	| "pending"
+	| "approved"
+	| "rejected"
+	| "changes_requested";
 
 export type ApprovalRequestModel = {
 	id: string;

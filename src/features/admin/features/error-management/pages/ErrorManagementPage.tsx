@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -57,7 +57,11 @@ function rowTone(severity: ValidationIssue["severity"]) {
 	return "hover:bg-muted/30";
 }
 
-function SeverityBadge({ severity }: { severity: ValidationIssue["severity"] }) {
+function SeverityBadge({
+	severity,
+}: {
+	severity: ValidationIssue["severity"];
+}) {
 	return (
 		<span
 			className={cn(
@@ -128,7 +132,8 @@ export function ErrorManagementPage() {
 	const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
 	const pageButtons = useMemo(() => {
-		if (pageCount <= 7) return Array.from({ length: pageCount }, (_, i) => i + 1);
+		if (pageCount <= 7)
+			return Array.from({ length: pageCount }, (_, i) => i + 1);
 		const set = new Set(
 			[1, 2, 3, 4, 5, page, pageCount, pageCount - 1].filter(
 				(p) => p >= 1 && p <= pageCount
@@ -153,21 +158,12 @@ export function ErrorManagementPage() {
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="min-w-0 flex-1">
-					<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
-						<Link href="/admin/file-monitoring" className="hover:underline">
-							Operations
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<span className="text-foreground">Error Management</span>
-					</nav>
-					<div className="mt-2">
-						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-							Error Management
-						</h1>
-						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-							Central queue for validation failures, warnings, and review items.
-						</p>
-					</div>
+					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+						Error Management
+					</h1>
+					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+						Central queue for validation failures, warnings, and review items.
+					</p>
 				</div>
 				<Button
 					variant="outline"
@@ -175,16 +171,34 @@ export function ErrorManagementPage() {
 					className="h-9 border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
 					asChild
 				>
-					<Link href="/admin/file-monitoring" className="inline-flex items-center gap-1.5">
+					<Link
+						href="/admin/file-monitoring"
+						className="inline-flex items-center gap-1.5"
+					>
 						<span>Back to File Monitoring</span>
 					</Link>
 				</Button>
 			</div>
 
 			<div className="grid gap-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-card to-sky-50/80 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				<MetaItem label="Open Errors" value={<span className="font-semibold text-red-700">{errorCount}</span>} />
-				<MetaItem label="Warnings" value={<span className="font-semibold text-amber-700">{warningCount}</span>} />
-				<MetaItem label="Info Flags" value={<span className="font-semibold text-sky-700">{infoCount}</span>} />
+				<MetaItem
+					label="Open Errors"
+					value={
+						<span className="font-semibold text-red-700">{errorCount}</span>
+					}
+				/>
+				<MetaItem
+					label="Warnings"
+					value={
+						<span className="font-semibold text-amber-700">{warningCount}</span>
+					}
+				/>
+				<MetaItem
+					label="Info Flags"
+					value={
+						<span className="font-semibold text-sky-700">{infoCount}</span>
+					}
+				/>
 				<MetaItem label="Affected Vendors" value={affectedVendors} />
 				<MetaItem label="Total Cases" value={rows.length} />
 				<MetaItem label="Scope" value="Validation pipeline" />
@@ -236,7 +250,9 @@ export function ErrorManagementPage() {
 						<span
 							className={cn(
 								"rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
-								severity === chip.key ? "bg-white/20" : "bg-muted text-foreground"
+								severity === chip.key
+									? "bg-white/20"
+									: "bg-muted text-foreground"
 							)}
 						>
 							{chip.count}
@@ -289,9 +305,19 @@ export function ErrorManagementPage() {
 							<span>Export Queue</span>
 						</span>
 					</Button>
-					<Button size="sm" className="h-9" onClick={handleRefresh} disabled={refreshing}>
+					<Button
+						size="sm"
+						className="h-9"
+						onClick={handleRefresh}
+						disabled={refreshing}
+					>
 						<span className="inline-flex items-center gap-1.5">
-							<RefreshCw className={cn("size-3.5 shrink-0", refreshing && "animate-spin")} />
+							<RefreshCw
+								className={cn(
+									"size-3.5 shrink-0",
+									refreshing && "animate-spin"
+								)}
+							/>
 							<span>Refresh</span>
 						</span>
 					</Button>
@@ -306,11 +332,21 @@ export function ErrorManagementPage() {
 								<TableHead className="pl-4 font-semibold text-primary sm:pl-6">
 									Timestamp
 								</TableHead>
-								<TableHead className="font-semibold text-primary">Severity</TableHead>
-								<TableHead className="font-semibold text-primary">Vendor</TableHead>
-								<TableHead className="font-semibold text-primary">Code</TableHead>
-								<TableHead className="font-semibold text-primary">Message</TableHead>
-								<TableHead className="font-semibold text-primary">Details</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Severity
+								</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Vendor
+								</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Code
+								</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Message
+								</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Details
+								</TableHead>
 								<TableHead className="pr-4 font-semibold text-primary sm:pr-6">
 									Action
 								</TableHead>
@@ -330,13 +366,17 @@ export function ErrorManagementPage() {
 										</TableCell>
 										<TableCell>
 											<div className="min-w-0">
-												<p className="truncate text-sm font-medium">{row.vendor}</p>
+												<p className="truncate text-sm font-medium">
+													{row.vendor}
+												</p>
 												<p className="truncate text-[11px] text-muted-foreground">
 													{row.fileType}
 												</p>
 											</div>
 										</TableCell>
-										<TableCell className="font-mono text-xs">{row.code}</TableCell>
+										<TableCell className="font-mono text-xs">
+											{row.code}
+										</TableCell>
 										<TableCell className="max-w-[340px] text-sm font-medium">
 											{row.message}
 										</TableCell>
@@ -367,7 +407,10 @@ export function ErrorManagementPage() {
 							})}
 							{pageRows.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+									<TableCell
+										colSpan={7}
+										className="h-24 text-center text-muted-foreground"
+									>
 										No errors match the current filters.
 									</TableCell>
 								</TableRow>
@@ -379,7 +422,8 @@ export function ErrorManagementPage() {
 				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 bg-primary/[0.03] px-4 py-3 text-sm text-muted-foreground sm:px-6">
 					<span>
 						Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
-						{Math.min(page * pageSize, filtered.length)} of {filtered.length} queue items
+						{Math.min(page * pageSize, filtered.length)} of {filtered.length}{" "}
+						queue items
 					</span>
 					<div className="flex items-center gap-1">
 						<Button
@@ -415,7 +459,9 @@ export function ErrorManagementPage() {
 							size="sm"
 							className="h-8 px-2"
 							disabled={page >= pageCount}
-							onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+							onClick={() =>
+								setPage((current) => Math.min(pageCount, current + 1))
+							}
 						>
 							›
 						</Button>

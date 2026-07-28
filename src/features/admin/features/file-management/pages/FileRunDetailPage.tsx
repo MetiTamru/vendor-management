@@ -1,29 +1,32 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useParams } from "next/navigation";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
 	ArrowDownLeft,
+	ArrowLeft,
 	ArrowUpRight,
 	CheckCircle2,
 	Copy,
 	Download,
-	FileText,
-	Plus,
+	Filter,
+	Info,
 	ScrollText,
+	Upload,
 	XCircle,
 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -32,19 +35,25 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { runBucket } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import {
+	FILE_RUNS,
+	type FileRun,
+	type ProcessStatus,
+	type ValidationIssue,
 	displayRunStatus,
 	getFileRun,
 	markFileRunReviewed,
-	type FileRun,
-	type ValidationIssue,
 } from "../mock-data";
 
-function downloadTextFile(filename: string, content: string, mime = "text/plain") {
+function downloadTextFile(
+	filename: string,
+	content: string,
+	mime = "text/plain"
+) {
 	const blob = new Blob([content], { type: mime });
 	const url = URL.createObjectURL(blob);
 	const anchor = document.createElement("a");
@@ -56,57 +65,76 @@ function downloadTextFile(filename: string, content: string, mime = "text/plain"
 	URL.revokeObjectURL(url);
 }
 
-function RunStatusIcon({ status }: { status: FileRun["status"] }) {
-	const label = displayRunStatus(status);
-	if (label === "Success") {
+function StatusPill({ status }: { status: ProcessStatus }) {
+	const bucket = runBucket(status);
+	if (bucket === "success") {
 		return (
-			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
-				<CheckCircle2 className="size-4 text-emerald-600" />
+			<span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800">
+				<CheckCircle2 className="size-3" />
 				Success
 			</span>
 		);
 	}
-	if (label === "Failed") {
+	if (bucket === "failed") {
 		return (
-			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700">
-				<XCircle className="size-4 text-red-600" />
+			<span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800">
+				<XCircle className="size-3" />
 				Failed
 			</span>
 		);
 	}
-	if (label === "Warning") {
+	if (bucket === "warning") {
 		return (
-			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700">
-				<AlertTriangle className="size-4 text-amber-500" />
+			<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900">
+				<AlertTriangle className="size-3" />
 				Warning
 			</span>
 		);
 	}
 	return (
-		<span className="inline-flex items-center gap-1.5 text-sm font-medium capitalize text-muted-foreground">
-			{label}
+		<span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0 text-[10px] font-medium capitalize">
+			{displayRunStatus(status)}
 		</span>
 	);
 }
 
-function MetaChip({
-	label,
-	value,
-	icon,
+function Panel({
+	title,
+	children,
+	action,
+	className,
+	id,
 }: {
-	label: string;
-	value: ReactNode;
-	icon?: ReactNode;
+	title: string;
+	children: ReactNode;
+	action?: ReactNode;
+	className?: string;
+	id?: string;
 }) {
 	return (
+		<section
+			id={id}
+			className={cn(
+				"overflow-hidden rounded-lg border border-border/50 bg-card",
+				className
+			)}
+		>
+			<div className="flex items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
+				<h2 className="text-sm font-medium">{title}</h2>
+				{action}
+			</div>
+			<div className="p-3">{children}</div>
+		</section>
+	);
+}
+
+function DetailField({ label, value }: { label: string; value: ReactNode }) {
+	return (
 		<div className="min-w-0">
-			<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+			<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 				{label}
 			</p>
-			<div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
-				{icon}
-				<span className="truncate">{value}</span>
-			</div>
+			<div className="mt-0.5 text-xs font-normal">{value}</div>
 		</div>
 	);
 }
@@ -115,17 +143,38 @@ export function FileRunDetailPage() {
 	const params = useParams<{ runId: string }>();
 	const router = useRouter();
 	const selected = useMemo(() => getFileRun(params.runId), [params.runId]);
-	const [selectedIssueId, setSelectedIssueId] = useState<string | null>(
-		() => getFileRun(params.runId)?.issues[0]?.id ?? null
-	);
-	const [reviewed, setReviewed] = useState(selected?.reviewed ?? false);
+	const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+	const [reviewed, setReviewed] = useState(false);
 	const [page, setPage] = useState(1);
+	const [showAllErrors, setShowAllErrors] = useState(false);
+	const [dateRange, setDateRange] = useState("7");
+	const [statusFilter, setStatusFilter] = useState("all");
 	const pageSize = 5;
 
-	const vendorId = selected ? vendorIdForRun(selected) : null;
-	const selectHref = vendorId
-		? `/admin/file-monitoring/select?vendor=${vendorId}`
-		: "/admin/file-monitoring/select";
+	useEffect(() => {
+		if (!selected) return;
+		setReviewed(selected.reviewed);
+		setSelectedIssueId(selected.issues[0]?.id ?? null);
+		setPage(1);
+		setShowAllErrors(false);
+	}, [selected]);
+
+	const selectHref = "/admin/file-monitoring/select";
+
+	const recentRuns = useMemo(() => {
+		if (!selected) return [];
+		return FILE_RUNS.filter((run) => {
+			if (run.vendor !== selected.vendor) return false;
+			if (statusFilter !== "all" && runBucket(run.status) !== statusFilter) {
+				return false;
+			}
+			return true;
+		}).sort((a, b) => {
+			const aDate = a.startedAt ?? a.expectedAt;
+			const bDate = b.startedAt ?? b.expectedAt;
+			return bDate.localeCompare(aDate);
+		});
+	}, [selected, statusFilter]);
 
 	const selectedIssue = useMemo(
 		() =>
@@ -141,456 +190,512 @@ export function FileRunDetailPage() {
 	);
 	const pageIssues =
 		selected?.issues.slice((page - 1) * pageSize, page * pageSize) ?? [];
+	const visibleIssues = showAllErrors ? (selected?.issues ?? []) : pageIssues;
 
 	function selectIssue(issue: ValidationIssue) {
 		setSelectedIssueId(issue.id);
 		requestAnimationFrame(() => {
 			document
-				.getElementById("investigation-preview")
+				.getElementById("investigation-details")
 				?.scrollIntoView({ behavior: "smooth", block: "start" });
 		});
 	}
 
-	function copyGuid() {
-		if (!selected) return;
-		void navigator.clipboard.writeText(selected.correlationId);
+	function copyGuid(run: FileRun) {
+		void navigator.clipboard.writeText(run.correlationId);
 		toast.success("Run GUID copied");
+	}
+
+	function downloadOriginalFile() {
+		if (!selected?.fileName) return;
+		const lines = [
+			`# Original file: ${selected.fileName}`,
+			`# Vendor: ${selected.vendor}`,
+			`# Type: ${selected.fileType}`,
+			`# Run: ${selected.runId}`,
+			`# Correlation: ${selected.correlationId}`,
+			"",
+			...selected.issues.map(
+				(issue, i) =>
+					`${i + 1}. [${issue.severity}] ${issue.code} — ${issue.message}`
+			),
+		];
+		downloadTextFile(
+			`${selected.fileName.replace(/\.[^.]+$/, "")}.txt`,
+			lines.join("\n")
+		);
+		toast.success("Original file download started.");
+	}
+
+	function exportErrors() {
+		if (!selected) return;
+		const header = "code,severity,message,field,memberId,line";
+		const rows = selected.issues.map((issue) =>
+			[
+				issue.code,
+				issue.severity,
+				`"${issue.message.replace(/"/g, '""')}"`,
+				issue.field ?? "",
+				issue.memberId ?? "",
+				issue.line ?? "",
+			].join(",")
+		);
+		downloadTextFile(
+			`${selected.runId}-errors.csv`,
+			[header, ...rows].join("\n"),
+			"text/csv"
+		);
+		toast.success("Errors exported.");
 	}
 
 	if (!selected) {
 		return (
-			<div className="space-y-4">
-				<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
-					<Link href="/admin/file-monitoring" className="hover:underline">
-						File Monitoring
-					</Link>
-					<span className="text-muted-foreground">&gt;</span>
-					<Link href="/admin/file-monitoring/select" className="hover:underline">
-						File Runs
-					</Link>
-					<span className="text-muted-foreground">&gt;</span>
-					<span className="text-foreground">File Run Details</span>
-				</nav>
-				<div className="rounded-xl border border-border/50 bg-card/70 p-10 text-center">
-					<p className="text-lg font-semibold">File run not found</p>
-					<Button asChild className="mt-5">
-						<Link href="/admin/file-monitoring/select">
-							Select a vendor or failed run
-						</Link>
+			<div className="space-y-3">
+				<div className="rounded-lg border border-border/50 p-10 text-center">
+					<p className="text-base font-medium">File run not found</p>
+					<Button asChild className="mt-4" size="sm">
+						<Link href={selectHref}>Select a file run</Link>
 					</Button>
 				</div>
 			</div>
 		);
 	}
 
+	const dateRangeLabel =
+		dateRange === "7"
+			? "Last 7 Days (07/18/2026 - 07/24/2026)"
+			: dateRange === "14"
+				? "Last 14 Days"
+				: "Last 30 Days";
+
 	return (
-		<div className="space-y-4">
-			<div className="flex flex-wrap items-start justify-between gap-4">
-				<div className="min-w-0 flex-1">
-					<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
-						<Link href="/admin/file-monitoring" className="hover:underline">
-							File Monitoring
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<Link href={selectHref} className="hover:underline">
-							File Runs
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<span className="text-foreground">File Run Details</span>
-					</nav>
-					<div className="mt-2">
-						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-							File Run Details
-						</h1>
-						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-							View processing, validation results, and investigation details.
-						</p>
+		<div className="space-y-3 pb-20">
+			{/* Header */}
+			<div>
+				<h1 className="text-base font-medium tracking-tight">
+					File Run Details
+				</h1>
+				<p className="mt-0.5 max-w-3xl text-xs text-muted-foreground">
+					View detailed processing, validation results, and investigation
+					information for the selected file run.
+				</p>
+			</div>
+
+			{/* How to proceed */}
+			<div className="flex gap-2.5 rounded-lg border border-sky-200/80 bg-sky-50/80 px-3 py-2.5 text-sky-950 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
+				<div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-600 text-[10px] font-medium text-white">
+					i
+				</div>
+				<div>
+					<p className="text-xs font-medium">How to proceed</p>
+					<p className="mt-0.5 text-xs text-sky-900/80 dark:text-sky-200/90">
+						Select a file run from the list above to view detailed processing
+						information, validation results, and investigation details.
+					</p>
+				</div>
+			</div>
+
+			{/* File Runs (Last 7 Days) */}
+			<section className="overflow-hidden rounded-lg border border-border/50 bg-card">
+				<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
+					<h2 className="text-sm font-medium">
+						File Runs (Last {dateRange} Days)
+					</h2>
+					<div className="flex flex-wrap items-center gap-1.5">
+						<Select value={dateRange} onValueChange={setDateRange}>
+							<SelectTrigger className="h-8 w-auto min-w-[220px] text-xs">
+								<SelectValue>{dateRangeLabel}</SelectValue>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="7">
+									Last 7 Days (07/18/2026 - 07/24/2026)
+								</SelectItem>
+								<SelectItem value="14">Last 14 Days</SelectItem>
+								<SelectItem value="30">Last 30 Days</SelectItem>
+							</SelectContent>
+						</Select>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
+							<SelectTrigger className="h-8 w-[120px] text-xs">
+								<SelectValue placeholder="Status" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All statuses</SelectItem>
+								<SelectItem value="success">Success</SelectItem>
+								<SelectItem value="failed">Failed</SelectItem>
+								<SelectItem value="warning">Warning</SelectItem>
+							</SelectContent>
+						</Select>
+						<Button variant="outline" size="sm" className="h-8 text-xs">
+							<Filter className="mr-1.5 size-3.5" />
+							Filters
+						</Button>
 					</div>
 				</div>
-				<Button variant="outline" size="sm" className="h-9" asChild>
-					<Link href={selectHref}>
-						<Plus className="mr-1.5 size-3.5" />
-						Back to File Runs
-					</Link>
-				</Button>
-			</div>
-
-			{/* Metadata ribbon */}
-			<div className="grid gap-4 rounded-xl border border-border/50 bg-card p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				<MetaChip
-					label="File Type"
-					value={selected.fileType}
-					icon={<FileText className="size-3.5 text-primary" />}
-				/>
-				<MetaChip
-					label="File Name"
-					value={
-						<span className="font-mono text-xs">{selected.fileName ?? "—"}</span>
-					}
-				/>
-				<MetaChip
-					label="Run GUID"
-					value={
-						<button
-							type="button"
-							onClick={copyGuid}
-							className="inline-flex max-w-full items-center gap-1 font-mono text-xs hover:text-primary"
-						>
-							<span className="truncate">{selected.correlationId}</span>
-							<Copy className="size-3 shrink-0" />
-						</button>
-					}
-				/>
-				<MetaChip label="Vendor" value={selected.vendor} />
-				<MetaChip
-					label="Run Date/Time"
-					value={selected.startedAt ?? selected.expectedAt}
-				/>
-				<MetaChip
-					label="Status"
-					value={<RunStatusIcon status={selected.status} />}
-				/>
-			</div>
-
-			{/* Overview + Actions */}
-			<div className="grid gap-4 lg:grid-cols-3">
-				<Card className="gap-2 border-border/50 bg-card py-4 lg:col-span-2">
-					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">Overview</CardTitle>
-					</CardHeader>
-					<CardContent className="px-4">
-						<div className="grid gap-x-10 gap-y-3 sm:grid-cols-2">
-							<div className="space-y-3 text-sm">
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Direction</span>
-									<span className="inline-flex items-center gap-1 font-medium">
-										{selected.direction === "inbound" ? (
-											<>
-												<ArrowDownLeft className="size-3.5 text-sky-600" />
-												Incoming
-											</>
-										) : (
-											<>
-												<ArrowUpRight className="size-3.5 text-violet-600" />
-												Outgoing
-											</>
-										)}
-									</span>
-								</div>
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Frequency</span>
-									<span className="font-medium">{selected.frequency}</span>
-								</div>
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Records Received</span>
-									<span className="font-medium tabular-nums">
-										{selected.records?.toLocaleString() ?? "—"}
-									</span>
-								</div>
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Records Loaded</span>
-									<span className="font-medium tabular-nums">
-										{selected.recordsLoaded?.toLocaleString() ?? "—"}
-									</span>
-								</div>
-								<div className="flex justify-between gap-3">
-									<span className="text-muted-foreground">Errors</span>
-									<span
-										className={cn(
-											"font-semibold tabular-nums",
-											selected.errorCount > 0 && "text-red-700"
-										)}
+				<div className="overflow-x-auto">
+					<Table className="min-w-[960px] text-xs">
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="h-8 w-10 pl-3 font-normal" />
+								<TableHead className="h-8 font-normal">File Type</TableHead>
+								<TableHead className="h-8 font-normal">Direction</TableHead>
+								<TableHead className="h-8 font-normal">Frequency</TableHead>
+								<TableHead className="h-8 font-normal">Run Date/Time</TableHead>
+								<TableHead className="h-8 font-normal">Status</TableHead>
+								<TableHead className="h-8 text-right font-normal">
+									Records
+								</TableHead>
+								<TableHead className="h-8 text-right font-normal">
+									Errors
+								</TableHead>
+								<TableHead className="h-8 text-right font-normal">
+									Warnings
+								</TableHead>
+								<TableHead className="h-8 font-normal">File Name</TableHead>
+								<TableHead className="h-8 pr-3 font-normal">Run GUID</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{recentRuns.length === 0 ? (
+								<TableRow>
+									<TableCell
+										colSpan={11}
+										className="h-16 text-center text-muted-foreground"
 									>
-										{selected.errorCount}
-									</span>
-								</div>
-							</div>
-							<div className="space-y-3 text-sm">
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Warnings</span>
-									<span
-										className={cn(
-											"font-semibold tabular-nums",
-											selected.warningCount > 0 && "text-red-700"
-										)}
-									>
-										{selected.warningCount}
-									</span>
-								</div>
-								<div className="flex justify-between gap-3 border-b border-border/40 pb-2">
-									<span className="text-muted-foreground">Duration</span>
-									<span className="font-medium tabular-nums">
-										{selected.duration ?? "—"}
-									</span>
-								</div>
-								<div className="flex justify-between gap-3">
-									<span className="text-muted-foreground">Process Date/Time</span>
-									<span className="font-medium">
-										{selected.startedAt ?? selected.expectedAt}
-									</span>
-								</div>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
+										No file runs for this vendor in the selected window.
+									</TableCell>
+								</TableRow>
+							) : (
+								recentRuns.map((run) => {
+									const isActive = run.id === selected.id;
+									return (
+										<TableRow
+											key={run.id}
+											className={cn(
+												"cursor-pointer hover:bg-muted/30",
+												isActive && "bg-primary/[0.06]"
+											)}
+											onClick={() =>
+												router.push(`/admin/file-monitoring/${run.id}`)
+											}
+										>
+											<TableCell className="pl-3">
+												<input
+													type="radio"
+													name="file-run"
+													checked={isActive}
+													onChange={() =>
+														router.push(`/admin/file-monitoring/${run.id}`)
+													}
+													className="size-3.5 accent-primary"
+													aria-label={`Select run ${run.runId}`}
+												/>
+											</TableCell>
+											<TableCell className="font-medium">
+												{run.fileType}
+											</TableCell>
+											<TableCell>
+												<span className="inline-flex items-center gap-1 text-sky-700">
+													{run.direction === "inbound" ? (
+														<>
+															<ArrowDownLeft className="size-3" />
+															Incoming
+														</>
+													) : (
+														<>
+															<ArrowUpRight className="size-3" />
+															Outgoing
+														</>
+													)}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{run.frequency}
+											</TableCell>
+											<TableCell className="tabular-nums">
+												{run.startedAt ?? run.expectedAt}
+											</TableCell>
+											<TableCell>
+												<StatusPill status={run.status} />
+											</TableCell>
+											<TableCell className="text-right tabular-nums">
+												{run.records?.toLocaleString() ?? "—"}
+											</TableCell>
+											<TableCell
+												className={cn(
+													"text-right tabular-nums",
+													run.errorCount > 0 && "font-medium text-red-700"
+												)}
+											>
+												{run.errorCount}
+											</TableCell>
+											<TableCell
+												className={cn(
+													"text-right tabular-nums",
+													run.warningCount > 0 && "font-medium text-amber-700"
+												)}
+											>
+												{run.warningCount}
+											</TableCell>
+											<TableCell className="max-w-[140px] truncate font-mono text-[10px]">
+												{run.fileName ?? "—"}
+											</TableCell>
+											<TableCell className="pr-3">
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														copyGuid(run);
+													}}
+													className="inline-flex max-w-[120px] items-center gap-1 font-mono text-[10px] hover:text-primary"
+												>
+													<span className="truncate">{run.correlationId}</span>
+													<Copy className="size-3 shrink-0" />
+												</button>
+											</TableCell>
+										</TableRow>
+									);
+								})
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</section>
 
-				<Card className="gap-2 border-border/50 bg-card py-4">
-					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">Actions</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-1 px-4">
-						{[
-							{
-								label: "Download Original File",
-								icon: Download,
-								onClick: () => {
-									if (!selected.fileName) return;
-									const lines = [
-										`# Original file: ${selected.fileName}`,
-										`# Vendor: ${selected.vendor}`,
-										`# Type: ${selected.fileType}`,
-										`# Run: ${selected.runId}`,
-										`# Correlation: ${selected.correlationId}`,
-										"",
-										...selected.issues.map(
-											(issue, i) =>
-												`${i + 1}. [${issue.severity}] ${issue.code} — ${issue.message}`
-										),
-									];
-									downloadTextFile(
-										selected.fileName.replace(/\.[^.]+$/, "") + ".txt",
-										lines.join("\n")
-									);
-									toast.success("Original file download started.");
-								},
-								disabled: !selected.fileName,
-							},
-							{
-								label: "Download Log",
-								icon: ScrollText,
-								href: `/admin/processing-logs?run=${selected.id}`,
-							},
-							{
-								label: "Investigate Selected Error",
-								icon: AlertTriangle,
-								href: selectedIssue
-									? `/admin/file-monitoring/${selected.id}/investigate/${selectedIssue.id}`
-									: undefined,
-								disabled: !selectedIssue,
-								onClick: !selectedIssue
-									? () => toast.message("Select a validation error first.")
-									: undefined,
-							},
-							{
-								label: "Export Error Details",
-								icon: Download,
-								onClick: () => {
-									const header =
-										"code,severity,message,field,record,line";
-									const rows = selected.issues.map((issue) =>
-										[
-											issue.code,
-											issue.severity,
-											`"${issue.message.replace(/"/g, '""')}"`,
-											issue.field ?? "",
-											issue.record ?? "",
-											issue.line ?? "",
-										].join(",")
-									);
-									downloadTextFile(
-										`${selected.runId}-errors.csv`,
-										[header, ...rows].join("\n"),
-										"text/csv"
-									);
-									toast.success("Error details exported.");
-								},
-								disabled:
-									selected.errorCount === 0 && selected.warningCount === 0,
-							},
-							{
-								label: "Export Summary",
-								icon: Download,
-								onClick: () => {
-									const summary = [
-										`Run ID: ${selected.runId}`,
-										`Vendor: ${selected.vendor}`,
-										`File: ${selected.fileName ?? "—"}`,
-										`Type: ${selected.fileType}`,
-										`Status: ${displayRunStatus(selected.status)}`,
-										`Records: ${selected.records ?? "—"}`,
-										`Errors: ${selected.errorCount}`,
-										`Warnings: ${selected.warningCount}`,
-										`Duration: ${selected.duration ?? "—"}`,
-										`Received: ${selected.receivedAt ?? "—"}`,
-										`Completed: ${selected.completedAt ?? "—"}`,
-										`Correlation: ${selected.correlationId}`,
-									].join("\n");
-									downloadTextFile(
-										`${selected.runId}-summary.txt`,
-										summary
-									);
-									toast.success("Summary exported.");
-								},
-							},
-							{
-								label: reviewed ? "Reviewed" : "Mark as Reviewed",
-								icon: CheckCircle2,
-								onClick: () => {
-									markFileRunReviewed(selected.id, true);
-									setReviewed(true);
-									toast.success("File run marked as reviewed.");
-								},
-								disabled: reviewed,
-							},
-						].map((action) => {
-							const Icon = action.icon;
-							const actionClass =
-								"h-10 w-full justify-start gap-2 bg-primary/5 font-medium text-primary hover:bg-primary/10 hover:text-primary";
-							if (action.href) {
-								return (
-									<Button
-										key={action.label}
-										variant="ghost"
-										className={actionClass}
-										asChild
-									>
-										<Link href={action.href}>
-											<Icon className="size-4 text-primary" />
-											{action.label}
-										</Link>
-									</Button>
-								);
+			{/* Detailed Processing Information */}
+			<Panel title="Detailed Processing Information">
+				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+					<div className="space-y-3">
+						<DetailField label="Vendor" value={selected.vendor} />
+						<DetailField label="Account" value={selected.account} />
+						<DetailField
+							label="File Name"
+							value={
+								<span className="font-mono text-[10px]">
+									{selected.fileName ?? "—"}
+								</span>
 							}
-							return (
-								<Button
-									key={action.label}
-									variant="ghost"
-									className={actionClass}
-									disabled={action.disabled}
-									onClick={action.onClick}
+						/>
+						<DetailField label="File Type" value={selected.fileType} />
+					</div>
+					<div className="space-y-3">
+						<DetailField
+							label="Direction"
+							value={
+								<span className="inline-flex items-center gap-1">
+									{selected.direction === "inbound" ? (
+										<>
+											<ArrowDownLeft className="size-3 text-sky-600" />
+											Incoming
+										</>
+									) : (
+										<>
+											<ArrowUpRight className="size-3 text-violet-600" />
+											Outgoing
+										</>
+									)}
+								</span>
+							}
+						/>
+						<DetailField
+							label="Status"
+							value={<StatusPill status={selected.status} />}
+						/>
+						<DetailField
+							label="Run GUID"
+							value={
+								<button
+									type="button"
+									onClick={() => copyGuid(selected)}
+									className="inline-flex items-center gap-1 font-mono text-[10px] hover:text-primary"
 								>
-									<Icon className="size-4 text-primary" />
-									{action.label}
-								</Button>
-							);
-						})}
-					</CardContent>
-				</Card>
-			</div>
+									{selected.correlationId}
+									<Copy className="size-3" />
+								</button>
+							}
+						/>
+						<DetailField
+							label="Process Date/Time"
+							value={selected.startedAt ?? selected.expectedAt}
+						/>
+					</div>
+					<div className="space-y-3">
+						<DetailField
+							label="Records Received"
+							value={
+								<span className="tabular-nums">
+									{selected.records?.toLocaleString() ?? "—"}
+								</span>
+							}
+						/>
+						<DetailField
+							label="Records Loaded"
+							value={
+								<span className="tabular-nums">
+									{selected.recordsLoaded?.toLocaleString() ?? "—"}
+								</span>
+							}
+						/>
+						<DetailField
+							label="Errors"
+							value={
+								<span
+									className={cn(
+										"tabular-nums",
+										selected.errorCount > 0 && "font-medium text-red-700"
+									)}
+								>
+									{selected.errorCount}
+								</span>
+							}
+						/>
+					</div>
+					<div className="space-y-3">
+						<DetailField
+							label="Warnings"
+							value={
+								<span
+									className={cn(
+										"tabular-nums",
+										selected.warningCount > 0 && "font-medium text-amber-700"
+									)}
+								>
+									{selected.warningCount}
+								</span>
+							}
+						/>
+						<DetailField label="Duration" value={selected.duration ?? "—"} />
+					</div>
+				</div>
+			</Panel>
 
 			{/* Validation Results */}
-			<Card className="gap-2 border-border/50 bg-card py-4">
-				<CardHeader className="px-4 pb-1 pt-0">
-					<CardTitle className="text-base">
+			<section className="overflow-hidden rounded-lg border border-border/50 bg-card">
+				<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
+					<h2 className="text-sm font-medium">
 						Validation Results{" "}
 						{selected.issues.length > 0 && (
 							<span className="font-normal text-muted-foreground">
-								(Showing first {Math.min(pageSize, selected.issues.length)} of{" "}
-								{selected.issues.length} errors)
+								(Showing first{" "}
+								{showAllErrors
+									? selected.issues.length
+									: Math.min(pageSize, selected.issues.length)}{" "}
+								of {selected.issues.length} errors)
 							</span>
 						)}
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="px-0 pb-0">
-					{selected.issues.length === 0 ? (
-						<div className="flex items-center gap-3 border-t border-border/50 px-4 py-6 text-sm text-emerald-800 sm:px-6">
-							<CheckCircle2 className="size-4 text-emerald-600" />
-							No validation errors or warnings for this run.
-						</div>
-					) : (
-						<>
-							<div className="overflow-x-auto border-t border-border/50">
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="pl-4 sm:pl-6">Line #</TableHead>
-											<TableHead>Member ID</TableHead>
-											<TableHead>Field Name</TableHead>
-											<TableHead>Error Code</TableHead>
-											<TableHead>Error Description</TableHead>
-											<TableHead>Severity</TableHead>
-											<TableHead className="pr-4 text-right sm:pr-6">
-												Action
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{pageIssues.map((issue) => {
-											const isSelected =
-												(selectedIssueId ?? selected.issues[0]?.id) ===
-												issue.id;
-											return (
-												<TableRow
-													key={issue.id}
-													className={cn(
-														"cursor-pointer hover:bg-muted/30",
-														isSelected && "bg-primary/[0.04]"
+					</h2>
+					{selected.issues.length > pageSize && !showAllErrors ? (
+						<Button
+							variant="link"
+							className="h-auto p-0 text-xs text-primary"
+							onClick={() => setShowAllErrors(true)}
+						>
+							View all errors
+						</Button>
+					) : null}
+				</div>
+				{selected.issues.length === 0 ? (
+					<div className="flex items-center gap-2 px-3 py-6 text-xs text-emerald-800">
+						<CheckCircle2 className="size-4 text-emerald-600" />
+						No validation errors or warnings for this run.
+					</div>
+				) : (
+					<>
+						<div className="overflow-x-auto">
+							<Table className="text-xs">
+								<TableHeader>
+									<TableRow className="hover:bg-transparent">
+										<TableHead className="h-8 pl-3 font-normal">
+											Line #
+										</TableHead>
+										<TableHead className="h-8 font-normal">Member ID</TableHead>
+										<TableHead className="h-8 font-normal">
+											Field Name
+										</TableHead>
+										<TableHead className="h-8 font-normal">
+											Error Code
+										</TableHead>
+										<TableHead className="h-8 font-normal">
+											Error Description
+										</TableHead>
+										<TableHead className="h-8 font-normal">Severity</TableHead>
+										<TableHead className="h-8 pr-3 text-right font-normal">
+											Action
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{visibleIssues.map((issue) => {
+										const isSelected =
+											(selectedIssueId ?? selected.issues[0]?.id) === issue.id;
+										return (
+											<TableRow
+												key={issue.id}
+												className={cn(
+													"cursor-pointer hover:bg-muted/30",
+													isSelected && "bg-primary/[0.05]"
+												)}
+												onClick={() => selectIssue(issue)}
+											>
+												<TableCell className="pl-3 tabular-nums">
+													{issue.line ?? "—"}
+												</TableCell>
+												<TableCell className="font-mono text-[10px]">
+													{issue.memberId ?? "—"}
+												</TableCell>
+												<TableCell>{issue.field ?? "—"}</TableCell>
+												<TableCell className="font-mono text-[10px] font-medium">
+													{issue.code}
+												</TableCell>
+												<TableCell className="max-w-[240px] text-muted-foreground">
+													{issue.message}
+												</TableCell>
+												<TableCell>
+													{issue.severity === "error" ? (
+														<span className="inline-flex items-center gap-1 text-red-700">
+															<XCircle className="size-3" />
+															Error
+														</span>
+													) : issue.severity === "warning" ? (
+														<span className="inline-flex items-center gap-1 text-amber-700">
+															<AlertTriangle className="size-3" />
+															Warning
+														</span>
+													) : (
+														<span className="inline-flex items-center gap-1 text-sky-700">
+															<Info className="size-3" />
+															Info
+														</span>
 													)}
-													onClick={() => selectIssue(issue)}
-													onDoubleClick={() =>
-														router.push(
-															`/admin/file-monitoring/${selected.id}/investigate/${issue.id}`
-														)
-													}
+												</TableCell>
+												<TableCell
+													className="pr-3 text-right"
+													onClick={(e) => e.stopPropagation()}
 												>
-													<TableCell className="pl-4 tabular-nums sm:pl-6">
-														{issue.line ?? "—"}
-													</TableCell>
-													<TableCell className="font-mono text-xs">
-														{issue.memberId ?? "—"}
-													</TableCell>
-													<TableCell>{issue.field ?? "—"}</TableCell>
-													<TableCell className="font-mono text-xs font-semibold">
-														{issue.code}
-													</TableCell>
-													<TableCell className="max-w-[280px] text-sm text-muted-foreground">
-														{issue.message}
-													</TableCell>
-													<TableCell>
-														{issue.severity === "error" ? (
-															<span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
-																<XCircle className="size-3.5 text-red-600" />
-																Error
-															</span>
-														) : issue.severity === "warning" ? (
-															<span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
-																<AlertTriangle className="size-3.5 text-amber-500" />
-																Warning
-															</span>
-														) : (
-															<span className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-700">
-																<CheckCircle2 className="size-3.5 text-sky-600" />
-																Info
-															</span>
-														)}
-													</TableCell>
-													<TableCell
-														className="pr-4 text-right sm:pr-6"
-														onClick={(e) => e.stopPropagation()}
+													<Button
+														variant="outline"
+														size="sm"
+														className="h-7 text-xs"
+														asChild
 													>
-														<Button
-															variant="link"
-															className="h-auto p-0 text-primary"
-															asChild
+														<Link
+															href={`/admin/file-monitoring/${selected.id}/investigate/${issue.id}`}
 														>
-															<Link
-																href={`/admin/file-monitoring/${selected.id}/investigate/${issue.id}`}
-															>
-																Investigate
-															</Link>
-														</Button>
-													</TableCell>
-												</TableRow>
-											);
-										})}
-									</TableBody>
-								</Table>
-							</div>
-							<div className="flex items-center justify-end gap-1 border-t border-border/50 px-4 py-3">
+															Investigate
+														</Link>
+													</Button>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</div>
+						{!showAllErrors && pageCount > 1 ? (
+							<div className="flex items-center justify-end gap-1 border-t border-border/50 px-3 py-2">
 								<Button
 									variant="outline"
 									size="sm"
-									className="h-8"
+									className="h-7 w-7 p-0"
 									disabled={page <= 1}
 									onClick={() => setPage((p) => p - 1)}
 								>
@@ -601,7 +706,7 @@ export function FileRunDetailPage() {
 										key={p}
 										variant={p === page ? "default" : "outline"}
 										size="sm"
-										className="size-8 p-0"
+										className="h-7 w-7 p-0 text-xs"
 										onClick={() => setPage(p)}
 									>
 										{p}
@@ -610,71 +715,131 @@ export function FileRunDetailPage() {
 								<Button
 									variant="outline"
 									size="sm"
-									className="h-8"
+									className="h-7 w-7 p-0"
 									disabled={page >= pageCount}
 									onClick={() => setPage((p) => p + 1)}
 								>
 									›
 								</Button>
 							</div>
-						</>
-					)}
-				</CardContent>
-			</Card>
+						) : null}
+					</>
+				)}
+			</section>
 
 			{/* Investigation Details */}
-			<div id="investigation-preview">
-				{selectedIssue ? (
-					<Card className="gap-2 border-border/50 bg-card py-4">
-						<CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0 px-4 pb-1 pt-0">
-							<CardTitle className="text-base">
-								Investigation Details (For selected error)
-							</CardTitle>
-							<Button size="sm" asChild>
-								<Link
-									href={`/admin/file-monitoring/${selected.id}/investigate/${selectedIssue.id}`}
-								>
-									Open Validation Investigation
-									<ArrowUpRight className="ml-1.5 size-3.5" />
-								</Link>
-							</Button>
-						</CardHeader>
-						<CardContent className="px-4">
-							<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-								<div>
-									<p className="text-sm font-semibold">Received Value</p>
-									<p className="mt-2 font-mono text-sm font-semibold text-foreground">
-										{selectedIssue.receivedValue ?? "—"}
-									</p>
-								</div>
-								<div>
-									<p className="text-sm font-semibold">Expected Value</p>
-									<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-										{selectedIssue.expectedValue ?? "—"}
-									</p>
-								</div>
-								<div>
-									<p className="text-sm font-semibold">Validation Rule</p>
-									<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-										{selectedIssue.validationRule ?? "—"}
-									</p>
-								</div>
-								<div>
-									<p className="text-sm font-semibold">Recommended Resolution</p>
-									<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-										{selectedIssue.recommendedResolution ?? "—"}
-									</p>
-								</div>
-								<div>
-									<p className="text-sm font-semibold">Related Information</p>
-									<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-										{selectedIssue.relatedInformation ?? "—"}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				) : null}
+			{selectedIssue ? (
+				<Panel
+					id="investigation-details"
+					title="Investigation Details"
+					action={
+						<Button size="sm" className="h-7 text-xs" asChild>
+							<Link
+								href={`/admin/file-monitoring/${selected.id}/investigate/${selectedIssue.id}`}
+							>
+								Open full investigation
+							</Link>
+						</Button>
+					}
+				>
+					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+						<div>
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Received Value
+							</p>
+							<p className="mt-1 font-mono text-xs font-medium text-red-700">
+								{selectedIssue.receivedValue ?? "—"}
+							</p>
+						</div>
+						<div>
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Expected Value
+							</p>
+							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{selectedIssue.expectedValue ?? "—"}
+							</p>
+						</div>
+						<div>
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Validation Rule
+							</p>
+							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{selectedIssue.validationRule ?? "—"}
+							</p>
+						</div>
+						<div>
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Recommended Resolution
+							</p>
+							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{selectedIssue.recommendedResolution ?? "—"}
+							</p>
+						</div>
+						<div>
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Related Information
+							</p>
+							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{selectedIssue.relatedInformation ?? "—"}
+							</p>
+						</div>
+					</div>
+				</Panel>
+			) : null}
+
+			{/* Footer action bar */}
+			<div className="fixed inset-x-0 bottom-0 z-20 border-t border-border/50 bg-background/95 px-3 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
+				<div className="mx-auto flex w-full flex-wrap items-center justify-between gap-2">
+					<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+						<Link href={selectHref}>
+							<ArrowLeft className="mr-1.5 size-3.5" />
+							Back to File Runs
+						</Link>
+					</Button>
+					<div className="flex flex-wrap items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-8 text-xs"
+							onClick={downloadOriginalFile}
+							disabled={!selected.fileName}
+						>
+							<Download className="mr-1.5 size-3.5" />
+							Download Original File
+						</Button>
+						<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+							<Link href={`/admin/processing-logs?run=${selected.id}`}>
+								<ScrollText className="mr-1.5 size-3.5" />
+								Download Log
+							</Link>
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-8 text-xs"
+							onClick={exportErrors}
+							disabled={
+								selected.errorCount === 0 && selected.warningCount === 0
+							}
+						>
+							<Upload className="mr-1.5 size-3.5" />
+							Export Errors
+						</Button>
+						<Button
+							size="sm"
+							className="h-8 text-xs"
+							disabled={reviewed}
+							onClick={() => {
+								markFileRunReviewed(selected.id, true);
+								setReviewed(true);
+								toast.success("File run marked as reviewed.");
+							}}
+						>
+							<CheckCircle2 className="mr-1.5 size-3.5" />
+							{reviewed ? "Reviewed" : "Mark as Reviewed"}
+						</Button>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

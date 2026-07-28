@@ -74,17 +74,23 @@ export function SlaMonitoringPage() {
 
 	const summary = useMemo(() => {
 		const monitored = filteredRuns.length;
-		const onTime = filteredRuns.filter((run) => (run.latencyMinutes ?? 0) <= 0).length;
+		const onTime = filteredRuns.filter(
+			(run) => (run.latencyMinutes ?? 0) <= 0
+		).length;
 		const atRisk = filteredRuns.filter(
-			(run) => (run.latencyMinutes ?? 0) > 0 && (run.latencyMinutes ?? 0) <= run.slaMinutes
+			(run) =>
+				(run.latencyMinutes ?? 0) > 0 &&
+				(run.latencyMinutes ?? 0) <= run.slaMinutes
 		).length;
 		const breached = filteredRuns.filter(
 			(run) => (run.latencyMinutes ?? 0) > run.slaMinutes
 		).length;
 		const avgLatency = monitored
 			? Math.round(
-					filteredRuns.reduce((sum, run) => sum + (run.latencyMinutes ?? 0), 0) /
-						monitored
+					filteredRuns.reduce(
+						(sum, run) => sum + (run.latencyMinutes ?? 0),
+						0
+					) / monitored
 				)
 			: 0;
 		const attainment = monitored ? Math.round((onTime / monitored) * 100) : 0;
@@ -274,7 +280,9 @@ export function SlaMonitoringPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -304,7 +312,9 @@ export function SlaMonitoringPage() {
 							>
 								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0">
-										<p className="truncate text-sm font-semibold">{run.vendor}</p>
+										<p className="truncate text-sm font-semibold">
+											{run.vendor}
+										</p>
 										<p className="text-xs text-muted-foreground">
 											{run.fileType} · SLA {run.slaMinutes} min
 										</p>
@@ -327,12 +337,16 @@ export function SlaMonitoringPage() {
 							<Table>
 								<TableHeader>
 									<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-										<TableHead className="pl-4 text-primary sm:pl-6">Vendor</TableHead>
+										<TableHead className="pl-4 text-primary sm:pl-6">
+											Vendor
+										</TableHead>
 										<TableHead className="text-primary">Runs</TableHead>
 										<TableHead className="text-primary">On Time</TableHead>
 										<TableHead className="text-primary">At Risk</TableHead>
 										<TableHead className="text-primary">Breached</TableHead>
-										<TableHead className="pr-4 text-primary sm:pr-6">Score</TableHead>
+										<TableHead className="pr-4 text-primary sm:pr-6">
+											Score
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -341,7 +355,9 @@ export function SlaMonitoringPage() {
 											<TableCell className="pl-4 font-medium sm:pl-6">
 												{row.vendor}
 											</TableCell>
-											<TableCell className="tabular-nums">{row.total}</TableCell>
+											<TableCell className="tabular-nums">
+												{row.total}
+											</TableCell>
 											<TableCell className="tabular-nums text-emerald-700">
 												{row.onTime}
 											</TableCell>
@@ -399,7 +415,9 @@ export function SlaMonitoringPage() {
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-									<TableHead className="pl-4 text-primary sm:pl-6">Vendor</TableHead>
+									<TableHead className="pl-4 text-primary sm:pl-6">
+										Vendor
+									</TableHead>
 									<TableHead className="text-primary">File Type</TableHead>
 									<TableHead className="text-primary">Expected</TableHead>
 									<TableHead className="text-primary">Received</TableHead>
@@ -424,7 +442,9 @@ export function SlaMonitoringPage() {
 										<TableCell className="tabular-nums text-muted-foreground">
 											{run.receivedAt ?? "—"}
 										</TableCell>
-										<TableCell className="tabular-nums">{run.slaMinutes} min</TableCell>
+										<TableCell className="tabular-nums">
+											{run.slaMinutes} min
+										</TableCell>
 										<TableCell
 											className={cn(
 												"tabular-nums font-medium",
@@ -432,15 +452,20 @@ export function SlaMonitoringPage() {
 												(run.latencyMinutes ?? 0) > 0 &&
 													(run.latencyMinutes ?? 0) <= run.slaMinutes &&
 													"text-amber-700",
-												(run.latencyMinutes ?? 0) > run.slaMinutes && "text-red-700"
+												(run.latencyMinutes ?? 0) > run.slaMinutes &&
+													"text-red-700"
 											)}
 										>
-											{run.latencyMinutes == null ? "—" : `${run.latencyMinutes} min`}
+											{run.latencyMinutes == null
+												? "—"
+												: `${run.latencyMinutes} min`}
 										</TableCell>
 										<TableCell>{displayRunStatus(run.status)}</TableCell>
 										<TableCell className="pr-4 text-right sm:pr-6">
 											<Button variant="ghost" size="sm" asChild>
-												<Link href={`/admin/file-monitoring/${run.id}`}>Open</Link>
+												<Link href={`/admin/file-monitoring/${run.id}`}>
+													Open
+												</Link>
 											</Button>
 										</TableCell>
 									</TableRow>

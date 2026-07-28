@@ -386,9 +386,8 @@ export function useUpdateRfxMutation() {
 export function useSubmitBidMutation() {
 	const invalidate = useInvalidateVms();
 	return useMutation({
-		mutationFn: (
-			data: Omit<Parameters<typeof vmsApi.submitBid>[0], never>
-		) => vmsApi.submitBid(data),
+		mutationFn: (data: Omit<Parameters<typeof vmsApi.submitBid>[0], never>) =>
+			vmsApi.submitBid(data),
 		onSuccess: invalidate,
 	});
 }
@@ -429,13 +428,8 @@ export function useCreateInvoiceMutation() {
 export function useUpdateInvoiceMutation() {
 	const invalidate = useInvalidateVms();
 	return useMutation({
-		mutationFn: ({
-			id,
-			patch,
-		}: {
-			id: string;
-			patch: Partial<InvoiceModel>;
-		}) => vmsApi.updateInvoice(id, patch),
+		mutationFn: ({ id, patch }: { id: string; patch: Partial<InvoiceModel> }) =>
+			vmsApi.updateInvoice(id, patch),
 		onSuccess: invalidate,
 	});
 }

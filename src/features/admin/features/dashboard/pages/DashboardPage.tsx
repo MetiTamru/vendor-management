@@ -36,12 +36,7 @@ import {
 } from "recharts";
 
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
 	Select,
@@ -130,7 +125,11 @@ export function DashboardPage() {
 	const [range, setRange] = useState<RangeKey>("30d");
 	const [refreshing, setRefreshing] = useState(false);
 
-	const { vendors, isLoading: vLoad, refetch: refetchVendors } = useVendorsList();
+	const {
+		vendors,
+		isLoading: vLoad,
+		refetch: refetchVendors,
+	} = useVendorsList();
 	const {
 		approvals,
 		isLoading: aLoad,
@@ -194,7 +193,10 @@ export function DashboardPage() {
 		const statusBreakdown = [
 			{ name: "Active", value: activeVendors.length },
 			{ name: "Onboarding", value: onboarding.length },
-			{ name: "Invited", value: vendors.filter((v) => v.status === "invited").length },
+			{
+				name: "Invited",
+				value: vendors.filter((v) => v.status === "invited").length,
+			},
 			{
 				name: "Review",
 				value: vendors.filter((v) => v.status === "under_review").length,
@@ -340,10 +342,7 @@ export function DashboardPage() {
 						<CalendarDays className="size-4 text-primary" />
 						<span className="hidden sm:inline">Period</span>
 					</div>
-					<Select
-						value={range}
-						onValueChange={(v) => setRange(v as RangeKey)}
-					>
+					<Select value={range} onValueChange={(v) => setRange(v as RangeKey)}>
 						<SelectTrigger className="h-9 w-[150px]">
 							<SelectValue placeholder="Time range" />
 						</SelectTrigger>
@@ -416,7 +415,12 @@ export function DashboardPage() {
 									<p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
 								</div>
 								<div className="flex shrink-0 flex-col items-end gap-2">
-									<div className={cn("flex size-10 items-center justify-center rounded-lg", k.tone)}>
+									<div
+										className={cn(
+											"flex size-10 items-center justify-center rounded-lg",
+											k.tone
+										)}
+									>
 										<Icon className="size-4" />
 									</div>
 									<ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
@@ -450,7 +454,10 @@ export function DashboardPage() {
 										/>
 									</linearGradient>
 								</defs>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border"
+								/>
 								<XAxis
 									dataKey="month"
 									tickLine={false}

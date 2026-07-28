@@ -51,18 +51,18 @@ export function VendorCreatePage() {
 	}
 
 	return (
-		<div className="container max-w-3xl space-y-6 py-8">
+		<div className="w-full space-y-3">
 			<div>
-				<h1 className="text-2xl font-semibold tracking-tight">Add vendor</h1>
+				<h1 className="text-lg font-medium tracking-tight">Add vendor</h1>
 				<p className="text-sm text-muted-foreground">
 					Create a supplier master record.
 				</p>
 			</div>
 			<form
 				onSubmit={submit}
-				className="space-y-6 rounded-lg border bg-card p-6"
+				className="space-y-3 rounded-lg border bg-card p-4"
 			>
-				<div className="grid gap-5 sm:grid-cols-2">
+				<div className="grid gap-3 sm:grid-cols-2">
 					<Field label="Legal name" required>
 						<Input
 							required

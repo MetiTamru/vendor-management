@@ -75,8 +75,14 @@ export function NotificationsPage() {
 				severity: alert.severity,
 				when: alert.when,
 				runId: alert.runId,
-				channel: index % 3 === 0 ? "In-app" : index % 3 === 1 ? "Email" : "Ops Queue",
-				status: index % 3 === 0 ? "New" : index % 3 === 1 ? "Acknowledged" : "Escalated",
+				channel:
+					index % 3 === 0 ? "In-app" : index % 3 === 1 ? "Email" : "Ops Queue",
+				status:
+					index % 3 === 0
+						? "New"
+						: index % 3 === 1
+							? "Acknowledged"
+							: "Escalated",
 				audience:
 					alert.severity === "error"
 						? "Ops + Vendor Manager"
@@ -102,11 +108,15 @@ export function NotificationsPage() {
 
 	const summary = useMemo(() => {
 		const total = filteredNotifications.length;
-		const errors = filteredNotifications.filter((item) => item.severity === "error").length;
+		const errors = filteredNotifications.filter(
+			(item) => item.severity === "error"
+		).length;
 		const warnings = filteredNotifications.filter(
 			(item) => item.severity === "warning"
 		).length;
-		const unread = filteredNotifications.filter((item) => item.status === "New").length;
+		const unread = filteredNotifications.filter(
+			(item) => item.status === "New"
+		).length;
 		const escalated = filteredNotifications.filter(
 			(item) => item.status === "Escalated"
 		).length;
@@ -262,7 +272,9 @@ export function NotificationsPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -289,7 +301,11 @@ export function NotificationsPage() {
 							return (
 								<Link
 									key={item.id}
-									href={item.runId ? `/admin/file-monitoring/${item.runId}` : "/admin/file-monitoring"}
+									href={
+										item.runId
+											? `/admin/file-monitoring/${item.runId}`
+											: "/admin/file-monitoring"
+									}
 									className="block rounded-lg border border-border/50 bg-background/50 p-3 transition-colors hover:border-primary/30 hover:bg-background"
 								>
 									<div className="flex items-start gap-3">
@@ -303,7 +319,9 @@ export function NotificationsPage() {
 										</div>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-start justify-between gap-2">
-												<p className="text-sm font-semibold leading-snug">{item.title}</p>
+												<p className="text-sm font-semibold leading-snug">
+													{item.title}
+												</p>
 												<span className="shrink-0 text-[10px] text-muted-foreground">
 													{item.when}
 												</span>
@@ -363,7 +381,9 @@ export function NotificationsPage() {
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-									<TableHead className="pl-4 text-primary sm:pl-6">Notification</TableHead>
+									<TableHead className="pl-4 text-primary sm:pl-6">
+										Notification
+									</TableHead>
 									<TableHead className="text-primary">Severity</TableHead>
 									<TableHead className="text-primary">Channel</TableHead>
 									<TableHead className="text-primary">Audience</TableHead>
@@ -379,7 +399,9 @@ export function NotificationsPage() {
 									<TableRow key={item.id} className="hover:bg-muted/30">
 										<TableCell className="pl-4 sm:pl-6">
 											<div className="min-w-0">
-												<p className="truncate text-sm font-medium">{item.title}</p>
+												<p className="truncate text-sm font-medium">
+													{item.title}
+												</p>
 												<p className="truncate text-[11px] text-muted-foreground">
 													{item.vendorName}
 												</p>
@@ -398,7 +420,9 @@ export function NotificationsPage() {
 										<TableCell>{item.channel}</TableCell>
 										<TableCell>{item.audience}</TableCell>
 										<TableCell>{item.status}</TableCell>
-										<TableCell className="text-muted-foreground">{item.when}</TableCell>
+										<TableCell className="text-muted-foreground">
+											{item.when}
+										</TableCell>
 										<TableCell className="pr-4 text-right sm:pr-6">
 											<Button variant="ghost" size="sm" asChild>
 												<Link

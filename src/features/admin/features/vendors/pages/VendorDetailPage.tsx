@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useParams } from "next/navigation";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -18,13 +19,12 @@ import {
 	Pencil,
 	Phone,
 	ScrollText,
-	Server,
 	Send,
+	Server,
 	Upload,
 	User,
 	XCircle,
 } from "lucide-react";
-import { useParams } from "next/navigation";
 import {
 	CartesianGrid,
 	Cell,
@@ -41,12 +41,6 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -170,7 +164,7 @@ function HealthIndicator({ health }: { health: string }) {
 			/>
 			<span
 				className={cn(
-					"text-sm font-semibold",
+					"text-xs font-medium",
 					tone === "emerald" && "text-emerald-700",
 					tone === "amber" && "text-amber-700",
 					tone === "red" && "text-red-700",
@@ -186,7 +180,7 @@ function HealthIndicator({ health }: { health: string }) {
 function ActiveStatusPill({ status }: { status: string }) {
 	if (status === "active") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800">
 				Active
 			</span>
 		);
@@ -198,25 +192,25 @@ function ActivityStatus({ status }: { status: string }) {
 	const bucket = runBucket(status as never);
 	if (bucket === "success")
 		return (
-			<span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+			<span className="inline-flex rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800">
 				Success
 			</span>
 		);
 	if (bucket === "failed")
 		return (
-			<span className="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+			<span className="inline-flex rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800">
 				Failed
 			</span>
 		);
 	if (bucket === "warning")
 		return (
-			<span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">
+			<span className="inline-flex rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900">
 				Warning
 			</span>
 		);
 	if (bucket === "in_progress")
 		return (
-			<span className="inline-flex rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800">
+			<span className="inline-flex rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800">
 				In Progress
 			</span>
 		);
@@ -233,17 +227,19 @@ function MetaItem({
 	icon?: React.ComponentType<{ className?: string }>;
 }) {
 	return (
-		<div className="flex items-start gap-3 rounded-lg px-1 py-1.5">
+		<div className="flex items-start gap-2 py-0.5">
 			{Icon ? (
-				<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
-					<Icon className="size-4" />
+				<div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary">
+					<Icon className="size-3" />
 				</div>
 			) : null}
 			<div className="min-w-0">
-				<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+				<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 					{label}
 				</p>
-				<div className="mt-0.5 text-sm font-medium break-words">{value ?? "—"}</div>
+				<div className="mt-0.5 text-xs font-normal break-words">
+					{value ?? "—"}
+				</div>
 			</div>
 		</div>
 	);
@@ -278,7 +274,10 @@ export function VendorDetailPage() {
 	const summary = useMemo(() => summarizeRuns(runs), [runs]);
 
 	const totalFiles30 = Math.max(summary.total * 15, summary.total || 12);
-	const successful30 = Math.max(summary.successful * 14, summary.successful || 0);
+	const successful30 = Math.max(
+		summary.successful * 14,
+		summary.successful || 0
+	);
 	const warnings30 = Math.max(summary.warnings * 2, summary.warnings || 0);
 	const failed30 = Math.max(summary.failed, 0);
 	const successPct30 =
@@ -314,19 +313,17 @@ export function VendorDetailPage() {
 	}, [runs, totalFiles30]);
 
 	const trend = vendor
-		? VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"]
+		? (VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"])
 		: [];
 
 	const vendorAlerts = useMemo(
-		() =>
-			vendor
-				? VENDOR_ALERTS.filter((a) => a.vendorId === vendor.id)
-				: [],
+		() => (vendor ? VENDOR_ALERTS.filter((a) => a.vendorId === vendor.id) : []),
 		[vendor]
 	);
 
 	const lastRun = runs[0];
-	const primary = vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
+	const primary =
+		vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
 	const displayName = vendor?.tradeName ?? vendor?.legalName ?? "Vendor";
 
 	async function saveStatus() {
@@ -345,7 +342,7 @@ export function VendorDetailPage() {
 
 	if (isLoading) {
 		return (
-			<div className="space-y-6">
+			<div className="space-y-3">
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-40 w-full rounded-xl" />
 				<Skeleton className="h-96 w-full rounded-xl" />
@@ -355,7 +352,7 @@ export function VendorDetailPage() {
 
 	if (error || !vendor || !integration) {
 		return (
-			<div className="space-y-4">
+			<div className="space-y-3">
 				<Link
 					href="/admin/vendors"
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -377,36 +374,38 @@ export function VendorDetailPage() {
 	};
 
 	return (
-		<div className="space-y-5">
-			{/* Header card */}
-			<div className="rounded-xl border border-border/50 bg-card p-5 shadow-sm">
-				<div className="flex flex-wrap items-start justify-between gap-4">
-					<div className="flex min-w-0 items-center gap-4">
-						<div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground shadow-sm">
+		<div className="space-y-3">
+			{/* Header */}
+			<div className="space-y-3 border-b border-border/50 pb-3">
+				<div className="flex flex-wrap items-start justify-between gap-2">
+					<div className="flex min-w-0 items-center gap-2">
+						<div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
 							{initials(displayName)}
 						</div>
 						<div className="min-w-0">
-							<div className="flex flex-wrap items-center gap-2.5">
-								<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+							<div className="flex flex-wrap items-center gap-2">
+								<h1 className="text-base font-medium tracking-tight">
 									{displayName}
 								</h1>
 								<ActiveStatusPill status={vendor.status} />
 							</div>
 						</div>
 					</div>
-					<div className="flex flex-wrap items-center gap-2">
+					<div className="flex flex-wrap items-center gap-1.5">
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-9"
-							onClick={() => toast.message("Vendor editor opens here in production")}
+							className="h-8 text-xs"
+							onClick={() =>
+								toast.message("Vendor editor opens here in production")
+							}
 						>
 							<Pencil className="mr-1.5 size-3.5" />
 							Edit Vendor
 						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm" className="h-9">
+								<Button variant="outline" size="sm" className="h-8 text-xs">
 									More Actions
 									<ChevronDown className="ml-1.5 size-3.5" />
 								</Button>
@@ -443,10 +442,14 @@ export function VendorDetailPage() {
 									</Button>
 								</div>
 								<DropdownMenuItem asChild>
-									<Link href="/admin/file-monitoring">View file monitoring</Link>
+									<Link href="/admin/file-monitoring">
+										View file monitoring
+									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>
-									<Link href="/admin/processing-logs">View processing logs</Link>
+									<Link href="/admin/processing-logs">
+										View processing logs
+									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>
 									<Link href="/admin/vendors/invite">Invite contact</Link>
@@ -456,8 +459,8 @@ export function VendorDetailPage() {
 					</div>
 				</div>
 
-				{/* Metadata ribbon */}
-				<div className="mt-4 grid gap-x-6 gap-y-2 border-t border-border/50 pt-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+				{/* Metadata */}
+				<div className="grid gap-x-3 gap-y-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 					<MetaItem
 						label="Vendor Type"
 						value={integration.vendorType}
@@ -495,36 +498,44 @@ export function VendorDetailPage() {
 						}
 						icon={Server}
 					/>
-					<MetaItem label="Time Zone" value={integration.timezone} icon={Clock3} />
+					<MetaItem
+						label="Time Zone"
+						value={integration.timezone}
+						icon={Clock3}
+					/>
 					<MetaItem
 						label="Created On"
 						value={formatDate(vendor.createdAt)}
 						icon={Calendar}
 					/>
-					<MetaItem label="Created By" value={integration.createdBy} icon={User} />
+					<MetaItem
+						label="Created By"
+						value={integration.createdBy}
+						icon={User}
+					/>
 					<MetaItem
 						label="Last Updated"
 						value={formatDate(vendor.updatedAt)}
 						icon={Calendar}
 					/>
-					<div className="flex items-start gap-3 rounded-lg px-1 py-1.5">
-						<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
-							<CheckCircle2 className="size-4" />
+					<div className="flex items-start gap-2 py-0.5">
+						<div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary">
+							<CheckCircle2 className="size-3" />
 						</div>
 						<div>
-							<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-							Health Indicator
-						</p>
-						<div className="mt-0.5">
-							<HealthIndicator health={integration.health} />
+							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								Health Indicator
+							</p>
+							<div className="mt-0.5">
+								<HealthIndicator health={integration.health} />
+							</div>
 						</div>
-					</div>
 					</div>
 				</div>
 			</div>
 
 			{/* Metrics ribbon */}
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{[
 					{
 						label: "Total Files (Last 30 Days)",
@@ -585,16 +596,13 @@ export function VendorDetailPage() {
 				].map((k) => {
 					const Icon = k.icon;
 					return (
-						<div
-							key={k.label}
-							className="rounded-xl border border-border/50 bg-card p-4 shadow-sm"
-						>
+						<div key={k.label} className="rounded-lg bg-card p-2.5">
 							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
-									<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 										{k.label}
 									</p>
-									<p className="mt-2 truncate text-xl font-semibold tabular-nums tracking-tight">
+									<p className="mt-1 truncate text-base font-medium tabular-nums tracking-tight">
 										{k.value}
 										{k.pct ? (
 											<span className="ml-1 text-sm font-medium text-muted-foreground">
@@ -625,7 +633,7 @@ export function VendorDetailPage() {
 								</div>
 								<div
 									className={cn(
-										"flex size-9 shrink-0 items-center justify-center rounded-lg",
+										"flex size-8 shrink-0 items-center justify-center rounded-lg",
 										k.tone
 									)}
 								>
@@ -648,7 +656,7 @@ export function VendorDetailPage() {
 						type="button"
 						onClick={() => setTab(item)}
 						className={cn(
-							"shrink-0 border-b-2 px-3 pb-3 text-sm font-medium whitespace-nowrap",
+							"shrink-0 border-b-2 px-2.5 pb-2 text-xs font-medium whitespace-nowrap",
 							tab === item
 								? "border-primary text-foreground"
 								: "border-transparent text-muted-foreground hover:text-foreground"
@@ -666,27 +674,45 @@ export function VendorDetailPage() {
 
 			{tab === "Overview" && (
 				<>
-					<div className="grid gap-4 xl:grid-cols-12">
-					<div className="space-y-4 xl:col-span-8">
-						<Card className="bg-card">
-							<CardHeader className="pb-3">
-								<CardTitle className="text-base">Recent File Activity</CardTitle>
-							</CardHeader>
-							<CardContent className="px-0 pb-0">
-								<div className="w-full border-t border-border/50">
-									<Table className="min-w-[860px]">
+					<div className="grid min-w-0 gap-2 xl:grid-cols-3">
+						<div className="min-w-0 space-y-2 xl:col-span-2">
+							<section className="min-w-0">
+								<h2 className="mb-2 text-sm font-medium">
+									Recent File Activity
+								</h2>
+								<div className="overflow-hidden rounded-lg border border-border/50">
+									<Table
+										className="table-fixed w-full text-xs"
+										containerClassName="overflow-hidden"
+									>
 										<TableHeader>
 											<TableRow className="hover:bg-transparent">
-												<TableHead className="pl-4 sm:pl-6">File Type</TableHead>
-												<TableHead>File Name</TableHead>
-												<TableHead>Frequency</TableHead>
-												<TableHead>Status</TableHead>
-												<TableHead className="text-right">Records</TableHead>
-												<TableHead>Received</TableHead>
-												<TableHead>Processed</TableHead>
-												<TableHead>Duration</TableHead>
-												<TableHead className="pr-4 text-right sm:pr-6">
-													Actions
+												<TableHead className="h-8 w-[13%] px-2 pl-3 font-normal">
+													Type
+												</TableHead>
+												<TableHead className="h-8 w-[20%] px-1 font-normal">
+													File Name
+												</TableHead>
+												<TableHead className="h-8 w-[9%] px-1 font-normal">
+													Freq
+												</TableHead>
+												<TableHead className="h-8 w-[12%] px-1 font-normal">
+													Status
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 text-right font-normal">
+													Rec
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 font-normal">
+													Recv
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 font-normal">
+													Proc
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 font-normal">
+													Dur
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 pr-3 text-right font-normal">
+													Act
 												</TableHead>
 											</TableRow>
 										</TableHeader>
@@ -695,7 +721,7 @@ export function VendorDetailPage() {
 												<TableRow>
 													<TableCell
 														colSpan={9}
-														className="h-20 text-center text-muted-foreground"
+														className="h-16 text-center text-muted-foreground"
 													>
 														No file activity for this vendor yet.
 													</TableCell>
@@ -703,39 +729,39 @@ export function VendorDetailPage() {
 											) : (
 												runs.map((run) => (
 													<TableRow key={run.id} className="hover:bg-muted/30">
-														<TableCell className="pl-4 font-medium sm:pl-6">
+														<TableCell className="truncate px-2 py-1.5 pl-3 font-medium">
 															{run.fileType}
 														</TableCell>
-														<TableCell className="max-w-[140px] truncate font-mono text-xs">
+														<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
 															{run.fileName ?? "—"}
 														</TableCell>
-														<TableCell className="text-muted-foreground">
+														<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
 															{run.frequency}
 														</TableCell>
-														<TableCell>
+														<TableCell className="px-1 py-1.5">
 															<ActivityStatus status={run.status} />
 														</TableCell>
-														<TableCell className="text-right tabular-nums">
+														<TableCell className="px-1 py-1.5 text-right tabular-nums">
 															{run.records ?? "—"}
 														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
 															{run.receivedAt?.slice(11, 16) ?? "—"}
 														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
 															{run.completedAt?.slice(11, 16) ?? "—"}
 														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
 															{run.duration ?? "—"}
 														</TableCell>
-														<TableCell className="pr-4 text-right sm:pr-6">
+														<TableCell className="px-1 py-1.5 pr-3 text-right">
 															<DropdownMenu>
 																<DropdownMenuTrigger asChild>
 																	<Button
 																		variant="ghost"
 																		size="icon"
-																		className="size-8"
+																		className="size-7"
 																	>
-																		<MoreHorizontal className="size-4" />
+																		<MoreHorizontal className="size-3.5" />
 																	</Button>
 																</DropdownMenuTrigger>
 																<DropdownMenuContent align="end">
@@ -768,27 +794,25 @@ export function VendorDetailPage() {
 											)}
 										</TableBody>
 									</Table>
+									<div className="border-t border-border/50 px-3 py-1.5">
+										<button
+											type="button"
+											className="text-xs font-medium text-primary hover:underline"
+											onClick={() => setTab("File History")}
+										>
+											View All File History →
+										</button>
+									</div>
 								</div>
-								<div className="border-t border-border/50 px-4 py-3 sm:px-6">
-									<button
-										type="button"
-										className="text-sm font-medium text-primary hover:underline"
-										onClick={() => setTab("File History")}
-									>
-										View All File History →
-									</button>
-								</div>
-							</CardContent>
-						</Card>
+							</section>
 
-						<div className="grid gap-4 lg:grid-cols-2">
-							<Card className="bg-card">
-								<CardHeader className="pb-2">
-									<CardTitle className="text-base">File Type Summary</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<div className="flex items-center gap-4">
-										<div className="relative h-40 w-40 shrink-0 sm:h-44 sm:w-44">
+							<div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+								<section className="rounded-lg border border-border/50 p-3">
+									<h2 className="mb-2 text-sm font-medium">
+										File Type Summary
+									</h2>
+									<div className="flex items-start gap-3">
+										<div className="relative h-20 w-20 shrink-0">
 											<ResponsiveContainer width="100%" height="100%">
 												<PieChart>
 													<Pie
@@ -799,8 +823,8 @@ export function VendorDetailPage() {
 														}
 														dataKey="value"
 														nameKey="name"
-														innerRadius={48}
-														outerRadius={70}
+														innerRadius={22}
+														outerRadius={36}
 														paddingAngle={2}
 													>
 														{(fileTypePie.length
@@ -814,811 +838,772 @@ export function VendorDetailPage() {
 												</PieChart>
 											</ResponsiveContainer>
 											<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-												<span className="text-lg font-semibold tabular-nums leading-none">
+												<span className="text-sm font-semibold tabular-nums leading-none">
 													{totalFiles30}
 												</span>
-												<span className="mt-1 text-[10px] font-medium text-muted-foreground">
-													Total Files
+												<span className="mt-0.5 text-[9px] font-medium text-muted-foreground">
+													Total
 												</span>
 											</div>
 										</div>
-										<ul className="min-w-0 flex-1 space-y-2">
+										<ul className="min-w-0 flex-1 space-y-1">
 											{fileTypePie.map((item) => (
 												<li
 													key={item.name}
-													className="flex items-center justify-between gap-3 text-sm"
+													className="flex items-center justify-between gap-2 text-[11px]"
 												>
-													<span className="flex min-w-0 items-center gap-2">
+													<span className="flex min-w-0 items-center gap-1.5">
 														<span
-															className="size-2.5 shrink-0 rounded-full"
+															className="size-1.5 shrink-0 rounded-full"
 															style={{ backgroundColor: item.color }}
 														/>
 														<span className="truncate">{item.name}</span>
 													</span>
 													<span className="shrink-0 tabular-nums text-muted-foreground">
 														{item.value}{" "}
-														<span className="text-xs">({item.pct}%)</span>
+														<span className="text-[10px]">({item.pct}%)</span>
 													</span>
 												</li>
 											))}
 										</ul>
 									</div>
-								</CardContent>
-							</Card>
+								</section>
 
-							<Card id="trend" className="bg-card">
-								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-									<div>
-										<CardTitle className="text-base">Processing Trend</CardTitle>
+								<section
+									id="trend"
+									className="rounded-lg border border-border/50 p-3"
+								>
+									<div className="mb-2 flex items-center justify-between gap-2">
+										<h2 className="text-sm font-medium">Processing Trend</h2>
+										<Select value={trendRange} onValueChange={setTrendRange}>
+											<SelectTrigger className="h-7 w-28 text-xs">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="7">Last 7 Days</SelectItem>
+												<SelectItem value="14">Last 14 Days</SelectItem>
+											</SelectContent>
+										</Select>
 									</div>
-									<Select value={trendRange} onValueChange={setTrendRange}>
-										<SelectTrigger className="h-8 w-[120px]">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="7">Last 7 Days</SelectItem>
-											<SelectItem value="14">Last 14 Days</SelectItem>
-										</SelectContent>
-									</Select>
-								</CardHeader>
-								<CardContent className="h-52 pt-2">
-									<ResponsiveContainer width="100%" height="100%">
-										<LineChart data={trend}>
-											<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-											<XAxis dataKey="day" tick={{ fontSize: 10 }} />
-											<YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
-											<Tooltip />
-											<Legend />
-											<Line
-												type="monotone"
-												dataKey="successful"
-												name="Successful"
-												stroke="#059669"
-												strokeWidth={2}
-												dot={false}
-											/>
-											<Line
-												type="monotone"
-												dataKey="warnings"
-												name="Warnings"
-												stroke="#d97706"
-												strokeWidth={2}
-												dot={false}
-											/>
-											<Line
-												type="monotone"
-												dataKey="failed"
-												name="Failed"
-												stroke="#dc2626"
-												strokeWidth={2}
-												dot={false}
-											/>
-										</LineChart>
-									</ResponsiveContainer>
-								</CardContent>
-							</Card>
+									<div className="h-36">
+										<ResponsiveContainer width="100%" height="100%">
+											<LineChart data={trend}>
+												<CartesianGrid
+													strokeDasharray="3 3"
+													className="stroke-border"
+												/>
+												<XAxis dataKey="day" tick={{ fontSize: 10 }} />
+												<YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+												<Tooltip />
+												<Legend wrapperStyle={{ fontSize: 10 }} />
+												<Line
+													type="monotone"
+													dataKey="successful"
+													name="Successful"
+													stroke="#059669"
+													strokeWidth={2}
+													dot={false}
+												/>
+												<Line
+													type="monotone"
+													dataKey="warnings"
+													name="Warnings"
+													stroke="#d97706"
+													strokeWidth={2}
+													dot={false}
+												/>
+												<Line
+													type="monotone"
+													dataKey="failed"
+													name="Failed"
+													stroke="#dc2626"
+													strokeWidth={2}
+													dot={false}
+												/>
+											</LineChart>
+										</ResponsiveContainer>
+									</div>
+								</section>
+							</div>
+						</div>
+
+						<div className="min-w-0 space-y-2 xl:col-span-1">
+							<section>
+								<div className="mb-2 flex items-start justify-between gap-2">
+									<h2 className="text-sm font-medium">Vendor Details</h2>
+									<span className="text-[10px] font-medium text-primary">
+										{formatVendorCode(vendor.id)}
+									</span>
+								</div>
+								<div className="space-y-1.5 text-xs">
+									{[
+										["Vendor ID", formatVendorCode(vendor.id)],
+										["Vendor Type", integration.vendorType],
+										["Status", vendor.status.replace(/_/g, " ")],
+										[
+											"Contracts",
+											contracts.length
+												? `${contracts.length} active`
+												: "None linked",
+										],
+										["SLA", `${integration.slaPercent.toFixed(2)}%`],
+										[
+											"File Transmission Method",
+											integration.transmissionMethod,
+										],
+										["Encryption", integration.encryption],
+										["File Format", integration.fileFormats.join(", ") || "—"],
+										["Communication Protocol", integration.protocol],
+										["Trading Partner ID", integration.tradingPartnerId],
+										["Time Zone", integration.timezone],
+									].map(([label, value]) => (
+										<div
+											key={label}
+											className="flex items-start justify-between gap-2 border-b border-border/30 pb-1.5 last:border-0"
+										>
+											<span className="text-muted-foreground">{label}</span>
+											<span className="max-w-[55%] text-right font-normal capitalize">
+												{label === "Status" ? (
+													<ActiveStatusPill status={vendor.status} />
+												) : label === "Contracts" && contracts[0] ? (
+													<Link
+														href={`/admin/contracts/${contracts[0].id}`}
+														className="inline-flex items-center gap-1 text-primary normal-case hover:underline"
+													>
+														View Document
+														<ExternalLink className="size-3" />
+													</Link>
+												) : (
+													value
+												)}
+											</span>
+										</div>
+									))}
+									<div className="pt-1">
+										<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+											Notes
+										</p>
+										<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+											{integration.notes}
+										</p>
+									</div>
+								</div>
+							</section>
 						</div>
 					</div>
 
-					<div className="space-y-4 xl:col-span-4">
-						<Card className="bg-card">
-							<CardHeader className="border-b border-border/50 pb-4">
-								<div className="flex items-start justify-between gap-3">
-									<div>
-										<CardTitle className="text-lg font-semibold tracking-tight">
-											Vendor Details
-										</CardTitle>
-									</div>
-									<div className="rounded-full bg-primary/8 px-3 py-1 text-xs font-semibold text-primary">
-										{formatVendorCode(vendor.id)}
-									</div>
-								</div>
-							</CardHeader>
-							<CardContent className="space-y-3 text-sm">
-								{[
-									["Vendor ID", formatVendorCode(vendor.id)],
-									["Vendor Type", integration.vendorType],
-									["Status", vendor.status.replace(/_/g, " ")],
-									[
-										"Contracts",
-										contracts.length
-											? `${contracts.length} active`
-											: "None linked",
-									],
-									["SLA", `${integration.slaPercent.toFixed(2)}%`],
-									["File Transmission Method", integration.transmissionMethod],
-									["Encryption", integration.encryption],
-									["File Format", integration.fileFormats.join(", ") || "—"],
-									["Communication Protocol", integration.protocol],
-									["Trading Partner ID", integration.tradingPartnerId],
-									["Time Zone", integration.timezone],
-								].map(([label, value]) => (
-									<div
-										key={label}
-										className="flex items-start justify-between gap-3 border-b border-border/40 pb-2 last:border-0"
-									>
-										<span className="text-muted-foreground">{label}</span>
-										<span className="max-w-[55%] text-right font-medium capitalize">
-											{label === "Status" ? (
-												<ActiveStatusPill status={vendor.status} />
-											) : label === "Contracts" && contracts[0] ? (
-												<Link
-													href={`/admin/contracts/${contracts[0].id}`}
-													className="inline-flex items-center gap-1 text-primary normal-case hover:underline"
-												>
-													View Document
-													<ExternalLink className="size-3" />
-												</Link>
-											) : (
-												value
-											)}
-										</span>
-									</div>
-								))}
-								<div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-									<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-										Notes
-									</p>
-									<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-										{integration.notes}
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-					</div>
-
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-base">Quick Actions</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-								{[
-									{
-										label: "Upload File",
-										href: "/admin/file-monitoring",
-										icon: Upload,
+					<section>
+						<h2 className="mb-2 text-sm font-medium">Quick Actions</h2>
+						<div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+							{[
+								{
+									label: "Upload File",
+									href: "/admin/file-monitoring",
+									icon: Upload,
+								},
+								{
+									label: "View Schedules",
+									href: "/admin/schedules",
+									icon: Calendar,
+								},
+								{
+									label: "View Processing Logs",
+									href: "/admin/processing-logs",
+									icon: ScrollText,
+								},
+								{
+									label: "Send Test File",
+									href: "/admin/file-monitoring",
+									icon: Send,
+								},
+								{
+									label: "Add Note",
+									href: "#",
+									icon: NotebookPen,
+									onClick: () => {
+										setTab("Notes");
+										toast.message("Switched to Notes tab");
 									},
-									{
-										label: "View Schedules",
-										href: "/admin/schedules",
-										icon: Calendar,
-									},
-									{
-										label: "View Processing Logs",
-										href: "/admin/processing-logs",
-										icon: ScrollText,
-									},
-									{
-										label: "Send Test File",
-										href: "/admin/file-monitoring",
-										icon: Send,
-									},
-									{
-										label: "Add Note",
-										href: "#",
-										icon: NotebookPen,
-										onClick: () => {
-											setTab("Notes");
-											toast.message("Switched to Notes tab");
-										},
-									},
-								].map((action) => {
-									const Icon = action.icon;
-									if (action.onClick) {
-										return (
-											<button
-												key={action.label}
-												type="button"
-												className="flex items-start gap-3 rounded-lg bg-muted/35 p-3 text-left transition-colors hover:bg-muted/55"
-												onClick={action.onClick}
-											>
-												<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-													<Icon className="size-4" />
-												</div>
-												<div className="min-w-0">
-													<p className="text-sm font-semibold">{action.label}</p>
-													<p className="text-xs text-muted-foreground">
-														Open related workflow
-													</p>
-												</div>
-											</button>
-										);
-									}
+								},
+							].map((action) => {
+								const Icon = action.icon;
+								if (action.onClick) {
 									return (
-										<Link
+										<button
 											key={action.label}
-											href={action.href}
-											className="flex items-start gap-3 rounded-lg bg-muted/35 p-3 text-left transition-colors hover:bg-muted/55"
+											type="button"
+											className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1.5 text-left transition-colors hover:bg-muted/40"
+											onClick={action.onClick}
 										>
-											<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-												<Icon className="size-4" />
+											<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+												<Icon className="size-3.5" />
 											</div>
 											<div className="min-w-0">
-												<p className="text-sm font-semibold">{action.label}</p>
-												<p className="text-xs text-muted-foreground">
-													Open related workflow
-												</p>
+												<p className="text-xs font-medium">{action.label}</p>
 											</div>
-										</Link>
+										</button>
 									);
-								})}
-							</div>
-						</CardContent>
-					</Card>
+								}
+								return (
+									<Link
+										key={action.label}
+										href={action.href}
+										className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1.5 text-left transition-colors hover:bg-muted/40"
+									>
+										<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+											<Icon className="size-3.5" />
+										</div>
+										<div className="min-w-0">
+											<p className="text-xs font-medium">{action.label}</p>
+										</div>
+									</Link>
+								);
+							})}
+						</div>
+					</section>
 				</>
 			)}
 
 			{tab === "Accounts" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">
-							Accounts ({integration.accountsCount})
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Account ID</TableHead>
-										<TableHead>Time Zone</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{Array.from({ length: integration.accountsCount }).map(
-										(_, i) => (
-											<TableRow key={i} className="hover:bg-muted/30">
-												<TableCell className="pl-4 font-mono text-xs font-medium sm:pl-6">
-													{formatVendorCode(vendor.id)}-ACC-0{i + 1}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{integration.timezone}
-												</TableCell>
-												<TableCell>
-													<span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-														Active
-													</span>
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<Button variant="ghost" size="icon" className="size-8">
-														<MoreHorizontal className="size-4" />
-													</Button>
-												</TableCell>
-											</TableRow>
-										)
-									)}
-									{integration.accountsCount === 0 && (
-										<TableRow>
-											<TableCell
-												colSpan={4}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No accounts configured.
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">
+						Accounts ({integration.accountsCount})
+					</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Account ID</TableHead>
+									<TableHead>Time Zone</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{Array.from({ length: integration.accountsCount }).map(
+									(_, i) => (
+										<TableRow key={i} className="hover:bg-muted/30">
+											<TableCell className="pl-4 font-mono text-xs font-medium sm:pl-6">
+												{formatVendorCode(vendor.id)}-ACC-0{i + 1}
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{integration.timezone}
+											</TableCell>
+											<TableCell>
+												<span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+													Active
+												</span>
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												<Button variant="ghost" size="icon" className="size-8">
+													<MoreHorizontal className="size-4" />
+												</Button>
 											</TableCell>
 										</TableRow>
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									)
+								)}
+								{integration.accountsCount === 0 && (
+									<TableRow>
+										<TableCell
+											colSpan={4}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No accounts configured.
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "File History" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">File History</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table className="min-w-[760px]">
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Run</TableHead>
-										<TableHead>File Type</TableHead>
-										<TableHead>File Name</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="text-right">Records</TableHead>
-										<TableHead className="text-right">Errors</TableHead>
-										<TableHead>When</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">File History</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table
+							className="table-fixed w-full text-xs"
+							containerClassName="overflow-hidden"
+						>
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Run</TableHead>
+									<TableHead>File Type</TableHead>
+									<TableHead>File Name</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead className="text-right">Records</TableHead>
+									<TableHead className="text-right">Errors</TableHead>
+									<TableHead>When</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{runs.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={8}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No file history for this vendor yet.
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{runs.length === 0 ? (
-										<TableRow>
+								) : (
+									runs.map((run) => (
+										<TableRow key={run.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 sm:pl-6">
+												<Link
+													href={`/admin/file-monitoring/${run.id}`}
+													className="font-mono text-xs text-primary hover:underline"
+												>
+													{run.runId}
+												</Link>
+											</TableCell>
+											<TableCell className="font-medium">
+												{run.fileType}
+											</TableCell>
+											<TableCell className="max-w-[160px] truncate font-mono text-xs">
+												{run.fileName ?? "—"}
+											</TableCell>
+											<TableCell>
+												<ActivityStatus status={run.status} />
+											</TableCell>
+											<TableCell className="text-right tabular-nums">
+												{run.records ?? "—"}
+											</TableCell>
 											<TableCell
-												colSpan={8}
-												className="h-20 text-center text-muted-foreground"
+												className={cn(
+													"text-right tabular-nums",
+													run.errorCount > 0 && "text-red-700"
+												)}
 											>
-												No file history for this vendor yet.
+												{run.errorCount}
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{run.startedAt ?? run.expectedAt}
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="size-8"
+														>
+															<MoreHorizontal className="size-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem asChild>
+															<Link href={`/admin/file-monitoring/${run.id}`}>
+																View run detail
+															</Link>
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<Link href="/admin/processing-logs">
+																Processing logs
+															</Link>
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
 											</TableCell>
 										</TableRow>
-									) : (
-										runs.map((run) => (
-											<TableRow key={run.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 sm:pl-6">
-													<Link
-														href={`/admin/file-monitoring/${run.id}`}
-														className="font-mono text-xs text-primary hover:underline"
-													>
-														{run.runId}
-													</Link>
-												</TableCell>
-												<TableCell className="font-medium">
-													{run.fileType}
-												</TableCell>
-												<TableCell className="max-w-[160px] truncate font-mono text-xs">
-													{run.fileName ?? "—"}
-												</TableCell>
-												<TableCell>
-													<ActivityStatus status={run.status} />
-												</TableCell>
-												<TableCell className="text-right tabular-nums">
-													{run.records ?? "—"}
-												</TableCell>
-												<TableCell
-													className={cn(
-														"text-right tabular-nums",
-														run.errorCount > 0 && "text-red-700"
-													)}
-												>
-													{run.errorCount}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{run.startedAt ?? run.expectedAt}
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<DropdownMenu>
-														<DropdownMenuTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																className="size-8"
-															>
-																<MoreHorizontal className="size-4" />
-															</Button>
-														</DropdownMenuTrigger>
-														<DropdownMenuContent align="end">
-															<DropdownMenuItem asChild>
-																<Link
-																	href={`/admin/file-monitoring/${run.id}`}
-																>
-																	View run detail
-																</Link>
-															</DropdownMenuItem>
-															<DropdownMenuItem asChild>
-																<Link href="/admin/processing-logs">
-																	Processing logs
-																</Link>
-															</DropdownMenuItem>
-														</DropdownMenuContent>
-													</DropdownMenu>
-												</TableCell>
-											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Jobs" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">
-							Jobs ({integration.jobsCount})
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Schedule ID</TableHead>
-										<TableHead>File Type</TableHead>
-										<TableHead>Frequency</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">
+						Jobs ({integration.jobsCount})
+					</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Schedule ID</TableHead>
+									<TableHead>File Type</TableHead>
+									<TableHead>Frequency</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{runs.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={5}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No jobs configured.
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{runs.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={5}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No jobs configured.
+								) : (
+									runs.map((run) => (
+										<TableRow key={run.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 font-mono text-xs font-medium sm:pl-6">
+												{run.scheduleId}
+											</TableCell>
+											<TableCell>{run.fileType}</TableCell>
+											<TableCell className="text-muted-foreground">
+												{run.frequency}
+											</TableCell>
+											<TableCell>
+												<ActivityStatus status={run.status} />
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												<Button variant="ghost" size="icon" className="size-8">
+													<MoreHorizontal className="size-4" />
+												</Button>
 											</TableCell>
 										</TableRow>
-									) : (
-										runs.map((run) => (
-											<TableRow key={run.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 font-mono text-xs font-medium sm:pl-6">
-													{run.scheduleId}
-												</TableCell>
-												<TableCell>{run.fileType}</TableCell>
-												<TableCell className="text-muted-foreground">
-													{run.frequency}
-												</TableCell>
-												<TableCell>
-													<ActivityStatus status={run.status} />
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<Button variant="ghost" size="icon" className="size-8">
-														<MoreHorizontal className="size-4" />
-													</Button>
-												</TableCell>
-											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{(tab === "File Configuration" || tab === "SFTP / PGP") && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">{tab}</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Setting</TableHead>
-										<TableHead className="pr-4 sm:pr-6">Value</TableHead>
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">{tab}</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Setting</TableHead>
+									<TableHead className="pr-4 sm:pr-6">Value</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{[
+									["Host", integration.sftpHost],
+									["Protocol", integration.protocol],
+									["Encryption", integration.encryption],
+									["Formats", integration.fileFormats.join(", ") || "—"],
+									["Trading Partner", integration.tradingPartnerId],
+									["SLA", `${integration.slaPercent}%`],
+									["Transmission", integration.transmissionMethod],
+									["Time Zone", integration.timezone],
+								].map(([label, value]) => (
+									<TableRow key={label} className="hover:bg-muted/30">
+										<TableCell className="pl-4 font-medium sm:pl-6">
+											{label}
+										</TableCell>
+										<TableCell className="pr-4 font-mono text-xs sm:pr-6">
+											{value}
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{[
-										["Host", integration.sftpHost],
-										["Protocol", integration.protocol],
-										["Encryption", integration.encryption],
-										["Formats", integration.fileFormats.join(", ") || "—"],
-										["Trading Partner", integration.tradingPartnerId],
-										["SLA", `${integration.slaPercent}%`],
-										["Transmission", integration.transmissionMethod],
-										["Time Zone", integration.timezone],
-									].map(([label, value]) => (
-										<TableRow key={label} className="hover:bg-muted/30">
-											<TableCell className="pl-4 font-medium sm:pl-6">
-												{label}
-											</TableCell>
-											<TableCell className="pr-4 font-mono text-xs sm:pr-6">
-												{value}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Processing Logs" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<div className="flex flex-wrap items-start justify-between gap-3">
-							<div>
-								<CardTitle className="text-base">Processing Logs</CardTitle>
-							</div>
-							<Button asChild size="sm" variant="outline">
-								<Link href="/admin/processing-logs">
-									<ScrollText className="mr-1.5 size-3.5" />
-									Open full viewer
-								</Link>
-							</Button>
-						</div>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table className="min-w-[720px]">
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Timestamp</TableHead>
-										<TableHead>Level</TableHead>
-										<TableHead>Run</TableHead>
-										<TableHead>Message</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
+				<section className="min-w-0">
+					<div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+						<h2 className="text-sm font-medium">Processing Logs</h2>
+						<Button asChild size="sm" variant="outline" className="h-7 text-xs">
+							<Link href="/admin/processing-logs">
+								<ScrollText className="mr-1.5 size-3.5" />
+								Open full viewer
+							</Link>
+						</Button>
+					</div>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table
+							className="table-fixed w-full text-xs"
+							containerClassName="overflow-hidden"
+						>
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Timestamp</TableHead>
+									<TableHead>Level</TableHead>
+									<TableHead>Run</TableHead>
+									<TableHead>Message</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{runs.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={5}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No processing logs available.
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{runs.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={5}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No processing logs available.
+								) : (
+									runs.slice(0, 8).map((run) => (
+										<TableRow key={run.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 tabular-nums text-muted-foreground sm:pl-6">
+												{run.startedAt ?? run.expectedAt ?? "—"}
+											</TableCell>
+											<TableCell>
+												<ActivityStatus status={run.status} />
+											</TableCell>
+											<TableCell className="font-mono text-xs">
+												{run.runId}
+											</TableCell>
+											<TableCell className="max-w-[280px] truncate">
+												{run.fileType} · {run.fileName ?? "processing event"}
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												<Button
+													variant="ghost"
+													size="icon"
+													className="size-8"
+													asChild
+												>
+													<Link href={`/admin/file-monitoring/${run.id}`}>
+														<MoreHorizontal className="size-4" />
+													</Link>
+												</Button>
 											</TableCell>
 										</TableRow>
-									) : (
-										runs.slice(0, 8).map((run) => (
-											<TableRow key={run.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 tabular-nums text-muted-foreground sm:pl-6">
-													{run.startedAt ?? run.expectedAt ?? "—"}
-												</TableCell>
-												<TableCell>
-													<ActivityStatus status={run.status} />
-												</TableCell>
-												<TableCell className="font-mono text-xs">
-													{run.runId}
-												</TableCell>
-												<TableCell className="max-w-[280px] truncate">
-													{run.fileType} · {run.fileName ?? "processing event"}
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<Button variant="ghost" size="icon" className="size-8" asChild>
-														<Link href={`/admin/file-monitoring/${run.id}`}>
-															<MoreHorizontal className="size-4" />
-														</Link>
-													</Button>
-												</TableCell>
-											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Alerts" && (
-				<Card id="alerts" className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">
-							Alerts ({vendorAlerts.length})
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Severity</TableHead>
-										<TableHead>Alert</TableHead>
-										<TableHead>When</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
+				<section id="alerts" className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">
+						Alerts ({vendorAlerts.length})
+					</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Severity</TableHead>
+									<TableHead>Alert</TableHead>
+									<TableHead>When</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{vendorAlerts.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={4}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No active alerts.
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{vendorAlerts.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={4}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No active alerts.
+								) : (
+									vendorAlerts.map((alert) => (
+										<TableRow key={alert.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 sm:pl-6">
+												{alert.severity === "error" ? (
+													<span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
+														<XCircle className="size-3.5" />
+														Error
+													</span>
+												) : alert.severity === "warning" ? (
+													<span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
+														<AlertTriangle className="size-3.5" />
+														Warning
+													</span>
+												) : (
+													<span className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-700">
+														<CheckCircle2 className="size-3.5" />
+														Info
+													</span>
+												)}
+											</TableCell>
+											<TableCell className="font-medium">
+												{alert.title}
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{alert.when}
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												{alert.runId ? (
+													<Button variant="ghost" size="sm" asChild>
+														<Link
+															href={`/admin/file-monitoring/${alert.runId}`}
+														>
+															Open
+														</Link>
+													</Button>
+												) : (
+													"—"
+												)}
 											</TableCell>
 										</TableRow>
-									) : (
-										vendorAlerts.map((alert) => (
-											<TableRow key={alert.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 sm:pl-6">
-													{alert.severity === "error" ? (
-														<span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
-															<XCircle className="size-3.5" />
-															Error
-														</span>
-													) : alert.severity === "warning" ? (
-														<span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
-															<AlertTriangle className="size-3.5" />
-															Warning
-														</span>
-													) : (
-														<span className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-700">
-															<CheckCircle2 className="size-3.5" />
-															Info
-														</span>
-													)}
-												</TableCell>
-												<TableCell className="font-medium">
-													{alert.title}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{alert.when}
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													{alert.runId ? (
-														<Button variant="ghost" size="sm" asChild>
-															<Link
-																href={`/admin/file-monitoring/${alert.runId}`}
-															>
-																Open
-															</Link>
-														</Button>
-													) : (
-														"—"
-													)}
-												</TableCell>
-											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Contacts" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Contacts</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Name</TableHead>
-										<TableHead>Role</TableHead>
-										<TableHead>Email</TableHead>
-										<TableHead>Phone</TableHead>
-										<TableHead className="pr-4 text-right sm:pr-6">
-											Actions
-										</TableHead>
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">Contacts</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Name</TableHead>
+									<TableHead>Role</TableHead>
+									<TableHead>Email</TableHead>
+									<TableHead>Phone</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{vendor.contacts.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={5}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No contacts on file.
+										</TableCell>
 									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{vendor.contacts.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={5}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No contacts on file.
+								) : (
+									vendor.contacts.map((contact) => (
+										<TableRow key={contact.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 font-medium sm:pl-6">
+												{contact.name}
+												{contact.isPrimary && (
+													<span className="ml-2 text-xs text-muted-foreground">
+														Primary
+													</span>
+												)}
+											</TableCell>
+											<TableCell>{contact.role}</TableCell>
+											<TableCell>{contact.email}</TableCell>
+											<TableCell className="text-muted-foreground">
+												{contact.phone ?? "—"}
+											</TableCell>
+											<TableCell className="pr-4 text-right sm:pr-6">
+												<Button variant="ghost" size="icon" className="size-8">
+													<MoreHorizontal className="size-4" />
+												</Button>
 											</TableCell>
 										</TableRow>
-									) : (
-										vendor.contacts.map((contact) => (
-											<TableRow key={contact.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 font-medium sm:pl-6">
-													{contact.name}
-													{contact.isPrimary && (
-														<span className="ml-2 text-xs text-muted-foreground">
-															Primary
-														</span>
-													)}
-												</TableCell>
-												<TableCell>{contact.role}</TableCell>
-												<TableCell>{contact.email}</TableCell>
-												<TableCell className="text-muted-foreground">
-													{contact.phone ?? "—"}
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<Button variant="ghost" size="icon" className="size-8">
-														<MoreHorizontal className="size-4" />
-													</Button>
-												</TableCell>
-											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Notes" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Notes</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Type</TableHead>
-										<TableHead>Note</TableHead>
-										<TableHead>Author</TableHead>
-										<TableHead className="pr-4 sm:pr-6">Updated</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									<TableRow className="hover:bg-muted/30">
-										<TableCell className="pl-4 font-medium sm:pl-6">
-											Integration
-										</TableCell>
-										<TableCell className="max-w-[420px] text-muted-foreground">
-											{integration.notes}
-										</TableCell>
-										<TableCell>{integration.createdBy}</TableCell>
-										<TableCell className="pr-4 text-muted-foreground sm:pr-6">
-											{formatDate(vendor.updatedAt)}
-										</TableCell>
-									</TableRow>
-									<TableRow className="hover:bg-muted/30">
-										<TableCell className="pl-4 font-medium sm:pl-6">
-											Company
-										</TableCell>
-										<TableCell className="max-w-[420px] text-muted-foreground">
-											{vendor.description ?? "No company description provided."}
-										</TableCell>
-										<TableCell>System</TableCell>
-										<TableCell className="pr-4 text-muted-foreground sm:pr-6">
-											{formatDate(vendor.updatedAt)}
-										</TableCell>
-									</TableRow>
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">Notes</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Type</TableHead>
+									<TableHead>Note</TableHead>
+									<TableHead>Author</TableHead>
+									<TableHead className="pr-4 sm:pr-6">Updated</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								<TableRow className="hover:bg-muted/30">
+									<TableCell className="pl-4 font-medium sm:pl-6">
+										Integration
+									</TableCell>
+									<TableCell className="max-w-[420px] text-muted-foreground">
+										{integration.notes}
+									</TableCell>
+									<TableCell>{integration.createdBy}</TableCell>
+									<TableCell className="pr-4 text-muted-foreground sm:pr-6">
+										{formatDate(vendor.updatedAt)}
+									</TableCell>
+								</TableRow>
+								<TableRow className="hover:bg-muted/30">
+									<TableCell className="pl-4 font-medium sm:pl-6">
+										Company
+									</TableCell>
+									<TableCell className="max-w-[420px] text-muted-foreground">
+										{vendor.description ?? "No company description provided."}
+									</TableCell>
+									<TableCell>System</TableCell>
+									<TableCell className="pr-4 text-muted-foreground sm:pr-6">
+										{formatDate(vendor.updatedAt)}
+									</TableCell>
+								</TableRow>
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 
 			{tab === "Audit Trail" && (
-				<Card className="bg-card">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Audit Trail</CardTitle>
-					</CardHeader>
-					<CardContent className="px-0 pb-0">
-						<div className="border-t border-border/50">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4 sm:pl-6">Action</TableHead>
-										<TableHead>Actor</TableHead>
-										<TableHead className="pr-4 sm:pr-6">When</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{(activities.length ? activities : []).slice(0, 10).map(
-										(event) => (
-											<TableRow key={event.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 font-medium sm:pl-6">
-													{event.action}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{event.actor}
-												</TableCell>
-												<TableCell className="pr-4 text-muted-foreground sm:pr-6">
-													{formatDate(event.createdAt)}
-												</TableCell>
-											</TableRow>
-										)
-									)}
-									{activities.length === 0 && (
-										<TableRow>
-											<TableCell
-												colSpan={3}
-												className="h-20 text-center text-muted-foreground"
-											>
-												No audit events recorded yet. Document count:{" "}
-												{documents.length}.
+				<section className="min-w-0">
+					<h2 className="mb-2 text-sm font-medium">Audit Trail</h2>
+					<div className="overflow-hidden rounded-lg border border-border/50">
+						<Table className="text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="pl-4 sm:pl-6">Action</TableHead>
+									<TableHead>Actor</TableHead>
+									<TableHead className="pr-4 sm:pr-6">When</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{(activities.length ? activities : [])
+									.slice(0, 10)
+									.map((event) => (
+										<TableRow key={event.id} className="hover:bg-muted/30">
+											<TableCell className="pl-4 font-medium sm:pl-6">
+												{event.action}
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{event.actor}
+											</TableCell>
+											<TableCell className="pr-4 text-muted-foreground sm:pr-6">
+												{formatDate(event.createdAt)}
 											</TableCell>
 										</TableRow>
-									)}
-								</TableBody>
-							</Table>
-						</div>
-					</CardContent>
-				</Card>
+									))}
+								{activities.length === 0 && (
+									<TableRow>
+										<TableCell
+											colSpan={3}
+											className="h-20 text-center text-muted-foreground"
+										>
+											No audit events recorded yet. Document count:{" "}
+											{documents.length}.
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</section>
 			)}
 		</div>
 	);

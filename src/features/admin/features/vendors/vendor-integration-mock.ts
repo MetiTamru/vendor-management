@@ -1,4 +1,8 @@
-import { FILE_RUNS, displayRunStatus, type FileRun } from "@/features/admin/features/file-management/mock-data";
+import {
+	FILE_RUNS,
+	type FileRun,
+	displayRunStatus,
+} from "@/features/admin/features/file-management/mock-data";
 
 export type VendorHealth = "healthy" | "warning" | "failed" | "in_progress";
 
@@ -124,7 +128,9 @@ export function runsForVendor(vendorId: string): FileRun[] {
 	return FILE_RUNS.filter((run) => vendorIdForRun(run) === vendorId);
 }
 
-export function getVendorIntegration(vendorId: string): VendorIntegrationProfile {
+export function getVendorIntegration(
+	vendorId: string
+): VendorIntegrationProfile {
 	return (
 		VENDOR_INTEGRATION[vendorId] ?? {
 			vendorId,
@@ -159,10 +165,14 @@ export function runBucket(status: FileRun["status"]) {
 
 export function summarizeRuns(runs: FileRun[]) {
 	const total = runs.length;
-	const successful = runs.filter((r) => runBucket(r.status) === "success").length;
+	const successful = runs.filter(
+		(r) => runBucket(r.status) === "success"
+	).length;
 	const warnings = runs.filter((r) => runBucket(r.status) === "warning").length;
 	const failed = runs.filter((r) => runBucket(r.status) === "failed").length;
-	const inProgress = runs.filter((r) => runBucket(r.status) === "in_progress").length;
+	const inProgress = runs.filter(
+		(r) => runBucket(r.status) === "in_progress"
+	).length;
 	const pending = runs.filter(
 		(r) => runBucket(r.status) === "pending" || r.status === "missing"
 	).length;

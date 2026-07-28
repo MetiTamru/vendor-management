@@ -140,18 +140,16 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground font-sans;
 	}
 }
 
 :root {
-	--font-primary: var(--font-geist);
+	--font-geist: var(--font-geist-sans);
+	--font-primary: var(--font-geist-sans);
 }
 
 .font-poppins {
 	--font-primary: var(--font-poppins);
-}
-
-body {
-	font-family: var(--font-primary);
+	--font-sans: var(--font-poppins);
 }

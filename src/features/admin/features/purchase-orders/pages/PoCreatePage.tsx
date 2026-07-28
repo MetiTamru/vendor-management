@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 

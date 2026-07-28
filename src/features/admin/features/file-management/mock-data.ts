@@ -1341,7 +1341,8 @@ const RAW_FILE_RUNS: FileRun[] = [
 				receivedValue: "vendor-ops@novatech.example",
 				expectedValue: "Configured alert recipients notified",
 				validationRule: "Missing-file runs must notify the vendor ops channel.",
-				recommendedResolution: "No further action unless vendor does not respond.",
+				recommendedResolution:
+					"No further action unless vendor does not respond.",
 				relatedInformation: "alert-router · NovaTech escalation list",
 			},
 		],
@@ -1475,15 +1476,15 @@ const RAW_FILE_RUNS: FileRun[] = [
 					coverageEnd: "—",
 				},
 				recordSnippet: [
-					'{',
+					"{",
 					'  "po": "PO-8841",',
 					'  "vendor": "Summit Packaging Co.",',
 					'  "lines": [',
 					'    { "line": 1, "sku": "PKG-BOX-12", "status": "AC", "qty": 100 },',
 					'    { "line": 2, "sku": "PKG-TAPE-01", "status": "AC", "qty": 80 },',
-					'    // line 3 omitted — expected status for PKG-WRAP-04',
-					'  ]',
-					'}',
+					"    // line 3 omitted — expected status for PKG-WRAP-04",
+					"  ]",
+					"}",
 				],
 				investigationHistory: [
 					{
@@ -1773,7 +1774,8 @@ const RAW_FILE_RUNS: FileRun[] = [
 				status: "resolved",
 				receivedValue: "tolerant",
 				expectedValue: "strict or tolerant",
-				validationRule: "Integration profile may run inventory feeds in tolerant mode.",
+				validationRule:
+					"Integration profile may run inventory feeds in tolerant mode.",
 				recommendedResolution: "No action required unless drift persists.",
 				relatedInformation: "Profile GRF-INV-DAILY",
 			},
@@ -1922,7 +1924,8 @@ const RAW_FILE_RUNS: FileRun[] = [
 				receivedValue: "10:58",
 				expectedValue: "Complete before 11:00",
 				validationRule: "Daily remittance must clear treasury before cutoff.",
-				recommendedResolution: "Prioritize treasury confirmation for this draft.",
+				recommendedResolution:
+					"Prioritize treasury confirmation for this draft.",
 				relatedInformation: "SCH-APX-REM-DAILY · cutoff 11:00",
 			},
 			{
@@ -1936,7 +1939,8 @@ const RAW_FILE_RUNS: FileRun[] = [
 				status: "resolved",
 				receivedValue: "14",
 				expectedValue: "One or more payment lines",
-				validationRule: "Remittance drafts must contain at least one payment line.",
+				validationRule:
+					"Remittance drafts must contain at least one payment line.",
 				recommendedResolution: "No action required.",
 				relatedInformation: "APX_REM_DRAFT.xml",
 			},
@@ -2105,7 +2109,8 @@ const RAW_FILE_RUNS: FileRun[] = [
 				status: "resolved",
 				receivedValue: "armed",
 				expectedValue: "Watch active until cutoff+grace",
-				validationRule: "Missing runs keep the watch folder armed for grace period.",
+				validationRule:
+					"Missing runs keep the watch folder armed for grace period.",
 				recommendedResolution: "No action unless grace expires.",
 				relatedInformation: "Grace window 120 minutes",
 			},
@@ -2427,10 +2432,7 @@ function defaultContextTitle(run: FileRun, issue: ValidationIssue): string {
 	return "Entity Context";
 }
 
-function defaultRecordSnippet(
-	run: FileRun,
-	issue: ValidationIssue
-): string[] {
+function defaultRecordSnippet(run: FileRun, issue: ValidationIssue): string[] {
 	if (issue.recordSnippet?.length) return issue.recordSnippet;
 	const file = run.fileName ?? "payload.dat";
 	const line = issue.line ?? 0;
@@ -2524,8 +2526,7 @@ function enrichIssue(run: FileRun, issue: ValidationIssue): ValidationIssue {
 		recommendedResolution:
 			issue.recommendedResolution ??
 			`Address ${issue.code} on line ${issue.line ?? "n/a"} and resubmit.`,
-		validationRule:
-			issue.validationRule ?? `${issue.code}: ${issue.message}`,
+		validationRule: issue.validationRule ?? `${issue.code}: ${issue.message}`,
 		relatedInformation:
 			issue.relatedInformation ??
 			`${run.fileType} · ${run.scheduleId} · ${run.correlationId}`,

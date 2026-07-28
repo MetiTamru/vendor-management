@@ -1,5 +1,5 @@
-import type { ServerSessionUser } from "@/lib/auth/server-session";
 import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
+import type { ServerSessionUser } from "@/lib/auth/server-session";
 
 export type AbacUser = {
 	id: string;

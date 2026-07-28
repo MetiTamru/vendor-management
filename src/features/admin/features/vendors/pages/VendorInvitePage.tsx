@@ -37,16 +37,16 @@ export function VendorInvitePage() {
 	}
 
 	return (
-		<div className="container max-w-xl space-y-6 py-8">
+		<div className="w-full space-y-3">
 			<div>
-				<h1 className="text-2xl font-semibold tracking-tight">Invite vendor</h1>
+				<h1 className="text-lg font-medium tracking-tight">Invite vendor</h1>
 				<p className="text-sm text-muted-foreground">
 					Send a supplier an invitation to begin onboarding.
 				</p>
 			</div>
 			<form
 				onSubmit={submit}
-				className="space-y-5 rounded-lg border bg-card p-6"
+				className="space-y-3 rounded-lg border bg-card p-4"
 			>
 				<label className="grid gap-2 text-sm font-medium">
 					Legal name

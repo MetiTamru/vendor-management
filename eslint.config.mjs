@@ -65,7 +65,7 @@ const eslintConfig = [
 			"no-console": "warn",
 			"prefer-arrow-callback": "error",
 			"prefer-template": "error",
-			quotes: ["error", "double"],
+			quotes: "off",
 			"react/react-in-jsx-scope": "off",
 			"react/prop-types": "off",
 			"@typescript-eslint/ban-ts-comment": [

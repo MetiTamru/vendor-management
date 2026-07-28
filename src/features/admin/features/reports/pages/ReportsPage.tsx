@@ -25,7 +25,7 @@ import { formatMoney } from "@/features/shared/vms/utils";
 import { cn } from "@/lib/utils";
 
 function csvCell(value: string | number) {
-	return `"${String(value).replaceAll("\"", "\"\"")}"`;
+	return `"${String(value).replaceAll('"', '""')}"`;
 }
 
 export function ReportsPage() {
@@ -86,7 +86,9 @@ export function ReportsPage() {
 		return Array.from(counts.entries()).map(([name, value], index) => ({
 			name: name.replace(/_/g, " "),
 			value,
-			color: ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#94a3b8"][index] ?? "#94a3b8",
+			color:
+				["#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#94a3b8"][index] ??
+				"#94a3b8",
 		}));
 	}, [vendors]);
 	const spendTrend = [
@@ -101,7 +103,9 @@ export function ReportsPage() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Reports</h1>
+					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+						Reports
+					</h1>
 					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
 						Analyze spend, invoice flow, and vendor performance trends.
 					</p>
@@ -160,7 +164,9 @@ export function ReportsPage() {
 								<p className="mt-2 text-2xl font-semibold tracking-tight">
 									{item.value}
 								</p>
-								<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+								<p className="mt-1 text-xs text-muted-foreground">
+									{item.hint}
+								</p>
 							</div>
 							<div
 								className={cn(
@@ -187,12 +193,29 @@ export function ReportsPage() {
 							<ResponsiveContainer width="100%" height="100%">
 								<AreaChart data={spendTrend}>
 									<defs>
-										<linearGradient id="reports-spend" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="#13446c" stopOpacity={0.35} />
-											<stop offset="95%" stopColor="#13446c" stopOpacity={0.03} />
+										<linearGradient
+											id="reports-spend"
+											x1="0"
+											y1="0"
+											x2="0"
+											y2="1"
+										>
+											<stop
+												offset="5%"
+												stopColor="#13446c"
+												stopOpacity={0.35}
+											/>
+											<stop
+												offset="95%"
+												stopColor="#13446c"
+												stopOpacity={0.03}
+											/>
 										</linearGradient>
 									</defs>
-									<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+									<CartesianGrid
+										strokeDasharray="3 3"
+										className="stroke-border/50"
+									/>
 									<XAxis dataKey="month" tickLine={false} axisLine={false} />
 									<YAxis tickLine={false} axisLine={false} />
 									<Tooltip formatter={(value) => formatMoney(Number(value))} />
@@ -251,7 +274,9 @@ export function ReportsPage() {
 													className="size-2.5 rounded-full"
 													style={{ backgroundColor: entry.color }}
 												/>
-												<span className="text-sm font-medium capitalize">{entry.name}</span>
+												<span className="text-sm font-medium capitalize">
+													{entry.name}
+												</span>
 											</div>
 											<span className="text-sm font-semibold tabular-nums">
 												{entry.value}
@@ -274,10 +299,18 @@ export function ReportsPage() {
 						<table className="w-full text-sm">
 							<thead>
 								<tr className="bg-primary/[0.04] text-left">
-									<th className="px-6 py-3 font-semibold text-primary">Vendor</th>
-									<th className="px-4 py-3 font-semibold text-primary">Status</th>
-									<th className="px-4 py-3 font-semibold text-primary">Invoices</th>
-									<th className="px-6 py-3 text-right font-semibold text-primary">Spend</th>
+									<th className="px-6 py-3 font-semibold text-primary">
+										Vendor
+									</th>
+									<th className="px-4 py-3 font-semibold text-primary">
+										Status
+									</th>
+									<th className="px-4 py-3 font-semibold text-primary">
+										Invoices
+									</th>
+									<th className="px-6 py-3 text-right font-semibold text-primary">
+										Spend
+									</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -287,7 +320,9 @@ export function ReportsPage() {
 										<td className="px-4 py-3 capitalize text-muted-foreground">
 											{row.status.replace(/_/g, " ")}
 										</td>
-										<td className="px-4 py-3 tabular-nums">{row.invoiceCount}</td>
+										<td className="px-4 py-3 tabular-nums">
+											{row.invoiceCount}
+										</td>
 										<td className="px-6 py-3 text-right font-semibold tabular-nums">
 											{formatMoney(row.spend)}
 										</td>

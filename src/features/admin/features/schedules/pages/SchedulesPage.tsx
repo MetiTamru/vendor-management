@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/table";
 import {
 	FILE_RUNS,
+	type ProcessStatus,
 	displayRunStatus,
 } from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
@@ -49,7 +50,7 @@ type ScheduleRow = {
 	expectedAt: string;
 	lastReceived: string | null;
 	slaMinutes: number;
-	status: string;
+	status: ProcessStatus;
 	errorCount: number;
 	warningCount: number;
 	runId: string;
@@ -59,7 +60,8 @@ type ScheduleRow = {
 function statusTone(status: string) {
 	if (status === "success") return "bg-emerald-500/10 text-emerald-700";
 	if (status === "failed") return "bg-red-500/10 text-red-700";
-	if (status === "warning" || status === "late") return "bg-amber-500/10 text-amber-700";
+	if (status === "warning" || status === "late")
+		return "bg-amber-500/10 text-amber-700";
 	return "bg-sky-500/10 text-sky-700";
 }
 
@@ -100,7 +102,9 @@ export function SchedulesPage() {
 				});
 			}
 		}
-		return Array.from(grouped.values()).sort((a, b) => a.vendor.localeCompare(b.vendor));
+		return Array.from(grouped.values()).sort((a, b) =>
+			a.vendor.localeCompare(b.vendor)
+		);
 	}, []);
 
 	const filteredSchedules = useMemo(() => {
@@ -119,11 +123,15 @@ export function SchedulesPage() {
 
 	const summary = useMemo(() => {
 		const active = filteredSchedules.length;
-		const healthy = filteredSchedules.filter((row) => row.status === "success").length;
+		const healthy = filteredSchedules.filter(
+			(row) => row.status === "success"
+		).length;
 		const warning = filteredSchedules.filter(
 			(row) => row.status === "warning" || row.status === "late"
 		).length;
-		const failed = filteredSchedules.filter((row) => row.status === "failed").length;
+		const failed = filteredSchedules.filter(
+			(row) => row.status === "failed"
+		).length;
 		const avgSla = filteredSchedules.length
 			? Math.round(
 					filteredSchedules.reduce((sum, row) => sum + row.slaMinutes, 0) /
@@ -153,7 +161,8 @@ export function SchedulesPage() {
 						Schedules
 					</h1>
 					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-						Manage delivery windows, cadence, and schedule health across vendors.
+						Manage delivery windows, cadence, and schedule health across
+						vendors.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -308,7 +317,9 @@ export function SchedulesPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -327,7 +338,9 @@ export function SchedulesPage() {
 			<div className="grid gap-4 xl:grid-cols-5">
 				<Card className="min-w-0 gap-2 bg-card/70 py-4 xl:col-span-3">
 					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">Upcoming schedule windows</CardTitle>
+						<CardTitle className="text-base">
+							Upcoming schedule windows
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2 px-4">
 						{upcoming.map((row) => (
@@ -370,12 +383,19 @@ export function SchedulesPage() {
 								>
 									<div className="flex items-start justify-between gap-3">
 										<div className="min-w-0">
-											<p className="truncate text-sm font-semibold">{row.vendor}</p>
+											<p className="truncate text-sm font-semibold">
+												{row.vendor}
+											</p>
 											<p className="text-xs text-muted-foreground">
 												{row.fileType} · {row.id}
 											</p>
 										</div>
-										<span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", statusTone(row.status))}>
+										<span
+											className={cn(
+												"rounded-full px-2 py-0.5 text-[11px] font-semibold",
+												statusTone(row.status)
+											)}
+										>
 											{displayRunStatus(row.status)}
 										</span>
 									</div>
@@ -400,7 +420,9 @@ export function SchedulesPage() {
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-primary/[0.04] hover:bg-primary/[0.04]">
-									<TableHead className="pl-4 text-primary sm:pl-6">Schedule</TableHead>
+									<TableHead className="pl-4 text-primary sm:pl-6">
+										Schedule
+									</TableHead>
 									<TableHead className="text-primary">Vendor</TableHead>
 									<TableHead className="text-primary">Type</TableHead>
 									<TableHead className="text-primary">Frequency</TableHead>
@@ -439,17 +461,24 @@ export function SchedulesPage() {
 												{displayRunStatus(row.status)}
 											</span>
 										</TableCell>
-										<TableCell className="tabular-nums">{row.slaMinutes} min</TableCell>
+										<TableCell className="tabular-nums">
+											{row.slaMinutes} min
+										</TableCell>
 										<TableCell className="pr-4 text-right sm:pr-6">
 											<Button variant="ghost" size="sm" asChild>
-												<Link href={`/admin/file-monitoring/${row.fileRunId}`}>Open</Link>
+												<Link href={`/admin/file-monitoring/${row.fileRunId}`}>
+													Open
+												</Link>
 											</Button>
 										</TableCell>
 									</TableRow>
 								))}
 								{filteredSchedules.length === 0 && (
 									<TableRow>
-										<TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+										<TableCell
+											colSpan={8}
+											className="h-24 text-center text-muted-foreground"
+										>
 											No schedules match the current filters.
 										</TableCell>
 									</TableRow>

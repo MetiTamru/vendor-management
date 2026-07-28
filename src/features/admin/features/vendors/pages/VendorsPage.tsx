@@ -31,19 +31,13 @@ import {
 } from "recharts";
 
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -75,32 +69,36 @@ import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-function ActivityStatus({ status }: { status: (typeof FILE_RUNS)[0]["status"] }) {
+function ActivityStatus({
+	status,
+}: {
+	status: (typeof FILE_RUNS)[0]["status"];
+}) {
 	const bucket = runBucket(status);
 	if (bucket === "success") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
 				Success
 			</span>
 		);
 	}
 	if (bucket === "failed") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
+			<span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
 				Failed
 			</span>
 		);
 	}
 	if (bucket === "warning") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+			<span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
 				Warning
 			</span>
 		);
 	}
 	if (bucket === "in_progress") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+			<span className="inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
 				In Progress
 			</span>
 		);
@@ -122,7 +120,8 @@ export function VendorsPage() {
 		return FILE_RUNS.filter((run) => {
 			const vid = vendorIdForRun(run);
 			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
-			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter) return false;
+			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
+				return false;
 			return true;
 		});
 	}, [vendorFilter, fileTypeFilter]);
@@ -177,11 +176,11 @@ export function VendorsPage() {
 
 	if (isLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-10 w-80" />
-				<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+			<div className="space-y-3">
+				<Skeleton className="h-8 w-64" />
+				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
 					{Array.from({ length: 6 }).map((_, i) => (
-						<Skeleton key={i} className="h-28 rounded-xl" />
+						<Skeleton key={i} className="h-20 rounded-lg" />
 					))}
 				</div>
 				<Skeleton className="h-96 w-full rounded-xl" />
@@ -241,14 +240,15 @@ export function VendorsPage() {
 	];
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-wrap items-start justify-between gap-4">
+		<div className="space-y-3">
+			<div className="flex flex-wrap items-start justify-between gap-2">
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
 						Vendor Integration Management
 					</h1>
-					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-						Monitor vendor file exchanges, health, and alerts across trading partners.
+					<p className="mt-0.5 text-xs text-muted-foreground">
+						Monitor vendor file exchanges, health, and alerts across trading
+						partners.
 					</p>
 				</div>
 			</div>
@@ -258,7 +258,7 @@ export function VendorsPage() {
 			) : null}
 
 			{/* Filters */}
-			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-gradient-to-r from-primary/[0.05] via-card to-sky-50/60 p-3">
+			<div className="flex flex-wrap items-center gap-2">
 				<Select value={dateFilter} onValueChange={setDateFilter}>
 					<SelectTrigger className="h-9 w-[200px]">
 						<SelectValue />
@@ -315,17 +315,17 @@ export function VendorsPage() {
 			</div>
 
 			{/* KPI cards */}
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{kpis.map((k) => {
 					const Icon = k.icon;
 					return (
-						<div key={k.label} className="rounded-xl bg-card p-4">
-							<div className="flex items-start justify-between gap-3">
+						<div key={k.label} className="rounded-lg bg-card p-2.5">
+							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
-									<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 										{k.label}
 									</p>
-									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
 										{k.value}
 										{k.pct ? (
 											<span className="ml-1 text-sm font-medium text-muted-foreground">
@@ -345,7 +345,7 @@ export function VendorsPage() {
 								</div>
 								<div
 									className={cn(
-										"flex size-10 shrink-0 items-center justify-center rounded-lg",
+										"flex size-8 shrink-0 items-center justify-center rounded-lg",
 										k.tone
 									)}
 								>
@@ -357,138 +357,154 @@ export function VendorsPage() {
 				})}
 			</div>
 
-			{/* Main + right column */}
-			<div className="grid gap-4 xl:grid-cols-5">
-				<div className="space-y-4 xl:col-span-3">
+			{/* Main + right column — 2/3 table, 1/3 sidebar */}
+			<div className="grid min-w-0 gap-2 xl:grid-cols-3">
+				<div className="min-w-0 space-y-2 xl:col-span-2">
 					{/* Recent File Activity */}
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-base">Recent File Activity</CardTitle>
+					<Card className="min-w-0 bg-card">
+						<CardHeader className="px-3 pb-1 pt-3">
+							<CardTitle className="text-sm font-medium">
+								Recent File Activity
+							</CardTitle>
 						</CardHeader>
 						<CardContent className="px-0 pb-0">
-							<ScrollArea
-								type="always"
-								className="h-[320px] w-full border-t border-border/50"
-								viewportClassName="[&>div]:!block [&>div]:min-w-max"
-							>
+							<div className="w-full overflow-hidden border-t border-border/50">
 								<Table
-									className="min-w-[960px]"
-									containerClassName="!overflow-visible"
+									className="table-fixed w-full text-xs"
+									containerClassName="overflow-hidden"
 								>
-										<TableHeader>
-											<TableRow className="hover:bg-transparent">
-												<TableHead className="pl-4 sm:pl-6">Vendor</TableHead>
-												<TableHead>File Type</TableHead>
-												<TableHead>File Name</TableHead>
-												<TableHead>Frequency</TableHead>
-												<TableHead>Status</TableHead>
-												<TableHead className="text-right">Records</TableHead>
-												<TableHead>Received</TableHead>
-												<TableHead>Processed</TableHead>
-												<TableHead>Duration</TableHead>
-												<TableHead className="pr-4 text-right sm:pr-6">
-													Actions
-												</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{filteredRuns.slice(0, 8).map((run) => {
-												const vid = vendorIdForRun(run);
-												return (
-													<TableRow
-														key={run.id}
-														className="cursor-pointer hover:bg-muted/30"
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<TableHead className="h-8 w-[17%] px-2 pl-3 font-normal">
+												Vendor
+											</TableHead>
+											<TableHead className="h-8 w-[11%] px-1 font-normal">
+												Type
+											</TableHead>
+											<TableHead className="h-8 w-[18%] px-1 font-normal">
+												File Name
+											</TableHead>
+											<TableHead className="h-8 w-[8%] px-1 font-normal">
+												Freq
+											</TableHead>
+											<TableHead className="h-8 w-[11%] px-1 font-normal">
+												Status
+											</TableHead>
+											<TableHead className="h-8 w-[7%] px-1 text-right font-normal">
+												Rec
+											</TableHead>
+											<TableHead className="h-8 w-[7%] px-1 font-normal">
+												Recv
+											</TableHead>
+											<TableHead className="h-8 w-[7%] px-1 font-normal">
+												Proc
+											</TableHead>
+											<TableHead className="h-8 w-[7%] px-1 font-normal">
+												Dur
+											</TableHead>
+											<TableHead className="h-8 w-[7%] px-1 pr-3 text-right font-normal">
+												Act
+											</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{filteredRuns.slice(0, 8).map((run) => {
+											const vid = vendorIdForRun(run);
+											return (
+												<TableRow
+													key={run.id}
+													className="cursor-pointer hover:bg-muted/30"
 													onClick={() =>
 														router.push(
-															vid
-																? `/admin/vendors/${vid}`
-																: "/admin/vendors"
+															vid ? `/admin/vendors/${vid}` : "/admin/vendors"
 														)
 													}
+												>
+													<TableCell className="px-2 py-1.5 pl-3">
+														<div className="flex min-w-0 items-center gap-1.5">
+															<VendorAvatarBadge
+																vendorId={vid}
+																vendorName={run.vendor}
+																size="sm"
+															/>
+															{vid ? (
+																<Link
+																	href={`/admin/vendors/${vid}`}
+																	className="truncate font-medium hover:underline"
+																	onClick={(e) => e.stopPropagation()}
+																>
+																	{run.vendor}
+																</Link>
+															) : (
+																<span className="truncate font-medium">
+																	{run.vendor}
+																</span>
+															)}
+														</div>
+													</TableCell>
+													<TableCell className="truncate px-1 py-1.5">
+														{run.fileType}
+													</TableCell>
+													<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
+														{run.fileName ?? "—"}
+													</TableCell>
+													<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
+														{run.frequency}
+													</TableCell>
+													<TableCell className="px-1 py-1.5">
+														<ActivityStatus status={run.status} />
+													</TableCell>
+													<TableCell className="px-1 py-1.5 text-right tabular-nums">
+														{run.records ?? "—"}
+													</TableCell>
+													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+														{run.receivedAt?.slice(11, 16) ?? "—"}
+													</TableCell>
+													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+														{run.completedAt?.slice(11, 16) ?? "—"}
+													</TableCell>
+													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+														{run.duration ?? "—"}
+													</TableCell>
+													<TableCell
+														className="px-1 py-1.5 pr-3 text-right"
+														onClick={(e) => e.stopPropagation()}
 													>
-														<TableCell className="pl-4 sm:pl-6">
-															<div className="flex items-center gap-2.5">
-																<VendorAvatarBadge
-																	vendorId={vid}
-																	vendorName={run.vendor}
-																	size="sm"
-																/>
-																{vid ? (
+														<DropdownMenu>
+															<DropdownMenuTrigger asChild>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	className="size-7"
+																>
+																	<MoreHorizontal className="size-3.5" />
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent align="end">
+																<DropdownMenuItem asChild>
 																	<Link
-																		href={`/admin/vendors/${vid}`}
-																		className="font-medium hover:underline"
-																		onClick={(e) => e.stopPropagation()}
+																		href={`/admin/file-monitoring/${run.id}`}
 																	>
-																		{run.vendor}
+																		View run detail
 																	</Link>
-																) : (
-																	<span className="font-medium">
-																		{run.vendor}
-																	</span>
-																)}
-															</div>
-														</TableCell>
-														<TableCell>{run.fileType}</TableCell>
-														<TableCell className="max-w-[140px] truncate font-mono text-xs">
-															{run.fileName ?? "—"}
-														</TableCell>
-														<TableCell className="text-muted-foreground">
-															{run.frequency}
-														</TableCell>
-														<TableCell>
-															<ActivityStatus status={run.status} />
-														</TableCell>
-														<TableCell className="text-right tabular-nums">
-															{run.records ?? "—"}
-														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
-															{run.receivedAt?.slice(11, 16) ?? "—"}
-														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
-															{run.completedAt?.slice(11, 16) ?? "—"}
-														</TableCell>
-														<TableCell className="tabular-nums text-muted-foreground">
-															{run.duration ?? "—"}
-														</TableCell>
-														<TableCell
-															className="pr-4 text-right sm:pr-6"
-															onClick={(e) => e.stopPropagation()}
-														>
-															<DropdownMenu>
-																<DropdownMenuTrigger asChild>
-																	<Button
-																		variant="ghost"
-																		size="icon"
-																		className="size-8"
-																	>
-																		<MoreHorizontal className="size-4" />
-																	</Button>
-																</DropdownMenuTrigger>
-																<DropdownMenuContent align="end">
+																</DropdownMenuItem>
+																{vid && (
 																	<DropdownMenuItem asChild>
-																		<Link
-																			href={`/admin/file-monitoring/${run.id}`}
-																		>
-																			View run detail
+																		<Link href={`/admin/vendors/${vid}`}>
+																			Open vendor
 																		</Link>
 																	</DropdownMenuItem>
-																	{vid && (
-																		<DropdownMenuItem asChild>
-																			<Link href={`/admin/vendors/${vid}`}>
-																				Open vendor
-																			</Link>
-																		</DropdownMenuItem>
-																	)}
-																</DropdownMenuContent>
-															</DropdownMenu>
-														</TableCell>
-													</TableRow>
-												);
-											})}
-										</TableBody>
+																)}
+															</DropdownMenuContent>
+														</DropdownMenu>
+													</TableCell>
+												</TableRow>
+											);
+										})}
+									</TableBody>
 								</Table>
-							</ScrollArea>
-							<div className="border-t border-border/50 px-4 py-3 sm:px-6">
+							</div>
+							<div className="border-t border-border/50 px-3 py-2">
 								<Link
 									href="/admin/file-monitoring"
 									className="text-sm font-medium text-primary hover:underline"
@@ -503,7 +519,9 @@ export function VendorsPage() {
 					<Card className="bg-card">
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<div>
-								<CardTitle className="text-base">Processing Trend</CardTitle>
+								<CardTitle className="text-sm font-medium">
+									Processing Trend
+								</CardTitle>
 							</div>
 							<Select value={trendRange} onValueChange={setTrendRange}>
 								<SelectTrigger className="h-8 w-[130px]">
@@ -519,7 +537,10 @@ export function VendorsPage() {
 						<CardContent className="h-64 pt-2">
 							<ResponsiveContainer width="100%" height="100%">
 								<LineChart data={PROCESSING_TREND}>
-									<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+									<CartesianGrid
+										strokeDasharray="3 3"
+										className="stroke-border"
+									/>
 									<XAxis dataKey="day" tick={{ fontSize: 11 }} />
 									<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
 									<Tooltip />
@@ -554,23 +575,25 @@ export function VendorsPage() {
 					</Card>
 				</div>
 
-				{/* Right column */}
-				<div className="space-y-4 xl:col-span-2">
+				{/* Right column — 1/3 */}
+				<div className="min-w-0 space-y-2 xl:col-span-1">
 					<Card className="bg-card">
 						<CardHeader className="pb-2">
-							<CardTitle className="text-base">Vendor Status Overview</CardTitle>
+							<CardTitle className="text-sm font-medium">
+								Vendor Status Overview
+							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="flex items-center gap-4">
-								<div className="relative h-40 w-40 shrink-0 sm:h-44 sm:w-44">
+							<div className="flex items-center gap-3">
+								<div className="relative h-32 w-32 shrink-0">
 									<ResponsiveContainer width="100%" height="100%">
 										<PieChart>
 											<Pie
 												data={vendorStatusPie}
 												dataKey="value"
 												nameKey="name"
-												innerRadius={48}
-												outerRadius={70}
+												innerRadius={38}
+												outerRadius={58}
 												paddingAngle={2}
 											>
 												{vendorStatusPie.map((entry) => (
@@ -581,7 +604,7 @@ export function VendorsPage() {
 										</PieChart>
 									</ResponsiveContainer>
 									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-										<span className="text-lg font-semibold tabular-nums leading-none">
+										<span className="text-base font-medium tabular-nums leading-none">
 											{vendors.length}
 										</span>
 										<span className="mt-1 text-[10px] font-medium text-muted-foreground">
@@ -600,7 +623,9 @@ export function VendorsPage() {
 													className="size-2.5 shrink-0 rounded-full"
 													style={{ backgroundColor: item.color }}
 												/>
-												<span className="truncate font-medium">{item.name}</span>
+												<span className="truncate font-medium">
+													{item.name}
+												</span>
 											</span>
 											<span className="shrink-0 tabular-nums">
 												{item.value}{" "}
@@ -621,7 +646,7 @@ export function VendorsPage() {
 
 					<Card className="bg-card">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-base">Alerts</CardTitle>
+							<CardTitle className="text-sm font-medium">Alerts</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-2">
 							{VENDOR_ALERTS.slice(0, 5).map((alert) => (
@@ -674,7 +699,9 @@ export function VendorsPage() {
 
 					<Card className="bg-card">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-base">Quick Actions</CardTitle>
+							<CardTitle className="text-sm font-medium">
+								Quick Actions
+							</CardTitle>
 						</CardHeader>
 						<CardContent>
 							<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

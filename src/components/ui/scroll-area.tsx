@@ -72,10 +72,7 @@ function ScrollBar({
 		>
 			<ScrollAreaPrimitive.ScrollAreaThumb
 				data-slot="scroll-area-thumb"
-				className={cn(
-					"relative flex-1 rounded-full bg-border",
-					thumbClassName
-				)}
+				className={cn("relative flex-1 rounded-full bg-border", thumbClassName)}
 			/>
 		</ScrollAreaPrimitive.ScrollAreaScrollbar>
 	);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -13,7 +14,6 @@ import {
 	MoreHorizontal,
 	Search,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,8 +52,8 @@ import {
 } from "@/components/ui/tooltip";
 import {
 	getVendorIntegration,
-	runsForVendor,
 	runBucket,
+	runsForVendor,
 	summarizeRuns,
 	vendorIdForRun,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
@@ -61,11 +61,7 @@ import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import {
-	FILE_RUNS,
-	displayRunStatus,
-	type FileRun,
-} from "../mock-data";
+import { FILE_RUNS, type FileRun, displayRunStatus } from "../mock-data";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
 
 type SelectMode = "vendor" | "filetype" | "failed";
@@ -191,8 +187,7 @@ export function FileSelectPage() {
 			});
 	}, [vendors, vendorFilter, search]);
 
-	const activeVendorId =
-		selectedVendorId ?? vendorCards[0]?.vendor.id ?? null;
+	const activeVendorId = selectedVendorId ?? vendorCards[0]?.vendor.id ?? null;
 
 	const activeVendorCard = vendorCards.find(
 		(c) => c.vendor.id === activeVendorId
@@ -242,24 +237,12 @@ export function FileSelectPage() {
 	];
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-3">
 			<div>
-				<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
-					<Link
-						href="/admin/file-monitoring"
-						className="hover:underline"
-					>
-						File Monitoring
-					</Link>
-					<span className="text-muted-foreground">&gt;</span>
-					<span className="text-foreground">
-						Select Vendor, File, or Failed Run
-					</span>
-				</nav>
-				<h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+				<h1 className="text-lg font-medium tracking-tight sm:text-xl">
 					Select Vendor, File, or Failed Run
 				</h1>
-				<p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+				<p className="mt-0.5 text-xs text-muted-foreground">
 					Choose a vendor or file context, then open a recent run for details.
 				</p>
 			</div>
@@ -284,7 +267,7 @@ export function FileSelectPage() {
 			</nav>
 
 			{/* Filters */}
-			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/50 bg-card/70 p-3">
+			<div className="flex flex-wrap items-center gap-2">
 				<Select value={vendorFilter} onValueChange={setVendorFilter}>
 					<SelectTrigger className="h-9 w-[180px]">
 						<SelectValue placeholder="All Vendors" />
@@ -333,15 +316,13 @@ export function FileSelectPage() {
 
 			{/* Select by Vendor */}
 			{mode === "vendor" && (
-				<div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
+				<div className="grid gap-3 md:grid-cols-[minmax(200px,240px)_minmax(0,1fr)]">
 					<Card className="min-w-0 border-border/50 bg-card/70">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-base">
+							<CardTitle className="text-sm font-medium">
 								Vendors ({vendorCards.length})
 							</CardTitle>
-							<CardDescription>
-								Select a trading partner
-							</CardDescription>
+							<CardDescription>Select a trading partner</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2">
 							{vendorCards.length === 0 ? (
@@ -351,8 +332,7 @@ export function FileSelectPage() {
 							) : (
 								vendorCards.map((card) => {
 									const selected = card.vendor.id === activeVendorId;
-									const name =
-										card.vendor.tradeName ?? card.vendor.legalName;
+									const name = card.vendor.tradeName ?? card.vendor.legalName;
 									const avatar = getVendorAvatar({
 										vendorId: card.vendor.id,
 										vendorName: name,
@@ -461,13 +441,17 @@ export function FileSelectPage() {
 									</div>
 									<div className="flex flex-wrap gap-4 text-xs sm:text-sm">
 										<span>
-											<span className="text-muted-foreground">Total Files: </span>
+											<span className="text-muted-foreground">
+												Total Files:{" "}
+											</span>
 											<span className="font-semibold">
 												{activeVendorCard.summary.total}
 											</span>
 										</span>
 										<span>
-											<span className="text-muted-foreground">Successful: </span>
+											<span className="text-muted-foreground">
+												Successful:{" "}
+											</span>
 											<span className="font-semibold text-emerald-700">
 												{activeVendorCard.summary.successful}
 											</span>
@@ -496,7 +480,9 @@ export function FileSelectPage() {
 										<Table>
 											<TableHeader>
 												<TableRow className="hover:bg-transparent">
-													<TableHead className="pl-4 sm:pl-6">File Type</TableHead>
+													<TableHead className="pl-4 sm:pl-6">
+														File Type
+													</TableHead>
 													<TableHead>Direction</TableHead>
 													<TableHead>Frequency</TableHead>
 													<TableHead>Last Run</TableHead>
@@ -534,7 +520,9 @@ export function FileSelectPage() {
 																	{run.direction === "inbound" ? (
 																		<>
 																			<ArrowDownLeft className="size-3.5 text-sky-600" />
-																			<span className="text-sky-700">Incoming</span>
+																			<span className="text-sky-700">
+																				Incoming
+																			</span>
 																		</>
 																	) : (
 																		<>
@@ -591,7 +579,8 @@ export function FileSelectPage() {
 											<p className="text-sm font-semibold">How to proceed</p>
 											<p className="mt-0.5 text-sm text-sky-900/80 dark:text-sky-200/90">
 												Select a file run from the list above to view processing
-												information, validation results, and investigation details.
+												information, validation results, and investigation
+												details.
 											</p>
 										</div>
 									</div>
@@ -608,10 +597,10 @@ export function FileSelectPage() {
 
 			{/* Select by File Type */}
 			{mode === "filetype" && (
-				<div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
+				<div className="grid gap-3 md:grid-cols-[minmax(200px,240px)_minmax(0,1fr)]">
 					<Card className="min-w-0 border-border/50 bg-card/70">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-base">
+							<CardTitle className="text-sm font-medium">
 								File Types ({fileTypes.length})
 							</CardTitle>
 						</CardHeader>
@@ -655,7 +644,7 @@ export function FileSelectPage() {
 					</Card>
 					<Card className="min-w-0 border-border/50 bg-card/70">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-base">
+							<CardTitle className="text-sm font-medium">
 								{activeFileType} — Recent Runs
 							</CardTitle>
 						</CardHeader>
@@ -680,7 +669,9 @@ export function FileSelectPage() {
 													{run.vendor}
 												</TableCell>
 												<TableCell className="capitalize">
-													{run.direction === "inbound" ? "Incoming" : "Outgoing"}
+													{run.direction === "inbound"
+														? "Incoming"
+														: "Outgoing"}
 												</TableCell>
 												<TableCell>
 													<StatusPill status={run.status} />
@@ -705,7 +696,7 @@ export function FileSelectPage() {
 			{mode === "failed" && (
 				<Card className="border-border/50 bg-card/70">
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">
+						<CardTitle className="text-sm font-medium">
 							Failed & Warning Runs ({failedRuns.length})
 						</CardTitle>
 						<CardDescription>

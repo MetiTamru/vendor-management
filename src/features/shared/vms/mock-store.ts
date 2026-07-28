@@ -1,4 +1,5 @@
 import type {
+	ActivityEventModel,
 	ApprovalRequestModel,
 	BidModel,
 	CertificateModel,
@@ -13,7 +14,6 @@ import type {
 	VendorCategoryModel,
 	VendorModel,
 	VendorTeamMember,
-	ActivityEventModel,
 } from "./types";
 
 const now = () => new Date().toISOString();
@@ -197,11 +197,36 @@ let onboardingCases: OnboardingCaseModel[] = [
 		status: "in_progress",
 		progress: 65,
 		checklist: [
-			{ id: "cl-1", label: "Company profile complete", completed: true, required: true },
-			{ id: "cl-2", label: "Tax certificate uploaded", completed: true, required: true },
-			{ id: "cl-3", label: "Insurance certificate", completed: false, required: true },
-			{ id: "cl-4", label: "Bank details verified", completed: true, required: true },
-			{ id: "cl-5", label: "Questionnaire submitted", completed: false, required: true },
+			{
+				id: "cl-1",
+				label: "Company profile complete",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-2",
+				label: "Tax certificate uploaded",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-3",
+				label: "Insurance certificate",
+				completed: false,
+				required: true,
+			},
+			{
+				id: "cl-4",
+				label: "Bank details verified",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-5",
+				label: "Questionnaire submitted",
+				completed: false,
+				required: true,
+			},
 		],
 		submittedAt: null,
 		reviewedAt: null,
@@ -215,11 +240,36 @@ let onboardingCases: OnboardingCaseModel[] = [
 		status: "submitted",
 		progress: 90,
 		checklist: [
-			{ id: "cl-6", label: "Company profile complete", completed: true, required: true },
-			{ id: "cl-7", label: "Tax certificate uploaded", completed: true, required: true },
-			{ id: "cl-8", label: "Insurance certificate", completed: true, required: true },
-			{ id: "cl-9", label: "Bank details verified", completed: true, required: true },
-			{ id: "cl-10", label: "Questionnaire submitted", completed: true, required: true },
+			{
+				id: "cl-6",
+				label: "Company profile complete",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-7",
+				label: "Tax certificate uploaded",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-8",
+				label: "Insurance certificate",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-9",
+				label: "Bank details verified",
+				completed: true,
+				required: true,
+			},
+			{
+				id: "cl-10",
+				label: "Questionnaire submitted",
+				completed: true,
+				required: true,
+			},
 		],
 		submittedAt: "2026-07-18T14:00:00.000Z",
 		reviewedAt: null,
@@ -245,7 +295,8 @@ let documents: DocumentModel[] = [
 		uploadedBy: "Jordan Lee",
 		reviewedBy: "A. Bekele",
 		reviewedAt: "2026-01-06T09:30:00.000Z",
-		description: "Quality management system certification for manufacturing operations.",
+		description:
+			"Quality management system certification for manufacturing operations.",
 		tags: ["compliance", "quality", "iso9001"],
 		issuer: "BSI Group",
 		documentNumber: "ISO-9001-2024-APX",
@@ -451,7 +502,8 @@ let documents: DocumentModel[] = [
 		uploadedBy: "Sara Bekele",
 		reviewedBy: "A. Bekele",
 		reviewedAt: "2026-07-12T15:00:00.000Z",
-		description: "In-transit cargo insurance — coverage limits below policy minimum.",
+		description:
+			"In-transit cargo insurance — coverage limits below policy minimum.",
 		tags: ["insurance", "rejected"],
 		issuer: "East Africa Mutual",
 		documentNumber: "CI-2026-HRZ",
@@ -526,7 +578,8 @@ let documents: DocumentModel[] = [
 		uploadedBy: "Hans Mueller",
 		reviewedBy: null,
 		reviewedAt: null,
-		description: "GDPR data processing agreement for EU component catalog sync.",
+		description:
+			"GDPR data processing agreement for EU component catalog sync.",
 		tags: ["contract", "gdpr", "pending"],
 		contractNumber: "CTR-2026-0011",
 		issuer: "NovaTech Legal",
@@ -990,7 +1043,17 @@ function uid(prefix: string) {
 export const vmsStore = {
 	listVendors: () => [...vendors],
 	getVendor: (id: string) => vendors.find((v) => v.id === id) ?? null,
-	createVendor: (input: Omit<VendorModel, "id" | "createdAt" | "updatedAt" | "riskScore" | "onboardingProgress" | "contacts"> & { contacts?: VendorModel["contacts"] }) => {
+	createVendor: (
+		input: Omit<
+			VendorModel,
+			| "id"
+			| "createdAt"
+			| "updatedAt"
+			| "riskScore"
+			| "onboardingProgress"
+			| "contacts"
+		> & { contacts?: VendorModel["contacts"] }
+	) => {
 		const vendor: VendorModel = {
 			...input,
 			id: uid("vnd"),
@@ -1011,7 +1074,8 @@ export const vmsStore = {
 	},
 	listCategories: () => [...categories],
 	listOnboarding: () => [...onboardingCases],
-	getOnboarding: (id: string) => onboardingCases.find((c) => c.id === id) ?? null,
+	getOnboarding: (id: string) =>
+		onboardingCases.find((c) => c.id === id) ?? null,
 	updateOnboarding: (id: string, patch: Partial<OnboardingCaseModel>) => {
 		onboardingCases = onboardingCases.map((c) =>
 			c.id === id ? { ...c, ...patch, updatedAt: now() } : c
@@ -1019,12 +1083,12 @@ export const vmsStore = {
 		return onboardingCases.find((c) => c.id === id) ?? null;
 	},
 	listDocuments: (vendorId?: string) =>
-		vendorId ? documents.filter((d) => d.vendorId === vendorId) : [...documents],
+		vendorId
+			? documents.filter((d) => d.vendorId === vendorId)
+			: [...documents],
 	getDocument: (id: string) => documents.find((d) => d.id === id) ?? null,
 	updateDocument: (id: string, patch: Partial<DocumentModel>) => {
-		documents = documents.map((d) =>
-			d.id === id ? { ...d, ...patch } : d
-		);
+		documents = documents.map((d) => (d.id === id ? { ...d, ...patch } : d));
 		return documents.find((d) => d.id === id) ?? null;
 	},
 	addDocument: (doc: Omit<DocumentModel, "id" | "uploadedAt">) => {
@@ -1038,10 +1102,16 @@ export const vmsStore = {
 	},
 	listCertificates: () => [...certificates],
 	listContracts: (vendorId?: string) =>
-		vendorId ? contracts.filter((c) => c.vendorId === vendorId) : [...contracts],
+		vendorId
+			? contracts.filter((c) => c.vendorId === vendorId)
+			: [...contracts],
 	getContract: (id: string) => contracts.find((c) => c.id === id) ?? null,
 	createContract: (input: Omit<ContractModel, "id" | "updatedAt">) => {
-		const created: ContractModel = { ...input, id: uid("ctr"), updatedAt: now() };
+		const created: ContractModel = {
+			...input,
+			id: uid("ctr"),
+			updatedAt: now(),
+		};
 		contracts = [created, ...contracts];
 		return created;
 	},
@@ -1092,7 +1162,9 @@ export const vmsStore = {
 			: [...purchaseOrders],
 	getPurchaseOrder: (id: string) =>
 		purchaseOrders.find((p) => p.id === id) ?? null,
-	createPurchaseOrder: (input: Omit<PurchaseOrderModel, "id" | "updatedAt" | "acknowledgedAt">) => {
+	createPurchaseOrder: (
+		input: Omit<PurchaseOrderModel, "id" | "updatedAt" | "acknowledgedAt">
+	) => {
 		const created: PurchaseOrderModel = {
 			...input,
 			id: uid("po"),
@@ -1112,7 +1184,11 @@ export const vmsStore = {
 		vendorId ? invoices.filter((i) => i.vendorId === vendorId) : [...invoices],
 	getInvoice: (id: string) => invoices.find((i) => i.id === id) ?? null,
 	createInvoice: (input: Omit<InvoiceModel, "id" | "updatedAt">) => {
-		const created: InvoiceModel = { ...input, id: uid("inv"), updatedAt: now() };
+		const created: InvoiceModel = {
+			...input,
+			id: uid("inv"),
+			updatedAt: now(),
+		};
 		invoices = [created, ...invoices];
 		return created;
 	},

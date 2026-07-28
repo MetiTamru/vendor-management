@@ -4,10 +4,10 @@ Dual-sided enterprise procurement Vendor Management System.
 
 ## Audiences
 
-| Side | Base path | Roles |
-|------|-----------|--------|
-| Buyer admin | `/admin` | admin, procurement_manager, buyer, ap_finance, compliance_officer, viewer |
-| Vendor portal | `/vendor` | vendor_admin, vendor_bidder, vendor_finance, vendor_viewer |
+| Side          | Base path | Roles                                                                     |
+| ------------- | --------- | ------------------------------------------------------------------------- |
+| Buyer admin   | `/admin`  | admin, procurement_manager, buyer, ap_finance, compliance_officer, viewer |
+| Vendor portal | `/vendor` | vendor_admin, vendor_bidder, vendor_finance, vendor_viewer                |
 
 Post-login: vendor roles → `/vendor`, otherwise → `/admin`.
 

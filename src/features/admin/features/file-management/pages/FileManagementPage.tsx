@@ -13,19 +13,13 @@ import {
 	ExternalLink,
 	FileWarning,
 	Files,
-	Filter,
 	MoreHorizontal,
 	RefreshCw,
 	XCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -55,10 +49,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { FILE_RUNS } from "../mock-data";
-import {
-	VendorAvatarBadge,
-	getVendorAvatar,
-} from "../vendor-avatars";
+import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
 
 type VendorHealth = {
 	vendor: string;
@@ -361,22 +352,21 @@ export function FileManagementPage() {
 	const types = Array.from(new Set(FILE_RUNS.map((f) => f.fileType)));
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-3">
 			{/* Title */}
-			<div className="flex flex-wrap items-start justify-between gap-4">
+			<div className="flex flex-wrap items-start justify-between gap-2">
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
 						File Monitoring Dashboard
 					</h1>
-					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-						Track file exchanges, SLAs, processing health, and active exceptions.
+					<p className="mt-0.5 text-xs text-muted-foreground">
+						Track file exchanges, SLAs, processing health, and active
+						exceptions.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Button asChild size="sm" className="h-9">
-						<Link href="/admin/file-monitoring/select">
-							Browse file runs
-						</Link>
+						<Link href="/admin/file-monitoring/select">Browse file runs</Link>
 					</Button>
 					<Button
 						variant="outline"
@@ -398,146 +388,133 @@ export function FileManagementPage() {
 			</div>
 
 			{/* Filters */}
-			<Card className="border border-primary/15 bg-gradient-to-r from-primary/[0.05] via-card to-sky-50/60 gap-0 py-0">
-				<CardContent className="flex flex-col gap-1.5 px-3 py-2">
-					<div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-						<Filter className="size-3.5 text-primary" />
-						Filters
+			<div className="flex flex-col gap-2">
+				<div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							From
+						</label>
+						<Input
+							type="date"
+							value={dateFrom}
+							onChange={(e) => setDateFrom(e.target.value)}
+							className="h-9"
+						/>
 					</div>
-					<div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								From
-							</label>
-							<Input
-								type="date"
-								value={dateFrom}
-								onChange={(e) => setDateFrom(e.target.value)}
-								className="h-9"
-							/>
-						</div>
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								To
-							</label>
-							<Input
-								type="date"
-								value={dateTo}
-								onChange={(e) => setDateTo(e.target.value)}
-								className="h-9"
-							/>
-						</div>
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								Vendor
-							</label>
-							<Select value={vendor} onValueChange={setVendor}>
-								<SelectTrigger className="h-9">
-									<SelectValue placeholder="Vendor" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">All vendors</SelectItem>
-									{vendors.map((v) => (
-										<SelectItem key={v} value={v}>
-											{v}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								File type
-							</label>
-							<Select value={fileType} onValueChange={setFileType}>
-								<SelectTrigger className="h-9">
-									<SelectValue placeholder="Type" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">All types</SelectItem>
-									{types.map((t) => (
-										<SelectItem key={t} value={t}>
-											{t}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								Direction
-							</label>
-							<Select value={direction} onValueChange={setDirection}>
-								<SelectTrigger className="h-9">
-									<SelectValue placeholder="Direction" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">All</SelectItem>
-									<SelectItem value="inbound">Inbound</SelectItem>
-									<SelectItem value="outbound">Outbound</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="space-y-1">
-							<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-								Status
-							</label>
-							<Select value={status} onValueChange={setStatus}>
-								<SelectTrigger className="h-9">
-									<SelectValue placeholder="Status" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">All statuses</SelectItem>
-									<SelectItem value="success">Success</SelectItem>
-									<SelectItem value="failed">Failed</SelectItem>
-									<SelectItem value="late">Late</SelectItem>
-									<SelectItem value="missing">Missing</SelectItem>
-									<SelectItem value="warning">Warning</SelectItem>
-									<SelectItem value="processing">Processing</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="flex items-end gap-2 xl:col-span-2">
-							<Button
-								className="h-9 flex-1"
-								onClick={() => setPage(1)}
-							>
-								Apply filters
-							</Button>
-							<Button
-								variant="ghost"
-								className="h-9"
-								onClick={clearFilters}
-							>
-								Clear
-							</Button>
-						</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							To
+						</label>
+						<Input
+							type="date"
+							value={dateTo}
+							onChange={(e) => setDateTo(e.target.value)}
+							className="h-9"
+						/>
 					</div>
-				</CardContent>
-			</Card>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Vendor
+						</label>
+						<Select value={vendor} onValueChange={setVendor}>
+							<SelectTrigger className="h-9">
+								<SelectValue placeholder="Vendor" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All vendors</SelectItem>
+								{vendors.map((v) => (
+									<SelectItem key={v} value={v}>
+										{v}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							File type
+						</label>
+						<Select value={fileType} onValueChange={setFileType}>
+							<SelectTrigger className="h-9">
+								<SelectValue placeholder="Type" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All types</SelectItem>
+								{types.map((t) => (
+									<SelectItem key={t} value={t}>
+										{t}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Direction
+						</label>
+						<Select value={direction} onValueChange={setDirection}>
+							<SelectTrigger className="h-9">
+								<SelectValue placeholder="Direction" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All</SelectItem>
+								<SelectItem value="inbound">Inbound</SelectItem>
+								<SelectItem value="outbound">Outbound</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Status
+						</label>
+						<Select value={status} onValueChange={setStatus}>
+							<SelectTrigger className="h-9">
+								<SelectValue placeholder="Status" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All statuses</SelectItem>
+								<SelectItem value="success">Success</SelectItem>
+								<SelectItem value="failed">Failed</SelectItem>
+								<SelectItem value="late">Late</SelectItem>
+								<SelectItem value="missing">Missing</SelectItem>
+								<SelectItem value="warning">Warning</SelectItem>
+								<SelectItem value="processing">Processing</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex items-end gap-2 xl:col-span-2">
+						<Button className="h-9 flex-1" onClick={() => setPage(1)}>
+							Apply filters
+						</Button>
+						<Button variant="ghost" className="h-9" onClick={clearFilters}>
+							Clear
+						</Button>
+					</div>
+				</div>
+			</div>
 
 			{/* KPIs — icon on the right */}
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{kpis.map((k) => {
 					const Icon = k.icon;
 					return (
 						<div
 							key={k.label}
-							className="rounded-xl border border-border/50 bg-card/70 p-4"
+							className="rounded-lg border border-border/50 bg-card/70 p-2.5"
 						>
-							<div className="flex items-start justify-between gap-3">
+							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
-									<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 										{k.label}
 									</p>
-									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
 										{k.value}
 									</p>
 									<p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
 								</div>
 								<div
 									className={cn(
-										"flex size-10 shrink-0 items-center justify-center rounded-lg",
+										"flex size-8 shrink-0 items-center justify-center rounded-lg",
 										k.tone
 									)}
 								>
@@ -550,10 +527,12 @@ export function FileManagementPage() {
 			</div>
 
 			{/* Vendor health + alerts */}
-			<div className="grid gap-4 xl:grid-cols-5">
-				<Card className="min-w-0 gap-2 bg-card/70 py-4 xl:col-span-3">
-					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">Vendor file health</CardTitle>
+			<div className="grid gap-2 xl:grid-cols-5">
+				<Card className="min-w-0 gap-1 bg-card/70 py-2 xl:col-span-3">
+					<CardHeader className="px-3 pb-0.5 pt-0">
+						<CardTitle className="text-sm font-medium">
+							Vendor file health
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="px-0 pb-0">
 						<div className="border-t border-border/50">
@@ -722,9 +701,9 @@ export function FileManagementPage() {
 					</CardContent>
 				</Card>
 
-				<Card className="min-w-0 gap-2 bg-card/70 py-4 xl:col-span-2">
+				<Card className="min-w-0 gap-1 bg-card/70 py-2 xl:col-span-2">
 					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">
+						<CardTitle className="text-sm font-medium">
 							Active alerts ({ALERTS.length})
 						</CardTitle>
 					</CardHeader>
@@ -776,7 +755,9 @@ export function FileManagementPage() {
 			<Card className="bg-card/70">
 				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
 					<div>
-						<CardTitle className="text-base">Recent file activity</CardTitle>
+						<CardTitle className="text-sm font-medium">
+							Recent file activity
+						</CardTitle>
 					</div>
 				</CardHeader>
 				<CardContent className="px-0 pb-0">
@@ -806,85 +787,85 @@ export function FileManagementPage() {
 										? `/admin/file-monitoring/select?vendor=${vendorId}`
 										: "/admin/file-monitoring/select";
 									return (
-									<TableRow
-										key={row.id}
-										className="cursor-pointer hover:bg-muted/30"
-										onClick={() => router.push(vendorHref)}
-									>
-										<TableCell className="pl-4 sm:pl-6">
-											<div className="flex items-center gap-2.5">
-												<VendorAvatarBadge
-													vendorId={vendorId}
-													vendorName={row.vendor}
-													size="sm"
-												/>
-												<span className="font-medium">{row.vendor}</span>
-											</div>
-										</TableCell>
-										<TableCell className="font-mono text-xs text-muted-foreground">
-											{row.account}
-										</TableCell>
-										<TableCell>{row.fileType}</TableCell>
-										<TableCell>
-											<span className="inline-flex items-center gap-1 text-xs capitalize text-muted-foreground">
-												{row.direction === "inbound" ? (
-													<ArrowDownLeft className="size-3.5 text-sky-600" />
-												) : (
-													<ArrowUpRight className="size-3.5 text-violet-600" />
-												)}
-												{row.direction}
-											</span>
-										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{row.frequency}
-										</TableCell>
-										<TableCell className="tabular-nums">
-											{timeOnly(row.expectedAt)}
-										</TableCell>
-										<TableCell className="tabular-nums text-muted-foreground">
-											{timeOnly(row.receivedAt) ?? "—"}
-										</TableCell>
-										<TableCell>
-											<StatusBadge status={row.status} />
-										</TableCell>
-										<TableCell className="max-w-[180px] truncate font-mono text-xs">
-											{row.fileName ?? "—"}
-										</TableCell>
-										<TableCell className="text-right tabular-nums text-muted-foreground">
-											{row.records ?? "—"}
-										</TableCell>
-										<TableCell
-											className="pr-4 text-right sm:pr-6"
-											onClick={(e) => e.stopPropagation()}
+										<TableRow
+											key={row.id}
+											className="cursor-pointer hover:bg-muted/30"
+											onClick={() => router.push(vendorHref)}
 										>
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
-														className="size-8"
-													>
-														<MoreHorizontal className="size-4" />
-														<span className="sr-only">Actions</span>
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													<DropdownMenuItem asChild>
-														<Link href={vendorHref}>
-															<ExternalLink className="mr-2 size-3.5" />
-															View vendor detail
-														</Link>
-													</DropdownMenuItem>
-													<DropdownMenuItem asChild>
-														<Link href={`/admin/file-monitoring/${row.id}`}>
-															<ExternalLink className="mr-2 size-3.5" />
-															View run detail
-														</Link>
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										</TableCell>
-									</TableRow>
+											<TableCell className="pl-4 sm:pl-6">
+												<div className="flex items-center gap-2.5">
+													<VendorAvatarBadge
+														vendorId={vendorId}
+														vendorName={row.vendor}
+														size="sm"
+													/>
+													<span className="font-medium">{row.vendor}</span>
+												</div>
+											</TableCell>
+											<TableCell className="font-mono text-xs text-muted-foreground">
+												{row.account}
+											</TableCell>
+											<TableCell>{row.fileType}</TableCell>
+											<TableCell>
+												<span className="inline-flex items-center gap-1 text-xs capitalize text-muted-foreground">
+													{row.direction === "inbound" ? (
+														<ArrowDownLeft className="size-3.5 text-sky-600" />
+													) : (
+														<ArrowUpRight className="size-3.5 text-violet-600" />
+													)}
+													{row.direction}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{row.frequency}
+											</TableCell>
+											<TableCell className="tabular-nums">
+												{timeOnly(row.expectedAt)}
+											</TableCell>
+											<TableCell className="tabular-nums text-muted-foreground">
+												{timeOnly(row.receivedAt) ?? "—"}
+											</TableCell>
+											<TableCell>
+												<StatusBadge status={row.status} />
+											</TableCell>
+											<TableCell className="max-w-[180px] truncate font-mono text-xs">
+												{row.fileName ?? "—"}
+											</TableCell>
+											<TableCell className="text-right tabular-nums text-muted-foreground">
+												{row.records ?? "—"}
+											</TableCell>
+											<TableCell
+												className="pr-4 text-right sm:pr-6"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="size-8"
+														>
+															<MoreHorizontal className="size-4" />
+															<span className="sr-only">Actions</span>
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem asChild>
+															<Link href={vendorHref}>
+																<ExternalLink className="mr-2 size-3.5" />
+																View vendor detail
+															</Link>
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<Link href={`/admin/file-monitoring/${row.id}`}>
+																<ExternalLink className="mr-2 size-3.5" />
+																View run detail
+															</Link>
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</TableCell>
+										</TableRow>
 									);
 								})}
 								{pageRows.length === 0 && (
@@ -903,10 +884,8 @@ export function FileManagementPage() {
 					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-3 text-sm text-muted-foreground sm:px-6">
 						<span>
 							Showing{" "}
-							{filteredFiles.length === 0
-								? 0
-								: (page - 1) * pageSize + 1}{" "}
-							to {Math.min(page * pageSize, filteredFiles.length)} of{" "}
+							{filteredFiles.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
+							{Math.min(page * pageSize, filteredFiles.length)} of{" "}
 							{filteredFiles.length} results
 						</span>
 						<div className="flex items-center gap-1">

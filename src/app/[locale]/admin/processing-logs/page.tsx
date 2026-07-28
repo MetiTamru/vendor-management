@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
-import { ProcessingLogsPage } from "@/features/admin/features/processing-logs/pages/ProcessingLogsPage";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProcessingLogsPage } from "@/features/admin/features/processing-logs/pages/ProcessingLogsPage";
 
 export default function Page() {
 	return (

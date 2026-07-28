@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-import { Download, Filter, RefreshCw, Settings2, ShieldCheck } from "lucide-react";
+import {
+	Download,
+	Filter,
+	RefreshCw,
+	Settings2,
+	ShieldCheck,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +35,8 @@ export function SettingsPage() {
 	const [category, setCategory] = useState("all");
 
 	const categories = useMemo(
-		() => Array.from(new Set(settings.map((setting) => setting.category))).sort(),
+		() =>
+			Array.from(new Set(settings.map((setting) => setting.category))).sort(),
 		[settings]
 	);
 
@@ -38,7 +45,9 @@ export function SettingsPage() {
 		return settings.filter((s) => {
 			if (category !== "all" && s.category !== category) return false;
 			if (!q) return true;
-			return s.key.toLowerCase().includes(q) || s.category.toLowerCase().includes(q);
+			return (
+				s.key.toLowerCase().includes(q) || s.category.toLowerCase().includes(q)
+			);
 		});
 	}, [category, settings, search]);
 
@@ -67,7 +76,7 @@ export function SettingsPage() {
 						{t("title")}
 					</h1>
 					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-					{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
+						{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -157,7 +166,9 @@ export function SettingsPage() {
 									<p className="mt-2 text-2xl font-semibold tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(

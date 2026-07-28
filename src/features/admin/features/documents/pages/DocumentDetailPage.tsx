@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useParams } from "next/navigation";
+import { type ReactNode, useMemo } from "react";
 
 import {
 	AlertTriangle,
@@ -18,7 +19,6 @@ import {
 	User,
 	XCircle,
 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,9 @@ function daysUntilExpiry(expiresAt: string | null) {
 	today.setHours(0, 0, 0, 0);
 	const expiry = new Date(expiresAt);
 	expiry.setHours(0, 0, 0, 0);
-	return Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+	return Math.ceil(
+		(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+	);
 }
 
 function expiryProgress(days: number | null, horizon = 365) {
@@ -390,9 +392,7 @@ export function DocumentDetailPage() {
 								<MetaItem
 									label="File size"
 									value={
-										document.fileSizeKb
-											? `${document.fileSizeKb} KB`
-											: "—"
+										document.fileSizeKb ? `${document.fileSizeKb} KB` : "—"
 									}
 								/>
 								<MetaItem
@@ -489,7 +489,8 @@ export function DocumentDetailPage() {
 							) : (
 								<ol className="space-y-0">
 									{(document.history ?? []).map((entry, index) => {
-										const isLast = index === (document.history?.length ?? 0) - 1;
+										const isLast =
+											index === (document.history?.length ?? 0) - 1;
 										return (
 											<li
 												key={entry.id}

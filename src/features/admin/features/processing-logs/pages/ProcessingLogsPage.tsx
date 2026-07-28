@@ -1,22 +1,33 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
+	ArrowDown,
+	ArrowDownLeft,
+	ArrowDownToLine,
 	ArrowLeft,
+	Check,
 	CheckCircle2,
+	ClipboardCopy,
+	Copy,
 	Download,
+	ExternalLink,
+	FileText,
+	Filter,
 	Info,
-	RefreshCw,
+	RotateCcw,
 	Search,
 	XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -34,27 +45,62 @@ import {
 } from "@/components/ui/table";
 import {
 	FILE_RUNS,
-	displayRunStatus,
-	getFileRun,
 	type FileRun,
 	type LogEntry,
+	displayRunStatus,
+	getFileRun,
+	markFileRunReviewed,
 } from "@/features/admin/features/file-management/mock-data";
-import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-type ViewerLog = LogEntry & {
+type LogSource = "File Receiver" | "Parser" | "Validation" | "Processor";
+
+type ViewerLog = {
+	id: string;
 	timestamp: string;
-	component: string;
-	details: string;
+	timeSort: number;
+	level: LogEntry["level"];
+	source: LogSource;
+	message: string;
+	relatedRecord: string | null;
+	errorCode?: string;
+	memberId?: string;
+	lineNumber?: number;
 };
 
 function pad2(n: number) {
 	return String(n).padStart(2, "0");
 }
 
-function buildTimestamp(datePart: string, h: number, m: number, s: number) {
-	return `${datePart} ${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+function formatTime12h(h: number, m: number, s: number) {
+	const period = h >= 12 ? "PM" : "AM";
+	const hour12 = h % 12 || 12;
+	return `${pad2(hour12)}:${pad2(m)}:${pad2(s)} ${period}`;
+}
+
+function formatProcessDateTime(run: FileRun) {
+	const raw = run.startedAt ?? run.expectedAt;
+	if (!raw) return "—";
+	const [datePart, timePart] = raw.split(" ");
+	if (!datePart || !timePart) return raw;
+	const [y, mo, d] = datePart.split("-");
+	const [h, mi] = timePart.split(":").map(Number);
+	const period = (h ?? 0) >= 12 ? "PM" : "AM";
+	const hour12 = (h ?? 0) % 12 || 12;
+	return `${mo}/${d}/${y} ${hour12}:${pad2(mi ?? 0)} ${period}`;
+}
+
+function buildTimestamp(
+	datePart: string,
+	h: number,
+	m: number,
+	s: number
+): { display: string; sort: number } {
+	return {
+		display: formatTime12h(h, m, s),
+		sort: h * 3600 + m * 60 + s,
+	};
 }
 
 function seedLogsForRun(run: FileRun): ViewerLog[] {
@@ -83,54 +129,43 @@ function seedLogsForRun(run: FileRun): ViewerLog[] {
 	const logs: ViewerLog[] = [];
 	const push = (
 		level: LogEntry["level"],
-		component: string,
+		source: LogSource,
 		message: string,
-		details: string,
-		addSec = 1
+		opts: {
+			relatedRecord?: string | null;
+			errorCode?: string;
+			memberId?: string;
+			lineNumber?: number;
+			addSec?: number;
+		} = {}
 	) => {
-		const timestamp = next(addSec);
+		const ts = next(opts.addSec ?? 1);
 		logs.push({
 			id: `${run.id}-v-${logs.length + 1}`,
-			at: timestamp.slice(-8),
-			timestamp,
+			timestamp: ts.display,
+			timeSort: ts.sort,
 			level,
-			component,
+			source,
 			message,
-			details,
+			relatedRecord: opts.relatedRecord ?? null,
+			errorCode: opts.errorCode,
+			memberId: opts.memberId,
+			lineNumber: opts.lineNumber,
 		});
 	};
 
-	push(
-		"info",
-		"FileReceiver",
-		"File received successfully",
-		run.fileName
-			? `File size: ${run.fileSizeKb ?? 12400} KB · ${run.fileName}`
-			: "No file object present",
-		0
-	);
-	push("info", "FileReceiver", "Checksum verification started", run.checksum ?? "pending");
-	push(
-		"info",
-		"FileReceiver",
-		"Checksum verified",
-		run.checksum ?? "sha256:verified"
-	);
-	push("info", "Parser", "Parsing control segments", `Protocol: ${run.protocol}`);
-	push("info", "Parser", "Parsing ISA / header segment", `Run ${run.runId}`);
+	push("info", "File Receiver", "File received successfully", { addSec: 0 });
+	push("info", "File Receiver", "Checksum verification started");
+	push("info", "File Receiver", "Checksum verified");
+	push("info", "Parser", "Parsing control segments");
+	push("info", "Parser", "Parsing ISA / header segment");
 	push(
 		"info",
 		"Parser",
-		"Header parse complete",
-		`Records detected: ${(run.records ?? 0).toLocaleString()}`
+		`Header parse complete — ${(run.records ?? 0).toLocaleString()} records detected`
 	);
-	push("info", "Validator", "File validation started", `Profile: ${run.scheduleId}`);
-	push(
-		"info",
-		"Validator",
-		"Schema validation started",
-		`File type: ${run.fileType}`
-	);
+	push("info", "Validation", "File validation started");
+	push("info", "Validation", "Schema validation started");
 
 	for (const step of run.pipeline) {
 		const level =
@@ -139,77 +174,75 @@ function seedLogsForRun(run: FileRun): ViewerLog[] {
 				: step.status === "running"
 					? "warn"
 					: "info";
-		push(
-			level,
-			"Processor",
-			`Pipeline step: ${step.label}`,
-			step.detail ??
-				`Status: ${step.status}${step.at ? ` · ${step.at}` : ""}`,
-			2
-		);
+		push(level, "Processor", `Pipeline step: ${step.label}`, {
+			relatedRecord: step.detail ? null : null,
+		});
 	}
 
 	for (const issue of run.issues) {
-		const component = "Validator";
-		if (issue.severity === "error") {
+		if (issue.severity === "error" || issue.severity === "warning") {
 			push(
-				"warn",
-				component,
+				issue.severity === "error" ? "warn" : "warn",
+				"Validation",
 				`Reference check: ${issue.message}`,
-				`ID: ${issue.memberId ?? "—"} | Line: ${issue.line ?? "—"}`,
-				1
+				{
+					relatedRecord: issue.memberId ?? null,
+					memberId: issue.memberId,
+					lineNumber: issue.line,
+				}
 			);
-			push(
-				"error",
-				component,
-				`Validation failed: ${issue.code}`,
-				`${issue.message} | Line: ${issue.line ?? "—"}`,
-				0
-			);
-			push(
-				"info",
-				"Processor",
-				"Row quarantined",
-				`Code ${issue.code} · Field ${issue.field ?? "—"}`,
-				1
-			);
+		}
+		if (issue.severity === "error") {
+			push("error", "Validation", issue.message, {
+				relatedRecord: issue.memberId ?? null,
+				errorCode: issue.code,
+				memberId: issue.memberId,
+				lineNumber: issue.line,
+			});
+			push("info", "Processor", "Row quarantined", {
+				relatedRecord: issue.memberId ?? null,
+				memberId: issue.memberId,
+				lineNumber: issue.line,
+			});
 		} else if (issue.severity === "warning") {
-			push(
-				"warn",
-				component,
-				`Validation warning: ${issue.code}`,
-				`${issue.message} | Line: ${issue.line ?? "—"}`,
-				1
-			);
-		} else {
-			push(
-				"info",
-				component,
-				`Validation note: ${issue.code}`,
-				issue.message,
-				1
-			);
+			push("warn", "Validation", issue.message, {
+				relatedRecord: issue.memberId ?? null,
+				errorCode: issue.code,
+				memberId: issue.memberId,
+				lineNumber: issue.line,
+			});
 		}
 	}
 
-	// Pad to a rich stream so pagination matches the mockup feel
-	const fillers: Array<[LogEntry["level"], string, string, string]> = [
-		["info", "Processor", "Business rules evaluation started", "Rule set v3.2"],
-		["info", "Processor", "Cross-reference lookup", "Subscriber reference file loaded"],
-		["debug", "Parser", "Segment buffer flushed", "Buffer size 64 KB"],
-		["info", "FileReceiver", "Watch folder poll complete", "No additional objects"],
-		["info", "Processor", "Quarantine store write", `Path /quarantine/${run.id}`],
-		["warn", "Validator", "Soft validation threshold approaching", "Warning budget 80%"],
-		["info", "Processor", "Partial commit checkpoint", "Batch size 500"],
-		["debug", "Parser", "Character encoding detected", "UTF-8"],
-		["info", "Validator", "Companion guide checks", "Section 2.2 rules applied"],
-		["info", "Processor", "Downstream handoff prepared", run.destinationPath ?? "staging"],
-	];
+	const fillers: Array<[LogEntry["level"], LogSource, string, string | null]> =
+		[
+			["info", "Processor", "Business rules evaluation started", null],
+			["info", "Processor", "Cross-reference lookup complete", "MBR-100234"],
+			["info", "Parser", "Segment buffer flushed", null],
+			["info", "File Receiver", "Watch folder poll complete", null],
+			["info", "Processor", "Quarantine store write", null],
+			["warn", "Validation", "Soft validation threshold approaching", null],
+			["info", "Processor", "Partial commit checkpoint", "MBR-100235"],
+			["info", "Parser", "Character encoding detected (UTF-8)", null],
+			["info", "Validation", "Companion guide checks applied", null],
+			["info", "Processor", "Downstream handoff prepared", null],
+			["warn", "Validation", "Missing optional segment REF", "MBR-100236"],
+			["info", "Processor", "Duplicate detection scan", "MBR-100237"],
+			[
+				"error",
+				"Validation",
+				"Invalid date format in segment DTP*356",
+				"MBR-100234",
+			],
+			["info", "File Receiver", "Archive copy stored", null],
+			["debug", "Parser", "Token stream checkpoint", null],
+		];
 
 	let i = 0;
-	while (logs.length < 48) {
-		const [level, component, message, details] = fillers[i % fillers.length]!;
-		push(level, component, `${message} (#${logs.length + 1})`, details, 1);
+	while (logs.length < 128) {
+		const [level, source, message, relatedRecord] =
+			fillers[i % fillers.length]!;
+		push(level, source, message, { relatedRecord });
 		i += 1;
 	}
 
@@ -219,8 +252,7 @@ function seedLogsForRun(run: FileRun): ViewerLog[] {
 		run.errorCount > 0
 			? "File processing completed with errors"
 			: "File processing completed successfully",
-		`Errors: ${run.errorCount} | Warnings: ${run.warningCount} | Loaded: ${(run.recordsLoaded ?? 0).toLocaleString()}`,
-		3
+		{ addSec: 3 }
 	);
 
 	return logs;
@@ -236,55 +268,29 @@ function logsForRun(run: FileRun): ViewerLog[] {
 	return built;
 }
 
-function LevelBadge({ level }: { level: LogEntry["level"] }) {
-	const label =
-		level === "warn" ? "WARN" : level === "debug" ? "DEBUG" : level.toUpperCase();
-	const styles: Record<LogEntry["level"], string> = {
-		error: "bg-red-600 text-white",
-		warn: "bg-amber-500 text-white",
-		info: "bg-sky-600 text-white",
-		debug: "bg-zinc-500 text-white",
-	};
+function LevelCell({ level }: { level: LogEntry["level"] }) {
+	if (level === "error") {
+		return (
+			<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
+				<XCircle className="size-3.5 shrink-0" />
+				ERROR
+			</span>
+		);
+	}
+	if (level === "warn") {
+		return (
+			<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+				<AlertTriangle className="size-3.5 shrink-0" />
+				WARNING
+			</span>
+		);
+	}
 	return (
-		<span
-			className={cn(
-				"inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide",
-				styles[level]
-			)}
-		>
-			{label}
+		<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600">
+			<Info className="size-3.5 shrink-0" />
+			INFO
 		</span>
 	);
-}
-
-function ComponentChip({ name }: { name: string }) {
-	const tone =
-		name === "Validator"
-			? "bg-violet-100 text-violet-800 border-violet-200"
-			: name === "FileReceiver"
-				? "bg-emerald-100 text-emerald-800 border-emerald-200"
-				: name === "Parser"
-					? "bg-sky-100 text-sky-800 border-sky-200"
-					: name === "Processor"
-						? "bg-orange-100 text-orange-800 border-orange-200"
-						: "bg-primary/10 text-primary border-primary/20";
-	return (
-		<span
-			className={cn(
-				"inline-flex rounded-md border px-2 py-0.5 text-xs font-semibold",
-				tone
-			)}
-		>
-			{name}
-		</span>
-	);
-}
-
-function rowTone(level: LogEntry["level"]) {
-	if (level === "error") return "bg-red-50/80 hover:bg-red-50";
-	if (level === "warn") return "bg-amber-50/70 hover:bg-amber-50";
-	if (level === "info") return "hover:bg-sky-50/60";
-	return "hover:bg-muted/40";
 }
 
 function RunStatus({ status }: { status: FileRun["status"] }) {
@@ -299,7 +305,7 @@ function RunStatus({ status }: { status: FileRun["status"] }) {
 	}
 	if (label === "Failed") {
 		return (
-			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700">
+			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600">
 				<XCircle className="size-4 text-red-600" />
 				Failed
 			</span>
@@ -307,30 +313,57 @@ function RunStatus({ status }: { status: FileRun["status"] }) {
 	}
 	if (label === "Warning") {
 		return (
-			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700">
+			<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600">
 				<AlertTriangle className="size-4 text-amber-500" />
 				Warning
 			</span>
 		);
 	}
 	return (
-		<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700">
-			<Info className="size-4 text-sky-600" />
+		<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
 			{label}
 		</span>
 	);
 }
 
-function MetaItem({ label, value }: { label: string; value: ReactNode }) {
+function MetaField({ label, value }: { label: string; value: ReactNode }) {
 	return (
 		<div className="min-w-0">
-			<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-				{label}
-			</p>
-			<div className="mt-1 truncate text-sm font-medium">{value}</div>
+			<p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+			<div className="mt-0.5 truncate text-sm font-semibold text-foreground">
+				{value}
+			</div>
 		</div>
 	);
 }
+
+function DetailRow({ label, value }: { label: string; value: ReactNode }) {
+	return (
+		<div className="flex items-start justify-between gap-3 border-b border-border/40 py-2 last:border-0">
+			<span className="shrink-0 text-xs text-muted-foreground">{label}</span>
+			<span className="min-w-0 text-right text-xs font-medium">{value}</span>
+		</div>
+	);
+}
+
+function downloadTextFile(
+	filename: string,
+	content: string,
+	mime = "text/plain"
+) {
+	const blob = new Blob([content], { type: mime });
+	const url = URL.createObjectURL(blob);
+	const anchor = document.createElement("a");
+	anchor.href = url;
+	anchor.download = filename;
+	document.body.appendChild(anchor);
+	anchor.click();
+	anchor.remove();
+	URL.revokeObjectURL(url);
+}
+
+const outlineBtn =
+	"h-9 border-primary/30 bg-card text-primary hover:bg-primary/5 hover:text-primary";
 
 export function ProcessingLogsPage() {
 	const searchParams = useSearchParams();
@@ -340,362 +373,676 @@ export function ProcessingLogsPage() {
 		FILE_RUNS.find((r) => r.status === "failed") ??
 		FILE_RUNS[0]!;
 
-	const vendorId = vendorIdForRun(run);
-	const selectHref = vendorId
-		? `/admin/file-monitoring/select?vendor=${vendorId}`
-		: "/admin/file-monitoring/select";
 	const runHref = `/admin/file-monitoring/${run.id}`;
-
-	const [level, setLevel] = useState("all");
-	const [query, setQuery] = useState("");
-	const [page, setPage] = useState(1);
-	const [refreshing, setRefreshing] = useState(false);
-	const pageSize = 12;
+	const firstErrorIssue = run.issues.find((i) => i.severity === "error");
+	const investigationHref = firstErrorIssue
+		? `/admin/file-monitoring/${run.id}/investigate/${firstErrorIssue.id}`
+		: runHref;
 
 	const allLogs = useMemo(() => logsForRun(run), [run]);
 
+	const [reviewed, setReviewed] = useState(run.reviewed);
+	const [selectedLogId, setSelectedLogId] = useState<string | null>(
+		() => allLogs.find((l) => l.level === "error")?.id ?? allLogs[0]?.id ?? null
+	);
+	const [page, setPage] = useState(1);
+	const pageSize = 50;
+
+	const [draftQuery, setDraftQuery] = useState("");
+	const [draftLevel, setDraftLevel] = useState("all");
+	const [draftSection, setDraftSection] = useState("all");
+	const [draftTimeRange, setDraftTimeRange] = useState("entire");
+
+	const [query, setQuery] = useState("");
+	const [level, setLevel] = useState("all");
+	const [section, setSection] = useState("all");
+	const [timeRange, setTimeRange] = useState("entire");
+
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
+		const minSort =
+			timeRange === "first5"
+				? (allLogs[0]?.timeSort ?? 0)
+				: timeRange === "last5"
+					? (allLogs[allLogs.length - 1]?.timeSort ?? 0) - 300
+					: 0;
+		const maxSort =
+			timeRange === "first5" ? (allLogs[0]?.timeSort ?? 0) + 300 : Infinity;
+
 		return allLogs.filter((log) => {
 			if (level !== "all" && log.level !== level) return false;
+			if (section !== "all" && log.source !== section) return false;
+			if (timeRange === "first5" && log.timeSort > maxSort) return false;
+			if (timeRange === "last5" && log.timeSort < minSort) return false;
 			if (!q) return true;
-			return [log.message, log.component, log.details, log.timestamp]
+			return [
+				log.message,
+				log.source,
+				log.relatedRecord,
+				log.errorCode,
+				log.memberId,
+				run.correlationId,
+			]
+				.filter(Boolean)
 				.join(" ")
 				.toLowerCase()
 				.includes(q);
 		});
-	}, [allLogs, level, query]);
+	}, [allLogs, level, query, run.correlationId, section, timeRange]);
 
 	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
 	const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-	const pageButtons = useMemo(() => {
-		if (pageCount <= 7) {
-			return Array.from({ length: pageCount }, (_, i) => i + 1);
-		}
-		const set = new Set(
-			[1, 2, 3, 4, 5, page, pageCount, pageCount - 1].filter(
-				(p) => p >= 1 && p <= pageCount
-			)
-		);
-		return Array.from(set).sort((a, b) => a - b);
-	}, [page, pageCount]);
+	const selectedLog =
+		filtered.find((l) => l.id === selectedLogId) ??
+		allLogs.find((l) => l.id === selectedLogId) ??
+		pageRows[0] ??
+		allLogs[0] ??
+		null;
 
-	async function handleRefresh() {
-		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 400));
-		setRefreshing(false);
-		toast.success("Log stream refreshed");
+	const summary = useMemo(() => {
+		const errors = allLogs.filter((l) => l.level === "error");
+		const warnings = allLogs.filter((l) => l.level === "warn");
+		const infos = allLogs.filter((l) => l.level === "info");
+		const firstError = errors[0];
+		const lastEvent = allLogs[allLogs.length - 1];
+		return {
+			total: allLogs.length,
+			info: infos.length,
+			warnings: warnings.length,
+			errors: errors.length,
+			firstErrorTime: firstError?.timestamp ?? "—",
+			lastEventTime: lastEvent?.timestamp ?? "—",
+		};
+	}, [allLogs]);
+
+	function applyFilters() {
+		setQuery(draftQuery);
+		setLevel(draftLevel);
+		setSection(draftSection);
+		setTimeRange(draftTimeRange);
+		setPage(1);
+	}
+
+	function clearFilters() {
+		setDraftQuery("");
+		setDraftLevel("all");
+		setDraftSection("all");
+		setDraftTimeRange("entire");
+		setQuery("");
+		setLevel("all");
+		setSection("all");
+		setTimeRange("entire");
+		setPage(1);
+	}
+
+	function copyLog() {
+		const text = filtered
+			.map(
+				(l) =>
+					`${l.timestamp}\t${l.level.toUpperCase()}\t${l.source}\t${l.message}\t${l.relatedRecord ?? ""}`
+			)
+			.join("\n");
+		void navigator.clipboard.writeText(text);
+		toast.success("Log copied to clipboard");
+	}
+
+	function downloadLog() {
+		const text = filtered
+			.map(
+				(l) =>
+					`[${l.timestamp}] [${l.level.toUpperCase()}] [${l.source}] ${l.message}${l.relatedRecord ? ` | ${l.relatedRecord}` : ""}`
+			)
+			.join("\n");
+		downloadTextFile(`${run.runId}-processing.log`, text);
+		toast.success("Log download started");
+	}
+
+	function exportLogResults() {
+		const header =
+			"timestamp,level,source,message,related_record,error_code,member_id,line";
+		const rows = filtered.map((l) =>
+			[
+				l.timestamp,
+				l.level,
+				l.source,
+				`"${l.message.replace(/"/g, '""')}"`,
+				l.relatedRecord ?? "",
+				l.errorCode ?? "",
+				l.memberId ?? "",
+				l.lineNumber ?? "",
+			].join(",")
+		);
+		downloadTextFile(
+			`${run.runId}-log-export.csv`,
+			[header, ...rows].join("\n"),
+			"text/csv"
+		);
+		toast.success("Log results exported");
 	}
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-5 pb-4">
+			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="min-w-0 flex-1">
-					<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
-						<Link href="/admin/file-monitoring" className="hover:underline">
-							File Monitoring
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<Link href={selectHref} className="hover:underline">
-							File Runs
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<Link href={runHref} className="hover:underline">
-							File Run Details
-						</Link>
-						<span className="text-muted-foreground">&gt;</span>
-						<span className="text-foreground">Processing Log</span>
-					</nav>
-					<div className="mt-2">
-						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-							Processing Log Viewer
-						</h1>
-						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
-							Event trail for {run.runId} · {run.vendor}
-						</p>
-					</div>
+					<h1 className="text-2xl font-bold tracking-tight text-primary sm:text-[28px]">
+						Processing Log Viewer
+					</h1>
+					<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+						Review the processing log, system messages, warnings, and errors for
+						the selected file run.
+					</p>
 				</div>
 				<Button
 					variant="outline"
 					size="sm"
-					className="h-9 border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+					className={cn(outlineBtn, "shrink-0")}
 					asChild
 				>
 					<Link href={runHref} className="inline-flex items-center gap-1.5">
 						<ArrowLeft className="size-3.5 shrink-0" />
-						<span>Back to File Run Details</span>
+						Back to File Run Details
 					</Link>
 				</Button>
 			</div>
 
-			{/* Metadata summary bar */}
-			<div className="grid gap-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-card to-sky-50/80 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				<MetaItem
-					label="File Name"
-					value={
-						<span className="font-mono text-xs text-primary">
-							{run.fileName ?? "—"}
-						</span>
-					}
-				/>
-				<MetaItem label="File Type" value={run.fileType} />
-				<MetaItem
-					label="Run GUID"
-					value={
-						<span className="font-mono text-xs">{run.correlationId}</span>
-					}
-				/>
-				<MetaItem
-					label="Run Date/Time"
-					value={run.startedAt ?? run.expectedAt}
-				/>
-				<MetaItem label="Status" value={<RunStatus status={run.status} />} />
-				<MetaItem
-					label="Duration"
-					value={
-						<span className="font-semibold tabular-nums text-primary">
-							{run.duration ?? "—"}
-						</span>
-					}
-				/>
-			</div>
-
-			{/* Level summary chips */}
-			<div className="flex flex-wrap gap-2">
-				{[
-					{
-						key: "all",
-						label: "All",
-						count: allLogs.length,
-						className: "bg-primary text-primary-foreground border-primary",
-					},
-					{
-						key: "error",
-						label: "ERROR",
-						count: allLogs.filter((l) => l.level === "error").length,
-						className: "bg-red-600 text-white border-red-600",
-					},
-					{
-						key: "warn",
-						label: "WARN",
-						count: allLogs.filter((l) => l.level === "warn").length,
-						className: "bg-amber-500 text-white border-amber-500",
-					},
-					{
-						key: "info",
-						label: "INFO",
-						count: allLogs.filter((l) => l.level === "info").length,
-						className: "bg-sky-600 text-white border-sky-600",
-					},
-					{
-						key: "debug",
-						label: "DEBUG",
-						count: allLogs.filter((l) => l.level === "debug").length,
-						className: "bg-zinc-500 text-white border-zinc-500",
-					},
-				].map((chip) => (
-					<button
-						key={chip.key}
-						type="button"
-						onClick={() => {
-							setLevel(chip.key);
-							setPage(1);
-						}}
-						className={cn(
-							"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-opacity",
-							level === chip.key ? chip.className : "border-border bg-card text-muted-foreground hover:border-primary/40",
-							level === chip.key && "ring-2 ring-offset-1 ring-primary/30"
-						)}
-					>
-						{chip.label}
-						<span
-							className={cn(
-								"rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
-								level === chip.key
-									? "bg-white/20"
-									: "bg-muted text-foreground"
-							)}
-						>
-							{chip.count}
-						</span>
-					</button>
-				))}
-			</div>
-
-			{/* Toolbar */}
-			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-sky-200/70 bg-sky-50/50 p-3">
-				<Select
-					value={level}
-					onValueChange={(v) => {
-						setLevel(v);
-						setPage(1);
-					}}
-				>
-					<SelectTrigger className="h-9 w-[120px] border-sky-200 bg-card">
-						<SelectValue placeholder="All" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
-						<SelectItem value="info">INFO</SelectItem>
-						<SelectItem value="warn">WARN</SelectItem>
-						<SelectItem value="error">ERROR</SelectItem>
-						<SelectItem value="debug">DEBUG</SelectItem>
-					</SelectContent>
-				</Select>
-
-				<div className="relative min-w-[200px] flex-1">
-					<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-sky-700" />
-					<Input
-						value={query}
-						onChange={(e) => {
-							setQuery(e.target.value);
-							setPage(1);
-						}}
-						placeholder="Search in logs..."
-						className="h-9 border-sky-200 bg-card pl-8"
+			{/* Metadata summary */}
+			<div className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
+				<div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
+					<MetaField label="Vendor" value={run.vendor} />
+					<MetaField label="Account" value={run.account} />
+					<MetaField label="File Type" value={run.fileType} />
+					<MetaField
+						label="File Name"
+						value={
+							<span className="font-mono text-xs font-semibold">
+								{run.fileName ?? "—"}
+							</span>
+						}
+					/>
+					<MetaField
+						label="Run GUID"
+						value={
+							<span className="font-mono text-xs font-semibold">
+								{run.correlationId}
+							</span>
+						}
 					/>
 				</div>
+				<div className="mt-4 grid gap-x-6 gap-y-4 border-t border-border/40 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+					<MetaField
+						label="Direction"
+						value={
+							<span className="inline-flex items-center gap-1.5 text-sky-600">
+								{run.direction === "inbound" ? (
+									<>
+										<ArrowDownLeft className="size-3.5" />
+										Incoming
+									</>
+								) : (
+									<>
+										<ArrowDownToLine className="size-3.5 rotate-180" />
+										Outgoing
+									</>
+								)}
+							</span>
+						}
+					/>
+					<MetaField label="Status" value={<RunStatus status={run.status} />} />
+					<MetaField
+						label="Process Date/Time"
+						value={formatProcessDateTime(run)}
+					/>
+					<MetaField
+						label="Duration"
+						value={
+							<span className="font-mono tabular-nums">
+								{run.duration ?? "—"}
+							</span>
+						}
+					/>
+				</div>
+			</div>
 
-				<div className="ml-auto flex flex-wrap gap-2">
+			{/* Filters */}
+			<div className="flex flex-wrap items-end gap-3">
+				<div className="min-w-[220px] flex-1">
+					<div className="relative">
+						<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							value={draftQuery}
+							onChange={(e) => setDraftQuery(e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+							placeholder="Search log text, member ID, error code, or Run GUID"
+							className="h-10 border-border/60 bg-card pl-9 text-sm"
+						/>
+					</div>
+				</div>
+
+				<div className="space-y-1">
+					<Label className="text-[11px] font-medium text-muted-foreground">
+						Log Level
+					</Label>
+					<Select value={draftLevel} onValueChange={setDraftLevel}>
+						<SelectTrigger className="h-10 w-[120px] border-border/60 bg-card text-sm">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All</SelectItem>
+							<SelectItem value="info">Info</SelectItem>
+							<SelectItem value="warn">Warning</SelectItem>
+							<SelectItem value="error">Error</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="space-y-1">
+					<Label className="text-[11px] font-medium text-muted-foreground">
+						Section
+					</Label>
+					<Select value={draftSection} onValueChange={setDraftSection}>
+						<SelectTrigger className="h-10 w-[140px] border-border/60 bg-card text-sm">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All</SelectItem>
+							<SelectItem value="File Receiver">File Receiver</SelectItem>
+							<SelectItem value="Parser">Parser</SelectItem>
+							<SelectItem value="Validation">Validation</SelectItem>
+							<SelectItem value="Processor">Processor</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="space-y-1">
+					<Label className="text-[11px] font-medium text-muted-foreground">
+						Time Range
+					</Label>
+					<Select value={draftTimeRange} onValueChange={setDraftTimeRange}>
+						<SelectTrigger className="h-10 w-[140px] border-border/60 bg-card text-sm">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="entire">Entire Run</SelectItem>
+							<SelectItem value="first5">First 5 min</SelectItem>
+							<SelectItem value="last5">Last 5 min</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						size="sm"
+						className="h-10 gap-1.5 px-4"
+						onClick={applyFilters}
+					>
+						<Filter className="size-3.5" />
+						Apply Filters
+					</Button>
 					<Button
 						variant="outline"
 						size="sm"
-						className="h-9 border-primary/30 bg-card text-primary hover:bg-primary/5"
-						onClick={() => toast.message("Log download started.")}
+						className={outlineBtn}
+						onClick={clearFilters}
 					>
-						<span className="inline-flex items-center gap-1.5">
-							<Download className="size-3.5 shrink-0" />
-							<span>Download Log</span>
-						</span>
+						<RotateCcw className="size-3.5" />
+						Clear
 					</Button>
 					<Button
+						variant="outline"
 						size="sm"
-						className="h-9"
-						onClick={handleRefresh}
-						disabled={refreshing}
+						className={outlineBtn}
+						onClick={copyLog}
 					>
-						<span className="inline-flex items-center gap-1.5">
-							<RefreshCw
-								className={cn("size-3.5 shrink-0", refreshing && "animate-spin")}
-							/>
-							<span>Refresh</span>
-						</span>
+						<ClipboardCopy className="size-3.5" />
+						Copy Log
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className={outlineBtn}
+						onClick={downloadLog}
+					>
+						<Download className="size-3.5" />
+						Download Log
 					</Button>
 				</div>
 			</div>
 
-			{/* Log table */}
-			<div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
-				<div className="overflow-x-auto">
-					<Table>
-						<TableHeader>
-							<TableRow className="border-b-primary/20 bg-primary/[0.04] hover:bg-primary/[0.04]">
-								<TableHead className="pl-4 font-semibold text-primary sm:pl-6">
-									Timestamp
-								</TableHead>
-								<TableHead className="font-semibold text-primary">Level</TableHead>
-								<TableHead className="font-semibold text-primary">
-									Component
-								</TableHead>
-								<TableHead className="font-semibold text-primary">
-									Message
-								</TableHead>
-								<TableHead className="pr-4 font-semibold text-primary sm:pr-6">
-									Details
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{pageRows.map((row) => (
-								<TableRow
-									key={row.id}
-									className={cn(
-										"border-l-4",
-										rowTone(row.level),
-										row.level === "error" && "border-l-red-500",
-										row.level === "warn" && "border-l-amber-400",
-										row.level === "info" && "border-l-sky-400",
-										row.level === "debug" && "border-l-zinc-300"
-									)}
+			{/* Main content: table + sidebar */}
+			<div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
+				{/* Log entries table */}
+				<div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+						<h2 className="text-sm font-semibold text-primary">
+							Processing Log Entries
+						</h2>
+						<span className="text-xs text-muted-foreground">
+							{filtered.length} entries
+						</span>
+					</div>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow className="border-b border-border/50 bg-muted/30 hover:bg-muted/30">
+									<TableHead className="h-10 pl-4 text-xs font-semibold text-foreground sm:pl-5">
+										<span className="inline-flex items-center gap-1">
+											Time
+											<ArrowDown className="size-3 text-muted-foreground" />
+										</span>
+									</TableHead>
+									<TableHead className="h-10 text-xs font-semibold text-foreground">
+										Level
+									</TableHead>
+									<TableHead className="h-10 text-xs font-semibold text-foreground">
+										Source
+									</TableHead>
+									<TableHead className="h-10 text-xs font-semibold text-foreground">
+										Message
+									</TableHead>
+									<TableHead className="h-10 pr-4 text-xs font-semibold text-foreground sm:pr-5">
+										Related Record
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{pageRows.map((row) => {
+									const isSelected = row.id === selectedLog?.id;
+									return (
+										<TableRow
+											key={row.id}
+											className={cn(
+												"cursor-pointer border-b border-border/30 text-sm",
+												isSelected
+													? "bg-sky-50 hover:bg-sky-50"
+													: "hover:bg-muted/20"
+											)}
+											onClick={() => setSelectedLogId(row.id)}
+										>
+											<TableCell className="pl-4 font-mono text-xs tabular-nums text-muted-foreground sm:pl-5">
+												{row.timestamp}
+											</TableCell>
+											<TableCell>
+												<LevelCell level={row.level} />
+											</TableCell>
+											<TableCell className="text-xs font-medium">
+												{row.source}
+											</TableCell>
+											<TableCell className="max-w-[280px] text-xs">
+												{row.message}
+											</TableCell>
+											<TableCell className="pr-4 font-mono text-xs text-muted-foreground sm:pr-5">
+												{row.relatedRecord ?? "—"}
+											</TableCell>
+										</TableRow>
+									);
+								})}
+								{pageRows.length === 0 && (
+									<TableRow>
+										<TableCell
+											colSpan={5}
+											className="h-24 text-center text-sm text-muted-foreground"
+										>
+											No log entries match the current filters.
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+
+					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-3 sm:px-5">
+						<span className="text-xs text-muted-foreground">
+							Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
+							{Math.min(page * pageSize, filtered.length)} of {filtered.length}{" "}
+							entries
+						</span>
+						<div className="flex items-center gap-1">
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 w-8 p-0"
+								disabled={page <= 1}
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+							>
+								‹
+							</Button>
+							{Array.from(
+								{ length: Math.min(pageCount, 5) },
+								(_, i) => i + 1
+							).map((p) => (
+								<Button
+									key={p}
+									variant={p === page ? "default" : "outline"}
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => setPage(p)}
 								>
-									<TableCell className="pl-4 font-mono text-xs tabular-nums text-muted-foreground sm:pl-6">
-										{row.timestamp}
-									</TableCell>
-									<TableCell>
-										<LevelBadge level={row.level} />
-									</TableCell>
-									<TableCell>
-										<ComponentChip name={row.component} />
-									</TableCell>
-									<TableCell className="max-w-[360px] text-sm font-medium">
-										{row.message}
-									</TableCell>
-									<TableCell className="max-w-[280px] pr-4 text-sm text-muted-foreground sm:pr-6">
-										{row.details}
-									</TableCell>
-								</TableRow>
+									{p}
+								</Button>
 							))}
-							{pageRows.length === 0 && (
-								<TableRow>
-									<TableCell
-										colSpan={5}
-										className="h-24 text-center text-muted-foreground"
-									>
-										No log entries match the current filters.
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 w-8 p-0"
+								disabled={page >= pageCount}
+								onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+							>
+								›
+							</Button>
+						</div>
+					</div>
 				</div>
 
-				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 bg-primary/[0.03] px-4 py-3 text-sm text-muted-foreground sm:px-6">
-					<span>
-						Showing{" "}
-						{filtered.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
-						{Math.min(page * pageSize, filtered.length)} of {filtered.length}{" "}
-						log entries
-					</span>
-					<div className="flex items-center gap-1">
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 px-2"
-							disabled={page <= 1}
-							onClick={() => setPage((p) => Math.max(1, p - 1))}
+				{/* Right sidebar */}
+				<div className="space-y-4 md:sticky md:top-0 md:self-start">
+					<Card className="gap-0 border-border/60 py-0 shadow-sm">
+						<CardHeader className="border-b border-border/40 px-4 py-3">
+							<CardTitle className="text-sm font-semibold text-primary">
+								Log Summary
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-0 px-4 py-2">
+							<DetailRow label="Total Entries" value={summary.total} />
+							<DetailRow label="Info" value={summary.info} />
+							<DetailRow label="Warnings" value={summary.warnings} />
+							<DetailRow
+								label="Errors"
+								value={
+									<span className="font-semibold text-red-600">
+										{summary.errors}
+									</span>
+								}
+							/>
+							<DetailRow
+								label="First Error Time"
+								value={summary.firstErrorTime}
+							/>
+							<DetailRow
+								label="Last Event Time"
+								value={summary.lastEventTime}
+							/>
+						</CardContent>
+					</Card>
+
+					<Card className="gap-0 border-border/60 py-0 shadow-sm">
+						<CardHeader className="border-b border-border/40 px-4 py-3">
+							<CardTitle className="text-sm font-semibold text-primary">
+								Selected Log Details
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-0 px-4 py-2">
+							{selectedLog ? (
+								<>
+									<DetailRow label="Timestamp" value={selectedLog.timestamp} />
+									<DetailRow
+										label="Level"
+										value={
+											selectedLog.level === "error" ? (
+												<span className="inline-flex items-center gap-1 text-red-600">
+													<XCircle className="size-3" />
+													Error
+												</span>
+											) : selectedLog.level === "warn" ? (
+												<span className="inline-flex items-center gap-1 text-amber-600">
+													<AlertTriangle className="size-3" />
+													Warning
+												</span>
+											) : (
+												<span className="inline-flex items-center gap-1 text-sky-600">
+													<Info className="size-3" />
+													Info
+												</span>
+											)
+										}
+									/>
+									<DetailRow label="Source" value={selectedLog.source} />
+									<DetailRow
+										label="Error Code"
+										value={
+											<span className="font-mono">
+												{selectedLog.errorCode ?? "—"}
+											</span>
+										}
+									/>
+									<DetailRow
+										label="Member ID"
+										value={
+											<span className="font-mono">
+												{selectedLog.memberId ?? "—"}
+											</span>
+										}
+									/>
+									<DetailRow
+										label="Line Number"
+										value={selectedLog.lineNumber ?? "—"}
+									/>
+									<DetailRow label="Message" value={selectedLog.message} />
+									<DetailRow
+										label="Related File"
+										value={
+											<span className="font-mono text-[11px]">
+												{run.fileName ?? "—"}
+											</span>
+										}
+									/>
+									<DetailRow
+										label="Run GUID"
+										value={
+											<span className="font-mono text-[10px] leading-tight">
+												{run.correlationId}
+											</span>
+										}
+									/>
+								</>
+							) : (
+								<p className="py-4 text-xs text-muted-foreground">
+									Select a log entry to view details.
+								</p>
+							)}
+						</CardContent>
+					</Card>
+
+					<Card className="gap-0 border-border/60 py-0 shadow-sm">
+						<CardHeader className="border-b border-border/40 px-4 py-3">
+							<CardTitle className="text-sm font-semibold text-primary">
+								Related Actions
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-2 px-4 py-3">
+							<Button
+								variant="outline"
+								size="sm"
+								className={cn(outlineBtn, "h-9 w-full justify-start gap-2")}
+								asChild
+							>
+								<Link href={investigationHref}>
+									<ExternalLink className="size-3.5" />
+									Open Investigation
+								</Link>
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className={cn(outlineBtn, "h-9 w-full justify-start gap-2")}
+								onClick={() => toast.message("Raw record viewer opened.")}
+							>
+								<FileText className="size-3.5" />
+								View Raw Record
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className={cn(outlineBtn, "h-9 w-full justify-start gap-2")}
+								onClick={exportLogResults}
+							>
+								<Copy className="size-3.5" />
+								Export Matching Entries
+							</Button>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+
+			{/* Bottom action bar */}
+			<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-card px-4 py-3 shadow-sm">
+				<Button variant="outline" size="sm" className={outlineBtn} asChild>
+					<Link href={runHref} className="inline-flex items-center gap-1.5">
+						<ArrowLeft className="size-3.5" />
+						Back to File Run Details
+					</Link>
+				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className={outlineBtn}
+						onClick={() => toast.message("Original file download started.")}
+					>
+						<Download className="size-3.5" />
+						Download Original File
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className={outlineBtn}
+						onClick={downloadLog}
+					>
+						<Download className="size-3.5" />
+						Download Log
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className={outlineBtn}
+						onClick={exportLogResults}
+					>
+						<Download className="size-3.5" />
+						Export Log Results
+					</Button>
+					<Button variant="outline" size="sm" className={outlineBtn} asChild>
+						<Link
+							href={investigationHref}
+							className="inline-flex items-center gap-1.5"
 						>
-							‹
-						</Button>
-						{pageButtons.map((p, idx) => {
-							const prev = pageButtons[idx - 1];
-							const showEllipsis = prev != null && p - prev > 1;
-							return (
-								<span key={p} className="contents">
-									{showEllipsis ? (
-										<span className="px-1 text-muted-foreground">…</span>
-									) : null}
-									<Button
-										variant={p === page ? "default" : "outline"}
-										size="sm"
-										className="size-8 p-0"
-										onClick={() => setPage(p)}
-									>
-										{p}
-									</Button>
-								</span>
-							);
-						})}
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 px-2"
-							disabled={page >= pageCount}
-							onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-						>
-							›
-						</Button>
-					</div>
+							<ExternalLink className="size-3.5" />
+							Open Investigation
+						</Link>
+					</Button>
+					<Button
+						size="sm"
+						className="h-9 gap-1.5 px-4"
+						disabled={reviewed}
+						onClick={() => {
+							markFileRunReviewed(run.id, true);
+							setReviewed(true);
+							toast.success("File run marked as reviewed.");
+						}}
+					>
+						<Check className="size-3.5" />
+						{reviewed ? "Reviewed" : "Mark as Reviewed"}
+					</Button>
 				</div>
 			</div>
 		</div>

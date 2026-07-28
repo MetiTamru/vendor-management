@@ -70,9 +70,7 @@ export function VendorSidebar() {
 					if (items.length === 0) return null;
 					return (
 						<SidebarGroup key={section}>
-							<SidebarGroupLabel>
-								{t(`sections.${section}`)}
-							</SidebarGroupLabel>
+							<SidebarGroupLabel>{t(`sections.${section}`)}</SidebarGroupLabel>
 							<SidebarGroupContent>
 								<SidebarMenu>
 									{items.map((item) => {

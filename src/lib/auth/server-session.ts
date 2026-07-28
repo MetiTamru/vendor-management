@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { getAuthSessionUrl } from "@/lib/auth/api-url";
-import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
+import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 
 export type ServerSessionUser = {
 	id: string;

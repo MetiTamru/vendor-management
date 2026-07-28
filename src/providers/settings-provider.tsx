@@ -30,7 +30,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 		root.style.setProperty("--h4-size", `calc(${baseFontSize * 1.125}px)`);
 		root.style.setProperty("--spacing-unit", `calc(${baseFontSize * 0.25}px)`);
 
-		root.style.setProperty("--font-primary", `var(--font-${fontFamily})`);
+		const fontVar =
+			fontFamily === "geist" ? "--font-geist-sans" : "--font-poppins";
+		root.style.setProperty("--font-sans", `var(${fontVar})`);
+		root.style.setProperty("--font-primary", `var(${fontVar})`);
+		root.classList.toggle("font-poppins", fontFamily === "poppins");
 	}, [fontSize, fontFamily]);
 
 	return (

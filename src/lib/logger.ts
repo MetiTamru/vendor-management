@@ -45,8 +45,16 @@ class Logger {
 		return `[${timestamp}] ${level.toUpperCase()}: ${message} ${formattedArgs}`;
 	}
 
+	private get canUseStorage(): boolean {
+		return (
+			this.options.enableStorage &&
+			typeof window !== "undefined" &&
+			typeof localStorage !== "undefined"
+		);
+	}
+
 	private store(logEntry: string) {
-		if (!this.options.enableStorage) return;
+		if (!this.canUseStorage) return;
 
 		try {
 			const key = "application_logs";
@@ -103,6 +111,8 @@ class Logger {
 	}
 
 	getLogs(): string[] {
+		if (!this.canUseStorage) return [];
+
 		try {
 			const logs = localStorage.getItem("application_logs");
 			return logs ? JSON.parse(logs) : [];
@@ -112,6 +122,8 @@ class Logger {
 	}
 
 	clearLogs() {
+		if (!this.canUseStorage) return;
+
 		try {
 			localStorage.removeItem("application_logs");
 		} catch (error) {

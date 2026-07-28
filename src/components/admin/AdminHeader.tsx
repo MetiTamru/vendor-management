@@ -1,43 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import LocaleSwitcher from "@/components/shared/DropDown/LocaleSwitcher";
 import { ModeToggle } from "@/components/shared/DropDown/modeToggle";
 import UserAvatar from "@/components/shared/User/userAvater";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { siteConfig } from "@/constants/siteconfig";
 import { useVendorsList } from "@/features/shared/vms/queries";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
-
-function formatSegment(segment: string) {
-	return segment
-		.split("-")
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join(" ");
-}
+import { useRouter } from "@/i18n/navigation";
 
 export function AdminHeader() {
-	const pathname = usePathname();
 	const router = useRouter();
 	const t = useTranslations("Admin");
 	const { vendors } = useVendorsList();
 	const [query, setQuery] = useState("");
 	const [open, setOpen] = useState(false);
-
-	const segments = pathname.split("/").filter(Boolean);
-	const adminIndex = segments.indexOf("admin");
-	const trail =
-		adminIndex >= 0
-			? segments.slice(adminIndex + 1)
-			: segments.length === 0
-				? []
-				: segments;
 
 	const results = useMemo(() => {
 		const q = query.trim().toLowerCase();
@@ -80,32 +65,16 @@ export function AdminHeader() {
 		<header className="z-40 flex h-16 shrink-0 items-center gap-3 border-b border-border/80 bg-background px-4 shadow-sm sm:px-6">
 			<SidebarTrigger className="text-primary" />
 			<Separator orientation="vertical" className="h-7" />
-			<nav
-				aria-label="Breadcrumb"
-				className="flex min-w-0 flex-1 items-center gap-1.5 text-sm"
+			<Suspense
+				fallback={
+					<div className="flex min-w-0 flex-1 items-center gap-2">
+						<Skeleton className="h-4 w-28" />
+						<Skeleton className="h-4 w-20" />
+					</div>
+				}
 			>
-				<span className="font-semibold tracking-tight text-primary">
-					{t("title")}
-				</span>
-				{trail.length === 0 ? (
-					<span className="flex items-center gap-1.5 text-muted-foreground">
-						<span className="text-border">/</span>
-						<span className="font-medium text-foreground">Dashboard</span>
-					</span>
-				) : (
-					trail.map((segment) => (
-						<span
-							key={segment}
-							className="flex items-center gap-1.5 text-muted-foreground"
-						>
-							<span className="text-border">/</span>
-							<span className="truncate font-medium text-foreground">
-								{formatSegment(segment)}
-							</span>
-						</span>
-					))
-				)}
-			</nav>
+				<AdminBreadcrumb appTitle={t("title")} />
+			</Suspense>
 			<div className="relative hidden w-full max-w-md lg:block">
 				<form onSubmit={handleSubmit}>
 					<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -131,7 +100,9 @@ export function AdminHeader() {
 								onMouseDown={(e) => e.preventDefault()}
 								onClick={() => goToResult(result.href)}
 							>
-								<span className="truncate text-sm font-medium">{result.label}</span>
+								<span className="truncate text-sm font-medium">
+									{result.label}
+								</span>
 								<span className="ml-3 shrink-0 text-xs text-muted-foreground">
 									{result.subtitle}
 								</span>

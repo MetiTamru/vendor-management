@@ -7,7 +7,6 @@ import {
 	CheckCircle2,
 	Clock3,
 	Download,
-	FileWarning,
 	Filter,
 	PieChart as PieChartIcon,
 	RefreshCw,
@@ -104,8 +103,10 @@ export function ProcessingStatusPage() {
 				const id = vendorIdForRun(run) ?? run.vendor;
 				if (vendorFilter !== "all" && id !== vendorFilter) return false;
 				if (statusFilter !== "all" && run.status !== statusFilter) return false;
-				if (directionFilter !== "all" && run.direction !== directionFilter) return false;
-				if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter) return false;
+				if (directionFilter !== "all" && run.direction !== directionFilter)
+					return false;
+				if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
+					return false;
 				if (!search.trim()) return true;
 				return [run.vendor, run.fileType, run.fileName, run.runId]
 					.join(" ")
@@ -116,17 +117,27 @@ export function ProcessingStatusPage() {
 	);
 
 	const summary = useMemo(() => {
-		const successful = filteredRuns.filter((run) => runBucket(run.status) === "success").length;
-		const warnings = filteredRuns.filter((run) => runBucket(run.status) === "warning").length;
-		const failed = filteredRuns.filter((run) => runBucket(run.status) === "failed").length;
+		const successful = filteredRuns.filter(
+			(run) => runBucket(run.status) === "success"
+		).length;
+		const warnings = filteredRuns.filter(
+			(run) => runBucket(run.status) === "warning"
+		).length;
+		const failed = filteredRuns.filter(
+			(run) => runBucket(run.status) === "failed"
+		).length;
 		const inProgress = filteredRuns.filter(
 			(run) => runBucket(run.status) === "in_progress"
 		).length;
-		const pending = filteredRuns.filter((run) => runBucket(run.status) === "pending").length;
+		const pending = filteredRuns.filter(
+			(run) => runBucket(run.status) === "pending"
+		).length;
 		const avgLatency = filteredRuns.length
 			? Math.round(
-					filteredRuns.reduce((sum, run) => sum + (run.latencyMinutes ?? 0), 0) /
-						filteredRuns.length
+					filteredRuns.reduce(
+						(sum, run) => sum + (run.latencyMinutes ?? 0),
+						0
+					) / filteredRuns.length
 				)
 			: 0;
 		return {
@@ -141,10 +152,18 @@ export function ProcessingStatusPage() {
 	}, [filteredRuns]);
 
 	const pieData = [
-		{ name: "Successful", value: summary.successful, color: STATUS_COLORS.success },
+		{
+			name: "Successful",
+			value: summary.successful,
+			color: STATUS_COLORS.success,
+		},
 		{ name: "Warnings", value: summary.warnings, color: STATUS_COLORS.warning },
 		{ name: "Failed", value: summary.failed, color: STATUS_COLORS.failed },
-		{ name: "In Progress", value: summary.inProgress, color: STATUS_COLORS.in_progress },
+		{
+			name: "In Progress",
+			value: summary.inProgress,
+			color: STATUS_COLORS.in_progress,
+		},
 	].filter((item) => item.value > 0);
 
 	const trendData = useMemo(() => {
@@ -199,7 +218,8 @@ export function ProcessingStatusPage() {
 						successful,
 						warnings,
 						failed,
-						alerts: alerts.filter((alert) => alert.vendorId === vendor.id).length,
+						alerts: alerts.filter((alert) => alert.vendorId === vendor.id)
+							.length,
 						healthScore,
 						vendorType: integration?.vendorType ?? "Connected Vendor",
 					};
@@ -300,7 +320,8 @@ export function ProcessingStatusPage() {
 						</SelectContent>
 					</Select>
 					<div className="text-xs text-muted-foreground">
-						Showing {summary.total} tracked runs in the current monitoring window.
+						Showing {summary.total} tracked runs in the current monitoring
+						window.
 					</div>
 				</CardContent>
 			</Card>
@@ -357,7 +378,9 @@ export function ProcessingStatusPage() {
 									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
 										{item.value}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+									<p className="mt-1 text-xs text-muted-foreground">
+										{item.hint}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -385,22 +408,53 @@ export function ProcessingStatusPage() {
 						<ResponsiveContainer width="100%" height="100%">
 							<AreaChart data={trendData}>
 								<defs>
-									<linearGradient id="processing-success" x1="0" y1="0" x2="0" y2="1">
+									<linearGradient
+										id="processing-success"
+										x1="0"
+										y1="0"
+										x2="0"
+										y2="1"
+									>
 										<stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
 										<stop offset="95%" stopColor="#10b981" stopOpacity={0.04} />
 									</linearGradient>
-									<linearGradient id="processing-warning" x1="0" y1="0" x2="0" y2="1">
+									<linearGradient
+										id="processing-warning"
+										x1="0"
+										y1="0"
+										x2="0"
+										y2="1"
+									>
 										<stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
 										<stop offset="95%" stopColor="#f59e0b" stopOpacity={0.03} />
 									</linearGradient>
-									<linearGradient id="processing-failed" x1="0" y1="0" x2="0" y2="1">
+									<linearGradient
+										id="processing-failed"
+										x1="0"
+										y1="0"
+										x2="0"
+										y2="1"
+									>
 										<stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
 										<stop offset="95%" stopColor="#ef4444" stopOpacity={0.03} />
 									</linearGradient>
 								</defs>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-								<XAxis dataKey="day" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-								<YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
+								<XAxis
+									dataKey="day"
+									tick={{ fontSize: 12 }}
+									tickLine={false}
+									axisLine={false}
+								/>
+								<YAxis
+									allowDecimals={false}
+									tick={{ fontSize: 12 }}
+									tickLine={false}
+									axisLine={false}
+								/>
 								<Tooltip />
 								<Area
 									type="monotone"
@@ -433,19 +487,25 @@ export function ProcessingStatusPage() {
 
 				<Card className="min-w-0 gap-2 bg-card/70 py-4 xl:col-span-7">
 					<CardHeader className="px-4 pb-1 pt-0">
-						<CardTitle className="text-base">Vendor processing health</CardTitle>
+						<CardTitle className="text-base">
+							Vendor processing health
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="px-0 pb-0">
 						<div className="border-t border-border/50">
 							<Table className="table-fixed w-full">
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
-										<TableHead className="w-[32%] pl-4 sm:pl-6">Vendor</TableHead>
+										<TableHead className="w-[32%] pl-4 sm:pl-6">
+											Vendor
+										</TableHead>
 										<TableHead className="w-[10%] text-right">Exp</TableHead>
 										<TableHead className="w-[10%] text-right">Ok</TableHead>
 										<TableHead className="w-[10%] text-right">Warn</TableHead>
 										<TableHead className="w-[10%] text-right">Fail</TableHead>
-										<TableHead className="w-[28%] pr-4 sm:pr-6">Health</TableHead>
+										<TableHead className="w-[28%] pr-4 sm:pr-6">
+											Health
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -453,7 +513,9 @@ export function ProcessingStatusPage() {
 										<TableRow key={row.id} className="hover:bg-muted/30">
 											<TableCell className="pl-4 sm:pl-6">
 												<div className="min-w-0">
-													<p className="truncate text-sm font-medium">{row.name}</p>
+													<p className="truncate text-sm font-medium">
+														{row.name}
+													</p>
 													<p className="truncate text-[11px] text-muted-foreground">
 														{row.vendorType}
 													</p>
@@ -525,7 +587,11 @@ export function ProcessingStatusPage() {
 								<ResponsiveContainer width="100%" height="100%">
 									<PieChart>
 										<Pie
-											data={pieData.length ? pieData : [{ name: "No Data", value: 1, color: "#cbd5e1" }]}
+											data={
+												pieData.length
+													? pieData
+													: [{ name: "No Data", value: 1, color: "#cbd5e1" }]
+											}
 											dataKey="value"
 											nameKey="name"
 											innerRadius={58}
@@ -586,7 +652,9 @@ export function ProcessingStatusPage() {
 											<span className="text-sm font-medium">{item.label}</span>
 										</div>
 										<div className="text-right">
-											<p className="text-sm font-semibold tabular-nums">{item.value}</p>
+											<p className="text-sm font-semibold tabular-nums">
+												{item.value}
+											</p>
 											<p className="text-[11px] text-muted-foreground">
 												{summary.total
 													? `${Math.round((item.value / summary.total) * 100)}%`
@@ -608,15 +676,21 @@ export function ProcessingStatusPage() {
 						{alerts.map((alert) => (
 							<Link
 								key={alert.id}
-								href={alert.runId ? `/admin/file-monitoring/${alert.runId}` : "/admin/file-monitoring"}
+								href={
+									alert.runId
+										? `/admin/file-monitoring/${alert.runId}`
+										: "/admin/file-monitoring"
+								}
 								className="block rounded-lg border border-border/50 bg-background/50 p-2.5 transition-colors hover:border-primary/30 hover:bg-background"
 							>
 								<div className="flex items-start gap-2">
 									<div
 										className={cn(
 											"mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg",
-											alert.severity === "error" && "bg-red-500/10 text-red-700",
-											alert.severity === "warning" && "bg-amber-500/10 text-amber-700",
+											alert.severity === "error" &&
+												"bg-red-500/10 text-red-700",
+											alert.severity === "warning" &&
+												"bg-amber-500/10 text-amber-700",
 											alert.severity === "info" && "bg-sky-500/10 text-sky-700"
 										)}
 									>
@@ -658,7 +732,9 @@ export function ProcessingStatusPage() {
 									<TableHead>Latency</TableHead>
 									<TableHead>Errors</TableHead>
 									<TableHead>Warnings</TableHead>
-									<TableHead className="pr-4 text-right sm:pr-6">Open</TableHead>
+									<TableHead className="pr-4 text-right sm:pr-6">
+										Open
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -668,14 +744,19 @@ export function ProcessingStatusPage() {
 										<TableRow key={run.id} className="hover:bg-muted/30">
 											<TableCell className="pl-4 font-medium sm:pl-6">
 												{vendorId ? (
-													<Link href={`/admin/vendors/${vendorId}`} className="hover:underline">
+													<Link
+														href={`/admin/vendors/${vendorId}`}
+														className="hover:underline"
+													>
 														{run.vendor}
 													</Link>
 												) : (
 													run.vendor
 												)}
 											</TableCell>
-											<TableCell className="font-mono text-xs">{run.runId}</TableCell>
+											<TableCell className="font-mono text-xs">
+												{run.runId}
+											</TableCell>
 											<TableCell>{displayRunStatus(run.status)}</TableCell>
 											<TableCell>{run.fileType}</TableCell>
 											<TableCell className="tabular-nums text-muted-foreground">
@@ -689,7 +770,9 @@ export function ProcessingStatusPage() {
 											</TableCell>
 											<TableCell className="pr-4 text-right sm:pr-6">
 												<Button variant="ghost" size="sm" asChild>
-													<Link href={`/admin/file-monitoring/${run.id}`}>Open</Link>
+													<Link href={`/admin/file-monitoring/${run.id}`}>
+														Open
+													</Link>
 												</Button>
 											</TableCell>
 										</TableRow>

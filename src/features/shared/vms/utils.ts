@@ -31,9 +31,7 @@ export const VENDOR_ROLES = [
 ] as const;
 
 export function isVendorRole(roles: string[]): boolean {
-	return roles.some((r) =>
-		(VENDOR_ROLES as readonly string[]).includes(r)
-	);
+	return roles.some((r) => (VENDOR_ROLES as readonly string[]).includes(r));
 }
 
 export function isBuyerRole(roles: string[]): boolean {

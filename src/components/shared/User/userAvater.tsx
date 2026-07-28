@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
-import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
+import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { getInitials } from "@/lib/utils/nameUtils";
 
 interface UserAvatarProps {
@@ -24,9 +24,7 @@ interface UserAvatarProps {
 const UserAvatar = ({ className: _className }: UserAvatarProps) => {
 	const router = useRouter();
 	const { data: session } = authClient.useSession();
-	const user = isMockAuthEnabled()
-		? MOCK_ADMIN_USER
-		: session?.user;
+	const user = isMockAuthEnabled() ? MOCK_ADMIN_USER : session?.user;
 
 	if (!user) return null;
 
@@ -50,10 +48,7 @@ const UserAvatar = ({ className: _className }: UserAvatarProps) => {
 				>
 					{user.name ? (
 						<Avatar className="h-9 w-9">
-							<AvatarImage
-								src={user.image ?? undefined}
-								alt={user.name}
-							/>
+							<AvatarImage src={user.image ?? undefined} alt={user.name} />
 							<AvatarFallback className="bg-primary/10">
 								{getInitials(user.name)}
 							</AvatarFallback>
