@@ -174,20 +174,14 @@ export function ValidationInvestigationPage() {
 						<span className="text-muted-foreground">&gt;</span>
 						<span className="text-foreground">Investigation Details</span>
 					</nav>
-					<div className="mt-2 flex items-start gap-3">
-						<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
-							4
-						</div>
-						<div>
-							<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-								Validation Error Investigation
-							</h1>
-							<p className="mt-1 text-sm text-muted-foreground">
-								Deep-dive workspace for {issue.code}
-								{issue.field ? ` · ${issue.field}` : ""} — resolve the error,
-								capture notes, then review the full processing log trail.
-							</p>
-						</div>
+					<div className="mt-2">
+						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+							Validation Error Investigation
+						</h1>
+						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+							Deep-dive workspace for {issue.code}
+							{issue.field ? ` · ${issue.field}` : ""}.
+						</p>
 					</div>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -677,7 +671,7 @@ export function ValidationInvestigationPage() {
 
 					<Card className="border-primary/20 bg-primary/[0.03]">
 						<CardHeader className="pb-2">
-							<CardTitle className="text-base">Continue to Step 5</CardTitle>
+							<CardTitle className="text-base">Continue to processing logs</CardTitle>
 							<CardDescription>
 								Review the full event trail for this run in Processing logs
 							</CardDescription>

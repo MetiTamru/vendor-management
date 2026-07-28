@@ -260,8 +260,7 @@ export function FileSelectPage() {
 					Select Vendor, File, or Failed Run
 				</h1>
 				<p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-					Step 2 — choose a vendor or file context, then open a recent run for
-					Step 3 File Run Details.
+					Choose a vendor or file context, then open a recent run for details.
 				</p>
 			</div>
 
@@ -591,9 +590,8 @@ export function FileSelectPage() {
 										<div>
 											<p className="text-sm font-semibold">How to proceed</p>
 											<p className="mt-0.5 text-sm text-sky-900/80 dark:text-sky-200/90">
-												Select a file run from the list above to view detailed
-												processing information, validation results, and
-												investigation details (Step 3 — File Run Details).
+												Select a file run from the list above to view processing
+												information, validation results, and investigation details.
 											</p>
 										</div>
 									</div>
@@ -781,8 +779,8 @@ export function FileSelectPage() {
 					<div>
 						<p className="text-sm font-semibold">How to proceed</p>
 						<p className="mt-0.5 text-sm text-sky-900/80 dark:text-sky-200/90">
-							Select a file run from the list above to open Step 3 — File Run
-							Details (processing, validation results, and investigation).
+							Select a file run from the list above to open File Run Details
+							(processing, validation results, and investigation).
 						</p>
 					</div>
 				</div>

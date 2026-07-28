@@ -198,19 +198,13 @@ export function FileRunDetailPage() {
 						<span className="text-muted-foreground">&gt;</span>
 						<span className="text-foreground">File Run Details</span>
 					</nav>
-					<div className="mt-2 flex items-start gap-3">
-						<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
-							3
-						</div>
-						<div>
-							<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-								File Run Details
-							</h1>
-							<p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-								View detailed processing, validation results, and investigation
-								information for the selected file run.
-							</p>
-						</div>
+					<div className="mt-2">
+						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+							File Run Details
+						</h1>
+						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+							View processing, validation results, and investigation details.
+						</p>
 					</div>
 				</div>
 				<Button variant="outline" size="sm" className="h-9" asChild>

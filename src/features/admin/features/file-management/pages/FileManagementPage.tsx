@@ -375,7 +375,7 @@ export function FileManagementPage() {
 				<div className="flex flex-wrap gap-2">
 					<Button asChild size="sm" className="h-9">
 						<Link href="/admin/file-monitoring/select">
-							Continue to Step 2
+							Browse file runs
 						</Link>
 					</Button>
 					<Button
@@ -878,7 +878,7 @@ export function FileManagementPage() {
 													<DropdownMenuItem asChild>
 														<Link href={`/admin/file-monitoring/${row.id}`}>
 															<ExternalLink className="mr-2 size-3.5" />
-															View run detail (Step 3)
+															View run detail
 														</Link>
 													</DropdownMenuItem>
 												</DropdownMenuContent>

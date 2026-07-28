@@ -160,18 +160,13 @@ export function ErrorManagementPage() {
 						<span className="text-muted-foreground">&gt;</span>
 						<span className="text-foreground">Error Management</span>
 					</nav>
-					<div className="mt-2 flex items-center gap-3">
-						<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
-							E
-						</div>
-						<div>
-							<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-								Error Management
-							</h1>
-							<p className="mt-0.5 max-w-xl text-xs text-muted-foreground">
-								Central queue for validation failures, warnings, and manual review items.
-							</p>
-						</div>
+					<div className="mt-2">
+						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+							Error Management
+						</h1>
+						<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+							Central queue for validation failures, warnings, and review items.
+						</p>
 					</div>
 				</div>
 				<Button
