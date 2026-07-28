@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 
 import { authClient } from "@/lib/auth-client";
+import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
 import { useABAC } from "@/permissions/access/useABAC";
 
 interface PermissionContextType {
@@ -29,24 +30,31 @@ export function PermissionProvider({
 }) {
 	const { checkAccess } = useABAC();
 	const { data: session } = authClient.useSession();
+	const hasUser = isMockAuthEnabled() || !!session?.user;
 
-	const hasComponentAccess = (
-		componentName: string,
-		action: "view" | "delete" = "view"
-	) => {
-		if (!session?.user) return false;
-		return checkAccess("component", action, { name: componentName });
-	};
+	const value = useMemo<PermissionContextType>(
+		() => ({
+			checkAccess,
+			hasComponentAccess: (
+				componentName: string,
+				action: "view" | "delete" = "view"
+			) => {
+				if (!hasUser) return false;
+				return checkAccess("component", action, { name: componentName });
+			},
+			hasApiAccess: (endpoint: string, method: string) => {
+				if (!hasUser) return false;
+				return checkAccess("api", method.toLowerCase(), { endpoint });
+			},
+		}),
+		[checkAccess, hasUser]
+	);
 
-	const hasApiAccess = (endpoint: string, method: string) => {
-		if (!session?.user) return false;
-		return checkAccess("api", method.toLowerCase(), { endpoint });
-	};
+	// Ensure mock user is referenced so tree-shaking keeps the constant available for ABAC
+	void MOCK_ADMIN_USER;
 
 	return (
-		<PermissionContext.Provider
-			value={{ checkAccess, hasComponentAccess, hasApiAccess }}
-		>
+		<PermissionContext.Provider value={value}>
 			{children}
 		</PermissionContext.Provider>
 	);

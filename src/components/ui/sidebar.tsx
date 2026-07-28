@@ -22,21 +22,25 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
+const SIDEBAR_WIDTH_COOKIE = "sidebar:width";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
+const SIDEBAR_WIDTH_ICON = "3.25rem";
+const SIDEBAR_WIDTH_MIN = 220;
+const SIDEBAR_WIDTH_MAX = 420;
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
 // Rename the context value to avoid redeclaration
 type SidebarContext = {
 	state: "expanded" | "collapsed";
-	_open: boolean; // Prefixed to silence unused var warning
+	_open: boolean;
 	setOpen: (open: boolean) => void;
 	openMobile: boolean;
 	setOpenMobile: (open: boolean) => void;
 	isMobile: boolean;
 	toggleSidebar: () => void;
+	width: number;
+	setWidth: (width: number) => void;
 };
 
 // Rename the context to avoid conflict with the type
@@ -71,14 +75,37 @@ const SidebarProvider = React.forwardRef<
 		},
 		ref
 	) => {
-		// const isWide = useMedia({ minWidth: "1000px" });
 		const isMobile = useIsMobile();
 		const [openMobile, setOpenMobile] = React.useState(false);
-
-		// This is the internal state of the sidebar.
-		// We use openProp and setOpenProp for control from outside the component.
 		const [_open, _setOpen] = React.useState(defaultOpen);
 		const open = openProp ?? _open;
+		const [width, setWidthState] = React.useState(280);
+
+		React.useEffect(() => {
+			const match = document.cookie.match(
+				new RegExp(`(?:^|; )${SIDEBAR_WIDTH_COOKIE}=([^;]*)`)
+			);
+			if (match?.[1]) {
+				const parsed = Number.parseInt(match[1], 10);
+				if (
+					!Number.isNaN(parsed) &&
+					parsed >= SIDEBAR_WIDTH_MIN &&
+					parsed <= SIDEBAR_WIDTH_MAX
+				) {
+					setWidthState(parsed);
+				}
+			}
+		}, []);
+
+		const setWidth = React.useCallback((next: number) => {
+			const clamped = Math.min(
+				SIDEBAR_WIDTH_MAX,
+				Math.max(SIDEBAR_WIDTH_MIN, Math.round(next))
+			);
+			setWidthState(clamped);
+			document.cookie = `${SIDEBAR_WIDTH_COOKIE}=${clamped}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+		}, []);
+
 		const setOpen = React.useCallback(
 			(value: boolean | ((value: boolean) => boolean)) => {
 				const openState = typeof value === "function" ? value(open) : value;
@@ -88,20 +115,17 @@ const SidebarProvider = React.forwardRef<
 					_setOpen(openState);
 				}
 
-				// This sets the cookie to keep the sidebar state.
 				document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
 			},
 			[setOpenProp, open]
 		);
 
-		// Helper to toggle the sidebar.
 		const toggleSidebar = React.useCallback(() => {
 			return isMobile
 				? setOpenMobile((open) => !open)
 				: setOpen((open) => !open);
 		}, [isMobile, setOpen, setOpenMobile]);
 
-		// Adds a keyboard shortcut to toggle the sidebar.
 		React.useEffect(() => {
 			const handleKeyDown = (event: KeyboardEvent) => {
 				if (
@@ -117,8 +141,6 @@ const SidebarProvider = React.forwardRef<
 			return () => window.removeEventListener("keydown", handleKeyDown);
 		}, [toggleSidebar]);
 
-		// We add a state so that we can do data-state="expanded" or "collapsed".
-		// This makes it easier to style the sidebar with Tailwind classes.
 		const state = open ? "expanded" : "collapsed";
 
 		const contextValue = React.useMemo<SidebarContext>(
@@ -130,8 +152,21 @@ const SidebarProvider = React.forwardRef<
 				openMobile,
 				setOpenMobile,
 				toggleSidebar,
+				width,
+				setWidth,
 			}),
-			[state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+			[
+				state,
+				_open,
+				open,
+				setOpen,
+				isMobile,
+				openMobile,
+				setOpenMobile,
+				toggleSidebar,
+				width,
+				setWidth,
+			]
 		);
 
 		return (
@@ -140,7 +175,7 @@ const SidebarProvider = React.forwardRef<
 					<div
 						style={
 							{
-								"--sidebar-width": SIDEBAR_WIDTH,
+								"--sidebar-width": `${width}px`,
 								"--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
 								...style,
 							} as React.CSSProperties
@@ -186,7 +221,7 @@ const Sidebar = React.forwardRef<
 			return (
 				<div
 					className={cn(
-						"flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+						"flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground",
 						className
 					)}
 					ref={ref}
@@ -203,7 +238,7 @@ const Sidebar = React.forwardRef<
 					<SheetContent
 						data-sidebar="sidebar"
 						data-mobile="true"
-						className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+						className="w-[var(--sidebar-width)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
 						style={
 							{
 								"--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -229,24 +264,24 @@ const Sidebar = React.forwardRef<
 				{/* This is what handles the sidebar gap on desktop */}
 				<div
 					className={cn(
-						"duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+						"duration-200 relative h-svh w-[var(--sidebar-width)] bg-transparent transition-[width] ease-linear",
 						"group-data-[collapsible=offcanvas]:w-0",
 						"group-data-[side=right]:rotate-180",
 						variant === "floating" || variant === "inset"
 							? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-							: "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+							: "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]"
 					)}
 				/>
 				<div
 					className={cn(
-						"duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
+						"duration-200 fixed inset-y-0 z-10 hidden h-svh w-[var(--sidebar-width)] transition-[left,right] ease-linear md:flex",
 						side === "left"
 							? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
 							: "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
 						// Adjust the padding for floating and inset variants.
 						variant === "floating" || variant === "inset"
 							? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-							: "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+							: "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[side=left]:border-r group-data-[side=right]:border-l",
 						className
 					)}
 					{...props}
@@ -294,21 +329,50 @@ const SidebarRail = React.forwardRef<
 	HTMLButtonElement,
 	React.ComponentProps<"button">
 >(({ className, ...props }, ref) => {
-	const { toggleSidebar } = useSidebar();
+	const { toggleSidebar, setWidth, state, setOpen } = useSidebar();
+	const dragging = React.useRef(false);
+
+	const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+		if (state === "collapsed") {
+			setOpen(true);
+			return;
+		}
+		event.preventDefault();
+		dragging.current = true;
+		event.currentTarget.setPointerCapture(event.pointerId);
+		document.body.style.cursor = "col-resize";
+		document.body.style.userSelect = "none";
+	};
+
+	const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+		if (!dragging.current) return;
+		setWidth(event.clientX);
+	};
+
+	const onPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+		if (!dragging.current) return;
+		dragging.current = false;
+		event.currentTarget.releasePointerCapture(event.pointerId);
+		document.body.style.cursor = "";
+		document.body.style.userSelect = "";
+	};
 
 	return (
 		<button
 			ref={ref}
 			data-sidebar="rail"
-			aria-label="Toggle Sidebar"
+			aria-label="Resize Sidebar"
 			tabIndex={-1}
-			onClick={toggleSidebar}
-			title="Toggle Sidebar"
+			title="Drag to resize · double-click to collapse"
+			onPointerDown={onPointerDown}
+			onPointerMove={onPointerMove}
+			onPointerUp={onPointerUp}
+			onPointerCancel={onPointerUp}
+			onDoubleClick={toggleSidebar}
 			className={cn(
-				"absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
-				"[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
-				"[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-				"group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
+				"absolute inset-y-0 z-20 hidden w-3 translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:right-0 group-data-[side=right]:left-0 sm:flex",
+				"cursor-col-resize",
+				"group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
 				"[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
 				"[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
 				className
@@ -403,17 +467,19 @@ SidebarSeparator.displayName = "SidebarSeparator";
 const SidebarContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div">
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
 	return (
 		<div
 			ref={ref}
 			data-sidebar="content"
 			className={cn(
-				"flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+				"flex min-h-0 flex-1 flex-col gap-2 overflow-hidden group-data-[collapsible=icon]:overflow-hidden",
 				className
 			)}
 			{...props}
-		/>
+		>
+			{children}
+		</div>
 	);
 });
 SidebarContent.displayName = "SidebarContent";
@@ -517,7 +583,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const sidebarMenuButtonVariants = cva(
-	"peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+	"peer/menu-button relative flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[active=true]:before:absolute data-[active=true]:before:inset-y-1 data-[active=true]:before:left-0 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-[rgb(120,175,220)] data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
 	{
 		variants: {
 			variant: {
@@ -674,7 +740,7 @@ const SidebarMenuSkeleton = React.forwardRef<
 				/>
 			)}
 			<Skeleton
-				className="h-4 flex-1 max-w-[--skeleton-width]"
+				className="h-4 flex-1 max-w-[var(--skeleton-width)]"
 				data-sidebar="menu-skeleton-text"
 				style={
 					{

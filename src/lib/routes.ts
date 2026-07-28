@@ -16,6 +16,14 @@ export function getHomePath(locale: string = defaultLocale) {
 	return `/${locale}`;
 }
 
+export function getAdminHomePath(locale: string = defaultLocale) {
+	return getHomePath(locale);
+}
+
+export function getVendorHomePath(locale: string = defaultLocale) {
+	return localePath(locale, "/vendor");
+}
+
 export function getLocaleFromPathname(pathname: string): string | null {
 	const match = pathname.match(new RegExp(`^/(${locales.join("|")})(/|$)`));
 	return match?.[1] ?? null;
@@ -31,6 +39,11 @@ export function isAdminPath(pathname: string): boolean {
 	return withoutLocale === "/admin" || withoutLocale.startsWith("/admin/");
 }
 
+export function isVendorPath(pathname: string): boolean {
+	const withoutLocale = stripLocalePrefix(pathname);
+	return withoutLocale === "/vendor" || withoutLocale.startsWith("/vendor/");
+}
+
 export function isPublicPath(pathname: string): boolean {
 	const locale = getLocaleFromPathname(pathname);
 	if (locale && (pathname === `/${locale}` || pathname === `/${locale}/`)) {
@@ -42,7 +55,9 @@ export function isPublicPath(pathname: string): boolean {
 }
 
 export function isProtectedPath(pathname: string): boolean {
-	return isAdminPath(pathname) || !isPublicPath(pathname);
+	return (
+		isAdminPath(pathname) || isVendorPath(pathname) || !isPublicPath(pathname)
+	);
 }
 
 export type AuthRedirectInput = {

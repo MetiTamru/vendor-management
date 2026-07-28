@@ -16,14 +16,14 @@ describe("middleware auth decisions", () => {
 		}
 	});
 
-	it("allows public home without session", () => {
+	it("protects vendor routes when unauthenticated", () => {
 		expect(
 			resolveAuthRedirect({
-				pathname: "/en",
+				pathname: "/en/vendor/contracts",
 				authenticated: false,
 				loginPath: "/en/auth/login",
-				homePath: "/en",
+				homePath: "/en/admin",
 			})
-		).toBeNull();
+		).toBe("/en/auth/login");
 	});
 });

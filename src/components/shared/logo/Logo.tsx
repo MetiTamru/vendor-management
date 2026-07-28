@@ -2,42 +2,31 @@
 
 import Image from "next/image";
 
-import { useTheme } from "next-themes";
-
-import { IMAGES } from "@/constants/files";
 import { siteConfig } from "@/constants/siteconfig";
+import { cn } from "@/lib/utils";
 
 type Props = {
-	whiteOnly?: boolean;
+	/** Compact icon + wordmark for sidebar / header */
+	className?: string;
+	showWordmark?: boolean;
 };
 
-const Logo = (props: Props) => {
-	const { theme, systemTheme } = useTheme();
-
-	const currentTheme = theme === "system" ? systemTheme : theme;
-	if (props.whiteOnly) {
-		return (
+export default function Logo({ className, showWordmark = true }: Props) {
+	return (
+		<div className={cn("flex min-w-0 items-center gap-2.5", className)}>
 			<Image
-				src={IMAGES.colLogo}
-				alt={`${siteConfig.name} Logo`}
-				width={140}
-				height={140}
-				className={currentTheme === "dark" ? "h-28 w-32" : "h-32 w-36"}
+				src="/images/white-logo-icon.png"
+				alt={`${siteConfig.name} logo`}
+				width={36}
+				height={36}
+				className="size-9 shrink-0 object-contain"
+				priority
 			/>
-		);
-	} else {
-		return (
-			<div>
-				<Image
-					src={currentTheme === "dark" ? IMAGES.colLogo : IMAGES.logoIcon}
-					alt={`${siteConfig.name} Logo`}
-					width={140}
-					height={100}
-					className={currentTheme === "dark" ? "h-28 w-32" : "h-32 w-36"}
-				/>
-			</div>
-		);
-	}
-};
-
-export default Logo;
+			{showWordmark ? (
+					<span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+						Vendor Management
+					</span>
+			) : null}
+		</div>
+	);
+}

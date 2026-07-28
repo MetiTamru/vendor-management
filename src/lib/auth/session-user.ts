@@ -1,4 +1,5 @@
 import type { ServerSessionUser } from "@/lib/auth/server-session";
+import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 
 export type AbacUser = {
 	id: string;
@@ -13,7 +14,7 @@ export function resolveAbacUser(
 		return null;
 	}
 
-	if (process.env.NEXT_PUBLIC_DEV_ADMIN === "true") {
+	if (isMockAuthEnabled() || process.env.NEXT_PUBLIC_DEV_ADMIN === "true") {
 		return {
 			id: user.id,
 			roles: ["admin"],
@@ -21,10 +22,18 @@ export function resolveAbacUser(
 		};
 	}
 
+	if (process.env.NEXT_PUBLIC_DEV_VENDOR === "true") {
+		return {
+			id: user.id,
+			roles: ["vendor_admin"],
+			attributes: { vendorId: "vnd-1" },
+		};
+	}
+
 	if (process.env.NEXT_PUBLIC_DEV_MANAGER === "true") {
 		return {
 			id: user.id,
-			roles: ["manager"],
+			roles: ["manager", "procurement_manager"],
 			attributes: {},
 		};
 	}
@@ -42,4 +51,8 @@ export function resolveAbacUser(
 		roles: [...new Set(roles)],
 		attributes: {},
 	};
+}
+
+export function resolvePostLoginPath(_roles: string[]): "/" {
+	return "/";
 }

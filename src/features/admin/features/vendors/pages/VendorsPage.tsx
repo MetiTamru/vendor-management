@@ -1,0 +1,730 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import {
+	AlertTriangle,
+	Calendar,
+	CheckCircle2,
+	Clock3,
+	FileText,
+	Info,
+	MoreHorizontal,
+	Plus,
+	RefreshCw,
+	ScrollText,
+	Upload,
+	XCircle,
+} from "lucide-react";
+import {
+	CartesianGrid,
+	Cell,
+	Legend,
+	Line,
+	LineChart,
+	Pie,
+	PieChart,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
+} from "recharts";
+
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
+import {
+	PROCESSING_TREND,
+	VENDOR_ALERTS,
+	getVendorIntegration,
+	runBucket,
+	summarizeRuns,
+	vendorIdForRun,
+} from "@/features/admin/features/vendors/vendor-integration-mock";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { useVendorsList } from "@/features/shared/vms/queries";
+import { Link, useRouter } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
+
+function ActivityStatus({ status }: { status: (typeof FILE_RUNS)[0]["status"] }) {
+	const bucket = runBucket(status);
+	if (bucket === "success") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+				Success
+			</span>
+		);
+	}
+	if (bucket === "failed") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
+				Failed
+			</span>
+		);
+	}
+	if (bucket === "warning") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+				Warning
+			</span>
+		);
+	}
+	if (bucket === "in_progress") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+				In Progress
+			</span>
+		);
+	}
+	return <StatusBadge status={status} />;
+}
+
+export function VendorsPage() {
+	const router = useRouter();
+	const { vendors, isLoading, error } = useVendorsList();
+	const [dateFilter, setDateFilter] = useState("today");
+	const [vendorFilter, setVendorFilter] = useState("all");
+	const [fileTypeFilter, setFileTypeFilter] = useState("all");
+	const [refreshing, setRefreshing] = useState(false);
+	const [trendRange, setTrendRange] = useState("7");
+	const lastUpdated = "9:28 AM";
+
+	const filteredRuns = useMemo(() => {
+		return FILE_RUNS.filter((run) => {
+			const vid = vendorIdForRun(run);
+			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
+			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter) return false;
+			return true;
+		});
+	}, [vendorFilter, fileTypeFilter]);
+
+	const summary = useMemo(() => summarizeRuns(filteredRuns), [filteredRuns]);
+
+	const fileTypes = useMemo(
+		() => Array.from(new Set(FILE_RUNS.map((r) => r.fileType))).sort(),
+		[]
+	);
+
+	const vendorStatusPie = useMemo(() => {
+		const counts = { healthy: 0, warning: 0, failed: 0, in_progress: 0 };
+		for (const v of vendors) {
+			const health = getVendorIntegration(v.id).health;
+			counts[health] += 1;
+		}
+		const total = vendors.length || 1;
+		return [
+			{
+				name: "Healthy",
+				value: counts.healthy,
+				pct: Math.round((counts.healthy / total) * 100),
+				color: "#059669",
+			},
+			{
+				name: "Warning",
+				value: counts.warning,
+				pct: Math.round((counts.warning / total) * 100),
+				color: "#d97706",
+			},
+			{
+				name: "Failed",
+				value: counts.failed,
+				pct: Math.round((counts.failed / total) * 100),
+				color: "#dc2626",
+			},
+			{
+				name: "In Progress",
+				value: counts.in_progress,
+				pct: Math.round((counts.in_progress / total) * 100),
+				color: "#0284c7",
+			},
+		];
+	}, [vendors]);
+
+	async function handleRefresh() {
+		setRefreshing(true);
+		await new Promise((r) => setTimeout(r, 450));
+		setRefreshing(false);
+	}
+
+	if (isLoading) {
+		return (
+			<div className="space-y-6">
+				<Skeleton className="h-10 w-80" />
+				<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className="h-28 rounded-xl" />
+					))}
+				</div>
+				<Skeleton className="h-96 w-full rounded-xl" />
+			</div>
+		);
+	}
+
+	const kpis = [
+		{
+			label: "Total Files",
+			value: String(summary.total),
+			pct: null as string | null,
+			hint: `Expected: ${summary.expected}`,
+			icon: FileText,
+			tone: "text-primary bg-primary/10",
+		},
+		{
+			label: "Successful",
+			value: String(summary.successful),
+			pct: `${summary.successPct}%`,
+			hint: "View Details →",
+			icon: CheckCircle2,
+			tone: "text-emerald-700 bg-emerald-500/10",
+		},
+		{
+			label: "Warnings",
+			value: String(summary.warnings),
+			pct: `${summary.warningPct}%`,
+			hint: "View Details →",
+			icon: AlertTriangle,
+			tone: "text-amber-700 bg-amber-500/10",
+		},
+		{
+			label: "Failed",
+			value: String(summary.failed),
+			pct: `${summary.failedPct}%`,
+			hint: "View Details →",
+			icon: XCircle,
+			tone: "text-red-700 bg-red-500/10",
+		},
+		{
+			label: "In Progress",
+			value: String(summary.inProgress),
+			pct: null as string | null,
+			hint: "View Details →",
+			icon: Clock3,
+			tone: "text-violet-700 bg-violet-500/10",
+		},
+		{
+			label: "Pending",
+			value: String(summary.pending),
+			pct: null as string | null,
+			hint: "View Details →",
+			icon: Calendar,
+			tone: "text-zinc-700 bg-zinc-500/10",
+		},
+	];
+
+	return (
+		<div className="space-y-6">
+			<div className="flex flex-wrap items-start justify-between gap-4">
+				<div>
+					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+						Vendor Integration Management
+					</h1>
+					<p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+						Monitor vendor file exchanges, health, and alerts across trading partners.
+					</p>
+				</div>
+			</div>
+
+			{error ? (
+				<p className="text-sm text-destructive">{error.message}</p>
+			) : null}
+
+			{/* Filters */}
+			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-gradient-to-r from-primary/[0.05] via-card to-sky-50/60 p-3">
+				<Select value={dateFilter} onValueChange={setDateFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="today">Today (Jul 28, 2026)</SelectItem>
+						<SelectItem value="7">Last 7 Days</SelectItem>
+						<SelectItem value="30">Last 30 Days</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select value={vendorFilter} onValueChange={setVendorFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue placeholder="All Vendors" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Vendors</SelectItem>
+						{vendors.map((v) => (
+							<SelectItem key={v.id} value={v.id}>
+								{v.tradeName ?? v.legalName}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue placeholder="All File Types" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All File Types</SelectItem>
+						{fileTypes.map((t) => (
+							<SelectItem key={t} value={t}>
+								{t}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<div className="ml-auto flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={handleRefresh}
+						disabled={refreshing}
+					>
+						<RefreshCw
+							className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
+						/>
+						Refresh
+					</Button>
+					<span className="text-xs text-muted-foreground">
+						Last updated: {lastUpdated}
+					</span>
+				</div>
+			</div>
+
+			{/* KPI cards */}
+			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+				{kpis.map((k) => {
+					const Icon = k.icon;
+					return (
+						<div key={k.label} className="rounded-xl bg-card p-4">
+							<div className="flex items-start justify-between gap-3">
+								<div className="min-w-0">
+									<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+										{k.label}
+									</p>
+									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+										{k.value}
+										{k.pct ? (
+											<span className="ml-1 text-sm font-medium text-muted-foreground">
+												({k.pct})
+											</span>
+										) : null}
+									</p>
+									{k.label === "Total Files" ? (
+										<p className="mt-1 text-xs text-muted-foreground">
+											{k.hint}
+										</p>
+									) : (
+										<p className="mt-1 text-xs font-medium text-primary">
+											{k.hint}
+										</p>
+									)}
+								</div>
+								<div
+									className={cn(
+										"flex size-10 shrink-0 items-center justify-center rounded-lg",
+										k.tone
+									)}
+								>
+									<Icon className="size-4" />
+								</div>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+
+			{/* Main + right column */}
+			<div className="grid gap-4 xl:grid-cols-5">
+				<div className="space-y-4 xl:col-span-3">
+					{/* Recent File Activity */}
+					<Card className="bg-card">
+						<CardHeader className="pb-3">
+							<CardTitle className="text-base">Recent File Activity</CardTitle>
+						</CardHeader>
+						<CardContent className="px-0 pb-0">
+							<ScrollArea
+								type="always"
+								className="h-[320px] w-full border-t border-border/50"
+								viewportClassName="[&>div]:!block [&>div]:min-w-max"
+							>
+								<Table
+									className="min-w-[960px]"
+									containerClassName="!overflow-visible"
+								>
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="pl-4 sm:pl-6">Vendor</TableHead>
+												<TableHead>File Type</TableHead>
+												<TableHead>File Name</TableHead>
+												<TableHead>Frequency</TableHead>
+												<TableHead>Status</TableHead>
+												<TableHead className="text-right">Records</TableHead>
+												<TableHead>Received</TableHead>
+												<TableHead>Processed</TableHead>
+												<TableHead>Duration</TableHead>
+												<TableHead className="pr-4 text-right sm:pr-6">
+													Actions
+												</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{filteredRuns.slice(0, 8).map((run) => {
+												const vid = vendorIdForRun(run);
+												return (
+													<TableRow
+														key={run.id}
+														className="cursor-pointer hover:bg-muted/30"
+													onClick={() =>
+														router.push(
+															vid
+																? `/admin/vendors/${vid}`
+																: "/admin/vendors"
+														)
+													}
+													>
+														<TableCell className="pl-4 sm:pl-6">
+															<div className="flex items-center gap-2.5">
+																<VendorAvatarBadge
+																	vendorId={vid}
+																	vendorName={run.vendor}
+																	size="sm"
+																/>
+																{vid ? (
+																	<Link
+																		href={`/admin/vendors/${vid}`}
+																		className="font-medium hover:underline"
+																		onClick={(e) => e.stopPropagation()}
+																	>
+																		{run.vendor}
+																	</Link>
+																) : (
+																	<span className="font-medium">
+																		{run.vendor}
+																	</span>
+																)}
+															</div>
+														</TableCell>
+														<TableCell>{run.fileType}</TableCell>
+														<TableCell className="max-w-[140px] truncate font-mono text-xs">
+															{run.fileName ?? "—"}
+														</TableCell>
+														<TableCell className="text-muted-foreground">
+															{run.frequency}
+														</TableCell>
+														<TableCell>
+															<ActivityStatus status={run.status} />
+														</TableCell>
+														<TableCell className="text-right tabular-nums">
+															{run.records ?? "—"}
+														</TableCell>
+														<TableCell className="tabular-nums text-muted-foreground">
+															{run.receivedAt?.slice(11, 16) ?? "—"}
+														</TableCell>
+														<TableCell className="tabular-nums text-muted-foreground">
+															{run.completedAt?.slice(11, 16) ?? "—"}
+														</TableCell>
+														<TableCell className="tabular-nums text-muted-foreground">
+															{run.duration ?? "—"}
+														</TableCell>
+														<TableCell
+															className="pr-4 text-right sm:pr-6"
+															onClick={(e) => e.stopPropagation()}
+														>
+															<DropdownMenu>
+																<DropdownMenuTrigger asChild>
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		className="size-8"
+																	>
+																		<MoreHorizontal className="size-4" />
+																	</Button>
+																</DropdownMenuTrigger>
+																<DropdownMenuContent align="end">
+																	<DropdownMenuItem asChild>
+																		<Link
+																			href={`/admin/file-monitoring/${run.id}`}
+																		>
+																			View run detail
+																		</Link>
+																	</DropdownMenuItem>
+																	{vid && (
+																		<DropdownMenuItem asChild>
+																			<Link href={`/admin/vendors/${vid}`}>
+																				Open vendor
+																			</Link>
+																		</DropdownMenuItem>
+																	)}
+																</DropdownMenuContent>
+															</DropdownMenu>
+														</TableCell>
+													</TableRow>
+												);
+											})}
+										</TableBody>
+								</Table>
+							</ScrollArea>
+							<div className="border-t border-border/50 px-4 py-3 sm:px-6">
+								<Link
+									href="/admin/file-monitoring"
+									className="text-sm font-medium text-primary hover:underline"
+								>
+									View All File Activity →
+								</Link>
+							</div>
+						</CardContent>
+					</Card>
+
+					{/* Processing Trend */}
+					<Card className="bg-card">
+						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<div>
+								<CardTitle className="text-base">Processing Trend</CardTitle>
+							</div>
+							<Select value={trendRange} onValueChange={setTrendRange}>
+								<SelectTrigger className="h-8 w-[130px]">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="7">Last 7 Days</SelectItem>
+									<SelectItem value="14">Last 14 Days</SelectItem>
+									<SelectItem value="30">Last 30 Days</SelectItem>
+								</SelectContent>
+							</Select>
+						</CardHeader>
+						<CardContent className="h-64 pt-2">
+							<ResponsiveContainer width="100%" height="100%">
+								<LineChart data={PROCESSING_TREND}>
+									<CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+									<XAxis dataKey="day" tick={{ fontSize: 11 }} />
+									<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+									<Tooltip />
+									<Legend />
+									<Line
+										type="monotone"
+										dataKey="successful"
+										name="Successful"
+										stroke="#059669"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="warnings"
+										name="Warnings"
+										stroke="#d97706"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="failed"
+										name="Failed"
+										stroke="#dc2626"
+										strokeWidth={2}
+										dot={false}
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</CardContent>
+					</Card>
+				</div>
+
+				{/* Right column */}
+				<div className="space-y-4 xl:col-span-2">
+					<Card className="bg-card">
+						<CardHeader className="pb-2">
+							<CardTitle className="text-base">Vendor Status Overview</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="flex items-center gap-4">
+								<div className="relative h-40 w-40 shrink-0 sm:h-44 sm:w-44">
+									<ResponsiveContainer width="100%" height="100%">
+										<PieChart>
+											<Pie
+												data={vendorStatusPie}
+												dataKey="value"
+												nameKey="name"
+												innerRadius={48}
+												outerRadius={70}
+												paddingAngle={2}
+											>
+												{vendorStatusPie.map((entry) => (
+													<Cell key={entry.name} fill={entry.color} />
+												))}
+											</Pie>
+											<Tooltip />
+										</PieChart>
+									</ResponsiveContainer>
+									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+										<span className="text-lg font-semibold tabular-nums leading-none">
+											{vendors.length}
+										</span>
+										<span className="mt-1 text-[10px] font-medium text-muted-foreground">
+											Vendors
+										</span>
+									</div>
+								</div>
+								<ul className="min-w-0 flex-1 space-y-2.5">
+									{vendorStatusPie.map((item) => (
+										<li
+											key={item.name}
+											className="flex items-center justify-between gap-3 text-sm"
+										>
+											<span className="flex min-w-0 items-center gap-2">
+												<span
+													className="size-2.5 shrink-0 rounded-full"
+													style={{ backgroundColor: item.color }}
+												/>
+												<span className="truncate font-medium">{item.name}</span>
+											</span>
+											<span className="shrink-0 tabular-nums">
+												{item.value}{" "}
+												<span className="text-xs text-muted-foreground">
+													({item.pct}%)
+												</span>
+											</span>
+										</li>
+									))}
+								</ul>
+							</div>
+							<div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
+								<span>All vendors</span>
+								<span>Last 24 hours</span>
+							</div>
+						</CardContent>
+					</Card>
+
+					<Card className="bg-card">
+						<CardHeader className="pb-3">
+							<CardTitle className="text-base">Alerts</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-2">
+							{VENDOR_ALERTS.slice(0, 5).map((alert) => (
+								<Link
+									key={alert.id}
+									href={
+										alert.runId
+											? `/admin/file-monitoring/${alert.runId}`
+											: `/admin/vendors/${alert.vendorId}`
+									}
+									className={cn(
+										"flex items-start gap-2.5 rounded-lg border p-3 transition-colors",
+										alert.severity === "error" &&
+											"border-red-200 bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/30",
+										alert.severity === "warning" &&
+											"border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/30",
+										alert.severity !== "error" &&
+											alert.severity !== "warning" &&
+											"border-sky-200 bg-sky-50 hover:border-sky-300 dark:border-sky-900/50 dark:bg-sky-950/30"
+									)}
+								>
+									{alert.severity === "error" ? (
+										<XCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
+									) : alert.severity === "warning" ? (
+										<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+									) : (
+										<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+									)}
+									<div className="min-w-0 flex-1">
+										<p className="text-sm font-medium leading-snug">
+											{alert.title}
+										</p>
+										<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+											{alert.vendorName}
+										</p>
+										<p className="mt-1 text-[11px] text-muted-foreground">
+											{alert.when}
+										</p>
+									</div>
+								</Link>
+							))}
+							<Link
+								href="/admin/file-monitoring"
+								className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
+							>
+								View All Alerts →
+							</Link>
+						</CardContent>
+					</Card>
+
+					<Card className="bg-card">
+						<CardHeader className="pb-3">
+							<CardTitle className="text-base">Quick Actions</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+								{[
+									{
+										label: "Add Vendor",
+										href: "/admin/vendors/create",
+										icon: Plus,
+									},
+									{
+										label: "Upload File",
+										href: "/admin/file-monitoring",
+										icon: Upload,
+									},
+									{
+										label: "View Schedules",
+										href: "/admin/schedules",
+										icon: Calendar,
+									},
+									{
+										label: "Vendor Reports",
+										href: "/admin/reports",
+										icon: FileText,
+									},
+									{
+										label: "Audit Trail",
+										href: "/admin/audit-trail",
+										icon: ScrollText,
+									},
+								].map((action) => {
+									const Icon = action.icon;
+									return (
+										<Button
+											key={action.label}
+											variant="outline"
+											className="h-auto flex-col gap-1.5 px-2 py-3 text-xs"
+											asChild
+										>
+											<Link href={action.href}>
+												<Icon className="size-4 text-primary" />
+												{action.label}
+											</Link>
+										</Button>
+									);
+								})}
+							</div>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+		</div>
+	);
+}

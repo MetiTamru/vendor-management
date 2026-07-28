@@ -1,15 +1,17 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
 import { resolveAbacUser } from "@/lib/auth/session-user";
 
 import { PolicyEngine } from "../abac/engine";
 
 export const useABAC = () => {
 	const { data: session } = authClient.useSession();
-	const abacUser = resolveAbacUser(
-		session?.user as Parameters<typeof resolveAbacUser>[0]
-	);
+	const sessionUser = isMockAuthEnabled()
+		? MOCK_ADMIN_USER
+		: (session?.user as Parameters<typeof resolveAbacUser>[0]);
+	const abacUser = resolveAbacUser(sessionUser);
 
 	const checkAccess = (
 		resourceType: string,

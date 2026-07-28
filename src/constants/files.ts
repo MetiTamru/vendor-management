@@ -1,9 +1,7 @@
-// import girl2 from "../../public/images/girl.jpg";
-// import girl1 from "../../public/images/image.jpg";
-import colLogo from "../../public/images/Col_Logo.png";
-import logoIcon from "../../public/images/Icon_Only.png";
+// Kept for legacy imports; primary brand mark is `/images/icon.png`.
+import icon from "../../public/images/icon.png";
 
 export const IMAGES = Object.freeze({
-	colLogo: colLogo,
-	logoIcon: logoIcon,
+	colLogo: icon,
+	logoIcon: icon,
 });

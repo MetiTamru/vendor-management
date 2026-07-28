@@ -1,11 +1,18 @@
 {
 	"policies": [
 		{
-			"id": "component:groups-list:manager",
-			"description": "Managers can view groups list",
+			"id": "component:dashboard-view:admin",
+			"description": "admin/platform_admin can access dashboard-view",
 			"effect": "allow",
-			"priority": 20,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -13,7 +20,1843 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["manager"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "dashboard-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:dashboard-view:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access dashboard-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "dashboard-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-list:admin",
+			"description": "admin/platform_admin can access vendors-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access vendors-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-create:admin",
+			"description": "admin/platform_admin can access vendors-create",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-create:pm",
+			"description": "procurement_manager/manager/buyer can access vendors-create",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-edit:admin",
+			"description": "admin/platform_admin can access vendors-edit",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-edit"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-edit:pm",
+			"description": "procurement_manager/manager/buyer can access vendors-edit",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-edit"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-invite:admin",
+			"description": "admin/platform_admin can access vendors-invite",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-invite"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-invite:pm",
+			"description": "procurement_manager/manager/buyer can access vendors-invite",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-invite"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-list:admin",
+			"description": "admin/platform_admin can access onboarding-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access onboarding-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-review:admin",
+			"description": "admin/platform_admin can access onboarding-review",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-review"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-review:pm",
+			"description": "procurement_manager/manager/buyer can access onboarding-review",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-review"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:categories-list:admin",
+			"description": "admin/platform_admin can access categories-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "categories-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:categories-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access categories-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "categories-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:categories-manage:admin",
+			"description": "admin/platform_admin can access categories-manage",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "categories-manage"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:categories-manage:pm",
+			"description": "procurement_manager/manager/buyer can access categories-manage",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "categories-manage"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-list:admin",
+			"description": "admin/platform_admin can access sourcing-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access sourcing-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-create:admin",
+			"description": "admin/platform_admin can access sourcing-create",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-create:pm",
+			"description": "procurement_manager/manager/buyer can access sourcing-create",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-award:admin",
+			"description": "admin/platform_admin can access sourcing-award",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-award"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:sourcing-award:pm",
+			"description": "procurement_manager/manager/buyer can access sourcing-award",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "sourcing-award"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-list:admin",
+			"description": "admin/platform_admin can access contracts-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access contracts-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-create:admin",
+			"description": "admin/platform_admin can access contracts-create",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-create:pm",
+			"description": "procurement_manager/manager/buyer can access contracts-create",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-approve:admin",
+			"description": "admin/platform_admin can access contracts-approve",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-approve"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:contracts-approve:pm",
+			"description": "procurement_manager/manager/buyer can access contracts-approve",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "contracts-approve"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:documents-list:admin",
+			"description": "admin/platform_admin can access documents-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "documents-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:documents-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access documents-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "documents-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:compliance-view:admin",
+			"description": "admin/platform_admin can access compliance-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "compliance-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:compliance-view:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access compliance-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "compliance-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:performance-view:admin",
+			"description": "admin/platform_admin can access performance-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "performance-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:performance-view:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access performance-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "performance-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-list:admin",
+			"description": "admin/platform_admin can access purchase-orders-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access purchase-orders-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-create:admin",
+			"description": "admin/platform_admin can access purchase-orders-create",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-create:pm",
+			"description": "procurement_manager/manager/buyer can access purchase-orders-create",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-approve:admin",
+			"description": "admin/platform_admin can access purchase-orders-approve",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-approve"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-approve:pm",
+			"description": "procurement_manager/manager/buyer can access purchase-orders-approve",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-approve"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-list:admin",
+			"description": "admin/platform_admin can access invoices-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access invoices-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-match:admin",
+			"description": "admin/platform_admin can access invoices-match",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-match"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-match:pm",
+			"description": "procurement_manager/manager/buyer can access invoices-match",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-match"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-list:admin",
+			"description": "admin/platform_admin can access approvals-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access approvals-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-decide:admin",
+			"description": "admin/platform_admin can access approvals-decide",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-decide"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-decide:pm",
+			"description": "procurement_manager/manager/buyer can access approvals-decide",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-decide"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:reports-view:admin",
+			"description": "admin/platform_admin can access reports-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "reports-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:reports-view:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access reports-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "reports-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-list:admin",
+			"description": "admin/platform_admin can access groups-list",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
 					},
 					{
 						"type": "attribute",
@@ -25,35 +1868,18 @@
 			}
 		},
 		{
-			"id": "component:users-list:manager",
-			"description": "Managers can view users list",
+			"id": "component:groups-list:pm",
+			"description": "procurement_manager/manager/buyer can access groups-list",
 			"effect": "allow",
 			"priority": 20,
-			"target": { "resources": ["component"], "actions": ["view"] },
-			"conditions": {
-				"type": "allOf",
-				"conditions": [
-					{
-						"type": "attribute",
-						"attribute": "user.roles",
-						"operator": "overlaps",
-						"value": ["manager"]
-					},
-					{
-						"type": "attribute",
-						"attribute": "resource.attributes.name",
-						"operator": "equals",
-						"value": "users-list"
-					}
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
 				]
-			}
-		},
-		{
-			"id": "component:roles-list:manager",
-			"description": "Managers can view roles list",
-			"effect": "allow",
-			"priority": 20,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -61,55 +1887,11 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["manager"]
-					},
-					{
-						"type": "attribute",
-						"attribute": "resource.attributes.name",
-						"operator": "equals",
-						"value": "roles-list"
-					}
-				]
-			}
-		},
-		{
-			"id": "component:settings-view:manager",
-			"description": "Managers can view settings",
-			"effect": "allow",
-			"priority": 20,
-			"target": { "resources": ["component"], "actions": ["view"] },
-			"conditions": {
-				"type": "allOf",
-				"conditions": [
-					{
-						"type": "attribute",
-						"attribute": "user.roles",
-						"operator": "overlaps",
-						"value": ["manager"]
-					},
-					{
-						"type": "attribute",
-						"attribute": "resource.attributes.name",
-						"operator": "equals",
-						"value": "settings-view"
-					}
-				]
-			}
-		},
-		{
-			"id": "component:groups-list:admin",
-			"description": "Admins can view groups list",
-			"effect": "allow",
-			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
-			"conditions": {
-				"type": "allOf",
-				"conditions": [
-					{
-						"type": "attribute",
-						"attribute": "user.roles",
-						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
 					},
 					{
 						"type": "attribute",
@@ -122,10 +1904,17 @@
 		},
 		{
 			"id": "component:groups-create:admin",
-			"description": "Admins can create groups",
+			"description": "admin/platform_admin can access groups-create",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -133,7 +1922,45 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-create"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-create:pm",
+			"description": "procurement_manager/manager/buyer can access groups-create",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
 					},
 					{
 						"type": "attribute",
@@ -146,10 +1973,17 @@
 		},
 		{
 			"id": "component:groups-edit:admin",
-			"description": "Admins can edit groups",
+			"description": "admin/platform_admin can access groups-edit",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -157,7 +1991,45 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "groups-edit"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:groups-edit:pm",
+			"description": "procurement_manager/manager/buyer can access groups-edit",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"procurement_manager",
+							"manager",
+							"buyer"
+						]
 					},
 					{
 						"type": "attribute",
@@ -170,10 +2042,17 @@
 		},
 		{
 			"id": "component:groups-delete:admin",
-			"description": "Admins can delete groups",
+			"description": "admin/platform_admin can access groups-delete",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["delete"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"delete"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -181,7 +2060,10 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
 					},
 					{
 						"type": "attribute",
@@ -194,10 +2076,17 @@
 		},
 		{
 			"id": "component:users-list:admin",
-			"description": "Admins can view users list",
+			"description": "admin/platform_admin can access users-list",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -205,7 +2094,48 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "users-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:users-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access users-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
 					},
 					{
 						"type": "attribute",
@@ -218,10 +2148,17 @@
 		},
 		{
 			"id": "component:roles-list:admin",
-			"description": "Admins can view roles list",
+			"description": "admin/platform_admin can access roles-list",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -229,7 +2166,48 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "roles-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:roles-list:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access roles-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
 					},
 					{
 						"type": "attribute",
@@ -242,10 +2220,17 @@
 		},
 		{
 			"id": "component:settings-view:admin",
-			"description": "Admins can view settings",
+			"description": "admin/platform_admin can access settings-view",
 			"effect": "allow",
 			"priority": 10,
-			"target": { "resources": ["component"], "actions": ["view"] },
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
 			"conditions": {
 				"type": "allOf",
 				"conditions": [
@@ -253,13 +2238,886 @@
 						"type": "attribute",
 						"attribute": "user.roles",
 						"operator": "overlaps",
-						"value": ["admin"]
+						"value": [
+							"admin",
+							"platform_admin"
+						]
 					},
 					{
 						"type": "attribute",
 						"attribute": "resource.attributes.name",
 						"operator": "equals",
 						"value": "settings-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:settings-view:manager",
+			"description": "manager/procurement_manager/buyer/ap_finance/compliance_officer/viewer can access settings-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"ap_finance",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "settings-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-list:finance",
+			"description": "ap_finance can access invoices-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"ap_finance"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:invoices-match:finance",
+			"description": "ap_finance can access invoices-match",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"ap_finance"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "invoices-match"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-list:finance",
+			"description": "ap_finance can access approvals-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"ap_finance"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:approvals-decide:finance",
+			"description": "ap_finance can access approvals-decide",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"ap_finance"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "approvals-decide"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:purchase-orders-list:finance",
+			"description": "ap_finance can access purchase-orders-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"ap_finance"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "purchase-orders-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:compliance-view:compliance",
+			"description": "compliance_officer can access compliance-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"compliance_officer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "compliance-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:documents-list:compliance",
+			"description": "compliance_officer can access documents-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"compliance_officer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "documents-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendors-list:compliance",
+			"description": "compliance_officer can access vendors-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"compliance_officer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendors-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-list:compliance",
+			"description": "compliance_officer can access onboarding-list",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"compliance_officer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-list"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:onboarding-review:compliance",
+			"description": "compliance_officer can access onboarding-review",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"compliance_officer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "onboarding-review"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-dashboard-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-dashboard-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-dashboard-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-profile-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-profile-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-profile-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-onboarding-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-onboarding-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-onboarding-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-documents-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-documents-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-documents-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-team-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-team-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-team-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-opportunities-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-opportunities-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-opportunities-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-contracts-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-contracts-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-contracts-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-purchase-orders-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-purchase-orders-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-purchase-orders-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-invoices-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-invoices-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-invoices-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:vendor-notifications-view:vendor",
+			"description": "vendor_admin/vendor_bidder/vendor_finance/vendor_viewer can access vendor-notifications-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"vendor_admin",
+							"vendor_bidder",
+							"vendor_finance",
+							"vendor_viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "vendor-notifications-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:file-management-view:admin",
+			"description": "Admins can access file-management-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "file-management-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:file-management-view:manager",
+			"description": "Managers can access file-management-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "file-management-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:processing-logs-view:admin",
+			"description": "Admins can access processing-logs-view",
+			"effect": "allow",
+			"priority": 10,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"admin",
+							"platform_admin"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "processing-logs-view"
+					}
+				]
+			}
+		},
+		{
+			"id": "component:processing-logs-view:manager",
+			"description": "Managers can access processing-logs-view",
+			"effect": "allow",
+			"priority": 20,
+			"target": {
+				"resources": [
+					"component"
+				],
+				"actions": [
+					"view"
+				]
+			},
+			"conditions": {
+				"type": "allOf",
+				"conditions": [
+					{
+						"type": "attribute",
+						"attribute": "user.roles",
+						"operator": "overlaps",
+						"value": [
+							"manager",
+							"procurement_manager",
+							"buyer",
+							"compliance_officer",
+							"viewer"
+						]
+					},
+					{
+						"type": "attribute",
+						"attribute": "resource.attributes.name",
+						"operator": "equals",
+						"value": "processing-logs-view"
 					}
 				]
 			}

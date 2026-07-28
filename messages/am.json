@@ -21,11 +21,12 @@
 		"amharic": "አማርኛ"
 	},
 	"HomePage": {
-		"title": "አድራሻ አርክሶች",
-		"description": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።",
-		"getStarted": "አድራሻ አርክሶች ገጽ ይሂዱ",
-		"about": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።",
-		"contact": "እንግሊዝኛ ቋንቋን ለውጥ ይሂዱ።"
+		"title": "Vendor Management",
+		"description": "የአቅራቢዎች አስተዳደር — መመዝገብ፣ ውል፣ ግዢ እና ክፍያ በአንድ መድረክ።",
+		"getStarted": "አስተዳደር ክፈት",
+		"vendorPortal": "የአቅራቢ መግቢያ",
+		"about": "ስለ",
+		"contact": "አግኙን"
 	},
 	"Auth": {
 		"loginTitle": "ግባ",
@@ -33,17 +34,35 @@
 		"signUpTitle": "መለያ ፍጠር",
 		"signUpDescription": "ለመጀመር ዝርዝሮችዎን ያስገቡ",
 		"forgotTitle": "የይለፍ ቃል ዳግም አስጀምር",
-		"forgotDescription": "የይለፍ ቃል ለመቀየር መመሪያዎችን እንልክልዎታለን"
+		"forgotDescription": "የይለፍ ቃል ለመቀየር መመሪያዎችን እንልክልዎታለን",
+		"inviteTitle": "ግብዣ ተቀበል",
+		"inviteDescription": "እንደ አቅራቢ ለመቀላቀል የይለፍ ቃል ያዘጋጁ"
 	},
 	"Admin": {
-		"title": "አስተዳደር",
+		"title": "Vendor Management",
 		"navigation": "ዳሪግ",
 		"offline": "ከመስመር ውጭ ነዎት። ግንኙነት ሲመለስ ለውጦች ይቀጥላሉ።",
+		"sections": {
+			"top": "አጠቃላይ",
+			"vendor_management": "የአቅራቢ አስተዳደር",
+			"operations": "ክንውኖች",
+			"administration": "አስተዳደር"
+		},
 		"nav": {
-			"groups": "ቡድኖች",
-			"users": "ተጠቃሚዎች",
-			"roles": "ሚናዎች",
-			"settings": "ቅንብሮች"
+			"dashboard": "ዳሽቦርድ",
+			"vendors": "አቅራቢዎች",
+			"filemonitoring": "የፋይል ክትትል",
+			"processingstatus": "የሂደት ሁኔታ",
+			"filehistory": "የፋይል ታሪክ",
+			"schedules": "መርሐግብሮች",
+			"processinglogs": "የሂደት መዝገቦች",
+			"errormanagement": "የስህተት አስተዳደር",
+			"notifications": "ማሳወቂያዎች",
+			"slamonitoring": "የSLA ክትትል",
+			"audittrail": "የኦዲት መከታተያ",
+			"reports": "ሪፖርቶች",
+			"settings": "ቅንብሮች",
+			"support": "ድጋፍ"
 		},
 		"placeholders": {
 			"usersTitle": "ተጠቃሚዎች",
@@ -52,6 +71,27 @@
 			"rolesDescription": "የሚና አስተዳደር API ሲገናኝ ይገኛል።",
 			"settingsTitle": "ቅንብሮች",
 			"settingsDescription": "የመተግበሪያ ቅንብሮች በሚቀጥለው ስሪት ይገኛሉ።"
+		}
+	},
+	"Vendor": {
+		"title": "የአቅራቢ መግቢያ",
+		"portalLabel": "የአቅራቢ የስራ ቦታ",
+		"sections": {
+			"overview": "አጠቃላይ",
+			"company": "ኩባንያ",
+			"commerce": "ንግድ"
+		},
+		"nav": {
+			"dashboard": "ዳሽቦርድ",
+			"companyprofile": "የኩባንያ መገለጫ",
+			"onboarding": "መመዝገብ",
+			"documents": "ሰነዶች",
+			"team": "ቡድን",
+			"opportunities": "እድሎች",
+			"contracts": "ውሎች",
+			"purchaseorders": "የግዢ ትዕዛዞች",
+			"invoices": "ደረሰኞች",
+			"notifications": "ማሳወቂያዎች"
 		}
 	},
 	"Groups": {

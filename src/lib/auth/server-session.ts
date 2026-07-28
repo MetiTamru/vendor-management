@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { getAuthSessionUrl } from "@/lib/auth/api-url";
+import { isMockAuthEnabled, MOCK_ADMIN_USER } from "@/lib/auth/mock-auth";
 
 export type ServerSessionUser = {
 	id: string;
@@ -20,6 +21,13 @@ export type ServerSession = {
 const E2E_SESSION_COOKIE = "e2e-session";
 
 export async function getServerSession(): Promise<ServerSession | null> {
+	if (isMockAuthEnabled()) {
+		return {
+			user: { ...MOCK_ADMIN_USER },
+			session: { mock: true },
+		};
+	}
+
 	const cookieStore = await cookies();
 
 	if (

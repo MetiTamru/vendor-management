@@ -6,7 +6,7 @@
 		"dashboard": "dashboard"
 	},
 	"metadata": {
-		"description": "Build More Efficient, Engaging, and Profitable Online Stores: Toorax Enhances your eCommerce with the Power of shadcn/ui, Next.js 15, React 19, and more",
+		"description": "Enterprise procurement vendor management — onboard, contract, source, order, and pay suppliers.",
 		"title": {
 			"home": "Home"
 		}
@@ -23,9 +23,10 @@
 		"amharic": "Amharic"
 	},
 	"HomePage": {
-		"title": "Welcome to Toorax",
-		"description": "Build More Efficient, Engaging, and Profitable Online Stores: Toorax Enhances your eCommerce with the Power of shadcn/ui, Next.js 15, React 19, and more",
-		"getStarted": "Get Started",
+		"title": "Vendor Management",
+		"description": "Enterprise procurement vendor management — onboard, contract, source, order, and pay suppliers in one platform.",
+		"getStarted": "Open admin",
+		"vendorPortal": "Vendor portal",
 		"about": "About",
 		"contact": "Contact"
 	},
@@ -35,17 +36,35 @@
 		"signUpTitle": "Create account",
 		"signUpDescription": "Enter your details to get started",
 		"forgotTitle": "Reset password",
-		"forgotDescription": "Enter your email and we'll send reset instructions"
+		"forgotDescription": "Enter your email and we'll send reset instructions",
+		"inviteTitle": "Accept invitation",
+		"inviteDescription": "Set your password to join as a supplier"
 	},
 	"Admin": {
-		"title": "Admin",
+		"title": "Vendor Management",
 		"navigation": "Navigation",
 		"offline": "You are offline. Changes will resume when connection is restored.",
+		"sections": {
+			"top": "Overview",
+			"vendor_management": "Vendor Management",
+			"operations": "Operations",
+			"administration": "Administration"
+		},
 		"nav": {
-			"groups": "Groups",
-			"users": "Users",
-			"roles": "Roles",
-			"settings": "Settings"
+			"dashboard": "Dashboard",
+			"vendors": "Vendors",
+			"filemonitoring": "File Monitoring",
+			"processingstatus": "Processing Status",
+			"filehistory": "File History",
+			"schedules": "Schedules",
+			"processinglogs": "Processing Logs",
+			"errormanagement": "Error Management",
+			"notifications": "Notifications",
+			"slamonitoring": "SLA Monitoring",
+			"audittrail": "Audit Trail",
+			"reports": "Reports",
+			"settings": "Settings",
+			"support": "Support"
 		},
 		"placeholders": {
 			"usersTitle": "Users",
@@ -54,6 +73,27 @@
 			"rolesDescription": "Role management will be available when the API is connected.",
 			"settingsTitle": "Settings",
 			"settingsDescription": "Application settings will be available in a future release."
+		}
+	},
+	"Vendor": {
+		"title": "Vendor portal",
+		"portalLabel": "Supplier workspace",
+		"sections": {
+			"overview": "Overview",
+			"company": "Company",
+			"commerce": "Commerce"
+		},
+		"nav": {
+			"dashboard": "Dashboard",
+			"companyprofile": "Company profile",
+			"onboarding": "Onboarding",
+			"documents": "Documents",
+			"team": "Team",
+			"opportunities": "Opportunities",
+			"contracts": "Contracts",
+			"purchaseorders": "Purchase orders",
+			"invoices": "Invoices",
+			"notifications": "Notifications"
 		}
 	},
 	"Groups": {

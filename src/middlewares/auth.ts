@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { defaultLocale } from "@/i18n/config";
 import { getAuthSessionUrl } from "@/lib/auth/api-url";
+import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import {
 	getHomePath,
 	getLocaleFromPathname,
@@ -24,6 +25,10 @@ function hasE2eSession(request: NextRequest): boolean {
 }
 
 export async function isAuthenticated(request: NextRequest): Promise<boolean> {
+	if (isMockAuthEnabled()) {
+		return true;
+	}
+
 	if (hasE2eSession(request)) {
 		return true;
 	}
@@ -48,6 +53,26 @@ export async function isAuthenticated(request: NextRequest): Promise<boolean> {
 export async function handleAuth(
 	request: NextRequest
 ): Promise<NextResponse | null> {
+	if (isMockAuthEnabled()) {
+		const { pathname } = request.nextUrl;
+		const locale = getLocaleFromPathname(pathname) ?? defaultLocale;
+		const homePath = getHomePath(locale);
+
+		// Vendor portal disabled — send to admin home
+		const withoutLocale =
+			pathname.replace(new RegExp(`^/${locale}`), "") || "/";
+		if (withoutLocale === "/vendor" || withoutLocale.startsWith("/vendor/")) {
+			return NextResponse.redirect(new URL(homePath, request.url));
+		}
+
+		// Auth pages → home when mock-authenticated
+		if (pathname.includes("/auth/")) {
+			return NextResponse.redirect(new URL(homePath, request.url));
+		}
+
+		return null;
+	}
+
 	const { pathname } = request.nextUrl;
 	const locale = getLocaleFromPathname(pathname) ?? defaultLocale;
 	const loginPath = getLoginPath(locale);

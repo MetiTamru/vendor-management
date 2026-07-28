@@ -16,13 +16,16 @@ NEXT_PUBLIC_URL=https://app.your-domain.com
 # NEXT_PUBLIC_USE_MOCK_USERS=
 # NEXT_PUBLIC_USE_MOCK_ROLES=
 # NEXT_PUBLIC_USE_MOCK_SETTINGS=
+# NEXT_PUBLIC_USE_MOCK_VMS=
 # NEXT_PUBLIC_DEV_ADMIN=
 # NEXT_PUBLIC_DEV_MANAGER=
+# NEXT_PUBLIC_DEV_VENDOR=
 ```
 
 ## 2. Verify contracts
 
 - [Identity groups](./api-contracts/identity-groups.md) — required for admin Groups CRUD
+- [VMS domain](./api-contracts/vms.md) — vendors, onboarding, RFX, contracts, POs, invoices
 - Users: `GET /api/admin/users/`
 - Roles: `GET /api/admin/roles/`
 - Settings: `GET /api/admin/settings/`

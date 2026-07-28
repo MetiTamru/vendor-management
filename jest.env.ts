@@ -8,3 +8,6 @@ process.env.NEXT_PUBLIC_USE_MOCK_GROUPS = "true";
 process.env.NEXT_PUBLIC_USE_MOCK_USERS = "true";
 process.env.NEXT_PUBLIC_USE_MOCK_ROLES = "true";
 process.env.NEXT_PUBLIC_USE_MOCK_SETTINGS = "true";
+process.env.NEXT_PUBLIC_USE_MOCK_VMS = "true";
+process.env.NEXT_PUBLIC_USE_MOCK_AUTH = "true";
+process.env.NEXT_PUBLIC_DEV_ADMIN = "true";
