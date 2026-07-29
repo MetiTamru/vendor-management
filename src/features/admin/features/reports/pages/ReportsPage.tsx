@@ -333,6 +333,168 @@ export function ReportsPage() {
 					</div>
 				</CardContent>
 			</Card>
+
+			<div className="grid gap-4 xl:grid-cols-2">
+				<Card className="bg-card/70">
+					<CardHeader className="pb-2">
+						<CardTitle className="text-base">
+							File processing volume
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="h-72">
+						<ResponsiveContainer width="100%" height="100%">
+							<AreaChart
+								data={[
+									{ day: "Mon", files: 42, errors: 3 },
+									{ day: "Tue", files: 51, errors: 2 },
+									{ day: "Wed", files: 48, errors: 5 },
+									{ day: "Thu", files: 61, errors: 4 },
+									{ day: "Fri", files: 55, errors: 1 },
+									{ day: "Sat", files: 22, errors: 0 },
+									{ day: "Sun", files: 18, errors: 1 },
+								]}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
+								<XAxis dataKey="day" tickLine={false} axisLine={false} />
+								<YAxis tickLine={false} axisLine={false} />
+								<Tooltip />
+								<Area
+									type="monotone"
+									dataKey="files"
+									stroke="#13446c"
+									fill="#13446c33"
+									strokeWidth={2}
+									name="Processed"
+								/>
+								<Area
+									type="monotone"
+									dataKey="errors"
+									stroke="#dc2626"
+									fill="#dc262622"
+									strokeWidth={2}
+									name="Errors"
+								/>
+							</AreaChart>
+						</ResponsiveContainer>
+					</CardContent>
+				</Card>
+				<Card className="bg-card/70">
+					<CardHeader className="pb-2">
+						<CardTitle className="text-base">SLA compliance trend</CardTitle>
+					</CardHeader>
+					<CardContent className="h-72">
+						<ResponsiveContainer width="100%" height="100%">
+							<AreaChart
+								data={[
+									{ week: "W1", attainment: 97.2 },
+									{ week: "W2", attainment: 96.4 },
+									{ week: "W3", attainment: 98.1 },
+									{ week: "W4", attainment: 95.8 },
+									{ week: "W5", attainment: 97.9 },
+									{ week: "W6", attainment: 98.6 },
+								]}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
+								<XAxis dataKey="week" tickLine={false} axisLine={false} />
+								<YAxis
+									domain={[90, 100]}
+									tickLine={false}
+									axisLine={false}
+									tickFormatter={(v) => `${v}%`}
+								/>
+								<Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
+								<Area
+									type="monotone"
+									dataKey="attainment"
+									stroke="#059669"
+									fill="#05966933"
+									strokeWidth={2.5}
+									name="SLA %"
+								/>
+							</AreaChart>
+						</ResponsiveContainer>
+					</CardContent>
+				</Card>
+			</div>
+
+			<Card className="bg-card/70">
+				<CardHeader className="pb-3">
+					<CardTitle className="text-base">Error rate analytics</CardTitle>
+				</CardHeader>
+				<CardContent className="px-0 pb-0">
+					<div className="border-t border-border/50">
+						<table className="w-full text-sm">
+							<thead>
+								<tr className="bg-primary/[0.04] text-left">
+									<th className="px-6 py-3 font-semibold text-primary">
+										Category
+									</th>
+									<th className="px-4 py-3 font-semibold text-primary">
+										Count
+									</th>
+									<th className="px-4 py-3 font-semibold text-primary">
+										Share
+									</th>
+									<th className="px-6 py-3 font-semibold text-primary">
+										Trend
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{[
+									{
+										category: "Validation failures",
+										count: 28,
+										share: "41%",
+										trend: "↑ 4 vs prior week",
+									},
+									{
+										category: "Late / SLA breach",
+										count: 14,
+										share: "21%",
+										trend: "↓ 2 vs prior week",
+									},
+									{
+										category: "Parse / format errors",
+										count: 12,
+										share: "18%",
+										trend: "→ flat",
+									},
+									{
+										category: "Connectivity / SFTP",
+										count: 8,
+										share: "12%",
+										trend: "↑ 1 vs prior week",
+									},
+									{
+										category: "Other",
+										count: 5,
+										share: "8%",
+										trend: "↓ 3 vs prior week",
+									},
+								].map((row) => (
+									<tr key={row.category} className="border-t border-border/40">
+										<td className="px-6 py-3 font-medium">{row.category}</td>
+										<td className="px-4 py-3 tabular-nums">{row.count}</td>
+										<td className="px-4 py-3 tabular-nums text-muted-foreground">
+											{row.share}
+										</td>
+										<td className="px-6 py-3 text-muted-foreground">
+											{row.trend}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

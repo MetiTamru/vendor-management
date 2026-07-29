@@ -15,15 +15,4 @@ describe("middleware auth decisions", () => {
 			).toMatch(/\/auth\/login$/);
 		}
 	});
-
-	it("protects vendor routes when unauthenticated", () => {
-		expect(
-			resolveAuthRedirect({
-				pathname: "/en/vendor/contracts",
-				authenticated: false,
-				loginPath: "/en/auth/login",
-				homePath: "/en/admin",
-			})
-		).toBe("/en/auth/login");
-	});
 });

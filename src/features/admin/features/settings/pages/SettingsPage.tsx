@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { ModeToggle } from "@/components/shared/DropDown/modeToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,22 @@ export function SettingsPage() {
 					</Button>
 				</div>
 			</div>
+
+			<Card className="border border-border/60 bg-card">
+				<CardHeader className="pb-2">
+					<CardTitle className="text-base">Appearance</CardTitle>
+				</CardHeader>
+				<CardContent className="flex flex-wrap items-center justify-between gap-3">
+					<div>
+						<p className="text-sm font-medium">Theme</p>
+						<p className="text-xs text-muted-foreground">
+							Switch between light, dark, or system preference. Preference is
+							saved in your browser.
+						</p>
+					</div>
+					<ModeToggle />
+				</CardContent>
+			</Card>
 
 			<Card className="border border-primary/15 bg-gradient-to-r from-primary/[0.05] via-card to-sky-50/60 gap-0 py-0">
 				<CardContent className="flex flex-col gap-1.5 px-3 py-2">

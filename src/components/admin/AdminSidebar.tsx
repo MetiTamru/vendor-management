@@ -6,15 +6,20 @@ import {
 	Bell,
 	CalendarDays,
 	ClipboardList,
+	Download,
 	FileSearch,
 	FolderKanban,
+	Gauge,
+	GitCompare,
 	History,
 	Home,
 	LifeBuoy,
+	Radio,
 	ScrollText,
 	Settings,
 	Timer,
 	Users,
+	Workflow,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -49,8 +54,13 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	"Error Management": AlertTriangle,
 	Notifications: Bell,
 	"SLA Monitoring": Timer,
+	"Risk Scoring": Gauge,
+	"Command Center": Radio,
+	Automations: Workflow,
+	"Vendor Comparison": GitCompare,
 	"Audit Trail": ClipboardList,
 	Reports: BarChart3,
+	"Export Center": Download,
 	Settings: Settings,
 };
 

@@ -430,45 +430,87 @@ export function DocumentsPage() {
 
 				<Card className="border-border/50 bg-card/70 xl:col-span-2">
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Expiry watchlist</CardTitle>
+						<CardTitle className="text-base">Document intelligence</CardTitle>
 						<CardDescription>
-							Documents due for renewal within 45 days
+							Expiry horizon and parsing status across the repository
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-2">
-						{expiringList.length === 0 ? (
-							<p className="text-sm text-muted-foreground">
-								No documents approaching expiry.
+					<CardContent className="space-y-3">
+						<div className="grid grid-cols-3 gap-2">
+							{[
+								{
+									label: "30 days",
+									value: documents.filter((d) => {
+										const days = daysUntilExpiry(d.expiresAt);
+										return days != null && days >= 0 && days <= 30;
+									}).length,
+								},
+								{
+									label: "60 days",
+									value: documents.filter((d) => {
+										const days = daysUntilExpiry(d.expiresAt);
+										return days != null && days > 30 && days <= 60;
+									}).length,
+								},
+								{
+									label: "90 days",
+									value: documents.filter((d) => {
+										const days = daysUntilExpiry(d.expiresAt);
+										return days != null && days > 60 && days <= 90;
+									}).length,
+								},
+							].map((bucket) => (
+								<div
+									key={bucket.label}
+									className="rounded-lg border border-border/50 bg-background/60 p-2.5 text-center"
+								>
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+										{bucket.label}
+									</p>
+									<p className="mt-1 text-lg font-semibold tabular-nums">
+										{bucket.value}
+									</p>
+								</div>
+							))}
+						</div>
+						<div className="space-y-2">
+							<p className="text-xs font-medium text-muted-foreground">
+								Expiry watchlist
 							</p>
-						) : (
-							expiringList.map((doc) => {
-								const days = daysUntilExpiry(doc.expiresAt);
-								return (
-									<Link
-										key={doc.id}
-										href={`/admin/documents/${doc.id}`}
-										className="flex items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/50 p-3 transition-colors hover:border-primary/30 hover:bg-background"
-									>
-										<div className="min-w-0">
-											<p className="truncate text-sm font-semibold">
-												{doc.name}
-											</p>
-											<p className="truncate text-xs text-muted-foreground">
-												{doc.vendorName}
-											</p>
-										</div>
-										<span
-											className={cn(
-												"shrink-0 text-xs font-semibold tabular-nums",
-												expiryTone(days)
-											)}
+							{expiringList.length === 0 ? (
+								<p className="text-sm text-muted-foreground">
+									No documents approaching expiry.
+								</p>
+							) : (
+								expiringList.map((doc) => {
+									const days = daysUntilExpiry(doc.expiresAt);
+									return (
+										<Link
+											key={doc.id}
+											href={`/admin/documents/${doc.id}`}
+											className="flex items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/50 p-3 transition-colors hover:border-primary/30 hover:bg-background"
 										>
-											{days === 0 ? "Today" : `${days}d`}
-										</span>
-									</Link>
-								);
-							})
-						)}
+											<div className="min-w-0">
+												<p className="truncate text-sm font-semibold">
+													{doc.name}
+												</p>
+												<p className="truncate text-xs text-muted-foreground">
+													{doc.vendorName}
+												</p>
+											</div>
+											<span
+												className={cn(
+													"shrink-0 text-xs font-semibold tabular-nums",
+													expiryTone(days)
+												)}
+											>
+												{days === 0 ? "Today" : `${days}d`}
+											</span>
+										</Link>
+									);
+								})
+							)}
+						</div>
 					</CardContent>
 				</Card>
 			</div>
@@ -497,6 +539,8 @@ export function DocumentsPage() {
 									<TableHead>Status</TableHead>
 									<TableHead>Expiry</TableHead>
 									<TableHead>Uploaded</TableHead>
+									<TableHead>OCR</TableHead>
+									<TableHead>Tags</TableHead>
 									<TableHead>Version</TableHead>
 									<TableHead className="pr-4 text-right sm:pr-6">
 										Actions
@@ -556,6 +600,38 @@ export function DocumentsPage() {
 											</TableCell>
 											<TableCell className="text-muted-foreground">
 												{formatDate(row.uploadedAt)}
+											</TableCell>
+											<TableCell>
+												<span
+													className={cn(
+														"inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+														row.status === "approved"
+															? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+															: row.status === "pending"
+																? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+																: "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200"
+													)}
+												>
+													{row.status === "approved"
+														? "Parsed"
+														: row.status === "pending"
+															? "Queued"
+															: "Needs review"}
+												</span>
+											</TableCell>
+											<TableCell>
+												<div className="flex max-w-[140px] flex-wrap gap-1">
+													{(row.tags ?? [formatType(row.type)])
+														.slice(0, 2)
+														.map((tag) => (
+															<span
+																key={tag}
+																className="rounded bg-muted px-1.5 py-0.5 text-[10px] capitalize text-muted-foreground"
+															>
+																{tag}
+															</span>
+														))}
+												</div>
 											</TableCell>
 											<TableCell className="tabular-nums text-muted-foreground">
 												v{row.version ?? 1}

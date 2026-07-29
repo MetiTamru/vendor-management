@@ -988,7 +988,7 @@ let notifications: NotificationModel[] = [
 		title: "PO awaiting acknowledgement",
 		body: "PO-2026-1108 needs acknowledgement.",
 		read: false,
-		href: "/vendor/purchase-orders/po-2",
+		href: "/admin/purchase-orders/po-2",
 		createdAt: "2026-07-22T09:10:00.000Z",
 	},
 	{
@@ -996,7 +996,7 @@ let notifications: NotificationModel[] = [
 		title: "New RFQ invitation",
 		body: "You are invited to RFQ-2026-018 — Q3 Corrugated Packaging.",
 		read: false,
-		href: "/vendor/opportunities/rfx-1",
+		href: "/admin/sourcing/rfx-1",
 		createdAt: "2026-07-19T08:00:00.000Z",
 	},
 	{
@@ -1004,7 +1004,7 @@ let notifications: NotificationModel[] = [
 		title: "Insurance expiring soon",
 		body: "General Liability expires in 25 days.",
 		read: true,
-		href: "/vendor/documents",
+		href: "/admin/documents",
 		createdAt: "2026-07-15T08:00:00.000Z",
 	},
 ];

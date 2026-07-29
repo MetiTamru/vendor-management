@@ -58,13 +58,6 @@ export async function handleAuth(
 		const locale = getLocaleFromPathname(pathname) ?? defaultLocale;
 		const homePath = getHomePath(locale);
 
-		// Vendor portal disabled — send to admin home
-		const withoutLocale =
-			pathname.replace(new RegExp(`^/${locale}`), "") || "/";
-		if (withoutLocale === "/vendor" || withoutLocale.startsWith("/vendor/")) {
-			return NextResponse.redirect(new URL(homePath, request.url));
-		}
-
 		// Auth pages → home when mock-authenticated
 		if (pathname.includes("/auth/")) {
 			return NextResponse.redirect(new URL(homePath, request.url));

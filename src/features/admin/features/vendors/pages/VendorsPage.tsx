@@ -4,40 +4,37 @@ import { useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
-	Calendar,
+	ArrowDownUp,
+	Ban,
+	Bell,
 	CheckCircle2,
-	Clock3,
-	FileText,
-	Info,
-	MoreHorizontal,
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	ChevronsLeft,
+	ChevronsRight,
+	Download,
+	ExternalLink,
+	MoreVertical,
 	Plus,
 	RefreshCw,
-	ScrollText,
-	Upload,
-	XCircle,
+	Search,
+	Users,
 } from "lucide-react";
-import {
-	CartesianGrid,
-	Cell,
-	Legend,
-	Line,
-	LineChart,
-	Pie,
-	PieChart,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { toast } from "sonner";
 
+import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -45,7 +42,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -54,267 +50,385 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
-import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
 import {
-	PROCESSING_TREND,
-	VENDOR_ALERTS,
-	getVendorIntegration,
-	runBucket,
-	summarizeRuns,
-	vendorIdForRun,
+	VENDOR_DIRECTORY,
+	type VendorDirectoryRow,
+	type VendorListHealth,
+	type VendorListStatus,
+	summarizeVendorDirectory,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useVendorsList } from "@/features/shared/vms/queries";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-function ActivityStatus({
-	status,
-}: {
-	status: (typeof FILE_RUNS)[0]["status"];
-}) {
-	const bucket = runBucket(status);
-	if (bucket === "success") {
+function StatusPill({ status }: { status: VendorListStatus }) {
+	if (status === "active") {
 		return (
 			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-				Success
+				Active
 			</span>
 		);
 	}
-	if (bucket === "failed") {
-		return (
-			<span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
-				Failed
-			</span>
-		);
-	}
-	if (bucket === "warning") {
+	if (status === "at_risk") {
 		return (
 			<span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-				Warning
+				At Risk
 			</span>
 		);
 	}
-	if (bucket === "in_progress") {
-		return (
-			<span className="inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
-				In Progress
-			</span>
-		);
-	}
-	return <StatusBadge status={status} />;
+	return (
+		<span className="inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0 text-[10px] font-medium text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+			Inactive
+		</span>
+	);
 }
 
+function HealthDot({ health }: { health: VendorListHealth }) {
+	const label =
+		health === "healthy"
+			? "Healthy"
+			: health === "warning"
+				? "Warning"
+				: "Critical";
+	const color =
+		health === "healthy"
+			? "bg-emerald-500"
+			: health === "warning"
+				? "bg-amber-500"
+				: "bg-red-500";
+	return (
+		<span className="inline-flex items-center gap-1.5 text-xs">
+			<span className={cn("size-1.5 rounded-full", color)} />
+			{label}
+		</span>
+	);
+}
+
+function detailHref(row: VendorDirectoryRow) {
+	const n = Number(row.id.replace("vnd-", ""));
+	if (n >= 1 && n <= 4) return `/admin/vendors/${row.id}`;
+	return `/admin/vendors/vnd-${((n - 1) % 4) + 1}`;
+}
+
+type SortKey =
+	| "name"
+	| "vendorCode"
+	| "vendorType"
+	| "status"
+	| "linkedAccounts"
+	| "activeJobs"
+	| "lastFileReceived"
+	| "health";
+
 export function VendorsPage() {
-	const router = useRouter();
-	const { vendors, isLoading, error } = useVendorsList();
-	const [dateFilter, setDateFilter] = useState("today");
-	const [vendorFilter, setVendorFilter] = useState("all");
-	const [fileTypeFilter, setFileTypeFilter] = useState("all");
-	const [refreshing, setRefreshing] = useState(false);
-	const [trendRange, setTrendRange] = useState("7");
-	const lastUpdated = "9:28 AM";
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState("all");
+	const [vendorType, setVendorType] = useState("all");
+	const [health, setHealth] = useState("all");
+	const [activity, setActivity] = useState("all");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
+	const [sortKey, setSortKey] = useState<SortKey>("name");
+	const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-	const filteredRuns = useMemo(() => {
-		return FILE_RUNS.filter((run) => {
-			const vid = vendorIdForRun(run);
-			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
-			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
-				return false;
-			return true;
-		});
-	}, [vendorFilter, fileTypeFilter]);
-
-	const summary = useMemo(() => summarizeRuns(filteredRuns), [filteredRuns]);
-
-	const fileTypes = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((r) => r.fileType))).sort(),
+	const vendorTypes = useMemo(
+		() =>
+			Array.from(new Set(VENDOR_DIRECTORY.map((row) => row.vendorType))).sort(),
 		[]
 	);
 
-	const vendorStatusPie = useMemo(() => {
-		const counts = { healthy: 0, warning: 0, failed: 0, in_progress: 0 };
-		for (const v of vendors) {
-			const health = getVendorIntegration(v.id).health;
-			counts[health] += 1;
-		}
-		const total = vendors.length || 1;
-		return [
-			{
-				name: "Healthy",
-				value: counts.healthy,
-				pct: Math.round((counts.healthy / total) * 100),
-				color: "#059669",
-			},
-			{
-				name: "Warning",
-				value: counts.warning,
-				pct: Math.round((counts.warning / total) * 100),
-				color: "#d97706",
-			},
-			{
-				name: "Failed",
-				value: counts.failed,
-				pct: Math.round((counts.failed / total) * 100),
-				color: "#dc2626",
-			},
-			{
-				name: "In Progress",
-				value: counts.in_progress,
-				pct: Math.round((counts.in_progress / total) * 100),
-				color: "#0284c7",
-			},
-		];
-	}, [vendors]);
+	const filtered = useMemo(() => {
+		const q = search.trim().toLowerCase();
+		let rows = VENDOR_DIRECTORY.filter((row) => {
+			if (status !== "all" && row.status !== status) return false;
+			if (vendorType !== "all" && row.vendorType !== vendorType) return false;
+			if (health !== "all" && row.health !== health) return false;
+			if (activity === "today" && row.lastFileRelative !== "Today") return false;
+			if (activity === "yesterday" && row.lastFileRelative !== "Yesterday")
+				return false;
+			if (
+				activity === "older" &&
+				(row.lastFileRelative === "Today" ||
+					row.lastFileRelative === "Yesterday")
+			)
+				return false;
+			if (!q) return true;
+			return [row.name, row.vendorCode, row.vendorType]
+				.join(" ")
+				.toLowerCase()
+				.includes(q);
+		});
 
-	async function handleRefresh() {
-		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 450));
-		setRefreshing(false);
+		rows = [...rows].sort((a, b) => {
+			const av = a[sortKey];
+			const bv = b[sortKey];
+			if (typeof av === "number" && typeof bv === "number") {
+				return sortDir === "asc" ? av - bv : bv - av;
+			}
+			const as = String(av);
+			const bs = String(bv);
+			return sortDir === "asc" ? as.localeCompare(bs) : bs.localeCompare(as);
+		});
+		return rows;
+	}, [activity, health, search, sortDir, sortKey, status, vendorType]);
+
+	const summary = useMemo(() => summarizeVendorDirectory(filtered), [filtered]);
+
+	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+	const safePage = Math.min(page, pageCount);
+	const pageRows = filtered.slice(
+		(safePage - 1) * pageSize,
+		safePage * pageSize
+	);
+
+	const allPageSelected =
+		pageRows.length > 0 && pageRows.every((row) => selectedIds.has(row.id));
+
+	function toggleAllPage() {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (allPageSelected) {
+				for (const row of pageRows) next.delete(row.id);
+			} else {
+				for (const row of pageRows) next.add(row.id);
+			}
+			return next;
+		});
 	}
 
-	if (isLoading) {
+	function toggleOne(id: string) {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}
+
+	function clearFilters() {
+		setSearch("");
+		setStatus("all");
+		setVendorType("all");
+		setHealth("all");
+		setActivity("all");
+		setPage(1);
+	}
+
+	function toggleSort(key: SortKey) {
+		if (sortKey === key) {
+			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+		} else {
+			setSortKey(key);
+			setSortDir("asc");
+		}
+	}
+
+	function SortableHead({
+		label,
+		column,
+		className,
+	}: {
+		label: string;
+		column: SortKey;
+		className?: string;
+	}) {
 		return (
-			<div className="space-y-3">
-				<Skeleton className="h-8 w-64" />
-				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
-					{Array.from({ length: 6 }).map((_, i) => (
-						<Skeleton key={i} className="h-20 rounded-lg" />
-					))}
-				</div>
-				<Skeleton className="h-96 w-full rounded-xl" />
-			</div>
+			<TableHead className={cn("h-8 px-2 font-normal", className)}>
+				<button
+					type="button"
+					className="inline-flex items-center gap-1 hover:text-foreground"
+					onClick={() => toggleSort(column)}
+				>
+					{label}
+					<ArrowDownUp className="size-3 text-muted-foreground" />
+				</button>
+			</TableHead>
 		);
 	}
 
 	const kpis = [
 		{
-			label: "Total Files",
-			value: String(summary.total),
-			pct: null as string | null,
-			hint: `Expected: ${summary.expected}`,
-			icon: FileText,
+			label: "Total Vendors",
+			value: summary.total,
+			trend: "↗ 2 vs last 30 days",
+			trendTone: "text-primary",
+			icon: Users,
 			tone: "text-primary bg-primary/10",
 		},
 		{
-			label: "Successful",
-			value: String(summary.successful),
-			pct: `${summary.successPct}%`,
-			hint: "View Details →",
+			label: "Active",
+			value: summary.active,
+			trend: "↗ 1 vs last 30 days",
+			trendTone: "text-primary",
 			icon: CheckCircle2,
 			tone: "text-emerald-700 bg-emerald-500/10",
 		},
 		{
-			label: "Warnings",
-			value: String(summary.warnings),
-			pct: `${summary.warningPct}%`,
-			hint: "View Details →",
+			label: "At Risk",
+			value: summary.atRisk,
+			trend: "— No change",
+			trendTone: "text-muted-foreground",
 			icon: AlertTriangle,
 			tone: "text-amber-700 bg-amber-500/10",
 		},
 		{
-			label: "Failed",
-			value: String(summary.failed),
-			pct: `${summary.failedPct}%`,
-			hint: "View Details →",
-			icon: XCircle,
-			tone: "text-red-700 bg-red-500/10",
-		},
-		{
-			label: "In Progress",
-			value: String(summary.inProgress),
-			pct: null as string | null,
-			hint: "View Details →",
-			icon: Clock3,
-			tone: "text-violet-700 bg-violet-500/10",
-		},
-		{
-			label: "Pending",
-			value: String(summary.pending),
-			pct: null as string | null,
-			hint: "View Details →",
-			icon: Calendar,
+			label: "Inactive",
+			value: summary.inactive,
+			trend: "↗ 1 vs last 30 days",
+			trendTone: "text-primary",
+			icon: Ban,
 			tone: "text-zinc-700 bg-zinc-500/10",
+		},
+		{
+			label: "Vendors with Alerts",
+			value: summary.withAlerts,
+			trend: "↗ 1 vs last 30 days",
+			trendTone: "text-primary",
+			icon: Bell,
+			tone: "text-red-700 bg-red-500/10",
 		},
 	];
 
 	return (
 		<div className="space-y-3">
+			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-2">
 				<div>
+					<nav className="mb-0.5 flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+						<span>Vendor Management</span>
+						<span>&gt;</span>
+						<span className="text-foreground">Vendors</span>
+					</nav>
 					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
-						Vendor Integration Management
+						Vendors
 					</h1>
 					<p className="mt-0.5 text-xs text-muted-foreground">
-						Monitor vendor file exchanges, health, and alerts across trading
-						partners.
+						Manage trading partners, monitor vendor health, and access
+						vendor-level operations.
 					</p>
+				</div>
+				<div className="flex flex-wrap gap-2">
+					<Button size="sm" className="h-9" asChild>
+						<Link href="/admin/vendors/create">
+							<Plus className="mr-1.5 size-3.5" />
+							Add Vendor
+						</Link>
+					</Button>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="sm" className="h-9">
+								<Download className="mr-1.5 size-3.5" />
+								Export
+								<ChevronDown className="ml-1.5 size-3.5" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem>Export CSV</DropdownMenuItem>
+							<DropdownMenuItem>Export Excel</DropdownMenuItem>
+							<DropdownMenuItem>Export PDF</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 
-			{error ? (
-				<p className="text-sm text-destructive">{error.message}</p>
-			) : null}
-
 			{/* Filters */}
 			<div className="flex flex-wrap items-center gap-2">
-				<Select value={dateFilter} onValueChange={setDateFilter}>
-					<SelectTrigger className="h-9 w-[200px]">
-						<SelectValue />
+				<div className="relative min-w-[240px] flex-1">
+					<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						value={search}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
+						placeholder="Search vendor name, ID, or contact"
+						className="h-9 pl-8"
+					/>
+				</div>
+				<Select
+					value={status}
+					onValueChange={(v) => {
+						setStatus(v);
+						setPage(1);
+					}}
+				>
+					<SelectTrigger className="h-9 w-[140px]">
+						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="today">Today (Jul 28, 2026)</SelectItem>
-						<SelectItem value="7">Last 7 Days</SelectItem>
-						<SelectItem value="30">Last 30 Days</SelectItem>
+						<SelectItem value="all">All Status</SelectItem>
+						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="at_risk">At Risk</SelectItem>
+						<SelectItem value="inactive">Inactive</SelectItem>
 					</SelectContent>
 				</Select>
-				<Select value={vendorFilter} onValueChange={setVendorFilter}>
-					<SelectTrigger className="h-9 w-[200px]">
-						<SelectValue placeholder="All Vendors" />
+				<Select
+					value={vendorType}
+					onValueChange={(v) => {
+						setVendorType(v);
+						setPage(1);
+					}}
+				>
+					<SelectTrigger className="h-9 w-[160px]">
+						<SelectValue placeholder="Vendor Type" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All Vendors</SelectItem>
-						{vendors.map((v) => (
-							<SelectItem key={v.id} value={v.id}>
-								{v.tradeName ?? v.legalName}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
-					<SelectTrigger className="h-9 w-[200px]">
-						<SelectValue placeholder="All File Types" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All File Types</SelectItem>
-						{fileTypes.map((t) => (
+						<SelectItem value="all">All Types</SelectItem>
+						{vendorTypes.map((t) => (
 							<SelectItem key={t} value={t}>
 								{t}
 							</SelectItem>
 						))}
 					</SelectContent>
 				</Select>
-				<div className="ml-auto flex items-center gap-2">
+				<Select
+					value={health}
+					onValueChange={(v) => {
+						setHealth(v);
+						setPage(1);
+					}}
+				>
+					<SelectTrigger className="h-9 w-[140px]">
+						<SelectValue placeholder="Health" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Health</SelectItem>
+						<SelectItem value="healthy">Healthy</SelectItem>
+						<SelectItem value="warning">Warning</SelectItem>
+						<SelectItem value="critical">Critical</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select
+					value={activity}
+					onValueChange={(v) => {
+						setActivity(v);
+						setPage(1);
+					}}
+				>
+					<SelectTrigger className="h-9 w-[170px]">
+						<SelectValue placeholder="Last File Activity" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Activity</SelectItem>
+						<SelectItem value="today">Today</SelectItem>
+						<SelectItem value="yesterday">Yesterday</SelectItem>
+						<SelectItem value="older">Older</SelectItem>
+					</SelectContent>
+				</Select>
+				<div className="ml-auto">
 					<Button
 						variant="outline"
 						size="sm"
 						className="h-9"
-						onClick={handleRefresh}
-						disabled={refreshing}
+						onClick={clearFilters}
 					>
-						<RefreshCw
-							className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
-						/>
-						Refresh
+						<RefreshCw className="mr-1.5 size-3.5" />
+						Clear Filters
 					</Button>
-					<span className="text-xs text-muted-foreground">
-						Last updated: {lastUpdated}
-					</span>
 				</div>
 			</div>
 
-			{/* KPI cards */}
+			{/* KPIs */}
 			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{kpis.map((k) => {
 					const Icon = k.icon;
@@ -327,21 +441,10 @@ export function VendorsPage() {
 									</p>
 									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
 										{k.value}
-										{k.pct ? (
-											<span className="ml-1 text-sm font-medium text-muted-foreground">
-												({k.pct})
-											</span>
-										) : null}
 									</p>
-									{k.label === "Total Files" ? (
-										<p className="mt-1 text-xs text-muted-foreground">
-											{k.hint}
-										</p>
-									) : (
-										<p className="mt-1 text-xs font-medium text-primary">
-											{k.hint}
-										</p>
-									)}
+									<p className={cn("mt-1 text-xs font-medium", k.trendTone)}>
+										{k.trend}
+									</p>
 								</div>
 								<div
 									className={cn(
@@ -355,403 +458,287 @@ export function VendorsPage() {
 						</div>
 					);
 				})}
+
+				<div className="rounded-lg bg-card p-2.5">
+					<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						Health Distribution
+					</p>
+					<div className="mt-1 flex items-center gap-2">
+						<ul className="min-w-0 flex-1 space-y-1 text-[11px]">
+							{summary.healthPie.map((item) => (
+								<li
+									key={item.name}
+									className="flex items-center justify-between gap-2"
+								>
+									<span className="flex items-center gap-1.5">
+										<span
+											className="size-1.5 rounded-full"
+											style={{ backgroundColor: item.color }}
+										/>
+										{item.name}
+									</span>
+									<span className="tabular-nums text-muted-foreground">
+										{item.pct}%
+									</span>
+								</li>
+							))}
+						</ul>
+						<div className="h-14 w-14 shrink-0">
+							<ResponsiveContainer width="100%" height="100%">
+								<PieChart>
+									<Pie
+										data={summary.healthPie.filter((d) => d.value > 0)}
+										dataKey="value"
+										nameKey="name"
+										innerRadius={16}
+										outerRadius={26}
+										paddingAngle={2}
+									>
+										{summary.healthPie
+											.filter((d) => d.value > 0)
+											.map((entry) => (
+												<Cell key={entry.name} fill={entry.color} />
+											))}
+									</Pie>
+									<Tooltip />
+								</PieChart>
+							</ResponsiveContainer>
+						</div>
+					</div>
+				</div>
 			</div>
 
-			{/* Main + right column — 2/3 table, 1/3 sidebar */}
-			<div className="grid min-w-0 gap-2 xl:grid-cols-3">
-				<div className="min-w-0 space-y-2 xl:col-span-2">
-					{/* Recent File Activity */}
-					<Card className="min-w-0 bg-card">
-						<CardHeader className="px-3 pb-1 pt-3">
-							<CardTitle className="text-sm font-medium">
-								Recent File Activity
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="px-0 pb-0">
-							<div className="w-full overflow-hidden border-t border-border/50">
-								<Table
-									className="table-fixed w-full text-xs"
-									containerClassName="overflow-hidden"
-								>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-8 w-[17%] px-2 pl-3 font-normal">
-												Vendor
-											</TableHead>
-											<TableHead className="h-8 w-[11%] px-1 font-normal">
-												Type
-											</TableHead>
-											<TableHead className="h-8 w-[18%] px-1 font-normal">
-												File Name
-											</TableHead>
-											<TableHead className="h-8 w-[8%] px-1 font-normal">
-												Freq
-											</TableHead>
-											<TableHead className="h-8 w-[11%] px-1 font-normal">
-												Status
-											</TableHead>
-											<TableHead className="h-8 w-[7%] px-1 text-right font-normal">
-												Rec
-											</TableHead>
-											<TableHead className="h-8 w-[7%] px-1 font-normal">
-												Recv
-											</TableHead>
-											<TableHead className="h-8 w-[7%] px-1 font-normal">
-												Proc
-											</TableHead>
-											<TableHead className="h-8 w-[7%] px-1 font-normal">
-												Dur
-											</TableHead>
-											<TableHead className="h-8 w-[7%] px-1 pr-3 text-right font-normal">
-												Act
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{filteredRuns.slice(0, 8).map((run) => {
-											const vid = vendorIdForRun(run);
-											return (
-												<TableRow
-													key={run.id}
-													className="cursor-pointer hover:bg-muted/30"
-													onClick={() =>
-														router.push(
-															vid ? `/admin/vendors/${vid}` : "/admin/vendors"
-														)
-													}
+			{/* Vendor List */}
+			<BulkActionsToolbar
+				selectedCount={selectedIds.size}
+				entityLabel="vendor"
+				onClear={() => setSelectedIds(new Set())}
+				onExport={() => {
+					toast.success(`Exported ${selectedIds.size} vendor(s).`);
+					setSelectedIds(new Set());
+				}}
+				onArchive={() => {
+					toast.success(`Archived ${selectedIds.size} vendor(s).`);
+					setSelectedIds(new Set());
+				}}
+			/>
+			<Card className="min-w-0 bg-card">
+				<CardHeader className="px-3 pb-1 pt-3">
+					<CardTitle className="text-sm font-medium">Vendor List</CardTitle>
+				</CardHeader>
+				<CardContent className="px-0 pb-0">
+					<div className="w-full overflow-x-auto border-t border-border/50">
+						<Table className="w-full min-w-[1100px] text-xs">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<TableHead className="h-8 w-10 px-2 pl-3">
+										<Checkbox
+											checked={allPageSelected}
+											onCheckedChange={toggleAllPage}
+											aria-label="Select all vendors on page"
+										/>
+									</TableHead>
+									<SortableHead
+										label="Vendor"
+										column="name"
+									/>
+									<SortableHead label="Vendor ID" column="vendorCode" />
+									<SortableHead label="Vendor Type" column="vendorType" />
+									<SortableHead label="Status" column="status" />
+									<SortableHead
+										label="Linked Accounts"
+										column="linkedAccounts"
+										className="text-right"
+									/>
+									<SortableHead
+										label="Active Jobs"
+										column="activeJobs"
+										className="text-right"
+									/>
+									<SortableHead
+										label="Last File Received"
+										column="lastFileReceived"
+									/>
+									<SortableHead label="Health" column="health" />
+									<TableHead className="h-8 px-3 pr-3 text-right font-normal">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{pageRows.map((row) => (
+									<TableRow key={row.id} className="hover:bg-muted/30">
+										<TableCell className="px-2 py-1.5 pl-3">
+											<Checkbox
+												checked={selectedIds.has(row.id)}
+												onCheckedChange={() => toggleOne(row.id)}
+												aria-label={`Select ${row.name}`}
+											/>
+										</TableCell>
+										<TableCell className="px-2 py-1.5">
+											<div className="flex min-w-0 items-center gap-1.5">
+												<span
+													className={cn(
+														"inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white",
+														row.avatarBg
+													)}
 												>
-													<TableCell className="px-2 py-1.5 pl-3">
-														<div className="flex min-w-0 items-center gap-1.5">
-															<VendorAvatarBadge
-																vendorId={vid}
-																vendorName={run.vendor}
-																size="sm"
-															/>
-															{vid ? (
-																<Link
-																	href={`/admin/vendors/${vid}`}
-																	className="truncate font-medium hover:underline"
-																	onClick={(e) => e.stopPropagation()}
-																>
-																	{run.vendor}
-																</Link>
-															) : (
-																<span className="truncate font-medium">
-																	{run.vendor}
-																</span>
-															)}
-														</div>
-													</TableCell>
-													<TableCell className="truncate px-1 py-1.5">
-														{run.fileType}
-													</TableCell>
-													<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
-														{run.fileName ?? "—"}
-													</TableCell>
-													<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
-														{run.frequency}
-													</TableCell>
-													<TableCell className="px-1 py-1.5">
-														<ActivityStatus status={run.status} />
-													</TableCell>
-													<TableCell className="px-1 py-1.5 text-right tabular-nums">
-														{run.records ?? "—"}
-													</TableCell>
-													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-														{run.receivedAt?.slice(11, 16) ?? "—"}
-													</TableCell>
-													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-														{run.completedAt?.slice(11, 16) ?? "—"}
-													</TableCell>
-													<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-														{run.duration ?? "—"}
-													</TableCell>
-													<TableCell
-														className="px-1 py-1.5 pr-3 text-right"
-														onClick={(e) => e.stopPropagation()}
-													>
-														<DropdownMenu>
-															<DropdownMenuTrigger asChild>
-																<Button
-																	variant="ghost"
-																	size="icon"
-																	className="size-7"
-																>
-																	<MoreHorizontal className="size-3.5" />
-																</Button>
-															</DropdownMenuTrigger>
-															<DropdownMenuContent align="end">
-																<DropdownMenuItem asChild>
-																	<Link
-																		href={`/admin/file-monitoring/${run.id}`}
-																	>
-																		View run detail
-																	</Link>
-																</DropdownMenuItem>
-																{vid && (
-																	<DropdownMenuItem asChild>
-																		<Link href={`/admin/vendors/${vid}`}>
-																			Open vendor
-																		</Link>
-																	</DropdownMenuItem>
-																)}
-															</DropdownMenuContent>
-														</DropdownMenu>
-													</TableCell>
-												</TableRow>
-											);
-										})}
-									</TableBody>
-								</Table>
-							</div>
-							<div className="border-t border-border/50 px-3 py-2">
-								<Link
-									href="/admin/file-monitoring"
-									className="text-sm font-medium text-primary hover:underline"
-								>
-									View All File Activity →
-								</Link>
-							</div>
-						</CardContent>
-					</Card>
+													{row.mark}
+												</span>
+												<span className="truncate font-medium">{row.name}</span>
+											</div>
+										</TableCell>
+										<TableCell className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
+											{row.vendorCode}
+										</TableCell>
+										<TableCell className="px-2 py-1.5">{row.vendorType}</TableCell>
+										<TableCell className="px-2 py-1.5">
+											<StatusPill status={row.status} />
+										</TableCell>
+										<TableCell className="px-2 py-1.5 text-right tabular-nums">
+											{row.linkedAccounts}
+										</TableCell>
+										<TableCell className="px-2 py-1.5 text-right tabular-nums">
+											{row.activeJobs}
+										</TableCell>
+										<TableCell className="px-2 py-1.5">
+											<div className="leading-tight">
+												<p>{row.lastFileReceived}</p>
+												<p className="text-[10px] text-muted-foreground">
+													({row.lastFileRelative})
+												</p>
+											</div>
+										</TableCell>
+										<TableCell className="px-2 py-1.5">
+											<HealthDot health={row.health} />
+										</TableCell>
+										<TableCell className="px-2 py-1.5 pr-3 text-right">
+											<div className="inline-flex items-center gap-0.5">
+												<Button
+													variant="link"
+													size="sm"
+													className="h-7 px-1.5 text-xs text-primary"
+													asChild
+												>
+													<Link href={detailHref(row)}>
+														View Vendor
+														<ExternalLink className="ml-1 size-3" />
+													</Link>
+												</Button>
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="size-7"
+														>
+															<MoreVertical className="size-3.5" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem asChild>
+															<Link href={detailHref(row)}>Open detail</Link>
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<Link href="/admin/file-monitoring">
+																View file activity
+															</Link>
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<Link href="/admin/schedules">
+																View schedules
+															</Link>
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
 
-					{/* Processing Trend */}
-					<Card className="bg-card">
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<div>
-								<CardTitle className="text-sm font-medium">
-									Processing Trend
-								</CardTitle>
-							</div>
-							<Select value={trendRange} onValueChange={setTrendRange}>
-								<SelectTrigger className="h-8 w-[130px]">
+					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-3 py-2 text-xs text-muted-foreground">
+						<span>
+							Showing{" "}
+							{filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1} to{" "}
+							{Math.min(safePage * pageSize, filtered.length)} of{" "}
+							{filtered.length} vendors
+						</span>
+						<div className="flex flex-wrap items-center gap-2">
+							<Select
+								value={String(pageSize)}
+								onValueChange={(v) => {
+									setPageSize(Number(v));
+									setPage(1);
+								}}
+							>
+								<SelectTrigger className="h-8 w-[120px]">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="7">Last 7 Days</SelectItem>
-									<SelectItem value="14">Last 14 Days</SelectItem>
-									<SelectItem value="30">Last 30 Days</SelectItem>
+									<SelectItem value="7">7 per page</SelectItem>
+									<SelectItem value="10">10 per page</SelectItem>
+									<SelectItem value="25">25 per page</SelectItem>
 								</SelectContent>
 							</Select>
-						</CardHeader>
-						<CardContent className="h-64 pt-2">
-							<ResponsiveContainer width="100%" height="100%">
-								<LineChart data={PROCESSING_TREND}>
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-border"
-									/>
-									<XAxis dataKey="day" tick={{ fontSize: 11 }} />
-									<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-									<Tooltip />
-									<Legend />
-									<Line
-										type="monotone"
-										dataKey="successful"
-										name="Successful"
-										stroke="#059669"
-										strokeWidth={2}
-										dot={false}
-									/>
-									<Line
-										type="monotone"
-										dataKey="warnings"
-										name="Warnings"
-										stroke="#d97706"
-										strokeWidth={2}
-										dot={false}
-									/>
-									<Line
-										type="monotone"
-										dataKey="failed"
-										name="Failed"
-										stroke="#dc2626"
-										strokeWidth={2}
-										dot={false}
-									/>
-								</LineChart>
-							</ResponsiveContainer>
-						</CardContent>
-					</Card>
-				</div>
-
-				{/* Right column — 1/3 */}
-				<div className="min-w-0 space-y-2 xl:col-span-1">
-					<Card className="bg-card">
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium">
-								Vendor Status Overview
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="flex items-center gap-3">
-								<div className="relative h-32 w-32 shrink-0">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={vendorStatusPie}
-												dataKey="value"
-												nameKey="name"
-												innerRadius={38}
-												outerRadius={58}
-												paddingAngle={2}
-											>
-												{vendorStatusPie.map((entry) => (
-													<Cell key={entry.name} fill={entry.color} />
-												))}
-											</Pie>
-											<Tooltip />
-										</PieChart>
-									</ResponsiveContainer>
-									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-										<span className="text-base font-medium tabular-nums leading-none">
-											{vendors.length}
-										</span>
-										<span className="mt-1 text-[10px] font-medium text-muted-foreground">
-											Vendors
-										</span>
-									</div>
-								</div>
-								<ul className="min-w-0 flex-1 space-y-2.5">
-									{vendorStatusPie.map((item) => (
-										<li
-											key={item.name}
-											className="flex items-center justify-between gap-3 text-sm"
-										>
-											<span className="flex min-w-0 items-center gap-2">
-												<span
-													className="size-2.5 shrink-0 rounded-full"
-													style={{ backgroundColor: item.color }}
-												/>
-												<span className="truncate font-medium">
-													{item.name}
-												</span>
-											</span>
-											<span className="shrink-0 tabular-nums">
-												{item.value}{" "}
-												<span className="text-xs text-muted-foreground">
-													({item.pct}%)
-												</span>
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
-							<div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
-								<span>All vendors</span>
-								<span>Last 24 hours</span>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium">Alerts</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-2">
-							{VENDOR_ALERTS.slice(0, 5).map((alert) => (
-								<Link
-									key={alert.id}
-									href={
-										alert.runId
-											? `/admin/file-monitoring/${alert.runId}`
-											: `/admin/vendors/${alert.vendorId}`
-									}
-									className={cn(
-										"flex items-start gap-2.5 rounded-lg border p-3 transition-colors",
-										alert.severity === "error" &&
-											"border-red-200 bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/30",
-										alert.severity === "warning" &&
-											"border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/30",
-										alert.severity !== "error" &&
-											alert.severity !== "warning" &&
-											"border-sky-200 bg-sky-50 hover:border-sky-300 dark:border-sky-900/50 dark:bg-sky-950/30"
-									)}
+							<div className="flex items-center gap-1">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									disabled={safePage <= 1}
+									onClick={() => setPage(1)}
 								>
-									{alert.severity === "error" ? (
-										<XCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
-									) : alert.severity === "warning" ? (
-										<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-									) : (
-										<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
-									)}
-									<div className="min-w-0 flex-1">
-										<p className="text-sm font-medium leading-snug">
-											{alert.title}
-										</p>
-										<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-											{alert.vendorName}
-										</p>
-										<p className="mt-1 text-[11px] text-muted-foreground">
-											{alert.when}
-										</p>
-									</div>
-								</Link>
-							))}
-							<Link
-								href="/admin/file-monitoring"
-								className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-							>
-								View All Alerts →
-							</Link>
-						</CardContent>
-					</Card>
-
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium">
-								Quick Actions
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-								{[
-									{
-										label: "Add Vendor",
-										href: "/admin/vendors/create",
-										icon: Plus,
-									},
-									{
-										label: "Upload File",
-										href: "/admin/file-monitoring",
-										icon: Upload,
-									},
-									{
-										label: "View Schedules",
-										href: "/admin/schedules",
-										icon: Calendar,
-									},
-									{
-										label: "Vendor Reports",
-										href: "/admin/reports",
-										icon: FileText,
-									},
-									{
-										label: "Audit Trail",
-										href: "/admin/audit-trail",
-										icon: ScrollText,
-									},
-								].map((action) => {
-									const Icon = action.icon;
+									<ChevronsLeft className="size-3.5" />
+								</Button>
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									disabled={safePage <= 1}
+									onClick={() => setPage((p) => Math.max(1, p - 1))}
+								>
+									<ChevronLeft className="size-3.5" />
+								</Button>
+								{Array.from({ length: Math.min(pageCount, 3) }, (_, i) => {
+									const n = i + 1;
 									return (
 										<Button
-											key={action.label}
-											variant="outline"
-											className="h-auto flex-col gap-1.5 px-2 py-3 text-xs"
-											asChild
+											key={n}
+											variant={safePage === n ? "default" : "outline"}
+											size="icon"
+											className="size-8"
+											onClick={() => setPage(n)}
 										>
-											<Link href={action.href}>
-												<Icon className="size-4 text-primary" />
-												{action.label}
-											</Link>
+											{n}
 										</Button>
 									);
 								})}
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									disabled={safePage >= pageCount}
+									onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+								>
+									<ChevronRight className="size-3.5" />
+								</Button>
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									disabled={safePage >= pageCount}
+									onClick={() => setPage(pageCount)}
+								>
+									<ChevronsRight className="size-3.5" />
+								</Button>
 							</div>
-						</CardContent>
-					</Card>
-				</div>
-			</div>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

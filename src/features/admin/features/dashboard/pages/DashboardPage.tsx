@@ -4,29 +4,25 @@ import { useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
-	ArrowUpRight,
-	BadgeCheck,
-	Building2,
-	CalendarDays,
-	ClipboardList,
-	Download,
+	Calendar,
+	CheckCircle2,
+	Clock3,
 	FileText,
-	Filter,
-	Handshake,
-	Inbox,
+	Info,
+	LayoutGrid,
+	MoreHorizontal,
 	Plus,
 	RefreshCw,
-	ShoppingCart,
-	TrendingUp,
+	ScrollText,
 	Upload,
+	XCircle,
 } from "lucide-react";
 import {
-	Area,
-	AreaChart,
-	Bar,
-	BarChart,
 	CartesianGrid,
 	Cell,
+	Legend,
+	Line,
+	LineChart,
 	Pie,
 	PieChart,
 	ResponsiveContainer,
@@ -37,7 +33,16 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -46,321 +51,290 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
-	useActivitiesList,
-	useApprovalsList,
-	useCertificatesList,
-	useContractsList,
-	useDocumentsList,
-	useInvoicesList,
-	usePurchaseOrdersList,
-	useRfxList,
-	useScorecardsList,
-	useVendorsList,
-} from "@/features/shared/vms/queries";
-import { formatDate, formatMoney } from "@/features/shared/vms/utils";
-import { Link } from "@/i18n/navigation";
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
+import {
+	PROCESSING_TREND,
+	VENDOR_ALERTS,
+	getVendorIntegration,
+	runBucket,
+	summarizeRuns,
+	vendorIdForRun,
+} from "@/features/admin/features/vendors/vendor-integration-mock";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { useVendorsList } from "@/features/shared/vms/queries";
+import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import {
+	DASHBOARD_WIDGET_LABELS,
+	type DashboardWidgetId,
+	useDashboardWidgetsStore,
+} from "@/stores/dashboard-widgets-store";
 
-const CHART_COLORS = [
-	"var(--chart-1)",
-	"var(--chart-2)",
-	"var(--chart-3)",
-	"var(--chart-4)",
-	"var(--chart-5)",
-];
-
-const SPEND_TREND = [
-	{ month: "Feb", spend: 42000, orders: 18 },
-	{ month: "Mar", spend: 51000, orders: 22 },
-	{ month: "Apr", spend: 48000, orders: 20 },
-	{ month: "May", spend: 61000, orders: 27 },
-	{ month: "Jun", spend: 58000, orders: 24 },
-	{ month: "Jul", spend: 67000, orders: 29 },
-];
-
-const QUICK_ACTIONS = [
-	{
-		label: "Invite vendor",
-		href: "/admin/vendors/invite",
-		icon: Building2,
-		hint: "Start onboarding",
-	},
-	{
-		label: "Create RFX",
-		href: "/admin/sourcing/create",
-		icon: ClipboardList,
-		hint: "RFI / RFP / RFQ",
-	},
-	{
-		label: "New contract",
-		href: "/admin/contracts/create",
-		icon: Handshake,
-		hint: "Draft agreement",
-	},
-	{
-		label: "Create PO",
-		href: "/admin/purchase-orders/create",
-		icon: ShoppingCart,
-		hint: "Issue purchase order",
-	},
-	{
-		label: "Match invoices",
-		href: "/admin/invoices/match",
-		icon: FileText,
-		hint: "AP exceptions",
-	},
-	{
-		label: "Approvals inbox",
-		href: "/admin/approvals",
-		icon: Inbox,
-		hint: "Pending decisions",
-	},
-] as const;
-
-type RangeKey = "7d" | "30d" | "90d" | "ytd";
+function ActivityStatus({
+	status,
+}: {
+	status: (typeof FILE_RUNS)[0]["status"];
+}) {
+	const bucket = runBucket(status);
+	if (bucket === "success") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+				Success
+			</span>
+		);
+	}
+	if (bucket === "failed") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
+				Failed
+			</span>
+		);
+	}
+	if (bucket === "warning") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+				Warning
+			</span>
+		);
+	}
+	if (bucket === "in_progress") {
+		return (
+			<span className="inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+				In Progress
+			</span>
+		);
+	}
+	return <StatusBadge status={status} />;
+}
 
 export function DashboardPage() {
-	const [range, setRange] = useState<RangeKey>("30d");
+	const router = useRouter();
+	const { vendors, isLoading, error } = useVendorsList();
+	const { enabledWidgets, toggleWidget, resetWidgets, isEnabled } =
+		useDashboardWidgetsStore();
+	const [dateFilter, setDateFilter] = useState("today");
+	const [vendorFilter, setVendorFilter] = useState("all");
+	const [fileTypeFilter, setFileTypeFilter] = useState("all");
 	const [refreshing, setRefreshing] = useState(false);
+	const [trendRange, setTrendRange] = useState("7");
+	const lastUpdated = "9:28 AM";
 
-	const {
-		vendors,
-		isLoading: vLoad,
-		refetch: refetchVendors,
-	} = useVendorsList();
-	const {
-		approvals,
-		isLoading: aLoad,
-		refetch: refetchApprovals,
-	} = useApprovalsList();
-	const { contracts, refetch: refetchContracts } = useContractsList();
-	const { certificates, refetch: refetchCerts } = useCertificatesList();
-	const { events, refetch: refetchRfx } = useRfxList();
-	const { invoices, refetch: refetchInvoices } = useInvoicesList();
-	const { orders, refetch: refetchPos } = usePurchaseOrdersList();
-	const { scorecards } = useScorecardsList();
-	const { documents } = useDocumentsList();
-	const { activities } = useActivitiesList();
+	const filteredRuns = useMemo(() => {
+		return FILE_RUNS.filter((run) => {
+			const vid = vendorIdForRun(run);
+			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
+			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
+				return false;
+			return true;
+		});
+	}, [vendorFilter, fileTypeFilter]);
+
+	const summary = useMemo(() => summarizeRuns(filteredRuns), [filteredRuns]);
+
+	const fileTypes = useMemo(
+		() => Array.from(new Set(FILE_RUNS.map((r) => r.fileType))).sort(),
+		[]
+	);
+
+	const vendorStatusPie = useMemo(() => {
+		const counts = { healthy: 0, warning: 0, failed: 0, in_progress: 0 };
+		for (const v of vendors) {
+			const health = getVendorIntegration(v.id).health;
+			counts[health] += 1;
+		}
+		const total = vendors.length || 1;
+		return [
+			{
+				name: "Healthy",
+				value: counts.healthy,
+				pct: Math.round((counts.healthy / total) * 100),
+				color: "#059669",
+			},
+			{
+				name: "Warning",
+				value: counts.warning,
+				pct: Math.round((counts.warning / total) * 100),
+				color: "#d97706",
+			},
+			{
+				name: "Failed",
+				value: counts.failed,
+				pct: Math.round((counts.failed / total) * 100),
+				color: "#dc2626",
+			},
+			{
+				name: "In Progress",
+				value: counts.in_progress,
+				pct: Math.round((counts.in_progress / total) * 100),
+				color: "#0284c7",
+			},
+		];
+	}, [vendors]);
 
 	async function handleRefresh() {
 		setRefreshing(true);
-		try {
-			await Promise.all([
-				refetchVendors(),
-				refetchApprovals(),
-				refetchContracts(),
-				refetchCerts(),
-				refetchRfx(),
-				refetchInvoices(),
-				refetchPos(),
-			]);
-		} finally {
-			setTimeout(() => setRefreshing(false), 400);
-		}
+		await new Promise((r) => setTimeout(r, 450));
+		setRefreshing(false);
 	}
 
-	const metrics = useMemo(() => {
-		const pendingApprovals = approvals.filter((a) => a.status === "pending");
-		const activeVendors = vendors.filter((v) => v.status === "active");
-		const onboarding = vendors.filter((v) =>
-			["invited", "onboarding", "under_review"].includes(v.status)
-		);
-		const suspended = vendors.filter((v) =>
-			["suspended", "offboarded"].includes(v.status)
-		);
-		const openRfx = events.filter((e) =>
-			["published", "evaluating"].includes(e.status)
-		);
-		const exceptions = invoices.filter((i) => i.status === "exception");
-		const openPos = orders.filter((o) =>
-			["sent", "acknowledged", "partially_received"].includes(o.status)
-		);
-		const activeContracts = contracts.filter((c) => c.status === "active");
-		const contractValue = activeContracts.reduce((s, c) => s + c.value, 0);
-		const invoiceSpend = invoices.reduce((s, i) => s + i.amount, 0);
-		const expiringCerts = certificates.filter((c) =>
-			["expiring", "expired"].includes(c.status)
-		);
-		const avgScore =
-			scorecards.length > 0
-				? Math.round(
-						scorecards.reduce((s, sc) => s + sc.overall, 0) / scorecards.length
-					)
-				: 0;
-
-		const statusBreakdown = [
-			{ name: "Active", value: activeVendors.length },
-			{ name: "Onboarding", value: onboarding.length },
-			{
-				name: "Invited",
-				value: vendors.filter((v) => v.status === "invited").length,
-			},
-			{
-				name: "Review",
-				value: vendors.filter((v) => v.status === "under_review").length,
-			},
-			{ name: "Suspended", value: suspended.length },
-		].filter((d) => d.value > 0);
-
-		const invoiceByStatus = [
-			{
-				name: "Matched",
-				value: invoices.filter((i) => i.status === "matched").length,
-			},
-			{
-				name: "Submitted",
-				value: invoices.filter((i) => i.status === "submitted").length,
-			},
-			{ name: "Exception", value: exceptions.length },
-			{
-				name: "Paid",
-				value: invoices.filter((i) => i.status === "paid").length,
-			},
-		].filter((d) => d.value > 0);
-
-		const recentFiles = [...documents]
-			.sort(
-				(a, b) =>
-					new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-			)
-			.slice(0, 6);
-
-		const recentActivity = [...activities]
-			.sort(
-				(a, b) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-			)
-			.slice(0, 6);
-
-		return {
-			pendingApprovals,
-			activeVendors: activeVendors.length,
-			onboarding: onboarding.length,
-			totalVendors: vendors.length,
-			openRfx: openRfx.length,
-			exceptions: exceptions.length,
-			openPos: openPos.length,
-			activeContracts: activeContracts.length,
-			contractValue,
-			invoiceSpend,
-			expiringCerts,
-			avgScore,
-			statusBreakdown,
-			invoiceByStatus,
-			renewingContracts: activeContracts.slice(0, 4),
-			topScorecards: [...scorecards].sort((a, b) => b.overall - a.overall),
-			recentFiles,
-			recentActivity,
-		};
-	}, [
-		approvals,
-		vendors,
-		events,
-		invoices,
-		orders,
-		contracts,
-		certificates,
-		scorecards,
-		documents,
-		activities,
-	]);
-
-	if (vLoad || aLoad) {
+	if (isLoading) {
 		return (
-			<div className="space-y-6">
-				<Skeleton className="h-14 w-full rounded-xl" />
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-24 rounded-xl" />
+			<div className="space-y-3">
+				<Skeleton className="h-8 w-64" />
+				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className="h-20 rounded-lg" />
 					))}
 				</div>
-				<Skeleton className="h-72 w-full rounded-xl" />
+				<Skeleton className="h-96 w-full rounded-xl" />
 			</div>
 		);
 	}
 
 	const kpis = [
 		{
-			label: "Active vendors",
-			value: String(metrics.activeVendors),
-			hint: `${metrics.onboarding} in pipeline`,
-			href: "/admin/vendors",
-			icon: Building2,
-			tone: "bg-sky-100 text-sky-700",
+			label: "Total Files",
+			value: String(summary.total),
+			pct: null as string | null,
+			hint: `Expected: ${summary.expected}`,
+			icon: FileText,
+			tone: "text-primary bg-primary/10",
 		},
 		{
-			label: "Pending approvals",
-			value: String(metrics.pendingApprovals.length),
-			hint: "Needs decision",
-			href: "/admin/approvals",
-			icon: Inbox,
-			tone: "bg-amber-100 text-amber-700",
+			label: "Successful",
+			value: String(summary.successful),
+			pct: `${summary.successPct}%`,
+			hint: "View Details →",
+			icon: CheckCircle2,
+			tone: "text-emerald-700 bg-emerald-500/10",
 		},
 		{
-			label: "Contract value",
-			value: formatMoney(metrics.contractValue),
-			hint: `${metrics.activeContracts} active`,
-			href: "/admin/contracts",
-			icon: Handshake,
-			tone: "bg-emerald-100 text-emerald-700",
+			label: "Warnings",
+			value: String(summary.warnings),
+			pct: `${summary.warningPct}%`,
+			hint: "View Details →",
+			icon: AlertTriangle,
+			tone: "text-amber-700 bg-amber-500/10",
 		},
 		{
-			label: "Invoice spend",
-			value: formatMoney(metrics.invoiceSpend),
-			hint: `${metrics.exceptions} exceptions`,
-			href: "/admin/invoices",
-			icon: TrendingUp,
-			tone: "bg-violet-100 text-violet-700",
+			label: "Failed",
+			value: String(summary.failed),
+			pct: `${summary.failedPct}%`,
+			hint: "View Details →",
+			icon: XCircle,
+			tone: "text-red-700 bg-red-500/10",
 		},
 		{
-			label: "Open RFX",
-			value: String(metrics.openRfx),
-			hint: "Live sourcing",
-			href: "/admin/sourcing",
-			icon: ClipboardList,
-			tone: "bg-rose-100 text-rose-700",
+			label: "In Progress",
+			value: String(summary.inProgress),
+			pct: null as string | null,
+			hint: "View Details →",
+			icon: Clock3,
+			tone: "text-violet-700 bg-violet-500/10",
+		},
+		{
+			label: "Pending",
+			value: String(summary.pending),
+			pct: null as string | null,
+			hint: "View Details →",
+			icon: Calendar,
+			tone: "text-zinc-700 bg-zinc-500/10",
 		},
 	];
 
-	const rangeLabel =
-		range === "7d"
-			? "Last 7 days"
-			: range === "30d"
-				? "Last 30 days"
-				: range === "90d"
-					? "Last 90 days"
-					: "Year to date";
-
 	return (
-		<div className="space-y-6">
-			{/* Toolbar */}
-			<div className="flex flex-col gap-3 rounded-xl bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-				<div className="flex min-w-0 flex-wrap items-center gap-2">
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<CalendarDays className="size-4 text-primary" />
-						<span className="hidden sm:inline">Period</span>
-					</div>
-					<Select value={range} onValueChange={(v) => setRange(v as RangeKey)}>
-						<SelectTrigger className="h-9 w-[150px]">
-							<SelectValue placeholder="Time range" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="7d">Last 7 days</SelectItem>
-							<SelectItem value="30d">Last 30 days</SelectItem>
-							<SelectItem value="90d">Last 90 days</SelectItem>
-							<SelectItem value="ytd">Year to date</SelectItem>
-						</SelectContent>
-					</Select>
-					<span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-						{rangeLabel}
-					</span>
-					<span className="hidden text-xs text-muted-foreground md:inline">
-						{metrics.totalVendors} vendors · {metrics.activeContracts} contracts
-					</span>
+		<div className="space-y-3">
+			<div className="flex flex-wrap items-start justify-between gap-2">
+				<div>
+					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+						Dashboard
+					</h1>
+					<p className="mt-0.5 text-xs text-muted-foreground">
+						Monitor vendor file exchanges, health, and alerts across trading
+						partners.
+					</p>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="outline" size="sm" className="h-9">
+							<LayoutGrid className="mr-1.5 size-3.5" />
+							Customize
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-56">
+						<DropdownMenuLabel>Dashboard widgets</DropdownMenuLabel>
+						<DropdownMenuSeparator />
+						{(Object.keys(DASHBOARD_WIDGET_LABELS) as DashboardWidgetId[]).map(
+							(id) => (
+								<DropdownMenuCheckboxItem
+									key={id}
+									checked={enabledWidgets.includes(id)}
+									onCheckedChange={() => toggleWidget(id)}
+								>
+									{DASHBOARD_WIDGET_LABELS[id]}
+								</DropdownMenuCheckboxItem>
+							)
+						)}
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onClick={resetWidgets}>
+							Reset to default
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+
+			{error ? (
+				<p className="text-sm text-destructive">{error.message}</p>
+			) : null}
+
+			{/* Filters */}
+			<div className="flex flex-wrap items-center gap-2">
+				<Select value={dateFilter} onValueChange={setDateFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="today">Today (Jul 28, 2026)</SelectItem>
+						<SelectItem value="7">Last 7 Days</SelectItem>
+						<SelectItem value="30">Last 30 Days</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select value={vendorFilter} onValueChange={setVendorFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue placeholder="All Vendors" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Vendors</SelectItem>
+						{vendors.map((v) => (
+							<SelectItem key={v.id} value={v.id}>
+								{v.tradeName ?? v.legalName}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
+					<SelectTrigger className="h-9 w-[200px]">
+						<SelectValue placeholder="All File Types" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All File Types</SelectItem>
+						{fileTypes.map((t) => (
+							<SelectItem key={t} value={t}>
+								{t}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<div className="ml-auto flex items-center gap-2">
 					<Button
 						variant="outline"
 						size="sm"
@@ -373,449 +347,497 @@ export function DashboardPage() {
 						/>
 						Refresh
 					</Button>
-					<Button variant="outline" size="sm" className="h-9" asChild>
-						<Link href="/admin/reports">
-							<Download className="mr-1.5 size-3.5" />
-							Export
-						</Link>
-					</Button>
-					<Button variant="outline" size="sm" className="h-9" asChild>
-						<Link href="/admin/vendors">
-							<Filter className="mr-1.5 size-3.5" />
-							Filters
-						</Link>
-					</Button>
-					<Button size="sm" className="h-9" asChild>
-						<Link href="/admin/vendors/invite">
-							<Plus className="mr-1.5 size-3.5" />
-							Invite vendor
-						</Link>
-					</Button>
+					<span className="text-xs text-muted-foreground">
+						Last updated: {lastUpdated}
+					</span>
 				</div>
 			</div>
 
-			{/* KPI grid — icon on the right */}
-			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+			{/* KPI cards */}
+			{isEnabled("kpis") ? (
+			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{kpis.map((k) => {
 					const Icon = k.icon;
 					return (
-						<Link
-							key={k.label}
-							href={k.href}
-							className="group rounded-xl bg-card p-4 transition-all"
-						>
-							<div className="flex items-start justify-between gap-3">
+						<div key={k.label} className="rounded-lg bg-card p-2.5">
+							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
-									<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 										{k.label}
 									</p>
-									<p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
+									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
 										{k.value}
+										{k.pct ? (
+											<span className="ml-1 text-sm font-medium text-muted-foreground">
+												({k.pct})
+											</span>
+										) : null}
 									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
+									{k.label === "Total Files" ? (
+										<p className="mt-1 text-xs text-muted-foreground">
+											{k.hint}
+										</p>
+									) : (
+										<p className="mt-1 text-xs font-medium text-primary">
+											{k.hint}
+										</p>
+									)}
 								</div>
-								<div className="flex shrink-0 flex-col items-end gap-2">
-									<div
-										className={cn(
-											"flex size-10 items-center justify-center rounded-lg",
-											k.tone
-										)}
-									>
-										<Icon className="size-4" />
-									</div>
-									<ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+								<div
+									className={cn(
+										"flex size-8 shrink-0 items-center justify-center rounded-lg",
+										k.tone
+									)}
+								>
+									<Icon className="size-4" />
 								</div>
 							</div>
-						</Link>
+						</div>
 					);
 				})}
 			</div>
+			) : null}
 
-			{/* Charts row */}
-			<div className="grid gap-4 lg:grid-cols-5">
-				<Card className="lg:col-span-3">
-					<CardHeader className="pb-2">
-						<CardTitle className="text-base">Spend & order volume</CardTitle>
-					</CardHeader>
-					<CardContent className="h-72 pt-2">
-						<ResponsiveContainer width="100%" height="100%">
-							<AreaChart data={SPEND_TREND}>
-								<defs>
-									<linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="1">
-										<stop
-											offset="0%"
-											stopColor="var(--chart-1)"
-											stopOpacity={0.35}
-										/>
-										<stop
-											offset="100%"
-											stopColor="var(--chart-1)"
-											stopOpacity={0.02}
-										/>
-									</linearGradient>
-								</defs>
-								<CartesianGrid
-									strokeDasharray="3 3"
-									className="stroke-border"
-								/>
-								<XAxis
-									dataKey="month"
-									tickLine={false}
-									axisLine={false}
-									tick={{ fontSize: 12 }}
-								/>
-								<YAxis
-									tickLine={false}
-									axisLine={false}
-									tick={{ fontSize: 12 }}
-									tickFormatter={(v) => `$${Math.round(v / 1000)}k`}
-								/>
-								<Tooltip
-									formatter={(value, name) =>
-										name === "spend"
-											? [formatMoney(Number(value)), "Spend"]
-											: [value, "Orders"]
-									}
-									contentStyle={{
-										borderRadius: 8,
-										border: "1px solid var(--border)",
-										background: "var(--card)",
-									}}
-								/>
-								<Area
-									type="monotone"
-									dataKey="spend"
-									stroke="var(--chart-1)"
-									fill="url(#spendFill)"
-									strokeWidth={2}
-								/>
-							</AreaChart>
-						</ResponsiveContainer>
-					</CardContent>
-				</Card>
-
-				<Card className="lg:col-span-2">
-					<CardHeader className="pb-2">
-						<CardTitle className="text-base">Vendor status overview</CardTitle>
-					</CardHeader>
-					<CardContent className="flex h-72 flex-col items-center justify-center pt-2">
-						<ResponsiveContainer width="100%" height="70%">
-							<PieChart>
-								<Pie
-									data={metrics.statusBreakdown}
-									dataKey="value"
-									nameKey="name"
-									innerRadius={52}
-									outerRadius={78}
-									paddingAngle={3}
+			{/* Main + right column — 2/3 table, 1/3 sidebar */}
+			<div className="grid min-w-0 gap-2 xl:grid-cols-3">
+				<div className="min-w-0 space-y-2 xl:col-span-2">
+					{/* Recent File Activity */}
+					{isEnabled("recentActivity") ? (
+					<Card className="min-w-0 bg-card">
+						<CardHeader className="px-3 pb-1 pt-3">
+							<CardTitle className="text-sm font-medium">
+								Recent File Activity
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="px-0 pb-0">
+							<ScrollArea className="w-full border-t border-border/50">
+								<div className="min-w-[920px]">
+									<Table className="w-full text-xs">
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="h-8 w-[17%] px-2 pl-3 font-normal">
+													Vendor
+												</TableHead>
+												<TableHead className="h-8 w-[11%] px-1 font-normal">
+													Type
+												</TableHead>
+												<TableHead className="h-8 w-[18%] px-1 font-normal">
+													File Name
+												</TableHead>
+												<TableHead className="h-8 w-[8%] px-1 font-normal">
+													Freq
+												</TableHead>
+												<TableHead className="h-8 w-[11%] px-1 font-normal">
+													Status
+												</TableHead>
+												<TableHead className="h-8 w-[7%] px-1 text-right font-normal">
+													Rec
+												</TableHead>
+												<TableHead className="h-8 w-[7%] px-1 font-normal">
+													Recv
+												</TableHead>
+												<TableHead className="h-8 w-[7%] px-1 font-normal">
+													Proc
+												</TableHead>
+												<TableHead className="h-8 w-[7%] px-1 font-normal">
+													Dur
+												</TableHead>
+												<TableHead className="h-8 w-[7%] px-1 pr-3 text-right font-normal">
+													Act
+												</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{filteredRuns.slice(0, 8).map((run) => {
+												const vid = vendorIdForRun(run);
+												return (
+													<TableRow
+														key={run.id}
+														className="cursor-pointer hover:bg-muted/30"
+														onClick={() =>
+															router.push(
+																vid ? `/admin/vendors/${vid}` : "/admin/vendors"
+															)
+														}
+													>
+														<TableCell className="px-2 py-1.5 pl-3">
+															<div className="flex min-w-0 items-center gap-1.5">
+																<VendorAvatarBadge
+																	vendorId={vid}
+																	vendorName={run.vendor}
+																	size="sm"
+																/>
+																{vid ? (
+																	<Link
+																		href={`/admin/vendors/${vid}`}
+																		className="truncate font-medium hover:underline"
+																		onClick={(e) => e.stopPropagation()}
+																	>
+																		{run.vendor}
+																	</Link>
+																) : (
+																	<span className="truncate font-medium">
+																		{run.vendor}
+																	</span>
+																)}
+															</div>
+														</TableCell>
+														<TableCell className="truncate px-1 py-1.5">
+															{run.fileType}
+														</TableCell>
+														<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
+															{run.fileName ?? "—"}
+														</TableCell>
+														<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
+															{run.frequency}
+														</TableCell>
+														<TableCell className="px-1 py-1.5">
+															<ActivityStatus status={run.status} />
+														</TableCell>
+														<TableCell className="px-1 py-1.5 text-right tabular-nums">
+															{run.records ?? "—"}
+														</TableCell>
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+															{run.receivedAt?.slice(11, 16) ?? "—"}
+														</TableCell>
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+															{run.completedAt?.slice(11, 16) ?? "—"}
+														</TableCell>
+														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+															{run.duration ?? "—"}
+														</TableCell>
+														<TableCell
+															className="px-1 py-1.5 pr-3 text-right"
+															onClick={(e) => e.stopPropagation()}
+														>
+															<DropdownMenu>
+																<DropdownMenuTrigger asChild>
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		className="size-7"
+																	>
+																		<MoreHorizontal className="size-3.5" />
+																	</Button>
+																</DropdownMenuTrigger>
+																<DropdownMenuContent align="end">
+																	<DropdownMenuItem asChild>
+																		<Link
+																			href={`/admin/file-monitoring/${run.id}`}
+																		>
+																			View run detail
+																		</Link>
+																	</DropdownMenuItem>
+																	{vid ? (
+																		<DropdownMenuItem asChild>
+																			<Link href={`/admin/vendors/${vid}`}>
+																				Open vendor
+																			</Link>
+																		</DropdownMenuItem>
+																	) : null}
+																</DropdownMenuContent>
+															</DropdownMenu>
+														</TableCell>
+													</TableRow>
+												);
+											})}
+										</TableBody>
+									</Table>
+								</div>
+							</ScrollArea>
+							<div className="border-t border-border/50 px-3 py-2">
+								<Link
+									href="/admin/file-monitoring"
+									className="text-sm font-medium text-primary hover:underline"
 								>
-									{metrics.statusBreakdown.map((_, i) => (
-										<Cell
-											key={i}
-											fill={CHART_COLORS[i % CHART_COLORS.length]}
-										/>
-									))}
-								</Pie>
-								<Tooltip
-									contentStyle={{
-										borderRadius: 8,
-										border: "1px solid var(--border)",
-										background: "var(--card)",
-									}}
-								/>
-							</PieChart>
-						</ResponsiveContainer>
-						<div className="flex flex-wrap justify-center gap-3 text-xs">
-							{metrics.statusBreakdown.map((d, i) => (
-								<span key={d.name} className="flex items-center gap-1.5">
-									<span
-										className="size-2.5 rounded-full"
-										style={{
-											background: CHART_COLORS[i % CHART_COLORS.length],
-										}}
+									View All File Activity →
+								</Link>
+							</div>
+						</CardContent>
+					</Card>
+					) : null}
+
+					{/* Processing Trend */}
+					{isEnabled("processingTrend") ? (
+					<Card className="bg-card">
+						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<div>
+								<CardTitle className="text-sm font-medium">
+									Processing Trend
+								</CardTitle>
+							</div>
+							<Select value={trendRange} onValueChange={setTrendRange}>
+								<SelectTrigger className="h-8 w-[130px]">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="7">Last 7 Days</SelectItem>
+									<SelectItem value="14">Last 14 Days</SelectItem>
+									<SelectItem value="30">Last 30 Days</SelectItem>
+								</SelectContent>
+							</Select>
+						</CardHeader>
+						<CardContent className="h-64 pt-2">
+							<ResponsiveContainer width="100%" height="100%">
+								<LineChart data={PROCESSING_TREND}>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										className="stroke-border"
 									/>
-									{d.name} ({d.value})
-								</span>
+									<XAxis dataKey="day" tick={{ fontSize: 11 }} />
+									<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+									<Tooltip />
+									<Legend />
+									<Line
+										type="monotone"
+										dataKey="successful"
+										name="Successful"
+										stroke="#059669"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="warnings"
+										name="Warnings"
+										stroke="#d97706"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="failed"
+										name="Failed"
+										stroke="#dc2626"
+										strokeWidth={2}
+										dot={false}
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</CardContent>
+					</Card>
+					) : null}
+				</div>
+
+				{/* Right column — 1/3 */}
+				<div className="min-w-0 space-y-2 xl:col-span-1">
+					{isEnabled("vendorStatus") ? (
+					<Card className="bg-card">
+						<CardHeader className="pb-2">
+							<CardTitle className="text-sm font-medium">
+								Vendor Status Overview
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="flex items-center gap-3">
+								<div className="relative h-32 w-32 shrink-0">
+									<ResponsiveContainer width="100%" height="100%">
+										<PieChart>
+											<Pie
+												data={vendorStatusPie}
+												dataKey="value"
+												nameKey="name"
+												innerRadius={38}
+												outerRadius={58}
+												paddingAngle={2}
+											>
+												{vendorStatusPie.map((entry) => (
+													<Cell key={entry.name} fill={entry.color} />
+												))}
+											</Pie>
+											<Tooltip />
+										</PieChart>
+									</ResponsiveContainer>
+									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+										<span className="text-base font-medium tabular-nums leading-none">
+											{vendors.length}
+										</span>
+										<span className="mt-1 text-[10px] font-medium text-muted-foreground">
+											Vendors
+										</span>
+									</div>
+								</div>
+								<ul className="min-w-0 flex-1 space-y-2.5">
+									{vendorStatusPie.map((item) => (
+										<li
+											key={item.name}
+											className="flex items-center justify-between gap-3 text-sm"
+										>
+											<span className="flex min-w-0 items-center gap-2">
+												<span
+													className="size-2.5 shrink-0 rounded-full"
+													style={{ backgroundColor: item.color }}
+												/>
+												<span className="truncate font-medium">
+													{item.name}
+												</span>
+											</span>
+											<span className="shrink-0 tabular-nums">
+												{item.value}{" "}
+												<span className="text-xs text-muted-foreground">
+													({item.pct}%)
+												</span>
+											</span>
+										</li>
+									))}
+								</ul>
+							</div>
+							<div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
+								<span>All vendors</span>
+								<span>Last 24 hours</span>
+							</div>
+						</CardContent>
+					</Card>
+					) : null}
+
+					{isEnabled("alerts") ? (
+					<Card className="bg-card">
+						<CardHeader className="pb-3">
+							<CardTitle className="text-sm font-medium">Alerts</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-2">
+							{VENDOR_ALERTS.slice(0, 5).map((alert) => (
+								<Link
+									key={alert.id}
+									href={
+										alert.runId
+											? `/admin/file-monitoring/${alert.runId}`
+											: `/admin/vendors/${alert.vendorId}`
+									}
+									className={cn(
+										"flex items-start gap-2.5 rounded-lg border p-3 transition-colors",
+										alert.severity === "error" &&
+											"border-red-200 bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/30",
+										alert.severity === "warning" &&
+											"border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/30",
+										alert.severity !== "error" &&
+											alert.severity !== "warning" &&
+											"border-sky-200 bg-sky-50 hover:border-sky-300 dark:border-sky-900/50 dark:bg-sky-950/30"
+									)}
+								>
+									{alert.severity === "error" ? (
+										<XCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
+									) : alert.severity === "warning" ? (
+										<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+									) : (
+										<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+									)}
+									<div className="min-w-0 flex-1">
+										<p className="text-sm font-medium leading-snug">
+											{alert.title}
+										</p>
+										<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+											{alert.vendorName}
+										</p>
+										<p className="mt-1 text-[11px] text-muted-foreground">
+											{alert.when}
+										</p>
+									</div>
+								</Link>
 							))}
-						</div>
-					</CardContent>
-				</Card>
-			</div>
-
-			{/* Recent file activity + activity feed */}
-			<div className="grid gap-4 lg:grid-cols-2">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-						<div>
-							<CardTitle className="text-base">Recent file activity</CardTitle>
-						</div>
-						<Button variant="ghost" size="sm" asChild>
-							<Link href="/admin/documents">All files</Link>
-						</Button>
-					</CardHeader>
-					<CardContent className="divide-y rounded-lg border">
-						{metrics.recentFiles.map((doc) => (
-							<div
-								key={doc.id}
-								className="flex items-center justify-between gap-3 px-3 py-3"
+							<Link
+								href="/admin/file-monitoring"
+								className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
 							>
-								<div className="flex min-w-0 items-start gap-3">
-									<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-										<Upload className="size-3.5" />
-									</div>
-									<div className="min-w-0">
-										<p className="truncate text-sm font-medium">{doc.name}</p>
-										<p className="text-xs text-muted-foreground">
-											{doc.vendorName} · {doc.type.replace(/_/g, " ")}
-										</p>
-									</div>
-								</div>
-								<div className="flex shrink-0 flex-col items-end gap-1">
-									<StatusBadge status={doc.status} />
-									<span className="text-[11px] text-muted-foreground">
-										{formatDate(doc.uploadedAt)}
-									</span>
-								</div>
-							</div>
-						))}
-						{metrics.recentFiles.length === 0 && (
-							<p className="px-3 py-8 text-center text-sm text-muted-foreground">
-								No recent file activity.
-							</p>
-						)}
-					</CardContent>
-				</Card>
+								View All Alerts →
+							</Link>
+						</CardContent>
+					</Card>
+					) : null}
 
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-						<div>
-							<CardTitle className="text-base">System activity</CardTitle>
-						</div>
-					</CardHeader>
-					<CardContent className="divide-y rounded-lg border">
-						{metrics.recentActivity.map((act) => (
-							<div key={act.id} className="px-3 py-3">
-								<p className="text-sm font-medium">{act.action}</p>
-								<p className="mt-0.5 text-xs text-muted-foreground">
-									{act.actor} · {act.entityType.replace(/_/g, " ")} ·{" "}
-									{formatDate(act.createdAt)}
+					{isEnabled("quickActions") ? (
+					<Card className="bg-card">
+						<CardHeader className="pb-3">
+							<CardTitle className="text-sm font-medium">
+								Quick Actions
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+								{[
+									{
+										label: "Add Vendor",
+										href: "/admin/vendors/create",
+										icon: Plus,
+									},
+									{
+										label: "Upload File",
+										href: "/admin/file-monitoring",
+										icon: Upload,
+									},
+									{
+										label: "View Schedules",
+										href: "/admin/schedules",
+										icon: Calendar,
+									},
+									{
+										label: "Vendor Reports",
+										href: "/admin/reports",
+										icon: FileText,
+									},
+									{
+										label: "Audit Trail",
+										href: "/admin/audit-trail",
+										icon: ScrollText,
+									},
+								].map((action) => {
+									const Icon = action.icon;
+									return (
+										<Button
+											key={action.label}
+											variant="outline"
+											className="h-auto flex-col gap-1.5 px-2 py-3 text-xs"
+											asChild
+										>
+											<Link href={action.href}>
+												<Icon className="size-4 text-primary" />
+												{action.label}
+											</Link>
+										</Button>
+									);
+								})}
+							</div>
+						</CardContent>
+					</Card>
+					) : null}
+
+					{isEnabled("expiringDocs") ? (
+						<Card className="bg-card">
+							<CardHeader className="pb-3">
+								<CardTitle className="text-sm font-medium">
+									Expiring documents
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-2 text-xs">
+								<p className="text-muted-foreground">
+									Track certifications and insurance nearing expiry.
 								</p>
-							</div>
-						))}
-						{metrics.recentActivity.length === 0 && (
-							<p className="px-3 py-8 text-center text-sm text-muted-foreground">
-								No recent activity.
-							</p>
-						)}
-					</CardContent>
-				</Card>
+								<Button variant="outline" size="sm" className="h-8 w-full" asChild>
+									<Link href="/admin/documents">Open documents</Link>
+								</Button>
+							</CardContent>
+						</Card>
+					) : null}
+
+					{isEnabled("activityFeed") ? (
+						<Card className="bg-card">
+							<CardHeader className="pb-3">
+								<CardTitle className="text-sm font-medium">
+									Activity feed
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-2 text-xs">
+								<p className="text-muted-foreground">
+									Live operational events across file runs and alerts.
+								</p>
+								<Button variant="outline" size="sm" className="h-8 w-full" asChild>
+									<Link href="/admin/activity">Open command center</Link>
+								</Button>
+							</CardContent>
+						</Card>
+					) : null}
+				</div>
 			</div>
-
-			{/* Quick access + invoice status */}
-			<div className="grid gap-4 lg:grid-cols-5">
-				<Card className="lg:col-span-3">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Quick access</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-							{QUICK_ACTIONS.map((action) => {
-								const Icon = action.icon;
-								return (
-									<Link
-										key={action.href}
-										href={action.href}
-										className="flex items-start gap-3 rounded-lg border bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-primary/[0.04]"
-									>
-										<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-											<Icon className="size-4" />
-										</div>
-										<div className="min-w-0">
-											<p className="text-sm font-semibold">{action.label}</p>
-											<p className="text-xs text-muted-foreground">
-												{action.hint}
-											</p>
-										</div>
-									</Link>
-								);
-							})}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="lg:col-span-2">
-					<CardHeader className="pb-2">
-						<CardTitle className="text-base">Invoice workflow</CardTitle>
-					</CardHeader>
-					<CardContent className="h-56 pt-2">
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart data={metrics.invoiceByStatus} layout="vertical">
-								<CartesianGrid
-									strokeDasharray="3 3"
-									horizontal={false}
-									className="stroke-border"
-								/>
-								<XAxis type="number" allowDecimals={false} hide />
-								<YAxis
-									type="category"
-									dataKey="name"
-									width={78}
-									tickLine={false}
-									axisLine={false}
-									tick={{ fontSize: 12 }}
-								/>
-								<Tooltip
-									contentStyle={{
-										borderRadius: 8,
-										border: "1px solid var(--border)",
-										background: "var(--card)",
-									}}
-								/>
-								<Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={16}>
-									{metrics.invoiceByStatus.map((_, i) => (
-										<Cell
-											key={i}
-											fill={CHART_COLORS[i % CHART_COLORS.length]}
-										/>
-									))}
-								</Bar>
-							</BarChart>
-						</ResponsiveContainer>
-					</CardContent>
-				</Card>
-			</div>
-
-			{/* Action queues */}
-			<div className="grid gap-4 lg:grid-cols-2">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-						<div>
-							<CardTitle className="text-base">Pending approvals</CardTitle>
-						</div>
-						<Button variant="ghost" size="sm" asChild>
-							<Link href="/admin/approvals">View all</Link>
-						</Button>
-					</CardHeader>
-					<CardContent className="space-y-0 divide-y rounded-lg border">
-						{metrics.pendingApprovals.slice(0, 5).map((a) => (
-							<div
-								key={a.id}
-								className="flex items-center justify-between gap-3 px-3 py-3"
-							>
-								<div className="min-w-0">
-									<p className="truncate text-sm font-medium">{a.title}</p>
-									<p className="text-xs text-muted-foreground">
-										{a.vendorName} · {a.requestedBy}
-									</p>
-								</div>
-								<StatusBadge status={a.type} />
-							</div>
-						))}
-						{metrics.pendingApprovals.length === 0 && (
-							<p className="px-3 py-8 text-center text-sm text-muted-foreground">
-								No pending approvals.
-							</p>
-						)}
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-						<div>
-							<CardTitle className="text-base">Compliance & renewals</CardTitle>
-						</div>
-						<Button variant="ghost" size="sm" asChild>
-							<Link href="/admin/compliance">Compliance</Link>
-						</Button>
-					</CardHeader>
-					<CardContent className="space-y-0 divide-y rounded-lg border">
-						{metrics.expiringCerts.map((c) => (
-							<div
-								key={c.id}
-								className="flex items-center justify-between gap-3 px-3 py-3"
-							>
-								<div className="min-w-0">
-									<p className="truncate text-sm font-medium">{c.name}</p>
-									<p className="text-xs text-muted-foreground">
-										{c.vendorName} · expires {c.expiresAt}
-									</p>
-								</div>
-								<StatusBadge status={c.status} />
-							</div>
-						))}
-						{metrics.renewingContracts.map((c) => (
-							<div
-								key={c.id}
-								className="flex items-center justify-between gap-3 px-3 py-3"
-							>
-								<div className="min-w-0">
-									<p className="truncate text-sm font-medium">{c.title}</p>
-									<p className="text-xs text-muted-foreground">
-										Ends {c.endDate} · {formatMoney(c.value, c.currency)}
-									</p>
-								</div>
-								<StatusBadge status="expiring" />
-							</div>
-						))}
-					</CardContent>
-				</Card>
-			</div>
-
-			{/* Performance */}
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-					<div>
-						<CardTitle className="text-base">Supplier performance</CardTitle>
-					</div>
-					<Button variant="ghost" size="sm" asChild>
-						<Link href="/admin/performance">Scorecards</Link>
-					</Button>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-4 md:grid-cols-2">
-						{metrics.topScorecards.map((sc) => (
-							<div key={sc.id} className="rounded-lg border bg-muted/20 p-4">
-								<div className="flex items-center justify-between gap-3">
-									<div>
-										<p className="font-semibold">{sc.vendorName}</p>
-										<p className="text-xs text-muted-foreground">
-											Period {sc.period}
-										</p>
-									</div>
-									<span className="text-2xl font-semibold tabular-nums text-primary">
-										{sc.overall}
-									</span>
-								</div>
-								<div className="mt-4 space-y-2.5">
-									{[
-										{ label: "OTIF", value: sc.otif },
-										{ label: "Quality", value: sc.quality },
-										{ label: "Responsiveness", value: sc.responsiveness },
-										{ label: "Compliance", value: sc.compliance },
-									].map((row) => (
-										<div key={row.label} className="space-y-1">
-											<div className="flex justify-between text-xs">
-												<span className="text-muted-foreground">
-													{row.label}
-												</span>
-												<span className="font-medium tabular-nums">
-													{row.value}%
-												</span>
-											</div>
-											<Progress value={row.value} className="h-1.5" />
-										</div>
-									))}
-								</div>
-							</div>
-						))}
-						{metrics.topScorecards.length === 0 && (
-							<p className="text-sm text-muted-foreground md:col-span-2">
-								No scorecards yet.
-							</p>
-						)}
-					</div>
-				</CardContent>
-			</Card>
 		</div>
 	);
 }

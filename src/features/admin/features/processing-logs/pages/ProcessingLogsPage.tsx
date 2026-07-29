@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 
 import {
@@ -366,8 +366,10 @@ const outlineBtn =
 	"h-9 border-primary/30 bg-card text-primary hover:bg-primary/5 hover:text-primary";
 
 export function ProcessingLogsPage() {
+	const params = useParams();
 	const searchParams = useSearchParams();
-	const runFilter = searchParams.get("run");
+	const runIdFromPath = typeof params?.runId === "string" ? params.runId : null;
+	const runFilter = runIdFromPath ?? searchParams.get("run");
 	const run =
 		(runFilter ? getFileRun(runFilter) : undefined) ??
 		FILE_RUNS.find((r) => r.status === "failed") ??
@@ -526,13 +528,34 @@ export function ProcessingLogsPage() {
 			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="min-w-0 flex-1">
-					<h1 className="text-2xl font-bold tracking-tight text-primary sm:text-[28px]">
-						Processing Log Viewer
-					</h1>
-					<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-						Review the processing log, system messages, warnings, and errors for
-						the selected file run.
-					</p>
+					<nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-primary">
+						<Link href="/admin/file-monitoring" className="hover:underline">
+							File Monitoring
+						</Link>
+						<span className="text-muted-foreground">&gt;</span>
+						<Link href="/admin/file-monitoring/select" className="hover:underline">
+							Select
+						</Link>
+						<span className="text-muted-foreground">&gt;</span>
+						<Link href={runHref} className="hover:underline">
+							File Run Details
+						</Link>
+						<span className="text-muted-foreground">&gt;</span>
+						<span className="text-foreground">Processing Log</span>
+					</nav>
+					<div className="mt-2 flex items-center gap-3">
+						<div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+							4
+						</div>
+						<div>
+							<h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+								Processing Log Viewer
+							</h1>
+							<p className="mt-0.5 max-w-2xl text-xs text-muted-foreground">
+								(From &quot;View Processing Log&quot;)
+							</p>
+						</div>
+					</div>
 				</div>
 				<Button
 					variant="outline"

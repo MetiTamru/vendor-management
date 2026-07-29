@@ -2,7 +2,6 @@ import {
 	getLoginPath,
 	isAdminPath,
 	isPublicPath,
-	isVendorPath,
 	localePath,
 	resolveAuthRedirect,
 } from "@/lib/routes";
@@ -25,12 +24,6 @@ describe("routes", () => {
 		expect(isAdminPath("/en/auth/login")).toBe(false);
 	});
 
-	it("detects vendor paths", () => {
-		expect(isVendorPath("/en/vendor")).toBe(true);
-		expect(isVendorPath("/en/vendor/invoices")).toBe(true);
-		expect(isVendorPath("/en/admin")).toBe(false);
-	});
-
 	it("returns login path for locale", () => {
 		expect(getLoginPath("am")).toBe("/am/auth/login");
 	});
@@ -39,17 +32,6 @@ describe("routes", () => {
 		expect(
 			resolveAuthRedirect({
 				pathname: "/en/admin/groups",
-				authenticated: false,
-				loginPath: "/en/auth/login",
-				homePath: "/en/admin",
-			})
-		).toBe("/en/auth/login");
-	});
-
-	it("redirects unauthenticated users from vendor to login", () => {
-		expect(
-			resolveAuthRedirect({
-				pathname: "/en/vendor/profile",
 				authenticated: false,
 				loginPath: "/en/auth/login",
 				homePath: "/en/admin",

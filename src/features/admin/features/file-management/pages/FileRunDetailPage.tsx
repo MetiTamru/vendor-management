@@ -788,7 +788,7 @@ export function FileRunDetailPage() {
 			) : null}
 
 			{/* Footer action bar */}
-			<div className="fixed inset-x-0 bottom-0 z-20 border-t border-border/50 bg-background/95 px-3 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
+			<div className="sticky bottom-0 z-20 -mx-2 border-t border-border/50 bg-background/95 px-3 py-2 backdrop-blur supports-backdrop-filter:bg-background/80 sm:-mx-3">
 				<div className="mx-auto flex w-full flex-wrap items-center justify-between gap-2">
 					<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
 						<Link href={selectHref}>
@@ -808,7 +808,7 @@ export function FileRunDetailPage() {
 							Download Original File
 						</Button>
 						<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-							<Link href={`/admin/processing-logs?run=${selected.id}`}>
+							<Link href={`/admin/file-monitoring/${selected.id}/processing-logs`}>
 								<ScrollText className="mr-1.5 size-3.5" />
 								Download Log
 							</Link>

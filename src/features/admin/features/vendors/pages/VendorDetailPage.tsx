@@ -15,6 +15,7 @@ import {
 	FileText,
 	Mail,
 	MoreHorizontal,
+	Download,
 	NotebookPen,
 	Pencil,
 	Phone,
@@ -1016,15 +1017,23 @@ export function VendorDetailPage() {
 									href: "/admin/file-monitoring",
 									icon: Send,
 								},
-								{
-									label: "Add Note",
-									href: "#",
-									icon: NotebookPen,
-									onClick: () => {
-										setTab("Notes");
-										toast.message("Switched to Notes tab");
-									},
+							{
+								label: "Export Data",
+								href: "#",
+								icon: Download,
+								onClick: () => {
+									toast.success("Vendor data export started.");
 								},
+							},
+							{
+								label: "Add Note",
+								href: "#",
+								icon: NotebookPen,
+								onClick: () => {
+									setTab("Notes");
+									toast.message("Switched to Notes tab");
+								},
+							},
 							].map((action) => {
 								const Icon = action.icon;
 								if (action.onClick) {

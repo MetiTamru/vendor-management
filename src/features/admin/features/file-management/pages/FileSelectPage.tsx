@@ -128,7 +128,7 @@ function RunActions({ run }: { run: FileRun }) {
 						</Link>
 					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
-						<Link href={`/admin/processing-logs?run=${run.id}`}>
+						<Link href={`/admin/file-monitoring/${run.id}/processing-logs`}>
 							Processing logs
 						</Link>
 					</DropdownMenuItem>

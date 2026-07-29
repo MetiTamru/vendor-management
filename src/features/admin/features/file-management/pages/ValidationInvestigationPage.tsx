@@ -15,6 +15,7 @@ import {
 	FileText,
 	Info,
 	MessageSquarePlus,
+	ListOrdered,
 	MinusCircle,
 	ScrollText,
 	User,
@@ -202,12 +203,20 @@ export function ValidationInvestigationPage() {
 						determine next steps.
 					</p>
 				</div>
-				<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-					<Link href={`/admin/file-monitoring/${run.id}`}>
-						<ArrowLeft className="mr-1.5 size-3.5" />
-						Back to File Run Details
-					</Link>
-				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+						<Link href={`/admin/file-monitoring/${run.id}/processing-logs`}>
+							<ListOrdered className="mr-1.5 size-3.5" />
+							View Processing Log
+						</Link>
+					</Button>
+					<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+						<Link href={`/admin/file-monitoring/${run.id}`}>
+							<ArrowLeft className="mr-1.5 size-3.5" />
+							Back to File Run Details
+						</Link>
+					</Button>
+				</div>
 			</div>
 
 			{/* Summary bar */}
@@ -568,6 +577,17 @@ export function ValidationInvestigationPage() {
 						>
 							<ScrollText className="mr-1.5 size-3.5" />
 							Download Log
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-8 text-xs"
+							asChild
+						>
+							<Link href={`/admin/file-monitoring/${run.id}/processing-logs`}>
+								<ListOrdered className="mr-1.5 size-3.5" />
+								View Processing Log
+							</Link>
 						</Button>
 						<Button
 							variant="outline"

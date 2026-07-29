@@ -3,8 +3,11 @@
 import { useMemo, useState } from "react";
 
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
+import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -31,6 +34,7 @@ export function ContractsPage() {
 	const { contracts, isLoading, error } = useContractsList();
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const filtered = useMemo(() => {
 		const query = search.toLowerCase().trim();
 		return contracts.filter(
@@ -42,6 +46,23 @@ export function ContractsPage() {
 					contract.vendorName.toLowerCase().includes(query))
 		);
 	}, [contracts, search, status]);
+
+	const allSelected =
+		filtered.length > 0 && filtered.every((row) => selectedIds.has(row.id));
+
+	function toggleAll() {
+		if (allSelected) setSelectedIds(new Set());
+		else setSelectedIds(new Set(filtered.map((row) => row.id)));
+	}
+
+	function toggleOne(id: string) {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}
 
 	return (
 		<div className="container space-y-6 py-8">
@@ -85,6 +106,23 @@ export function ContractsPage() {
 					</SelectContent>
 				</Select>
 			</div>
+			<BulkActionsToolbar
+				selectedCount={selectedIds.size}
+				entityLabel="contract"
+				onClear={() => setSelectedIds(new Set())}
+				onApprove={() => {
+					toast.success(`Approved ${selectedIds.size} contract(s).`);
+					setSelectedIds(new Set());
+				}}
+				onArchive={() => {
+					toast.success(`Archived ${selectedIds.size} contract(s).`);
+					setSelectedIds(new Set());
+				}}
+				onExport={() => {
+					toast.success(`Exported ${selectedIds.size} contract(s).`);
+					setSelectedIds(new Set());
+				}}
+			/>
 			{isLoading ? (
 				<Skeleton className="h-72 w-full" />
 			) : error ? (
@@ -94,6 +132,13 @@ export function ContractsPage() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={allSelected}
+										onCheckedChange={toggleAll}
+										aria-label="Select all contracts"
+									/>
+								</TableHead>
 								<TableHead>Contract</TableHead>
 								<TableHead>Vendor</TableHead>
 								<TableHead>Status</TableHead>
@@ -104,6 +149,13 @@ export function ContractsPage() {
 						<TableBody>
 							{filtered.map((contract) => (
 								<TableRow key={contract.id}>
+									<TableCell>
+										<Checkbox
+											checked={selectedIds.has(contract.id)}
+											onCheckedChange={() => toggleOne(contract.id)}
+											aria-label={`Select ${contract.number}`}
+										/>
+									</TableCell>
 									<TableCell>
 										<Link
 											href={`/admin/contracts/${contract.id}`}
@@ -131,7 +183,7 @@ export function ContractsPage() {
 							{filtered.length === 0 && (
 								<TableRow>
 									<TableCell
-										colSpan={5}
+										colSpan={6}
 										className="h-24 text-center text-muted-foreground"
 									>
 										No contracts found.

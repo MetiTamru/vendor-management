@@ -61,8 +61,13 @@
 			"errormanagement": "Error Management",
 			"notifications": "Notifications",
 			"slamonitoring": "SLA Monitoring",
+			"riskscoring": "Risk Scoring",
+			"commandcenter": "Command Center",
+			"automations": "Automations",
+			"vendorcomparison": "Vendor Comparison",
 			"audittrail": "Audit Trail",
 			"reports": "Reports",
+			"exportcenter": "Export Center",
 			"settings": "Settings",
 			"support": "Support"
 		},
