@@ -67,11 +67,7 @@ import {
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { cn } from "@/lib/utils";
 
-function AccountStatusPill({
-	status,
-}: {
-	status: VendorAccountRow["status"];
-}) {
+function AccountStatusPill({ status }: { status: VendorAccountRow["status"] }) {
 	if (status === "healthy") {
 		return (
 			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
@@ -234,9 +230,7 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 			errors,
 			errorPct: total ? ((errors / total) * 100).toFixed(1) : "0",
 			filesToday,
-			lastFile: last
-				? `${last.lastFileReceived.split(",")[0]}, 6:00 AM`
-				: "—",
+			lastFile: last ? `${last.lastFileReceived.split(",")[0]}, 6:00 AM` : "—",
 			lastType: last?.lastFileType.includes("Eligibility")
 				? "Eligibility (834)"
 				: (last?.lastFileType ?? "—"),
@@ -338,9 +332,7 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 			)
 		);
 		toast.success(
-			nextActive
-				? `${account.name} activated.`
-				: `${account.name} deactivated.`
+			nextActive ? `${account.name} activated.` : `${account.name} deactivated.`
 		);
 	}
 
@@ -536,10 +528,7 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 								<TableHead rowSpan={2} className="align-bottom">
 									Last File Received
 								</TableHead>
-								<TableHead
-									rowSpan={2}
-									className="pr-3 text-right align-bottom"
-								>
+								<TableHead rowSpan={2} className="pr-3 text-right align-bottom">
 									Actions
 								</TableHead>
 							</TableRow>
@@ -691,7 +680,9 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 															</div>
 															<div className="flex flex-wrap items-center gap-4 text-xs">
 																<div>
-																	<p className="text-muted-foreground">Status</p>
+																	<p className="text-muted-foreground">
+																		Status
+																	</p>
 																	<p className="font-medium capitalize">
 																		{account.status}
 																	</p>
@@ -1049,13 +1040,13 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{(
-											["healthy", "warning", "error", "inactive"] as const
-										).map((status) => (
-											<SelectItem key={status} value={status}>
-												{status}
-											</SelectItem>
-										))}
+										{(["healthy", "warning", "error", "inactive"] as const).map(
+											(status) => (
+												<SelectItem key={status} value={status}>
+													{status}
+												</SelectItem>
+											)
+										)}
 									</SelectContent>
 								</Select>
 							</div>

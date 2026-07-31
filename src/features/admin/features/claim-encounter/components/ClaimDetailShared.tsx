@@ -12,8 +12,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	formatCurrency,
 	type ClaimLine,
+	formatCurrency,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -110,9 +110,7 @@ export function ClaimsTable({
 										<TableHead>Control / Trace ID</TableHead>
 									</>
 								)}
-								{mode === "response" ? (
-									<TableHead>Trace ID</TableHead>
-								) : null}
+								{mode === "response" ? <TableHead>Trace ID</TableHead> : null}
 							</TableRow>
 						</TableHeader>
 						<TableBody>

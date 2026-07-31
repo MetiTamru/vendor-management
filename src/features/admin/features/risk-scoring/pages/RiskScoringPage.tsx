@@ -37,10 +37,10 @@ import {
 	VENDOR_DIRECTORY,
 	VENDOR_INTEGRATION,
 	VENDOR_TREND_BY_ID,
+	type VendorListHealth,
 	getVendorIntegration,
 	runBucket,
 	runsForVendor,
-	type VendorListHealth,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -94,10 +94,7 @@ function computeRiskScore(input: {
 			100,
 			Math.max(
 				0,
-				healthRisk * 0.35 +
-					alertRisk * 0.25 +
-					runRisk * 0.25 +
-					slaRisk * 0.15
+				healthRisk * 0.35 + alertRisk * 0.25 + runRisk * 0.25 + slaRisk * 0.15
 			)
 		)
 	);
@@ -204,7 +201,9 @@ function buildRiskRows(program: ProgramFileType): RiskRow[] {
 					run.vendor.toLowerCase().startsWith(vendor.name.toLowerCase()))
 		);
 		const runs = mappedRuns.length > 0 ? mappedRuns : nameMatchedRuns;
-		const failedRuns = runs.filter((r) => runBucket(r.status) === "failed").length;
+		const failedRuns = runs.filter(
+			(r) => runBucket(r.status) === "failed"
+		).length;
 		const warningRuns = runs.filter(
 			(r) => runBucket(r.status) === "warning"
 		).length;
@@ -243,10 +242,7 @@ export function RiskScoringPage() {
 	const [search, setSearch] = useState("");
 	const [riskFilter, setRiskFilter] = useState("all");
 
-	const rows = useMemo(
-		() => buildRiskRows(programFilter),
-		[programFilter]
-	);
+	const rows = useMemo(() => buildRiskRows(programFilter), [programFilter]);
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();

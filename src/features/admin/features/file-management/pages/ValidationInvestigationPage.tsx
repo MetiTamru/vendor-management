@@ -14,8 +14,8 @@ import {
 	FileDown,
 	FileText,
 	Info,
-	MessageSquarePlus,
 	ListOrdered,
+	MessageSquarePlus,
 	MinusCircle,
 	ScrollText,
 	User,
@@ -578,12 +578,7 @@ export function ValidationInvestigationPage() {
 							<ScrollText className="mr-1.5 size-3.5" />
 							Download Log
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs"
-							asChild
-						>
+						<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
 							<Link href={`/admin/file-monitoring/${run.id}/processing-logs`}>
 								<ListOrdered className="mr-1.5 size-3.5" />
 								View Processing Log

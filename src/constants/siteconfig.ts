@@ -219,7 +219,10 @@ export const siteConfig = {
 		},
 	},
 	/** @deprecated Prefer getModuleSidebarNav(moduleId) — kept for breadcrumb lookups */
-	sidebarNav: [...vendorManagementNav, ...claimEncounterNav] as SidebarNavItem[],
+	sidebarNav: [
+		...vendorManagementNav,
+		...claimEncounterNav,
+	] as SidebarNavItem[],
 	settings: {
 		themeToggle: true,
 		languageSelector: true,

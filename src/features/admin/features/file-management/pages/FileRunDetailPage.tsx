@@ -811,7 +811,9 @@ export function FileRunDetailPage() {
 							Download Original File
 						</Button>
 						<Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-							<Link href={`/admin/file-monitoring/${selected.id}/processing-logs`}>
+							<Link
+								href={`/admin/file-monitoring/${selected.id}/processing-logs`}
+							>
 								<ScrollText className="mr-1.5 size-3.5" />
 								Download Log
 							</Link>

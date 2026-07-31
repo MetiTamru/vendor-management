@@ -109,7 +109,9 @@ const ACTION_TYPES = [
 
 export function AutomationsPage() {
 	const [rules, setRules] = useState<AutomationRule[]>(INITIAL_RULES);
-	const [builderTrigger, setBuilderTrigger] = useState<string>(TRIGGER_TYPES[0]);
+	const [builderTrigger, setBuilderTrigger] = useState<string>(
+		TRIGGER_TYPES[0]
+	);
 	const [builderAction, setBuilderAction] = useState<string>(ACTION_TYPES[0]);
 	const [builderThreshold, setBuilderThreshold] = useState("500");
 
@@ -119,7 +121,8 @@ export function AutomationsPage() {
 		const runsToday = rules
 			.filter((rule) => rule.lastRun.toLowerCase().includes("today"))
 			.reduce((sum, rule) => sum + Math.min(rule.runsCount, 24), 0);
-		const failures = rules.filter((rule) => rule.status === "paused").length + 2;
+		const failures =
+			rules.filter((rule) => rule.status === "paused").length + 2;
 		return { active, paused, runsToday, failures };
 	}, [rules]);
 
@@ -159,10 +162,9 @@ export function AutomationsPage() {
 			id: `rule-${Date.now()}`,
 			name,
 			trigger: builderTrigger,
-			action:
-				builderAction.includes("threshold")
-					? `${builderAction} ($${builderThreshold})`
-					: builderAction,
+			action: builderAction.includes("threshold")
+				? `${builderAction} ($${builderThreshold})`
+				: builderAction,
 			status: "paused",
 			lastRun: "Never",
 			runsCount: 0,
@@ -256,7 +258,10 @@ export function AutomationsPage() {
 
 			<div className="grid gap-3">
 				{rules.map((rule) => (
-					<Card key={rule.id} className="gap-0 border-border/50 bg-card/70 py-0">
+					<Card
+						key={rule.id}
+						className="gap-0 border-border/50 bg-card/70 py-0"
+					>
 						<CardContent className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex min-w-0 items-start gap-3">
 								<div
@@ -284,9 +289,7 @@ export function AutomationsPage() {
 										</span>
 									</div>
 									<p className="text-sm text-muted-foreground">
-										<span className="font-medium text-foreground/80">
-											When
-										</span>{" "}
+										<span className="font-medium text-foreground/80">When</span>{" "}
 										{rule.trigger}
 										<span className="mx-1.5 text-border">·</span>
 										<span className="font-medium text-foreground/80">

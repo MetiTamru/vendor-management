@@ -40,10 +40,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	displayClaimStatus,
-	filesForProgram,
 	type ClaimFileStatus,
 	type ClaimVendorFile,
+	displayClaimStatus,
+	filesForProgram,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -74,11 +74,17 @@ type KpiItem = {
 
 function statusBadge(status: ClaimFileStatus) {
 	const tone: Record<ClaimFileStatus, string> = {
-		accepted: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+		accepted:
+			"bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
 		rejected: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
-		pending: "bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200",
-		partial: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-		exception: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
+		pending:
+			"bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200",
+		partial:
+			"bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+		exception:
+			"bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
+		paid: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+		denied: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
 	};
 	return (
 		<span
@@ -414,12 +420,24 @@ export function ClaimVendorFilePage({ direction, title, description }: Props) {
 							<Table className="table-fixed w-full">
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
-										<TableHead className="w-[34%] pl-3 sm:pl-4">Vendor</TableHead>
-										<TableHead className="w-[11%] px-1 text-right">Exp</TableHead>
-										<TableHead className="w-[11%] px-1 text-right">Acc</TableHead>
-										<TableHead className="w-[11%] px-1 text-right">Rej</TableHead>
-										<TableHead className="w-[11%] px-1 text-right">Pend</TableHead>
-										<TableHead className="w-[22%] pr-3 sm:pr-4">Health</TableHead>
+										<TableHead className="w-[34%] pl-3 sm:pl-4">
+											Vendor
+										</TableHead>
+										<TableHead className="w-[11%] px-1 text-right">
+											Exp
+										</TableHead>
+										<TableHead className="w-[11%] px-1 text-right">
+											Acc
+										</TableHead>
+										<TableHead className="w-[11%] px-1 text-right">
+											Rej
+										</TableHead>
+										<TableHead className="w-[11%] px-1 text-right">
+											Pend
+										</TableHead>
+										<TableHead className="w-[22%] pr-3 sm:pr-4">
+											Health
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -592,7 +610,9 @@ function FileActivityTable({
 								<TableHead className="text-right">Records</TableHead>
 								<TableHead className="text-right">Accepted</TableHead>
 								<TableHead className="text-right">Rejected</TableHead>
-								<TableHead className="pr-4 text-right sm:pr-6">Actions</TableHead>
+								<TableHead className="pr-4 text-right sm:pr-6">
+									Actions
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>

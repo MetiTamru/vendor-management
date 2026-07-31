@@ -2556,9 +2556,7 @@ export const FILE_RUNS: FileRun[] = RAW_FILE_RUNS.map((run, index) => {
 	};
 	return {
 		...withProgram,
-		issues: withProgram.issues.map((issue) =>
-			enrichIssue(withProgram, issue)
-		),
+		issues: withProgram.issues.map((issue) => enrichIssue(withProgram, issue)),
 	};
 });
 

@@ -92,17 +92,12 @@ export function buildAuditActivities(options?: {
 	count?: number;
 }): AuditActivity[] {
 	const count = options?.count ?? (options?.vendorId ? 48 : 128);
-	const actions: AuditActionType[] = [
-		"Updated",
-		"Created",
-		"Deleted",
-		"Login",
-	];
+	const actions: AuditActionType[] = ["Updated", "Created", "Deleted", "Login"];
 
 	return Array.from({ length: count }, (_, index) => {
 		const action = actions[index % actions.length]!;
 		const modules = MODULE_BY_ACTION[action];
-		const module = modules[index % modules.length]!;
+		const auditModule = modules[index % modules.length]!;
 		const detailsList = DETAIL_TEMPLATES[action];
 		const details = detailsList[index % detailsList.length]!;
 		const user =
@@ -116,7 +111,7 @@ export function buildAuditActivities(options?: {
 			at: formatAuditDate(date),
 			user,
 			action,
-			module,
+			module: auditModule,
 			details: options?.vendorName
 				? details
 				: index % 4 === 0

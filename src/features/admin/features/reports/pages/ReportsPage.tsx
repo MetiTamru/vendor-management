@@ -337,9 +337,7 @@ export function ReportsPage() {
 			<div className="grid gap-4 xl:grid-cols-2">
 				<Card className="bg-card/70">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-base">
-							File processing volume
-						</CardTitle>
+						<CardTitle className="text-base">File processing volume</CardTitle>
 					</CardHeader>
 					<CardContent className="h-72">
 						<ResponsiveContainer width="100%" height="100%">
@@ -408,7 +406,9 @@ export function ReportsPage() {
 									axisLine={false}
 									tickFormatter={(v) => `${v}%`}
 								/>
-								<Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
+								<Tooltip
+									formatter={(value) => `${Number(value).toFixed(1)}%`}
+								/>
 								<Area
 									type="monotone"
 									dataKey="attainment"

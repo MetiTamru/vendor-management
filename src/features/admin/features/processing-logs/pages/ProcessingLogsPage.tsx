@@ -537,7 +537,10 @@ export function ProcessingLogsPage() {
 							File Monitoring
 						</Link>
 						<span className="text-muted-foreground">&gt;</span>
-						<Link href="/admin/file-monitoring/select" className="hover:underline">
+						<Link
+							href="/admin/file-monitoring/select"
+							className="hover:underline"
+						>
 							Select
 						</Link>
 						<span className="text-muted-foreground">&gt;</span>

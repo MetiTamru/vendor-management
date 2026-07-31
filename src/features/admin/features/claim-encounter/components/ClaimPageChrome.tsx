@@ -1,7 +1,8 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+
+import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,9 @@ export function ClaimPageHeader({
 	return (
 		<div className="flex flex-wrap items-start justify-between gap-2">
 			<div>
-				<h1 className="text-lg font-medium tracking-tight sm:text-xl">{title}</h1>
+				<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+					{title}
+				</h1>
 				<p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
 			</div>
 			{actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}

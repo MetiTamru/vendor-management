@@ -41,10 +41,10 @@ import {
 	ClaimPageHeader,
 } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import {
+	type ClaimFileStatus,
 	displayClaimStatus,
 	exportRowsAsCsv,
 	responsesForProgram,
-	type ClaimFileStatus,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -55,10 +55,14 @@ function statusBadge(status: ClaimFileStatus) {
 		accepted:
 			"bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
 		rejected: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
-		pending: "bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200",
-		partial: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+		pending:
+			"bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200",
+		partial:
+			"bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
 		exception:
 			"bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
+		paid: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+		denied: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
 	};
 	return (
 		<span

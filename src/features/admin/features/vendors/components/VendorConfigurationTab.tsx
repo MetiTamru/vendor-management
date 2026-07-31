@@ -175,7 +175,11 @@ export function VendorConfigurationTab({
 	];
 
 	const connectionFields = [
-		{ label: "SFTP Host", value: connectionHost || connection.host, icon: Server },
+		{
+			label: "SFTP Host",
+			value: connectionHost || connection.host,
+			icon: Server,
+		},
 		{ label: "Port", value: String(connection.port) },
 		{ label: "Username", value: connection.username },
 		{ label: "Authentication", value: connection.authMethod, icon: KeyRound },
@@ -194,8 +198,7 @@ export function VendorConfigurationTab({
 		{
 			label: "Test Connection",
 			value: connection.testConnection,
-			tone:
-				connection.testConnection === "Successful" ? "success" : "danger",
+			tone: connection.testConnection === "Successful" ? "success" : "danger",
 		},
 		{ label: "Connection Name", value: connection.connectionName },
 	] as const;
@@ -269,9 +272,7 @@ export function VendorConfigurationTab({
 								frequency: draft.frequency,
 								status: draft.status,
 								nextRun:
-									draft.frequency === "Weekly"
-										? "Mon, 6:00 AM"
-										: job.nextRun,
+									draft.frequency === "Weekly" ? "Mon, 6:00 AM" : job.nextRun,
 							}
 						: job
 				)
@@ -313,9 +314,7 @@ export function VendorConfigurationTab({
 		const removed = jobs.find((job) => job.id === deleteJobId);
 		setJobs((prev) => prev.filter((job) => job.id !== deleteJobId));
 		setDeleteJobId(null);
-		toast.success(
-			removed ? `Deleted “${removed.name}”.` : "Job deleted."
-		);
+		toast.success(removed ? `Deleted “${removed.name}”.` : "Job deleted.");
 	}
 
 	function saveConnectionHost() {
@@ -481,9 +480,7 @@ export function VendorConfigurationTab({
 				>
 					<div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/50 px-4 py-3">
 						<div>
-							<h3 className="text-sm font-medium">
-								Step 2: Job Configuration
-							</h3>
+							<h3 className="text-sm font-medium">Step 2: Job Configuration</h3>
 							<p className="mt-0.5 text-xs text-muted-foreground">
 								Define processing jobs, mappings, schedules, alerts, and
 								encryption.
@@ -1119,9 +1116,7 @@ export function VendorConfigurationTab({
 										<p className="text-[11px] text-muted-foreground">
 											Last file received
 										</p>
-										<p className="font-medium">
-											{dialogJob.lastFileReceived}
-										</p>
+										<p className="font-medium">{dialogJob.lastFileReceived}</p>
 									</div>
 									<div>
 										<p className="text-[11px] text-muted-foreground">Job ID</p>

@@ -153,44 +153,47 @@ export function AcceptanceAnalyticsPage() {
 			: 0;
 
 		const byVendor = Array.from(
-			filteredRows.reduce((map, file) => {
-				const current = map.get(file.vendor) ?? {
-					vendor: file.vendor,
-					files: 0,
-					submitted: 0,
-					accepted: 0,
-					rejected: 0,
-					partial: 0,
-					paid: 0,
-					responseSum: 0,
-					responseCount: 0,
-				};
-				current.files += 1;
-				current.submitted += file.submitted;
-				current.accepted += file.accepted;
-				current.rejected += file.rejected;
-				current.partial += file.partial;
-				current.paid += file.paid;
-				if (file.avgResponseMinutes != null) {
-					current.responseSum += file.avgResponseMinutes;
-					current.responseCount += 1;
-				}
-				map.set(file.vendor, current);
-				return map;
-			}, new Map<
-				string,
-				{
-					vendor: string;
-					files: number;
-					submitted: number;
-					accepted: number;
-					rejected: number;
-					partial: number;
-					paid: number;
-					responseSum: number;
-					responseCount: number;
-				}
-			>())
+			filteredRows.reduce(
+				(map, file) => {
+					const current = map.get(file.vendor) ?? {
+						vendor: file.vendor,
+						files: 0,
+						submitted: 0,
+						accepted: 0,
+						rejected: 0,
+						partial: 0,
+						paid: 0,
+						responseSum: 0,
+						responseCount: 0,
+					};
+					current.files += 1;
+					current.submitted += file.submitted;
+					current.accepted += file.accepted;
+					current.rejected += file.rejected;
+					current.partial += file.partial;
+					current.paid += file.paid;
+					if (file.avgResponseMinutes != null) {
+						current.responseSum += file.avgResponseMinutes;
+						current.responseCount += 1;
+					}
+					map.set(file.vendor, current);
+					return map;
+				},
+				new Map<
+					string,
+					{
+						vendor: string;
+						files: number;
+						submitted: number;
+						accepted: number;
+						rejected: number;
+						partial: number;
+						paid: number;
+						responseSum: number;
+						responseCount: number;
+					}
+				>()
+			)
 		)
 			.map(([, row]) => ({
 				...row,
@@ -222,7 +225,13 @@ export function AcceptanceAnalyticsPage() {
 
 		const dailyMap = new Map<
 			string,
-			{ date: string; accepted: number; rejected: number; partial: number; submitted: number }
+			{
+				date: string;
+				accepted: number;
+				rejected: number;
+				partial: number;
+				submitted: number;
+			}
 		>();
 		for (const file of filteredRows) {
 			const date = file.receivedAt.slice(0, 10);
@@ -248,13 +257,34 @@ export function AcceptanceAnalyticsPage() {
 			}));
 
 		const statusPie = [
-			{ name: "Accepted", value: filteredRows.filter((f) => f.status === "accepted").length },
-			{ name: "Partial", value: filteredRows.filter((f) => f.status === "partial").length },
-			{ name: "Rejected", value: filteredRows.filter((f) => f.status === "rejected").length },
-			{ name: "Exception", value: filteredRows.filter((f) => f.status === "exception").length },
-			{ name: "Pending", value: filteredRows.filter((f) => f.status === "pending").length },
-			{ name: "Paid", value: filteredRows.filter((f) => f.status === "paid").length },
-			{ name: "Denied", value: filteredRows.filter((f) => f.status === "denied").length },
+			{
+				name: "Accepted",
+				value: filteredRows.filter((f) => f.status === "accepted").length,
+			},
+			{
+				name: "Partial",
+				value: filteredRows.filter((f) => f.status === "partial").length,
+			},
+			{
+				name: "Rejected",
+				value: filteredRows.filter((f) => f.status === "rejected").length,
+			},
+			{
+				name: "Exception",
+				value: filteredRows.filter((f) => f.status === "exception").length,
+			},
+			{
+				name: "Pending",
+				value: filteredRows.filter((f) => f.status === "pending").length,
+			},
+			{
+				name: "Paid",
+				value: filteredRows.filter((f) => f.status === "paid").length,
+			},
+			{
+				name: "Denied",
+				value: filteredRows.filter((f) => f.status === "denied").length,
+			},
 		].filter((d) => d.value > 0);
 
 		const outcomeVolume = [
@@ -289,10 +319,7 @@ export function AcceptanceAnalyticsPage() {
 					current.count += 1;
 					map.set(e.code, current);
 					return map;
-				}, new Map<
-					string,
-					{ code: string; count: number; severity: string; sample: string }
-				>())
+				}, new Map<string, { code: string; count: number; severity: string; sample: string }>())
 		)
 			.map(([, row]) => row)
 			.sort((a, b) => b.count - a.count)
@@ -555,10 +582,7 @@ export function AcceptanceAnalyticsPage() {
 					return (
 						<div
 							key={insight.title}
-							className={cn(
-								"rounded-lg border px-3 py-2.5",
-								insight.tone
-							)}
+							className={cn("rounded-lg border px-3 py-2.5", insight.tone)}
 						>
 							<div className="flex items-center gap-1.5">
 								<Icon className="size-3.5 shrink-0 opacity-80" />
@@ -610,13 +634,37 @@ export function AcceptanceAnalyticsPage() {
 							<ResponsiveContainer width="100%" height="100%">
 								<AreaChart data={analytics.dailyTrend}>
 									<defs>
-										<linearGradient id="aa-accepted" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="#13446c" stopOpacity={0.35} />
-											<stop offset="95%" stopColor="#13446c" stopOpacity={0.02} />
+										<linearGradient
+											id="aa-accepted"
+											x1="0"
+											y1="0"
+											x2="0"
+											y2="1"
+										>
+											<stop
+												offset="5%"
+												stopColor="#13446c"
+												stopOpacity={0.35}
+											/>
+											<stop
+												offset="95%"
+												stopColor="#13446c"
+												stopOpacity={0.02}
+											/>
 										</linearGradient>
-										<linearGradient id="aa-rejected" x1="0" y1="0" x2="0" y2="1">
+										<linearGradient
+											id="aa-rejected"
+											x1="0"
+											y1="0"
+											x2="0"
+											y2="1"
+										>
 											<stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-											<stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
+											<stop
+												offset="95%"
+												stopColor="#ef4444"
+												stopOpacity={0.02}
+											/>
 										</linearGradient>
 									</defs>
 									<CartesianGrid
@@ -678,9 +726,7 @@ export function AcceptanceAnalyticsPage() {
 
 				<Card className="min-w-0 gap-1 bg-card/70 py-2 xl:col-span-2">
 					<CardHeader className="px-3 pb-0.5 pt-0">
-						<CardTitle className="text-sm font-medium">
-							Outcome mix
-						</CardTitle>
+						<CardTitle className="text-sm font-medium">Outcome mix</CardTitle>
 						<p className="text-[11px] text-muted-foreground">
 							Claim-level disposition of submitted volume
 						</p>
@@ -930,7 +976,9 @@ export function AcceptanceAnalyticsPage() {
 								</p>
 								<div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
 									<div className="rounded-md bg-primary/10 px-1 py-1">
-										<p className="text-[10px] text-muted-foreground">Accepted</p>
+										<p className="text-[10px] text-muted-foreground">
+											Accepted
+										</p>
 										<p className="text-xs font-semibold tabular-nums text-primary">
 											{formatCount(row.accepted)}
 										</p>
@@ -942,7 +990,9 @@ export function AcceptanceAnalyticsPage() {
 										</p>
 									</div>
 									<div className="rounded-md bg-red-500/10 px-1 py-1">
-										<p className="text-[10px] text-muted-foreground">Rejected</p>
+										<p className="text-[10px] text-muted-foreground">
+											Rejected
+										</p>
 										<p className="text-xs font-semibold tabular-nums text-red-700">
 											{formatCount(row.rejected)}
 										</p>
@@ -981,7 +1031,9 @@ export function AcceptanceAnalyticsPage() {
 									</span>
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center justify-between gap-2">
-											<p className="font-mono text-xs font-semibold">{row.code}</p>
+											<p className="font-mono text-xs font-semibold">
+												{row.code}
+											</p>
 											<span
 												className={cn(
 													"rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize",
@@ -1011,7 +1063,8 @@ export function AcceptanceAnalyticsPage() {
 						Vendor acceptance leaderboard
 					</CardTitle>
 					<p className="text-[11px] text-muted-foreground">
-						Ranked by acceptance rate · includes rejection load and response time
+						Ranked by acceptance rate · includes rejection load and response
+						time
 					</p>
 				</CardHeader>
 				<CardContent className="px-0 pb-0">

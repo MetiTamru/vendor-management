@@ -13,11 +13,7 @@ type Props = {
 	title?: string;
 };
 
-export default function Logo({
-	className,
-	showWordmark = true,
-	title,
-}: Props) {
+export default function Logo({ className, showWordmark = true, title }: Props) {
 	const wordmark = title ?? siteConfig.name;
 
 	return (

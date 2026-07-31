@@ -358,7 +358,9 @@ export function FileManagementPage() {
 	);
 	const types = Array.from(
 		new Set(
-			FILE_RUNS.filter((f) => f.program === programFilter).map((f) => f.fileType)
+			FILE_RUNS.filter((f) => f.program === programFilter).map(
+				(f) => f.fileType
+			)
 		)
 	);
 

@@ -109,8 +109,7 @@ export function ErrorManagementPage() {
 	const pageSize = 12;
 
 	const rows = useMemo(
-		() =>
-			buildErrors(FILE_RUNS.filter((run) => run.program === programFilter)),
+		() => buildErrors(FILE_RUNS.filter((run) => run.program === programFilter)),
 		[programFilter]
 	);
 

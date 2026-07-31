@@ -629,9 +629,7 @@ export function VendorDetailPage() {
 														</DropdownMenuTrigger>
 														<DropdownMenuContent align="end">
 															<DropdownMenuItem asChild>
-																<Link
-																	href={`/admin/file-monitoring/${run.id}`}
-																>
+																<Link href={`/admin/file-monitoring/${run.id}`}>
 																	View run detail
 																</Link>
 															</DropdownMenuItem>
@@ -821,15 +819,9 @@ export function VendorDetailPage() {
 											: "None linked",
 									],
 									["SLA", `${integration.slaPercent.toFixed(2)}%`],
-									[
-										"File Transmission Method",
-										integration.transmissionMethod,
-									],
+									["File Transmission Method", integration.transmissionMethod],
 									["Encryption", integration.encryption],
-									[
-										"File Format",
-										integration.fileFormats.join(", ") || "—",
-									],
+									["File Format", integration.fileFormats.join(", ") || "—"],
 									["Communication Protocol", integration.protocol],
 									["Trading Partner ID", integration.tradingPartnerId],
 									["Time Zone", integration.timezone],

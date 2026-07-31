@@ -30,9 +30,9 @@ import {
 	VENDOR_ALERTS,
 	VENDOR_DIRECTORY,
 	VENDOR_INTEGRATION,
-	getVendorIntegration,
 	type VendorDirectoryRow,
 	type VendorListHealth,
+	getVendorIntegration,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -138,9 +138,7 @@ function normalizeRadar(selected: CompareMetrics[]) {
 		},
 		{
 			metric: "Job volume",
-			values: selected.map((v) =>
-				Math.round((v.activeJobs / maxJobs) * 100)
-			),
+			values: selected.map((v) => Math.round((v.activeJobs / maxJobs) * 100)),
 		},
 		{
 			metric: "Accounts",
@@ -181,9 +179,9 @@ export function VendorComparisonPage({
 	const [search, setSearch] = useState("");
 	const [selectedIds, setSelectedIds] = useState<string[]>(() => {
 		if (defaultSelectedIds?.length) {
-			return defaultSelectedIds.filter((id) =>
-				vendors.some((v) => v.id === id)
-			).slice(0, MAX_COMPARE);
+			return defaultSelectedIds
+				.filter((id) => vendors.some((v) => v.id === id))
+				.slice(0, MAX_COMPARE);
 		}
 		return vendors.slice(0, 3).map((v) => v.id);
 	});

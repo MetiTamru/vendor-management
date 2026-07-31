@@ -48,17 +48,17 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	ClaimPageHeader,
 	type ClaimKpiItem,
+	ClaimPageHeader,
 } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import {
-	filesForProgram,
-	formatCount,
+	type ClaimResponse,
 	downloadTextFile,
 	exportRowsAsCsv,
+	filesForProgram,
+	formatCount,
 	responsesForProgram,
 	vendorPerformanceForProgram,
-	type ClaimResponse,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -92,7 +92,9 @@ function matchesResponseTab(row: ClaimResponse, tab: ResponseTab) {
 
 function acceptancePct(row: ClaimResponse) {
 	if (!row.totalSubmitted) return 0;
-	return Math.round(((row.paid + row.partialPaid) / row.totalSubmitted) * 1000) / 10;
+	return (
+		Math.round(((row.paid + row.partialPaid) / row.totalSubmitted) * 1000) / 10
+	);
 }
 
 type ClaimDirectionFileDashboardProps = {
@@ -128,7 +130,8 @@ export function ClaimDirectionFileDashboard({
 	);
 
 	const fileTypes = useMemo(
-		() => Array.from(new Set(directionFiles.map((r) => r.fileTypeLabel))).sort(),
+		() =>
+			Array.from(new Set(directionFiles.map((r) => r.fileTypeLabel))).sort(),
 		[directionFiles]
 	);
 
@@ -165,7 +168,9 @@ export function ClaimDirectionFileDashboard({
 	const filesLabel = isInbound
 		? "Total Vendor Files Received"
 		: "Total Vendor Files Sent";
-	const filesHint = isInbound ? "Inbound vendor files" : "Outbound vendor files";
+	const filesHint = isInbound
+		? "Inbound vendor files"
+		: "Outbound vendor files";
 	const submittedHint = isInbound
 		? "Submitted to Gainwell"
 		: "Sent to trading partners";
@@ -179,7 +184,9 @@ export function ClaimDirectionFileDashboard({
 	const analyticsScope = isInbound
 		? "Core rate formulas used across inbound claim monitoring."
 		: "Core rate formulas used across outbound claim monitoring.";
-	const level1RecordsLabel = isInbound ? "Records received" : "Records prepared";
+	const level1RecordsLabel = isInbound
+		? "Records received"
+		: "Records prepared";
 	const level1SubmitLabel = isInbound ? "Sent to Gainwell" : "Sent outbound";
 	const level1AcceptedLabel = isInbound
 		? "Accepted by Gainwell"
@@ -512,9 +519,7 @@ export function ClaimDirectionFileDashboard({
 			{/* Vendor Summary Table */}
 			<Card className="min-w-0 gap-1 bg-card/70 py-2">
 				<CardHeader className="px-3 pb-0.5 pt-0">
-					<CardTitle className="text-sm font-medium">
-						Vendor summary
-					</CardTitle>
+					<CardTitle className="text-sm font-medium">Vendor summary</CardTitle>
 					<p className="text-xs text-muted-foreground">
 						Quick view of which vendor is having problems.
 					</p>
@@ -526,14 +531,18 @@ export function ClaimDirectionFileDashboard({
 								<TableRow className="hover:bg-transparent">
 									<TableHead className="pl-3 sm:pl-4">Vendor</TableHead>
 									<TableHead>File Type</TableHead>
-									<TableHead className="text-right">{filesColumnLabel}</TableHead>
+									<TableHead className="text-right">
+										{filesColumnLabel}
+									</TableHead>
 									<TableHead className="text-right">
 										{submittedColumnLabel}
 									</TableHead>
 									<TableHead className="text-right">Accepted</TableHead>
 									<TableHead className="text-right">Rejected</TableHead>
 									<TableHead className="text-right">Partial</TableHead>
-									<TableHead className="pr-3 sm:pr-4">Acceptance Rate</TableHead>
+									<TableHead className="pr-3 sm:pr-4">
+										Acceptance Rate
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -907,9 +916,7 @@ export function ClaimDirectionFileDashboard({
 					<CardTitle className="text-sm font-medium">
 						E. Acceptance analytics
 					</CardTitle>
-					<p className="text-xs text-muted-foreground">
-						{analyticsScope}
-					</p>
+					<p className="text-xs text-muted-foreground">{analyticsScope}</p>
 				</CardHeader>
 				<CardContent className="space-y-2">
 					{[

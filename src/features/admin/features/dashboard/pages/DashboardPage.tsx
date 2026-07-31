@@ -365,47 +365,47 @@ export function DashboardPage() {
 
 			{/* KPI cards */}
 			{isEnabled("kpis") ? (
-			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				{kpis.map((k) => {
-					const Icon = k.icon;
-					return (
-						<div key={k.label} className="rounded-lg bg-card p-2.5">
-							<div className="flex items-start justify-between gap-2">
-								<div className="min-w-0">
-									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-										{k.label}
-									</p>
-									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
-										{k.value}
-										{k.pct ? (
-											<span className="ml-1 text-sm font-medium text-muted-foreground">
-												({k.pct})
-											</span>
-										) : null}
-									</p>
-									{k.label === "Total Files" ? (
-										<p className="mt-1 text-xs text-muted-foreground">
-											{k.hint}
+				<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+					{kpis.map((k) => {
+						const Icon = k.icon;
+						return (
+							<div key={k.label} className="rounded-lg bg-card p-2.5">
+								<div className="flex items-start justify-between gap-2">
+									<div className="min-w-0">
+										<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+											{k.label}
 										</p>
-									) : (
-										<p className="mt-1 text-xs font-medium text-primary">
-											{k.hint}
+										<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
+											{k.value}
+											{k.pct ? (
+												<span className="ml-1 text-sm font-medium text-muted-foreground">
+													({k.pct})
+												</span>
+											) : null}
 										</p>
-									)}
-								</div>
-								<div
-									className={cn(
-										"flex size-8 shrink-0 items-center justify-center rounded-lg",
-										k.tone
-									)}
-								>
-									<Icon className="size-4" />
+										{k.label === "Total Files" ? (
+											<p className="mt-1 text-xs text-muted-foreground">
+												{k.hint}
+											</p>
+										) : (
+											<p className="mt-1 text-xs font-medium text-primary">
+												{k.hint}
+											</p>
+										)}
+									</div>
+									<div
+										className={cn(
+											"flex size-8 shrink-0 items-center justify-center rounded-lg",
+											k.tone
+										)}
+									>
+										<Icon className="size-4" />
+									</div>
 								</div>
 							</div>
-						</div>
-					);
-				})}
-			</div>
+						);
+					})}
+				</div>
 			) : null}
 
 			{/* Main + right column — 2/3 table, 1/3 sidebar */}
@@ -413,402 +413,404 @@ export function DashboardPage() {
 				<div className="min-w-0 space-y-2 xl:col-span-2">
 					{/* Recent File Activity */}
 					{isEnabled("recentActivity") ? (
-					<Card className="min-w-0 bg-card">
-						<CardHeader className="px-3 pb-1 pt-3">
-							<CardTitle className="text-sm font-medium">
-								Recent File Activity
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="px-0 pb-0">
-							<ScrollArea className="w-full border-t border-border/50">
-								<div className="min-w-[920px]">
-									<Table className="w-full text-xs">
-										<TableHeader>
-											<TableRow className="hover:bg-transparent">
-												<TableHead className="h-8 w-[17%] px-2 pl-3 font-normal">
-													Vendor
-												</TableHead>
-												<TableHead className="h-8 w-[11%] px-1 font-normal">
-													Type
-												</TableHead>
-												<TableHead className="h-8 w-[18%] px-1 font-normal">
-													File Name
-												</TableHead>
-												<TableHead className="h-8 w-[8%] px-1 font-normal">
-													Freq
-												</TableHead>
-												<TableHead className="h-8 w-[11%] px-1 font-normal">
-													Status
-												</TableHead>
-												<TableHead className="h-8 w-[7%] px-1 text-right font-normal">
-													Rec
-												</TableHead>
-												<TableHead className="h-8 w-[7%] px-1 font-normal">
-													Recv
-												</TableHead>
-												<TableHead className="h-8 w-[7%] px-1 font-normal">
-													Proc
-												</TableHead>
-												<TableHead className="h-8 w-[7%] px-1 font-normal">
-													Dur
-												</TableHead>
-												<TableHead className="h-8 w-[7%] px-1 pr-3 text-right font-normal">
-													Act
-												</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{filteredRuns.slice(0, 8).map((run) => {
-												const vid = vendorIdForRun(run);
-												return (
-													<TableRow
-														key={run.id}
-														className="cursor-pointer hover:bg-muted/30"
-														onClick={() =>
-															router.push(
-																vid ? `/admin/vendors/${vid}` : "/admin/vendors"
-															)
-														}
-													>
-														<TableCell className="px-2 py-1.5 pl-3">
-															<div className="flex min-w-0 items-center gap-1.5">
-																<VendorAvatarBadge
-																	vendorId={vid}
-																	vendorName={run.vendor}
-																	size="sm"
-																/>
-																{vid ? (
-																	<Link
-																		href={`/admin/vendors/${vid}`}
-																		className="truncate font-medium hover:underline"
-																		onClick={(e) => e.stopPropagation()}
-																	>
-																		{run.vendor}
-																	</Link>
-																) : (
-																	<span className="truncate font-medium">
-																		{run.vendor}
-																	</span>
-																)}
-															</div>
-														</TableCell>
-														<TableCell className="truncate px-1 py-1.5">
-															{run.fileType}
-														</TableCell>
-														<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
-															{run.fileName ?? "—"}
-														</TableCell>
-														<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
-															{run.frequency}
-														</TableCell>
-														<TableCell className="px-1 py-1.5">
-															<ActivityStatus status={run.status} />
-														</TableCell>
-														<TableCell className="px-1 py-1.5 text-right tabular-nums">
-															{run.records ?? "—"}
-														</TableCell>
-														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-															{run.receivedAt?.slice(11, 16) ?? "—"}
-														</TableCell>
-														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-															{run.completedAt?.slice(11, 16) ?? "—"}
-														</TableCell>
-														<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
-															{run.duration ?? "—"}
-														</TableCell>
-														<TableCell
-															className="px-1 py-1.5 pr-3 text-right"
-															onClick={(e) => e.stopPropagation()}
+						<Card className="min-w-0 bg-card">
+							<CardHeader className="px-3 pb-1 pt-3">
+								<CardTitle className="text-sm font-medium">
+									Recent File Activity
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="px-0 pb-0">
+								<ScrollArea className="w-full border-t border-border/50">
+									<div className="min-w-[920px]">
+										<Table className="w-full text-xs">
+											<TableHeader>
+												<TableRow className="hover:bg-transparent">
+													<TableHead className="h-8 w-[17%] px-2 pl-3 font-normal">
+														Vendor
+													</TableHead>
+													<TableHead className="h-8 w-[11%] px-1 font-normal">
+														Type
+													</TableHead>
+													<TableHead className="h-8 w-[18%] px-1 font-normal">
+														File Name
+													</TableHead>
+													<TableHead className="h-8 w-[8%] px-1 font-normal">
+														Freq
+													</TableHead>
+													<TableHead className="h-8 w-[11%] px-1 font-normal">
+														Status
+													</TableHead>
+													<TableHead className="h-8 w-[7%] px-1 text-right font-normal">
+														Rec
+													</TableHead>
+													<TableHead className="h-8 w-[7%] px-1 font-normal">
+														Recv
+													</TableHead>
+													<TableHead className="h-8 w-[7%] px-1 font-normal">
+														Proc
+													</TableHead>
+													<TableHead className="h-8 w-[7%] px-1 font-normal">
+														Dur
+													</TableHead>
+													<TableHead className="h-8 w-[7%] px-1 pr-3 text-right font-normal">
+														Act
+													</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												{filteredRuns.slice(0, 8).map((run) => {
+													const vid = vendorIdForRun(run);
+													return (
+														<TableRow
+															key={run.id}
+															className="cursor-pointer hover:bg-muted/30"
+															onClick={() =>
+																router.push(
+																	vid
+																		? `/admin/vendors/${vid}`
+																		: "/admin/vendors"
+																)
+															}
 														>
-															<DropdownMenu>
-																<DropdownMenuTrigger asChild>
-																	<Button
-																		variant="ghost"
-																		size="icon"
-																		className="size-7"
-																	>
-																		<MoreHorizontal className="size-3.5" />
-																	</Button>
-																</DropdownMenuTrigger>
-																<DropdownMenuContent align="end">
-																	<DropdownMenuItem asChild>
-																		<Link
-																			href={`/admin/file-monitoring/${run.id}`}
-																		>
-																			View run detail
-																		</Link>
-																	</DropdownMenuItem>
+															<TableCell className="px-2 py-1.5 pl-3">
+																<div className="flex min-w-0 items-center gap-1.5">
+																	<VendorAvatarBadge
+																		vendorId={vid}
+																		vendorName={run.vendor}
+																		size="sm"
+																	/>
 																	{vid ? (
+																		<Link
+																			href={`/admin/vendors/${vid}`}
+																			className="truncate font-medium hover:underline"
+																			onClick={(e) => e.stopPropagation()}
+																		>
+																			{run.vendor}
+																		</Link>
+																	) : (
+																		<span className="truncate font-medium">
+																			{run.vendor}
+																		</span>
+																	)}
+																</div>
+															</TableCell>
+															<TableCell className="truncate px-1 py-1.5">
+																{run.fileType}
+															</TableCell>
+															<TableCell className="truncate px-1 py-1.5 font-mono text-[10px]">
+																{run.fileName ?? "—"}
+															</TableCell>
+															<TableCell className="truncate px-1 py-1.5 text-muted-foreground">
+																{run.frequency}
+															</TableCell>
+															<TableCell className="px-1 py-1.5">
+																<ActivityStatus status={run.status} />
+															</TableCell>
+															<TableCell className="px-1 py-1.5 text-right tabular-nums">
+																{run.records ?? "—"}
+															</TableCell>
+															<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+																{run.receivedAt?.slice(11, 16) ?? "—"}
+															</TableCell>
+															<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+																{run.completedAt?.slice(11, 16) ?? "—"}
+															</TableCell>
+															<TableCell className="px-1 py-1.5 tabular-nums text-muted-foreground">
+																{run.duration ?? "—"}
+															</TableCell>
+															<TableCell
+																className="px-1 py-1.5 pr-3 text-right"
+																onClick={(e) => e.stopPropagation()}
+															>
+																<DropdownMenu>
+																	<DropdownMenuTrigger asChild>
+																		<Button
+																			variant="ghost"
+																			size="icon"
+																			className="size-7"
+																		>
+																			<MoreHorizontal className="size-3.5" />
+																		</Button>
+																	</DropdownMenuTrigger>
+																	<DropdownMenuContent align="end">
 																		<DropdownMenuItem asChild>
-																			<Link href={`/admin/vendors/${vid}`}>
-																				Open vendor
+																			<Link
+																				href={`/admin/file-monitoring/${run.id}`}
+																			>
+																				View run detail
 																			</Link>
 																		</DropdownMenuItem>
-																	) : null}
-																</DropdownMenuContent>
-															</DropdownMenu>
-														</TableCell>
-													</TableRow>
-												);
-											})}
-										</TableBody>
-									</Table>
+																		{vid ? (
+																			<DropdownMenuItem asChild>
+																				<Link href={`/admin/vendors/${vid}`}>
+																					Open vendor
+																				</Link>
+																			</DropdownMenuItem>
+																		) : null}
+																	</DropdownMenuContent>
+																</DropdownMenu>
+															</TableCell>
+														</TableRow>
+													);
+												})}
+											</TableBody>
+										</Table>
+									</div>
+								</ScrollArea>
+								<div className="border-t border-border/50 px-3 py-2">
+									<Link
+										href="/admin/file-monitoring"
+										className="text-sm font-medium text-primary hover:underline"
+									>
+										View All File Activity →
+									</Link>
 								</div>
-							</ScrollArea>
-							<div className="border-t border-border/50 px-3 py-2">
-								<Link
-									href="/admin/file-monitoring"
-									className="text-sm font-medium text-primary hover:underline"
-								>
-									View All File Activity →
-								</Link>
-							</div>
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
 					) : null}
 
 					{/* Processing Trend */}
 					{isEnabled("processingTrend") ? (
-					<Card className="bg-card">
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<div>
-								<CardTitle className="text-sm font-medium">
-									Processing Trend
-								</CardTitle>
-							</div>
-							<Select value={trendRange} onValueChange={setTrendRange}>
-								<SelectTrigger className="h-8 w-[130px]">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="7">Last 7 Days</SelectItem>
-									<SelectItem value="14">Last 14 Days</SelectItem>
-									<SelectItem value="30">Last 30 Days</SelectItem>
-								</SelectContent>
-							</Select>
-						</CardHeader>
-						<CardContent className="h-64 pt-2">
-							<ResponsiveContainer width="100%" height="100%">
-								<LineChart data={PROCESSING_TREND}>
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-border"
-									/>
-									<XAxis dataKey="day" tick={{ fontSize: 11 }} />
-									<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-									<Tooltip />
-									<Legend />
-									<Line
-										type="monotone"
-										dataKey="successful"
-										name="Successful"
-										stroke="#059669"
-										strokeWidth={2}
-										dot={false}
-									/>
-									<Line
-										type="monotone"
-										dataKey="warnings"
-										name="Warnings"
-										stroke="#d97706"
-										strokeWidth={2}
-										dot={false}
-									/>
-									<Line
-										type="monotone"
-										dataKey="failed"
-										name="Failed"
-										stroke="#dc2626"
-										strokeWidth={2}
-										dot={false}
-									/>
-								</LineChart>
-							</ResponsiveContainer>
-						</CardContent>
-					</Card>
+						<Card className="bg-card">
+							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+								<div>
+									<CardTitle className="text-sm font-medium">
+										Processing Trend
+									</CardTitle>
+								</div>
+								<Select value={trendRange} onValueChange={setTrendRange}>
+									<SelectTrigger className="h-8 w-[130px]">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="7">Last 7 Days</SelectItem>
+										<SelectItem value="14">Last 14 Days</SelectItem>
+										<SelectItem value="30">Last 30 Days</SelectItem>
+									</SelectContent>
+								</Select>
+							</CardHeader>
+							<CardContent className="h-64 pt-2">
+								<ResponsiveContainer width="100%" height="100%">
+									<LineChart data={PROCESSING_TREND}>
+										<CartesianGrid
+											strokeDasharray="3 3"
+											className="stroke-border"
+										/>
+										<XAxis dataKey="day" tick={{ fontSize: 11 }} />
+										<YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+										<Tooltip />
+										<Legend />
+										<Line
+											type="monotone"
+											dataKey="successful"
+											name="Successful"
+											stroke="#059669"
+											strokeWidth={2}
+											dot={false}
+										/>
+										<Line
+											type="monotone"
+											dataKey="warnings"
+											name="Warnings"
+											stroke="#d97706"
+											strokeWidth={2}
+											dot={false}
+										/>
+										<Line
+											type="monotone"
+											dataKey="failed"
+											name="Failed"
+											stroke="#dc2626"
+											strokeWidth={2}
+											dot={false}
+										/>
+									</LineChart>
+								</ResponsiveContainer>
+							</CardContent>
+						</Card>
 					) : null}
 				</div>
 
 				{/* Right column — 1/3 */}
 				<div className="min-w-0 space-y-2 xl:col-span-1">
 					{isEnabled("vendorStatus") ? (
-					<Card className="bg-card">
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium">
-								Vendor Status Overview
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="flex items-center gap-3">
-								<div className="relative h-32 w-32 shrink-0">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={vendorStatusPie}
-												dataKey="value"
-												nameKey="name"
-												innerRadius={38}
-												outerRadius={58}
-												paddingAngle={2}
-											>
-												{vendorStatusPie.map((entry) => (
-													<Cell key={entry.name} fill={entry.color} />
-												))}
-											</Pie>
-											<Tooltip />
-										</PieChart>
-									</ResponsiveContainer>
-									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-										<span className="text-base font-medium tabular-nums leading-none">
-											{vendors.length}
-										</span>
-										<span className="mt-1 text-[10px] font-medium text-muted-foreground">
-											Vendors
-										</span>
+						<Card className="bg-card">
+							<CardHeader className="pb-2">
+								<CardTitle className="text-sm font-medium">
+									Vendor Status Overview
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="flex items-center gap-3">
+									<div className="relative h-32 w-32 shrink-0">
+										<ResponsiveContainer width="100%" height="100%">
+											<PieChart>
+												<Pie
+													data={vendorStatusPie}
+													dataKey="value"
+													nameKey="name"
+													innerRadius={38}
+													outerRadius={58}
+													paddingAngle={2}
+												>
+													{vendorStatusPie.map((entry) => (
+														<Cell key={entry.name} fill={entry.color} />
+													))}
+												</Pie>
+												<Tooltip />
+											</PieChart>
+										</ResponsiveContainer>
+										<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+											<span className="text-base font-medium tabular-nums leading-none">
+												{vendors.length}
+											</span>
+											<span className="mt-1 text-[10px] font-medium text-muted-foreground">
+												Vendors
+											</span>
+										</div>
 									</div>
+									<ul className="min-w-0 flex-1 space-y-2.5">
+										{vendorStatusPie.map((item) => (
+											<li
+												key={item.name}
+												className="flex items-center justify-between gap-3 text-sm"
+											>
+												<span className="flex min-w-0 items-center gap-2">
+													<span
+														className="size-2.5 shrink-0 rounded-full"
+														style={{ backgroundColor: item.color }}
+													/>
+													<span className="truncate font-medium">
+														{item.name}
+													</span>
+												</span>
+												<span className="shrink-0 tabular-nums">
+													{item.value}{" "}
+													<span className="text-xs text-muted-foreground">
+														({item.pct}%)
+													</span>
+												</span>
+											</li>
+										))}
+									</ul>
 								</div>
-								<ul className="min-w-0 flex-1 space-y-2.5">
-									{vendorStatusPie.map((item) => (
-										<li
-											key={item.name}
-											className="flex items-center justify-between gap-3 text-sm"
-										>
-											<span className="flex min-w-0 items-center gap-2">
-												<span
-													className="size-2.5 shrink-0 rounded-full"
-													style={{ backgroundColor: item.color }}
-												/>
-												<span className="truncate font-medium">
-													{item.name}
-												</span>
-											</span>
-											<span className="shrink-0 tabular-nums">
-												{item.value}{" "}
-												<span className="text-xs text-muted-foreground">
-													({item.pct}%)
-												</span>
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
-							<div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
-								<span>All vendors</span>
-								<span>Last 24 hours</span>
-							</div>
-						</CardContent>
-					</Card>
+								<div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
+									<span>All vendors</span>
+									<span>Last 24 hours</span>
+								</div>
+							</CardContent>
+						</Card>
 					) : null}
 
 					{isEnabled("alerts") ? (
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium">Alerts</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-2">
-							{VENDOR_ALERTS.slice(0, 5).map((alert) => (
+						<Card className="bg-card">
+							<CardHeader className="pb-3">
+								<CardTitle className="text-sm font-medium">Alerts</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-2">
+								{VENDOR_ALERTS.slice(0, 5).map((alert) => (
+									<Link
+										key={alert.id}
+										href={
+											alert.runId
+												? `/admin/file-monitoring/${alert.runId}`
+												: `/admin/vendors/${alert.vendorId}`
+										}
+										className={cn(
+											"flex items-start gap-2.5 rounded-lg border p-3 transition-colors",
+											alert.severity === "error" &&
+												"border-red-200 bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/30",
+											alert.severity === "warning" &&
+												"border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/30",
+											alert.severity !== "error" &&
+												alert.severity !== "warning" &&
+												"border-sky-200 bg-sky-50 hover:border-sky-300 dark:border-sky-900/50 dark:bg-sky-950/30"
+										)}
+									>
+										{alert.severity === "error" ? (
+											<XCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
+										) : alert.severity === "warning" ? (
+											<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+										) : (
+											<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
+										)}
+										<div className="min-w-0 flex-1">
+											<p className="text-sm font-medium leading-snug">
+												{alert.title}
+											</p>
+											<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+												{alert.vendorName}
+											</p>
+											<p className="mt-1 text-[11px] text-muted-foreground">
+												{alert.when}
+											</p>
+										</div>
+									</Link>
+								))}
 								<Link
-									key={alert.id}
-									href={
-										alert.runId
-											? `/admin/file-monitoring/${alert.runId}`
-											: `/admin/vendors/${alert.vendorId}`
-									}
-									className={cn(
-										"flex items-start gap-2.5 rounded-lg border p-3 transition-colors",
-										alert.severity === "error" &&
-											"border-red-200 bg-red-50 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/30",
-										alert.severity === "warning" &&
-											"border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/30",
-										alert.severity !== "error" &&
-											alert.severity !== "warning" &&
-											"border-sky-200 bg-sky-50 hover:border-sky-300 dark:border-sky-900/50 dark:bg-sky-950/30"
-									)}
+									href="/admin/file-monitoring"
+									className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
 								>
-									{alert.severity === "error" ? (
-										<XCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
-									) : alert.severity === "warning" ? (
-										<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-									) : (
-										<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
-									)}
-									<div className="min-w-0 flex-1">
-										<p className="text-sm font-medium leading-snug">
-											{alert.title}
-										</p>
-										<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-											{alert.vendorName}
-										</p>
-										<p className="mt-1 text-[11px] text-muted-foreground">
-											{alert.when}
-										</p>
-									</div>
+									View All Alerts →
 								</Link>
-							))}
-							<Link
-								href="/admin/file-monitoring"
-								className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-							>
-								View All Alerts →
-							</Link>
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
 					) : null}
 
 					{isEnabled("quickActions") ? (
-					<Card className="bg-card">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium">
-								Quick Actions
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-								{[
-									{
-										label: "Add Vendor",
-										href: "/admin/vendors/create",
-										icon: Plus,
-									},
-									{
-										label: "Upload File",
-										href: "/admin/file-monitoring",
-										icon: Upload,
-									},
-									{
-										label: "View Schedules",
-										href: "/admin/schedules",
-										icon: Calendar,
-									},
-									{
-										label: "Vendor Reports",
-										href: "/admin/reports",
-										icon: FileText,
-									},
-									{
-										label: "Audit Trail",
-										href: "/admin/audit-trail",
-										icon: ScrollText,
-									},
-								].map((action) => {
-									const Icon = action.icon;
-									return (
-										<Button
-											key={action.label}
-											variant="outline"
-											className="h-auto flex-col gap-1.5 px-2 py-3 text-xs"
-											asChild
-										>
-											<Link href={action.href}>
-												<Icon className="size-4 text-primary" />
-												{action.label}
-											</Link>
-										</Button>
-									);
-								})}
-							</div>
-						</CardContent>
-					</Card>
+						<Card className="bg-card">
+							<CardHeader className="pb-3">
+								<CardTitle className="text-sm font-medium">
+									Quick Actions
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+									{[
+										{
+											label: "Add Vendor",
+											href: "/admin/vendors/create",
+											icon: Plus,
+										},
+										{
+											label: "Upload File",
+											href: "/admin/file-monitoring",
+											icon: Upload,
+										},
+										{
+											label: "View Schedules",
+											href: "/admin/schedules",
+											icon: Calendar,
+										},
+										{
+											label: "Vendor Reports",
+											href: "/admin/reports",
+											icon: FileText,
+										},
+										{
+											label: "Audit Trail",
+											href: "/admin/audit-trail",
+											icon: ScrollText,
+										},
+									].map((action) => {
+										const Icon = action.icon;
+										return (
+											<Button
+												key={action.label}
+												variant="outline"
+												className="h-auto flex-col gap-1.5 px-2 py-3 text-xs"
+												asChild
+											>
+												<Link href={action.href}>
+													<Icon className="size-4 text-primary" />
+													{action.label}
+												</Link>
+											</Button>
+										);
+									})}
+								</div>
+							</CardContent>
+						</Card>
 					) : null}
 
 					{isEnabled("expiringDocs") ? (
@@ -822,7 +824,12 @@ export function DashboardPage() {
 								<p className="text-muted-foreground">
 									Track certifications and insurance nearing expiry.
 								</p>
-								<Button variant="outline" size="sm" className="h-8 w-full" asChild>
+								<Button
+									variant="outline"
+									size="sm"
+									className="h-8 w-full"
+									asChild
+								>
 									<Link href="/admin/documents">Open documents</Link>
 								</Button>
 							</CardContent>
@@ -840,7 +847,12 @@ export function DashboardPage() {
 								<p className="text-muted-foreground">
 									Live operational events across file runs and alerts.
 								</p>
-								<Button variant="outline" size="sm" className="h-8 w-full" asChild>
+								<Button
+									variant="outline"
+									size="sm"
+									className="h-8 w-full"
+									asChild
+								>
 									<Link href="/admin/activity">Open command center</Link>
 								</Button>
 							</CardContent>

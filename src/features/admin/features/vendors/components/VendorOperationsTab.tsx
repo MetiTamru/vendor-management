@@ -43,10 +43,10 @@ import {
 } from "@/components/ui/table";
 import type { FileRun } from "@/features/admin/features/file-management/mock-data";
 import {
+	VENDOR_ALERTS,
 	type VendorAlert,
 	type VendorConfigJob,
 	type VendorIntegrationProfile,
-	VENDOR_ALERTS,
 	getVendorConfigJobs,
 	runBucket,
 	summarizeRuns,
@@ -248,9 +248,7 @@ export function VendorOperationsTab({
 	function toggleJob(job: VendorConfigJob) {
 		const next = job.status === "Active" ? "Paused" : "Active";
 		setJobs((prev) =>
-			prev.map((row) =>
-				row.id === job.id ? { ...row, status: next } : row
-			)
+			prev.map((row) => (row.id === job.id ? { ...row, status: next } : row))
 		);
 		toast.success(
 			next === "Paused" ? `Paused “${job.name}”.` : `Resumed “${job.name}”.`
@@ -416,10 +414,7 @@ export function VendorOperationsTab({
 									<SelectItem value="pending">Pending</SelectItem>
 								</SelectContent>
 							</Select>
-							<Select
-								value={fileTypeFilter}
-								onValueChange={setFileTypeFilter}
-							>
+							<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
 								<SelectTrigger className="h-9 w-[170px]">
 									<SelectValue placeholder="EDI type" />
 								</SelectTrigger>
@@ -588,15 +583,9 @@ export function VendorOperationsTab({
 																		"Valid / Rejected",
 																		`${run.recordsValid ?? 0} / ${run.recordsRejected ?? 0}`,
 																	],
-																	[
-																		"Warnings",
-																		String(run.warningCount ?? 0),
-																	],
+																	["Warnings", String(run.warningCount ?? 0)],
 																	["Source", run.sourcePath ?? "—"],
-																	[
-																		"Destination",
-																		run.destinationPath ?? "—",
-																	],
+																	["Destination", run.destinationPath ?? "—"],
 																].map(([label, value]) => (
 																	<div key={label}>
 																		<p className="text-[11px] text-muted-foreground">
@@ -720,9 +709,7 @@ export function VendorOperationsTab({
 														>
 															View details
 														</DropdownMenuItem>
-														<DropdownMenuItem
-															onSelect={() => toggleJob(job)}
-														>
+														<DropdownMenuItem onSelect={() => toggleJob(job)}>
 															{job.status === "Active"
 																? "Pause job"
 																: "Resume job"}

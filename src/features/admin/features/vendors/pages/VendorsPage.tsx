@@ -143,7 +143,8 @@ export function VendorsPage() {
 			if (status !== "all" && row.status !== status) return false;
 			if (vendorType !== "all" && row.vendorType !== vendorType) return false;
 			if (health !== "all" && row.health !== health) return false;
-			if (activity === "today" && row.lastFileRelative !== "Today") return false;
+			if (activity === "today" && row.lastFileRelative !== "Today")
+				return false;
 			if (activity === "yesterday" && row.lastFileRelative !== "Yesterday")
 				return false;
 			if (
@@ -538,10 +539,7 @@ export function VendorsPage() {
 											aria-label="Select all vendors on page"
 										/>
 									</TableHead>
-									<SortableHead
-										label="Vendor"
-										column="name"
-									/>
+									<SortableHead label="Vendor" column="name" />
 									<SortableHead label="Vendor ID" column="vendorCode" />
 									<SortableHead label="Vendor Type" column="vendorType" />
 									<SortableHead label="Status" column="status" />
@@ -591,7 +589,9 @@ export function VendorsPage() {
 										<TableCell className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
 											{row.vendorCode}
 										</TableCell>
-										<TableCell className="px-2 py-1.5">{row.vendorType}</TableCell>
+										<TableCell className="px-2 py-1.5">
+											{row.vendorType}
+										</TableCell>
 										<TableCell className="px-2 py-1.5">
 											<StatusPill status={row.status} />
 										</TableCell>

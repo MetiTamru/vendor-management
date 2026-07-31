@@ -111,7 +111,10 @@ function initials(name: string) {
 		.join("");
 }
 
-function buildNotes(vendorName: string, integrationNotes?: string): VendorNote[] {
+function buildNotes(
+	vendorName: string,
+	integrationNotes?: string
+): VendorNote[] {
 	const short = vendorName.split(/\s+/).slice(0, 2).join(" ") || "Vendor";
 	const seed: Array<Omit<VendorNote, "id" | "activity">> = [
 		{
@@ -391,7 +394,9 @@ export function VendorNotesTab({
 	function closeNote(noteId: string) {
 		setNotes((prev) =>
 			prev.map((note) =>
-				note.id === noteId ? { ...note, status: "Closed", actionItem: false } : note
+				note.id === noteId
+					? { ...note, status: "Closed", actionItem: false }
+					: note
 			)
 		);
 		toast.success("Note closed.");
@@ -878,7 +883,9 @@ export function VendorNotesTab({
 															<DropdownMenuContent align="end">
 																<DropdownMenuItem
 																	onSelect={() =>
-																		toast.message("Attachment preview opens here")
+																		toast.message(
+																			"Attachment preview opens here"
+																		)
 																	}
 																>
 																	Preview

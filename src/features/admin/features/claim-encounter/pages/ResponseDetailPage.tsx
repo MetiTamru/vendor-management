@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import {
 	ArrowLeft,
@@ -45,7 +45,12 @@ import {
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-const TABS = ["Overview", "Claim Outcomes", "Remittance", "Linked Batch"] as const;
+const TABS = [
+	"Overview",
+	"Claim Outcomes",
+	"Remittance",
+	"Linked Batch",
+] as const;
 type Tab = (typeof TABS)[number];
 
 export function ResponseDetailPage() {
@@ -177,7 +182,8 @@ export function ResponseDetailPage() {
 								</span>
 							</div>
 							<p className="mt-0.5 text-xs text-muted-foreground">
-								What Gainwell returned for {response.vendor} · {response.program}
+								What Gainwell returned for {response.vendor} ·{" "}
+								{response.program}
 							</p>
 						</div>
 					</div>
@@ -344,7 +350,9 @@ export function ResponseDetailPage() {
 								<p className="mt-1 text-xl font-medium tabular-nums">
 									{card.value}
 								</p>
-								<p className="mt-1 text-xs text-muted-foreground">{card.hint}</p>
+								<p className="mt-1 text-xs text-muted-foreground">
+									{card.hint}
+								</p>
 							</div>
 						))}
 					</div>
@@ -375,10 +383,12 @@ export function ResponseDetailPage() {
 			{tab === "Remittance" && (
 				<div className="space-y-3">
 					<div className="rounded-lg border border-border/50 bg-card/70 p-4">
-						<h2 className="text-sm font-medium">Remittance / acknowledgement</h2>
+						<h2 className="text-sm font-medium">
+							Remittance / acknowledgement
+						</h2>
 						<p className="mt-1 text-xs text-muted-foreground">
-							Payment and adjustment detail derived from the {response.responseType}{" "}
-							response.
+							Payment and adjustment detail derived from the{" "}
+							{response.responseType} response.
 						</p>
 						<div className="mt-3 grid gap-2 sm:grid-cols-3">
 							<div className="rounded-md border border-border/50 p-2.5">
@@ -422,7 +432,9 @@ export function ResponseDetailPage() {
 										className="flex items-center justify-between gap-3 border-b border-border/40 py-2 text-sm last:border-b-0"
 									>
 										<div className="min-w-0">
-											<p className="font-mono text-xs font-medium">{c.claimId}</p>
+											<p className="font-mono text-xs font-medium">
+												{c.claimId}
+											</p>
 											<p className="truncate text-xs text-muted-foreground">
 												{c.provider} · {c.memberId}
 											</p>

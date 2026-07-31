@@ -247,12 +247,7 @@ export function ActivityFeedPage() {
 							Paused
 						</Badge>
 					)}
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-9"
-						onClick={refresh}
-					>
+					<Button variant="outline" size="sm" className="h-9" onClick={refresh}>
 						<RefreshCw className="mr-1.5 size-3.5" />
 						Refresh
 					</Button>

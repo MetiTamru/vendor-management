@@ -156,46 +156,47 @@ export const CLAIM_VENDOR_FILES: ClaimVendorFile[] = seedFiles();
 
 export const CLAIM_RESPONSES: ClaimResponse[] = CLAIM_VENDOR_FILES.map(
 	(file, i) => {
-	const pending = Math.max(
-		0,
-		file.submitted - file.paid - file.rejected - file.partial
-	);
-	const tabStatus: ClaimFileStatus =
-		i % 6 === 0
-			? "exception"
-			: i % 5 === 0
-				? "pending"
-				: i % 4 === 0
-					? "partial"
-					: i % 3 === 0
-						? "rejected"
-						: "paid";
-	return {
-		id: `cr-${i + 1}`,
-		responseId: `RESP-${file.fileId}`,
-		responseFile: `GW_RSP_${file.vendor.toUpperCase()}_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}.edi`,
-		submissionBatch: `GW_SUB_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}`,
-		relatedFileId: file.fileId,
-		vendor: file.vendor,
-		program: file.program,
-		claimType: file.fileTypeLabel,
-		responseType: (["277CA", "999", "TA1", "835"] as const)[i % 4]!,
-		receivedAt: file.receivedAt,
-		totalSubmitted: file.submitted,
-		paid: file.paid,
-		rejected: file.rejected,
-		partialPaid: file.partial,
-		pending,
-		acceptedCount: file.accepted,
-		rejectedCount: file.rejected,
-		status: tabStatus,
-		summary:
-			file.rejected > 0
-				? `${file.rejected} claims rejected; ${file.accepted} accepted`
-				: `All ${file.accepted} claims accepted`,
-		direction: file.direction,
-	};
-});
+		const pending = Math.max(
+			0,
+			file.submitted - file.paid - file.rejected - file.partial
+		);
+		const tabStatus: ClaimFileStatus =
+			i % 6 === 0
+				? "exception"
+				: i % 5 === 0
+					? "pending"
+					: i % 4 === 0
+						? "partial"
+						: i % 3 === 0
+							? "rejected"
+							: "paid";
+		return {
+			id: `cr-${i + 1}`,
+			responseId: `RESP-${file.fileId}`,
+			responseFile: `GW_RSP_${file.vendor.toUpperCase()}_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}.edi`,
+			submissionBatch: `GW_SUB_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}`,
+			relatedFileId: file.fileId,
+			vendor: file.vendor,
+			program: file.program,
+			claimType: file.fileTypeLabel,
+			responseType: (["277CA", "999", "TA1", "835"] as const)[i % 4]!,
+			receivedAt: file.receivedAt,
+			totalSubmitted: file.submitted,
+			paid: file.paid,
+			rejected: file.rejected,
+			partialPaid: file.partial,
+			pending,
+			acceptedCount: file.accepted,
+			rejectedCount: file.rejected,
+			status: tabStatus,
+			summary:
+				file.rejected > 0
+					? `${file.rejected} claims rejected; ${file.accepted} accepted`
+					: `All ${file.accepted} claims accepted`,
+			direction: file.direction,
+		};
+	}
+);
 
 export const CLAIM_EXCEPTIONS: ClaimException[] = CLAIM_VENDOR_FILES.filter(
 	(f) =>
@@ -312,7 +313,12 @@ export type ClaimLine = {
 	dateOfService: string;
 	amountBilled: number;
 	amountPaid: number;
-	submissionStatus: "submitted" | "accepted" | "rejected" | "partial" | "pending";
+	submissionStatus:
+		| "submitted"
+		| "accepted"
+		| "rejected"
+		| "partial"
+		| "pending";
 	gainwellStatus: "paid" | "rejected" | "partial" | "pending" | "denied";
 	rejectReason: string | null;
 	responseFileName: string;
@@ -471,7 +477,8 @@ export function claimsForBatch(batchId: string) {
 
 export function claimsForResponse(responseId: string) {
 	return CLAIM_LINES.filter(
-		(c) => c.responseId === responseId || c.responseFileName.includes(responseId)
+		(c) =>
+			c.responseId === responseId || c.responseFileName.includes(responseId)
 	);
 }
 
@@ -598,8 +605,7 @@ export function claimVendorsForComparison(program: ProgramFileType) {
 				id: `ce-${row.name.toLowerCase().replace(/\s+/g, "-")}`,
 				name: row.name,
 				mark: row.name.charAt(0).toUpperCase(),
-				avatarBg:
-					CLAIM_COMPARE_AVATARS[index % CLAIM_COMPARE_AVATARS.length]!,
+				avatarBg: CLAIM_COMPARE_AVATARS[index % CLAIM_COMPARE_AVATARS.length]!,
 				health,
 				linkedAccounts: row.files,
 				activeJobs: Math.max(1, Math.round(row.submitted / 2500)),

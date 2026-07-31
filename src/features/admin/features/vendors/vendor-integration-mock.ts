@@ -754,7 +754,10 @@ const LOBS: VendorAccountRow["lineOfBusiness"][] = [
 	"Marketplace",
 ];
 
-function fileStatusFor(seed: number, bias: "good" | "mixed" = "good"): AccountFileStatus {
+function fileStatusFor(
+	seed: number,
+	bias: "good" | "mixed" = "good"
+): AccountFileStatus {
 	const roll = seed % (bias === "good" ? 10 : 6);
 	if (roll === 0) return "none";
 	if (roll === 1 && bias === "mixed") return "warning";
@@ -803,10 +806,7 @@ export function getVendorAccounts(vendorId: string): VendorAccountRow[] {
 						? "Today, 6:42 AM"
 						: index % 3 === 0
 							? "Yesterday, 8:10 PM"
-							: `Today, ${6 + (index % 4)}:${(index * 7) % 60}`.replace(
-									/:(\d)$/,
-									":0$1"
-								) + " AM",
+							: `Today, ${6 + (index % 4)}:${String((index * 7) % 60).padStart(2, "0")} AM`,
 			lastFileType:
 				index % 4 === 0
 					? "Eligibility (834)"

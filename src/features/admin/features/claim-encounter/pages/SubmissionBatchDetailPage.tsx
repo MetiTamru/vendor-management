@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import {
 	ArrowLeft,
@@ -238,7 +238,9 @@ export function SubmissionBatchDetailPage() {
 							<DropdownMenuContent align="end" className="w-52">
 								{response ? (
 									<DropdownMenuItem asChild>
-										<Link href={`/admin/claim-encounter/responses/${response.id}`}>
+										<Link
+											href={`/admin/claim-encounter/responses/${response.id}`}
+										>
 											<ExternalLink className="mr-2 size-3.5" />
 											Open Gainwell response
 										</Link>
@@ -449,7 +451,9 @@ export function SubmissionBatchDetailPage() {
 								/>
 								<div>
 									<p className="text-sm font-medium">{event.title}</p>
-									<p className="text-xs text-muted-foreground">{event.detail}</p>
+									<p className="text-xs text-muted-foreground">
+										{event.detail}
+									</p>
 									<p className="mt-1 text-[11px] tabular-nums text-muted-foreground">
 										{event.at}
 									</p>
@@ -484,7 +488,9 @@ export function SubmissionBatchDetailPage() {
 									</p>
 								</div>
 								<Button asChild size="sm" className="h-8 text-xs">
-									<Link href={`/admin/claim-encounter/responses/${response.id}`}>
+									<Link
+										href={`/admin/claim-encounter/responses/${response.id}`}
+									>
 										Open response detail
 									</Link>
 								</Button>

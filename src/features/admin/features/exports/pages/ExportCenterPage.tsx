@@ -187,9 +187,7 @@ export function ExportCenterPage() {
 		window.setTimeout(() => {
 			setExports((prev) =>
 				prev.map((item) =>
-					item.id === id
-						? { ...item, status: "ready", size: "1.3 MB" }
-						: item
+					item.id === id ? { ...item, status: "ready", size: "1.3 MB" } : item
 				)
 			);
 			toast.success("Export ready for download.");

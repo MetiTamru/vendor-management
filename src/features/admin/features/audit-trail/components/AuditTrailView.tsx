@@ -121,7 +121,9 @@ export function AuditTrailView({
 
 	const modules = useMemo(
 		() =>
-			Array.from(new Set(allRows.map((row) => row.module))).sort() as AuditModule[],
+			Array.from(
+				new Set(allRows.map((row) => row.module))
+			).sort() as AuditModule[],
 		[allRows]
 	);
 
@@ -139,10 +141,7 @@ export function AuditTrailView({
 		});
 	}, [actionFilter, allRows, moduleFilter, search, userFilter]);
 
-	const summary = useMemo(
-		() => summarizeAuditActivities(allRows),
-		[allRows]
-	);
+	const summary = useMemo(() => summarizeAuditActivities(allRows), [allRows]);
 
 	const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
 	const safePage = Math.min(page, pageCount);
@@ -273,7 +272,12 @@ export function AuditTrailView({
 							<SelectContent>
 								<SelectItem value="all">All Actions</SelectItem>
 								{(
-									["Updated", "Created", "Deleted", "Login"] as AuditActionType[]
+									[
+										"Updated",
+										"Created",
+										"Deleted",
+										"Login",
+									] as AuditActionType[]
 								).map((action) => (
 									<SelectItem key={action} value={action}>
 										{action}
