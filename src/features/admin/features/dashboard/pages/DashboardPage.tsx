@@ -73,6 +73,7 @@ import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 import {
 	DASHBOARD_WIDGET_LABELS,
 	type DashboardWidgetId,
@@ -123,26 +124,35 @@ export function DashboardPage() {
 		useDashboardWidgetsStore();
 	const [dateFilter, setDateFilter] = useState("today");
 	const [vendorFilter, setVendorFilter] = useState("all");
-	const [fileTypeFilter, setFileTypeFilter] = useState("all");
+	const [ediTypeFilter, setEdiTypeFilter] = useState("all");
 	const [refreshing, setRefreshing] = useState(false);
 	const [trendRange, setTrendRange] = useState("7");
 	const lastUpdated = "9:28 AM";
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 
 	const filteredRuns = useMemo(() => {
 		return FILE_RUNS.filter((run) => {
+			if (run.program !== programFilter) return false;
 			const vid = vendorIdForRun(run);
 			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
-			if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
+			if (ediTypeFilter !== "all" && run.fileType !== ediTypeFilter)
 				return false;
 			return true;
 		});
-	}, [vendorFilter, fileTypeFilter]);
+	}, [vendorFilter, ediTypeFilter, programFilter]);
 
 	const summary = useMemo(() => summarizeRuns(filteredRuns), [filteredRuns]);
 
 	const fileTypes = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((r) => r.fileType))).sort(),
-		[]
+		() =>
+			Array.from(
+				new Set(
+					FILE_RUNS.filter((r) => r.program === programFilter).map(
+						(r) => r.fileType
+					)
+				)
+			).sort(),
+		[programFilter]
 	);
 
 	const vendorStatusPie = useMemo(() => {
@@ -321,12 +331,12 @@ export function DashboardPage() {
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
+				<Select value={ediTypeFilter} onValueChange={setEdiTypeFilter}>
 					<SelectTrigger className="h-9 w-[200px]">
-						<SelectValue placeholder="All File Types" />
+						<SelectValue placeholder="All EDI Types" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All File Types</SelectItem>
+						<SelectItem value="all">All EDI Types</SelectItem>
 						{fileTypes.map((t) => (
 							<SelectItem key={t} value={t}>
 								{t}

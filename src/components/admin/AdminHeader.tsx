@@ -10,12 +10,24 @@ import LocaleSwitcher from "@/components/shared/DropDown/LocaleSwitcher";
 import { ModeToggle } from "@/components/shared/DropDown/modeToggle";
 import UserAvatar from "@/components/shared/User/userAvater";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { siteConfig } from "@/constants/siteconfig";
+import { getModuleSidebarNav, siteConfig } from "@/constants/siteconfig";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { useRouter } from "@/i18n/navigation";
+import {
+	MODULE_HOME_HREF,
+	useAdminModuleStore,
+} from "@/stores/admin-module-store";
+import type { AdminModuleId, ProgramFileType } from "@/types/UI/system.types";
 
 export function AdminHeader() {
 	const router = useRouter();
@@ -23,12 +35,14 @@ export function AdminHeader() {
 	const { vendors } = useVendorsList();
 	const [query, setQuery] = useState("");
 	const [open, setOpen] = useState(false);
+	const { moduleId, fileType, setModuleId, setFileType } =
+		useAdminModuleStore();
 
 	const results = useMemo(() => {
 		const q = query.trim().toLowerCase();
 		if (!q) return [];
 
-		const navMatches = siteConfig.sidebarNav
+		const navMatches = getModuleSidebarNav(moduleId)
 			.filter((item) => item.href)
 			.map((item) => ({
 				id: `nav-${item.href}`,
@@ -38,17 +52,20 @@ export function AdminHeader() {
 			}))
 			.filter((item) => item.label.toLowerCase().includes(q));
 
-		const vendorMatches = vendors
-			.map((vendor) => ({
-				id: `vendor-${vendor.id}`,
-				label: vendor.tradeName ?? vendor.legalName,
-				subtitle: "Vendor",
-				href: `/admin/vendors/${vendor.id}`,
-			}))
-			.filter((item) => item.label.toLowerCase().includes(q));
+		const vendorMatches =
+			moduleId === "vendor_management"
+				? vendors
+						.map((vendor) => ({
+							id: `vendor-${vendor.id}`,
+							label: vendor.tradeName ?? vendor.legalName,
+							subtitle: "Vendor",
+							href: `/admin/vendors/${vendor.id}`,
+						}))
+						.filter((item) => item.label.toLowerCase().includes(q))
+				: [];
 
 		return [...navMatches, ...vendorMatches].slice(0, 8);
-	}, [query, vendors]);
+	}, [moduleId, query, vendors]);
 
 	function goToResult(href: string) {
 		setOpen(false);
@@ -59,6 +76,12 @@ export function AdminHeader() {
 	function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		if (results[0]) goToResult(results[0].href);
+	}
+
+	function handleModuleChange(value: string) {
+		const next = value as AdminModuleId;
+		setModuleId(next);
+		router.push(MODULE_HOME_HREF[next]);
 	}
 
 	return (
@@ -112,6 +135,38 @@ export function AdminHeader() {
 				) : null}
 			</div>
 			<div className="flex items-center gap-2">
+				<Select value={moduleId} onValueChange={handleModuleChange}>
+					<SelectTrigger
+						aria-label="Module"
+						className="h-9 w-[168px] bg-card text-xs sm:w-[190px] sm:text-sm"
+					>
+						<SelectValue placeholder="Module" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="vendor_management">
+							{siteConfig.modules.vendor_management.label}
+						</SelectItem>
+						<SelectItem value="claim_encounter">
+							{siteConfig.modules.claim_encounter.label}
+						</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select
+					value={fileType}
+					onValueChange={(value) => setFileType(value as ProgramFileType)}
+				>
+					<SelectTrigger
+						aria-label="File Type"
+						className="h-9 w-[108px] bg-card text-xs sm:text-sm"
+					>
+						<SelectValue placeholder="File Type" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="MDH">MDH</SelectItem>
+						<SelectItem value="DHCF">DHCF</SelectItem>
+						<SelectItem value="BHP">BHP</SelectItem>
+					</SelectContent>
+				</Select>
 				<ModeToggle />
 				<LocaleSwitcher />
 				<UserAvatar />

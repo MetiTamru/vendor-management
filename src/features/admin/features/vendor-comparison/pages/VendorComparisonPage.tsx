@@ -14,10 +14,10 @@ import {
 	YAxis,
 } from "recharts";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Table,
 	TableBody,
@@ -41,7 +41,8 @@ const MAX_COMPARE = 4;
 
 const CHART_COLORS = ["#13446c", "#c2410c", "#1d4ed8", "#15803d"] as const;
 
-type CompareMetrics = {
+/** Vendor row used by the reusable comparison view. */
+export type ComparableVendor = {
 	id: string;
 	name: string;
 	mark: string;
@@ -52,7 +53,22 @@ type CompareMetrics = {
 	slaPercent: number;
 	alertsCount: number;
 	lastFileReceived: string;
-	color: string;
+	vendorCode?: string;
+	vendorType?: string;
+};
+
+type CompareMetrics = ComparableVendor & { color: string };
+
+export type VendorComparisonPageProps = {
+	title?: string;
+	description?: string;
+	/** Defaults to vendor-management directory with integration metrics. */
+	vendors?: ComparableVendor[];
+	/** Detail link for a vendor; return null to disable linking. */
+	vendorHref?: (id: string) => string | null;
+	headerActions?: ReactNode;
+	/** Initial selected vendor ids (must exist in `vendors`). */
+	defaultSelectedIds?: string[];
 };
 
 function healthLabel(health: VendorListHealth) {
@@ -73,10 +89,9 @@ function healthScore(health: VendorListHealth) {
 	return 20;
 }
 
-function buildMetrics(
-	vendor: VendorDirectoryRow,
-	color: string
-): CompareMetrics {
+export function comparableFromDirectory(
+	vendor: VendorDirectoryRow
+): ComparableVendor {
 	const integration =
 		VENDOR_INTEGRATION[vendor.id] ?? getVendorIntegration(vendor.id);
 	const alertsCount = Math.max(
@@ -98,8 +113,13 @@ function buildMetrics(
 		slaPercent: integration.slaPercent,
 		alertsCount,
 		lastFileReceived: vendor.lastFileReceived,
-		color,
+		vendorCode: vendor.vendorCode,
+		vendorType: vendor.vendorType,
 	};
+}
+
+export function defaultVendorManagementComparables(): ComparableVendor[] {
+	return VENDOR_DIRECTORY.map(comparableFromDirectory);
 }
 
 function normalizeRadar(selected: CompareMetrics[]) {
@@ -145,36 +165,50 @@ function normalizeRadar(selected: CompareMetrics[]) {
 	});
 }
 
-export function VendorComparisonPage() {
+export function VendorComparisonPage({
+	title = "Vendor Comparison",
+	description = `Select up to ${MAX_COMPARE} vendors for side-by-side operational metrics and a normalized radar view.`,
+	vendors: vendorsProp,
+	vendorHref = (id) => `/admin/vendors/${id}`,
+	headerActions,
+	defaultSelectedIds,
+}: VendorComparisonPageProps = {}) {
+	const vendors = useMemo(
+		() => vendorsProp ?? defaultVendorManagementComparables(),
+		[vendorsProp]
+	);
+
 	const [search, setSearch] = useState("");
-	const [selectedIds, setSelectedIds] = useState<string[]>([
-		"vnd-1",
-		"vnd-2",
-		"vnd-3",
-	]);
+	const [selectedIds, setSelectedIds] = useState<string[]>(() => {
+		if (defaultSelectedIds?.length) {
+			return defaultSelectedIds.filter((id) =>
+				vendors.some((v) => v.id === id)
+			).slice(0, MAX_COMPARE);
+		}
+		return vendors.slice(0, 3).map((v) => v.id);
+	});
 
 	const filteredDirectory = useMemo(() => {
 		const q = search.trim().toLowerCase();
-		if (!q) return VENDOR_DIRECTORY;
-		return VENDOR_DIRECTORY.filter((vendor) =>
+		if (!q) return vendors;
+		return vendors.filter((vendor) =>
 			[vendor.name, vendor.vendorCode, vendor.vendorType]
+				.filter(Boolean)
 				.join(" ")
 				.toLowerCase()
 				.includes(q)
 		);
-	}, [search]);
+	}, [search, vendors]);
 
-	const selected = useMemo(() => {
-		return selectedIds
-			.map((id, index) => {
-				const vendor = VENDOR_DIRECTORY.find((row) => row.id === id);
-				if (!vendor) return null;
-				const color =
-					CHART_COLORS[index % CHART_COLORS.length] ?? CHART_COLORS[0];
-				return buildMetrics(vendor, color);
-			})
-			.filter((row): row is CompareMetrics => row !== null);
-	}, [selectedIds]);
+	const selected = useMemo((): CompareMetrics[] => {
+		return selectedIds.flatMap((id, index) => {
+			const vendor = vendors.find((row) => row.id === id);
+			if (!vendor) return [];
+			const color =
+				CHART_COLORS[index % CHART_COLORS.length] ?? CHART_COLORS[0];
+			return [{ ...vendor, color }];
+		});
+	}, [selectedIds, vendors]);
 
 	const radarData = useMemo(() => normalizeRadar(selected), [selected]);
 
@@ -233,21 +267,13 @@ export function VendorComparisonPage() {
 			<div className="flex flex-wrap items-start justify-between gap-2">
 				<div>
 					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
-						Vendor Comparison
+						{title}
 					</h1>
-					<p className="mt-0.5 text-xs text-muted-foreground">
-						Select up to {MAX_COMPARE} vendors for side-by-side operational
-						metrics and a normalized radar view.
-					</p>
+					<p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<Button asChild size="sm" variant="outline" className="h-9">
-						<Link href="/admin/vendors">Vendors</Link>
-					</Button>
-					<Button asChild size="sm" variant="outline" className="h-9">
-						<Link href="/admin/risk-scoring">Risk Scoring</Link>
-					</Button>
-				</div>
+				{headerActions ? (
+					<div className="flex flex-wrap gap-2">{headerActions}</div>
+				) : null}
 			</div>
 
 			<div className="grid gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -300,42 +326,53 @@ export function VendorComparisonPage() {
 								</button>
 							</div>
 						)}
-						<div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
-							{filteredDirectory.map((vendor) => {
-								const checked = selectedIds.includes(vendor.id);
-								const disabled =
-									!checked && selectedIds.length >= MAX_COMPARE;
-								return (
-									<label
-										key={vendor.id}
-										className={cn(
-											"flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-sm hover:bg-muted/50",
-											checked && "border-border bg-muted/40",
-											disabled && "cursor-not-allowed opacity-50"
-										)}
-									>
-										<Checkbox
-											checked={checked}
-											disabled={disabled}
-											onCheckedChange={() => {
-												if (!disabled || checked) toggleVendor(vendor.id);
-											}}
-										/>
-										<span
+						<ScrollArea
+							className="h-[420px]"
+							scrollbarClassName="w-1.5"
+							thumbClassName="bg-border"
+						>
+							<div className="space-y-1 pr-3">
+								{filteredDirectory.map((vendor) => {
+									const checked = selectedIds.includes(vendor.id);
+									const disabled =
+										!checked && selectedIds.length >= MAX_COMPARE;
+									return (
+										<label
+											key={vendor.id}
 											className={cn(
-												"flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white",
-												vendor.avatarBg
+												"flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-sm hover:bg-muted/50",
+												checked && "border-border bg-muted/40",
+												disabled && "cursor-not-allowed opacity-50"
 											)}
 										>
-											{vendor.mark}
-										</span>
-										<span className="min-w-0 flex-1 truncate">
-											{vendor.name}
-										</span>
-									</label>
-								);
-							})}
-						</div>
+											<Checkbox
+												checked={checked}
+												disabled={disabled}
+												onCheckedChange={() => {
+													if (!disabled || checked) toggleVendor(vendor.id);
+												}}
+											/>
+											<span
+												className={cn(
+													"flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white",
+													vendor.avatarBg
+												)}
+											>
+												{vendor.mark}
+											</span>
+											<span className="min-w-0 flex-1 truncate">
+												{vendor.name}
+											</span>
+										</label>
+									);
+								})}
+								{filteredDirectory.length === 0 ? (
+									<p className="py-8 text-center text-xs text-muted-foreground">
+										No vendors match your search.
+									</p>
+								) : null}
+							</div>
+						</ScrollArea>
 					</CardContent>
 				</Card>
 
@@ -366,26 +403,38 @@ export function VendorComparisonPage() {
 										<TableHeader>
 											<TableRow className="bg-muted/40 hover:bg-muted/40">
 												<TableHead className="pl-4">Metric</TableHead>
-												{selected.map((vendor) => (
-													<TableHead key={vendor.id} className="min-w-[140px]">
-														<div className="flex items-center gap-2">
-															<span
-																className={cn(
-																	"flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white",
-																	vendor.avatarBg
+												{selected.map((vendor) => {
+													const href = vendorHref(vendor.id);
+													return (
+														<TableHead
+															key={vendor.id}
+															className="min-w-[140px]"
+														>
+															<div className="flex items-center gap-2">
+																<span
+																	className={cn(
+																		"flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white",
+																		vendor.avatarBg
+																	)}
+																>
+																	{vendor.mark}
+																</span>
+																{href ? (
+																	<Link
+																		href={href}
+																		className="truncate font-medium hover:underline"
+																	>
+																		{vendor.name}
+																	</Link>
+																) : (
+																	<span className="truncate font-medium">
+																		{vendor.name}
+																	</span>
 																)}
-															>
-																{vendor.mark}
-															</span>
-															<Link
-																href={`/admin/vendors/${vendor.id}`}
-																className="truncate font-medium hover:underline"
-															>
-																{vendor.name}
-															</Link>
-														</div>
-													</TableHead>
-												))}
+															</div>
+														</TableHead>
+													);
+												})}
 											</TableRow>
 										</TableHeader>
 										<TableBody>

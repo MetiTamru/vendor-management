@@ -5,15 +5,20 @@ import {
 	BarChart3,
 	Bell,
 	CalendarDays,
+	CheckCircle2,
 	ClipboardList,
 	Download,
+	FileInput,
+	FileOutput,
 	FileSearch,
+	FileWarning,
 	FolderKanban,
 	Gauge,
 	GitCompare,
 	History,
 	Home,
 	LifeBuoy,
+	MessageSquareReply,
 	Radio,
 	ScrollText,
 	Settings,
@@ -39,9 +44,10 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { siteConfig } from "@/constants/siteconfig";
+import { getModuleSidebarNav, siteConfig } from "@/constants/siteconfig";
 import { Link, usePathname } from "@/i18n/navigation";
 import { usePermissions } from "@/providers/permission-provider";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
@@ -62,6 +68,11 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Reports: BarChart3,
 	"Export Center": Download,
 	Settings: Settings,
+	"Inbound Vendor File": FileInput,
+	"Outbound Vendor File": FileOutput,
+	Responses: MessageSquareReply,
+	"Acceptance Analytics": CheckCircle2,
+	"Exceptions / Rejections": FileWarning,
 };
 
 const SECTION_ORDER = [
@@ -69,6 +80,7 @@ const SECTION_ORDER = [
 	"vendor_management",
 	"operations",
 	"administration",
+	"claim_encounter",
 ] as const;
 
 function isActivePath(pathname: string, href: string) {
@@ -76,24 +88,34 @@ function isActivePath(pathname: string, href: string) {
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function navLabelKey(title: string) {
+	return title.toLowerCase().replace(/[\s/]+/g, "");
+}
+
 export function AdminSidebar() {
 	const pathname = usePathname();
 	const { hasComponentAccess } = usePermissions();
 	const t = useTranslations("Admin");
+	const moduleId = useAdminModuleStore((s) => s.moduleId);
 
-	const visibleNav = siteConfig.sidebarNav.filter((item) => {
+	const visibleNav = getModuleSidebarNav(moduleId).filter((item) => {
 		if (!item.permission) return true;
 		return hasComponentAccess(item.permission);
 	});
+
+	const sections =
+		moduleId === "claim_encounter"
+			? (["claim_encounter"] as const)
+			: SECTION_ORDER.filter((s) => s !== "claim_encounter");
 
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarHeader className="border-b border-sidebar-border px-3 py-3">
 				<Link
-					href="/"
+					href={siteConfig.modules[moduleId].homeHref}
 					className="flex min-w-0 items-center gap-2 outline-none ring-sidebar-ring focus-visible:ring-2"
 				>
-					<Logo />
+					<Logo title={siteConfig.modules[moduleId].label} />
 				</Link>
 			</SidebarHeader>
 			<SidebarContent>
@@ -103,7 +125,7 @@ export function AdminSidebar() {
 					thumbClassName="bg-sidebar-foreground/15 hover:bg-sidebar-foreground/25"
 				>
 					<div className="flex flex-col gap-1 pb-4">
-						{SECTION_ORDER.map((section) => {
+						{sections.map((section) => {
 							const items = visibleNav.filter((i) => i.section === section);
 							if (items.length === 0) return null;
 
@@ -113,7 +135,9 @@ export function AdminSidebar() {
 								<SidebarGroup key={section}>
 									{showLabel ? (
 										<SidebarGroupLabel>
-											{t(`sections.${section}`)}
+											{t.has(`sections.${section}`)
+												? t(`sections.${section}`)
+												: section}
 										</SidebarGroupLabel>
 									) : null}
 									<SidebarGroupContent>
@@ -122,9 +146,7 @@ export function AdminSidebar() {
 												if (!item.href) return null;
 												const Icon = NAV_ICONS[item.title] ?? Home;
 												const active = isActivePath(pathname, item.href);
-												const labelKey = item.title
-													.toLowerCase()
-													.replace(/\s+/g, "");
+												const labelKey = navLabelKey(item.title);
 												const label = t.has(`nav.${labelKey}`)
 													? t(`nav.${labelKey}`)
 													: item.title;
@@ -146,7 +168,9 @@ export function AdminSidebar() {
 											})}
 										</SidebarMenu>
 									</SidebarGroupContent>
-									{section !== "administration" && section !== "top" ? (
+									{section !== "administration" &&
+									section !== "top" &&
+									section !== "claim_encounter" ? (
 										<SidebarSeparator className="mx-2 mt-2" />
 									) : null}
 								</SidebarGroup>

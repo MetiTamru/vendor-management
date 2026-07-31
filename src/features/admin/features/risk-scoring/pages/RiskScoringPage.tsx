@@ -44,6 +44,8 @@ import {
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
 type RiskLevel = "high" | "medium" | "low";
 
@@ -185,7 +187,7 @@ function scoreBarTone(level: RiskLevel) {
 	return "bg-emerald-500";
 }
 
-function buildRiskRows(): RiskRow[] {
+function buildRiskRows(program: ProgramFileType): RiskRow[] {
 	return VENDOR_DIRECTORY.map((vendor, index) => {
 		const integration =
 			VENDOR_INTEGRATION[vendor.id] ?? getVendorIntegration(vendor.id);
@@ -194,11 +196,12 @@ function buildRiskRows(): RiskRow[] {
 				alert.vendorId === vendor.id &&
 				(alert.severity === "error" || alert.severity === "warning")
 		).length;
-		const mappedRuns = runsForVendor(vendor.id);
+		const mappedRuns = runsForVendor(vendor.id, program);
 		const nameMatchedRuns = FILE_RUNS.filter(
 			(run) =>
-				run.vendor.toLowerCase() === vendor.name.toLowerCase() ||
-				run.vendor.toLowerCase().startsWith(vendor.name.toLowerCase())
+				run.program === program &&
+				(run.vendor.toLowerCase() === vendor.name.toLowerCase() ||
+					run.vendor.toLowerCase().startsWith(vendor.name.toLowerCase()))
 		);
 		const runs = mappedRuns.length > 0 ? mappedRuns : nameMatchedRuns;
 		const failedRuns = runs.filter((r) => runBucket(r.status) === "failed").length;
@@ -236,10 +239,14 @@ function buildRiskRows(): RiskRow[] {
 }
 
 export function RiskScoringPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [riskFilter, setRiskFilter] = useState("all");
 
-	const rows = useMemo(() => buildRiskRows(), []);
+	const rows = useMemo(
+		() => buildRiskRows(programFilter),
+		[programFilter]
+	);
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();

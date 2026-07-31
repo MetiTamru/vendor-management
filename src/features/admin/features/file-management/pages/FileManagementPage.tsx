@@ -47,6 +47,7 @@ import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integra
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import { FILE_RUNS } from "../mock-data";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
@@ -256,8 +257,9 @@ function AlertIcon({ severity }: { severity: ActiveAlert["severity"] }) {
 
 export function FileManagementPage() {
 	const router = useRouter();
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [vendor, setVendor] = useState("all");
-	const [fileType, setFileType] = useState("all");
+	const [ediType, setEdiType] = useState("all");
 	const [direction, setDirection] = useState("all");
 	const [status, setStatus] = useState("all");
 	const [dateFrom, setDateFrom] = useState("2026-07-20");
@@ -321,20 +323,21 @@ export function FileManagementPage() {
 
 	const filteredFiles = useMemo(() => {
 		return FILE_RUNS.filter((f) => {
+			if (f.program !== programFilter) return false;
 			if (vendor !== "all" && f.vendor !== vendor) return false;
-			if (fileType !== "all" && f.fileType !== fileType) return false;
+			if (ediType !== "all" && f.fileType !== ediType) return false;
 			if (direction !== "all" && f.direction !== direction) return false;
 			if (status !== "all" && f.status !== status) return false;
 			return true;
 		});
-	}, [vendor, fileType, direction, status]);
+	}, [vendor, ediType, direction, status, programFilter]);
 
 	const pageCount = Math.max(1, Math.ceil(filteredFiles.length / pageSize));
 	const pageRows = filteredFiles.slice((page - 1) * pageSize, page * pageSize);
 
 	function clearFilters() {
 		setVendor("all");
-		setFileType("all");
+		setEdiType("all");
 		setDirection("all");
 		setStatus("all");
 		setDateFrom("2026-07-20");
@@ -348,8 +351,16 @@ export function FileManagementPage() {
 		setRefreshing(false);
 	}
 
-	const vendors = Array.from(new Set(FILE_RUNS.map((f) => f.vendor)));
-	const types = Array.from(new Set(FILE_RUNS.map((f) => f.fileType)));
+	const vendors = Array.from(
+		new Set(
+			FILE_RUNS.filter((f) => f.program === programFilter).map((f) => f.vendor)
+		)
+	);
+	const types = Array.from(
+		new Set(
+			FILE_RUNS.filter((f) => f.program === programFilter).map((f) => f.fileType)
+		)
+	);
 
 	return (
 		<div className="space-y-3">
@@ -432,9 +443,9 @@ export function FileManagementPage() {
 					</div>
 					<div className="space-y-1">
 						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-							File type
+							EDI type
 						</label>
-						<Select value={fileType} onValueChange={setFileType}>
+						<Select value={ediType} onValueChange={setEdiType}>
 							<SelectTrigger className="h-9">
 								<SelectValue placeholder="Type" />
 							</SelectTrigger>

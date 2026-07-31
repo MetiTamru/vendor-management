@@ -37,6 +37,8 @@ import {
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
 type EventType =
 	| "file_arrival"
@@ -78,10 +80,10 @@ function typeLabel(type: EventType) {
 	return type.replaceAll("_", " ");
 }
 
-function buildTimelineEvents(): TimelineEvent[] {
+function buildTimelineEvents(program: ProgramFileType): TimelineEvent[] {
 	const events: TimelineEvent[] = [];
 
-	for (const run of FILE_RUNS) {
+	for (const run of FILE_RUNS.filter((r) => r.program === program)) {
 		const vendorId = vendorIdForRun(run);
 
 		if (run.receivedAt) {
@@ -173,6 +175,7 @@ function buildTimelineEvents(): TimelineEvent[] {
 }
 
 export function ActivityFeedPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [eventType, setEventType] = useState("all");
@@ -182,8 +185,8 @@ export function ActivityFeedPage() {
 
 	const events = useMemo(() => {
 		void refreshKey;
-		return buildTimelineEvents();
-	}, [refreshKey]);
+		return buildTimelineEvents(programFilter);
+	}, [refreshKey, programFilter]);
 
 	const vendors = useMemo(
 		() => Array.from(new Set(events.map((event) => event.vendor))).sort(),

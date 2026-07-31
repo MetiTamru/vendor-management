@@ -46,7 +46,8 @@
 			"top": "አጠቃላይ",
 			"vendor_management": "የአቅራቢ አስተዳደር",
 			"operations": "ክንውኖች",
-			"administration": "አስተዳደር"
+			"administration": "አስተዳደር",
+			"claim_encounter": "ይገባኛል እና ግንኙነት"
 		},
 		"nav": {
 			"dashboard": "ዳሽቦርድ",
@@ -62,7 +63,12 @@
 			"audittrail": "የኦዲት መከታተያ",
 			"reports": "ሪፖርቶች",
 			"settings": "ቅንብሮች",
-			"support": "ድጋፍ"
+			"support": "ድጋፍ",
+			"inboundvendorfile": "የገባ አቅራቢ ፋይል",
+			"outboundvendorfile": "የወጣ አቅራቢ ፋይል",
+			"responses": "ምላሾች",
+			"acceptanceanalytics": "የተቀባይነት ትንተና",
+			"exceptionsrejections": "ልዩነቶች / ውድቀቶች"
 		},
 		"placeholders": {
 			"usersTitle": "ተጠቃሚዎች",

@@ -40,44 +40,53 @@ import {
 } from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const PIE_COLORS = ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#94a3b8"];
 
 export function FileHistoryPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [status, setStatus] = useState("all");
 	const [direction, setDirection] = useState("all");
 
+	const programRuns = useMemo(
+		() => FILE_RUNS.filter((run) => run.program === programFilter),
+		[programFilter]
+	);
+
 	const vendors = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((run) => run.vendor))).sort(),
-		[]
+		() => Array.from(new Set(programRuns.map((run) => run.vendor))).sort(),
+		[programRuns]
 	);
 
 	const filteredRuns = useMemo(() => {
 		const query = search.trim().toLowerCase();
-		return FILE_RUNS.filter((run) => {
-			if (vendor !== "all" && run.vendor !== vendor) return false;
-			if (status !== "all" && run.status !== status) return false;
-			if (direction !== "all" && run.direction !== direction) return false;
-			if (!query) return true;
-			return [
-				run.vendor,
-				run.fileName,
-				run.fileType,
-				run.runId,
-				run.account,
-				run.client,
-			]
-				.join(" ")
-				.toLowerCase()
-				.includes(query);
-		}).sort(
-			(a, b) =>
-				new Date(b.receivedAt ?? b.expectedAt).getTime() -
-				new Date(a.receivedAt ?? a.expectedAt).getTime()
-		);
-	}, [direction, search, status, vendor]);
+		return programRuns
+			.filter((run) => {
+				if (vendor !== "all" && run.vendor !== vendor) return false;
+				if (status !== "all" && run.status !== status) return false;
+				if (direction !== "all" && run.direction !== direction) return false;
+				if (!query) return true;
+				return [
+					run.vendor,
+					run.fileName,
+					run.fileType,
+					run.runId,
+					run.account,
+					run.client,
+				]
+					.join(" ")
+					.toLowerCase()
+					.includes(query);
+			})
+			.sort(
+				(a, b) =>
+					new Date(b.receivedAt ?? b.expectedAt).getTime() -
+					new Date(a.receivedAt ?? a.expectedAt).getTime()
+			);
+	}, [direction, programRuns, search, status, vendor]);
 
 	const summary = useMemo(() => {
 		const successful = filteredRuns.filter(

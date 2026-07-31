@@ -23,6 +23,10 @@ import {
 	getFileRun,
 	getValidationIssue,
 } from "@/features/admin/features/file-management/mock-data";
+import {
+	getClaimResponse,
+	getSubmissionBatch,
+} from "@/features/admin/features/claim-encounter/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -68,6 +72,13 @@ const STATIC_LABELS: Record<string, string> = {
 	users: "Users",
 	edit: "Edit",
 	match: "Match",
+	"claim-encounter": "Claim & Encounter",
+	inbound: "Inbound Vendor File",
+	outbound: "Outbound Vendor File",
+	responses: "Responses",
+	"acceptance-analytics": "Acceptance Analytics",
+	exceptions: "Exceptions / Rejections",
+	batches: "Submission Batches",
 };
 
 function formatSegment(segment: string) {
@@ -150,6 +161,22 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				} else {
 					items.push({ label: "Investigation Details" });
 				}
+				continue;
+			}
+
+			if (prev === "responses" && segment !== "responses") {
+				const response = getClaimResponse(decodeURIComponent(segment));
+				items.push({
+					label: response?.responseFile ?? "Response Details",
+				});
+				continue;
+			}
+
+			if (prev === "batches") {
+				const batch = getSubmissionBatch(decodeURIComponent(segment));
+				items.push({
+					label: batch?.batchId ?? "Batch Details",
+				});
 				continue;
 			}
 

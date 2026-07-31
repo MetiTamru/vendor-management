@@ -39,6 +39,7 @@ import {
 } from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type ScheduleRow = {
 	id: string;
@@ -66,23 +67,29 @@ function statusTone(status: string) {
 }
 
 export function SchedulesPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [frequency, setFrequency] = useState("all");
 	const [status, setStatus] = useState("all");
 
+	const programRuns = useMemo(
+		() => FILE_RUNS.filter((run) => run.program === programFilter),
+		[programFilter]
+	);
+
 	const vendors = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((run) => run.vendor))).sort(),
-		[]
+		() => Array.from(new Set(programRuns.map((run) => run.vendor))).sort(),
+		[programRuns]
 	);
 	const frequencies = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((run) => run.frequency))).sort(),
-		[]
+		() => Array.from(new Set(programRuns.map((run) => run.frequency))).sort(),
+		[programRuns]
 	);
 
 	const schedules = useMemo<ScheduleRow[]>(() => {
 		const grouped = new Map<string, ScheduleRow>();
-		for (const run of FILE_RUNS) {
+		for (const run of programRuns) {
 			if (!grouped.has(run.scheduleId)) {
 				grouped.set(run.scheduleId, {
 					id: run.scheduleId,
@@ -105,7 +112,7 @@ export function SchedulesPage() {
 		return Array.from(grouped.values()).sort((a, b) =>
 			a.vendor.localeCompare(b.vendor)
 		);
-	}, []);
+	}, [programRuns]);
 
 	const filteredSchedules = useMemo(() => {
 		const query = search.trim().toLowerCase();
