@@ -60,6 +60,7 @@ import {
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const STATUS_COLORS = {
 	success: "#10b981",
@@ -70,17 +71,23 @@ const STATUS_COLORS = {
 } as const;
 
 export function ProcessingStatusPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendorFilter, setVendorFilter] = useState("all");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [directionFilter, setDirectionFilter] = useState("all");
-	const [fileTypeFilter, setFileTypeFilter] = useState("all");
+	const [ediTypeFilter, setEdiTypeFilter] = useState("all");
+
+	const programRuns = useMemo(
+		() => FILE_RUNS.filter((run) => run.program === programFilter),
+		[programFilter]
+	);
 
 	const vendors = useMemo(
 		() =>
 			Array.from(
 				new Map(
-					FILE_RUNS.map((run) => [
+					programRuns.map((run) => [
 						vendorIdForRun(run) ?? run.vendor,
 						{
 							id: vendorIdForRun(run) ?? run.vendor,
@@ -89,23 +96,23 @@ export function ProcessingStatusPage() {
 					])
 				).values()
 			),
-		[]
+		[programRuns]
 	);
 
 	const fileTypes = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((run) => run.fileType))).sort(),
-		[]
+		() => Array.from(new Set(programRuns.map((run) => run.fileType))).sort(),
+		[programRuns]
 	);
 
 	const filteredRuns = useMemo(
 		() =>
-			FILE_RUNS.filter((run) => {
+			programRuns.filter((run) => {
 				const id = vendorIdForRun(run) ?? run.vendor;
 				if (vendorFilter !== "all" && id !== vendorFilter) return false;
 				if (statusFilter !== "all" && run.status !== statusFilter) return false;
 				if (directionFilter !== "all" && run.direction !== directionFilter)
 					return false;
-				if (fileTypeFilter !== "all" && run.fileType !== fileTypeFilter)
+				if (ediTypeFilter !== "all" && run.fileType !== ediTypeFilter)
 					return false;
 				if (!search.trim()) return true;
 				return [run.vendor, run.fileType, run.fileName, run.runId]
@@ -113,7 +120,14 @@ export function ProcessingStatusPage() {
 					.toLowerCase()
 					.includes(search.trim().toLowerCase());
 			}),
-		[directionFilter, fileTypeFilter, search, statusFilter, vendorFilter]
+		[
+			directionFilter,
+			ediTypeFilter,
+			programRuns,
+			search,
+			statusFilter,
+			vendorFilter,
+		]
 	);
 
 	const summary = useMemo(() => {
@@ -194,7 +208,7 @@ export function ProcessingStatusPage() {
 		() =>
 			vendors
 				.map((vendor) => {
-					const vendorRuns = FILE_RUNS.filter(
+					const vendorRuns = programRuns.filter(
 						(run) => (vendorIdForRun(run) ?? run.vendor) === vendor.id
 					);
 					const successful = vendorRuns.filter(
@@ -225,7 +239,7 @@ export function ProcessingStatusPage() {
 					};
 				})
 				.filter((row) => vendorFilter === "all" || row.id === vendorFilter),
-		[alerts, vendorFilter, vendors]
+		[alerts, programRuns, vendorFilter, vendors]
 	);
 
 	return (
@@ -282,12 +296,12 @@ export function ProcessingStatusPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={fileTypeFilter} onValueChange={setFileTypeFilter}>
+					<Select value={ediTypeFilter} onValueChange={setEdiTypeFilter}>
 						<SelectTrigger className="h-9 w-[180px] bg-background/70">
-							<SelectValue placeholder="All File Types" />
+							<SelectValue placeholder="All EDI Types" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All File Types</SelectItem>
+							<SelectItem value="all">All EDI Types</SelectItem>
 							{fileTypes.map((fileType) => (
 								<SelectItem key={fileType} value={fileType}>
 									{fileType}

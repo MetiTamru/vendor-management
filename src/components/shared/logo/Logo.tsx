@@ -9,22 +9,30 @@ type Props = {
 	/** Compact icon + wordmark for sidebar / header */
 	className?: string;
 	showWordmark?: boolean;
+	/** Sidebar title — typically the active module name */
+	title?: string;
 };
 
-export default function Logo({ className, showWordmark = true }: Props) {
+export default function Logo({
+	className,
+	showWordmark = true,
+	title,
+}: Props) {
+	const wordmark = title ?? siteConfig.name;
+
 	return (
 		<div className={cn("flex min-w-0 items-center gap-2.5", className)}>
 			<Image
-				src="/images/white-logo-icon.png"
-				alt={`${siteConfig.name} logo`}
+				src="/images/unnamed.webp"
+				alt={`${wordmark} logo`}
 				width={36}
 				height={36}
-				className="size-9 shrink-0 object-contain"
+				className="size-9 shrink-0 rounded-full object-cover"
 				priority
 			/>
 			{showWordmark ? (
 				<span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-					Vendor Management
+					{wordmark}
 				</span>
 			) : null}
 		</div>

@@ -60,6 +60,7 @@ import {
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import { FILE_RUNS, type FileRun, displayRunStatus } from "../mock-data";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
@@ -143,6 +144,7 @@ export function FileSelectPage() {
 	const router = useRouter();
 	const vendorFromUrl = searchParams.get("vendor");
 	const { vendors } = useVendorsList();
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [mode, setMode] = useState<SelectMode>("vendor");
 	const [vendorFilter, setVendorFilter] = useState("all");
 	const [search, setSearch] = useState("");
@@ -172,7 +174,7 @@ export function FileSelectPage() {
 				);
 			})
 			.map((v) => {
-				const runs = runsForVendor(v.id);
+				const runs = runsForVendor(v.id, programFilter);
 				const summary = summarizeRuns(runs);
 				const integration = getVendorIntegration(v.id);
 				return {
@@ -185,7 +187,7 @@ export function FileSelectPage() {
 					failed: summary.failed,
 				};
 			});
-	}, [vendors, vendorFilter, search]);
+	}, [vendors, vendorFilter, search, programFilter]);
 
 	const activeVendorId = selectedVendorId ?? vendorCards[0]?.vendor.id ?? null;
 
@@ -195,7 +197,7 @@ export function FileSelectPage() {
 
 	const fileTypes = useMemo(() => {
 		const map = new Map<string, FileRun[]>();
-		for (const run of FILE_RUNS) {
+		for (const run of FILE_RUNS.filter((r) => r.program === programFilter)) {
 			const list = map.get(run.fileType) ?? [];
 			list.push(run);
 			map.set(run.fileType, list);
@@ -205,7 +207,7 @@ export function FileSelectPage() {
 			runs,
 			summary: summarizeRuns(runs),
 		}));
-	}, []);
+	}, [programFilter]);
 
 	const activeFileType = selectedFileType ?? fileTypes[0]?.type ?? null;
 	const activeFileTypeRuns =
@@ -214,6 +216,7 @@ export function FileSelectPage() {
 	const failedRuns = useMemo(
 		() =>
 			FILE_RUNS.filter((r) => {
+				if (r.program !== programFilter) return false;
 				const bucket = runBucket(r.status);
 				if (bucket !== "failed" && bucket !== "warning") return false;
 				if (vendorFilter !== "all" && vendorIdForRun(r) !== vendorFilter)
@@ -227,12 +230,12 @@ export function FileSelectPage() {
 					r.runId.toLowerCase().includes(q)
 				);
 			}),
-		[vendorFilter, search]
+		[vendorFilter, search, programFilter]
 	);
 
 	const tabs: { id: SelectMode; label: string }[] = [
 		{ id: "vendor", label: "Select by Vendor" },
-		{ id: "filetype", label: "Select by File Type" },
+		{ id: "filetype", label: "Select by EDI Type" },
 		{ id: "failed", label: "Select Failed Run" },
 	];
 

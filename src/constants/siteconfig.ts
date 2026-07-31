@@ -1,4 +1,181 @@
-import { type SidebarNavItem } from "@/types/UI/system.types";
+import {
+	type AdminModuleId,
+	type SidebarNavItem,
+} from "@/types/UI/system.types";
+
+const vendorManagementNav: SidebarNavItem[] = [
+	{
+		title: "Dashboard",
+		href: "/",
+		permission: "dashboard-view",
+		section: "top",
+		module: "vendor_management",
+	},
+	{
+		title: "Vendors",
+		href: "/admin/vendors",
+		permission: "vendors-list",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "File Monitoring",
+		href: "/admin/file-monitoring",
+		permission: "file-management-view",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "Processing Status",
+		href: "/admin/processing-status",
+		permission: "file-management-view",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "File History",
+		href: "/admin/file-history",
+		permission: "file-management-view",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "Schedules",
+		href: "/admin/schedules",
+		permission: "file-management-view",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "Processing Logs",
+		href: "/admin/processing-logs",
+		permission: "processing-logs-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Error Management",
+		href: "/admin/error-management",
+		permission: "file-management-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Notifications",
+		href: "/admin/notifications",
+		permission: "dashboard-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "SLA Monitoring",
+		href: "/admin/sla-monitoring",
+		permission: "dashboard-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Risk Scoring",
+		href: "/admin/risk-scoring",
+		permission: "dashboard-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Command Center",
+		href: "/admin/activity",
+		permission: "dashboard-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Automations",
+		href: "/admin/automations",
+		permission: "dashboard-view",
+		section: "operations",
+		module: "vendor_management",
+	},
+	{
+		title: "Vendor Comparison",
+		href: "/admin/vendor-comparison",
+		permission: "vendors-list",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "Audit Trail",
+		href: "/admin/audit-trail",
+		permission: "dashboard-view",
+		section: "administration",
+		module: "vendor_management",
+	},
+	{
+		title: "Reports",
+		href: "/admin/reports",
+		permission: "reports-view",
+		section: "administration",
+		module: "vendor_management",
+	},
+	{
+		title: "Export Center",
+		href: "/admin/exports",
+		permission: "reports-view",
+		section: "administration",
+		module: "vendor_management",
+	},
+	{
+		title: "Settings",
+		href: "/admin/settings",
+		permission: "settings-view",
+		section: "administration",
+		module: "vendor_management",
+	},
+];
+
+const claimEncounterNav: SidebarNavItem[] = [
+	{
+		title: "Inbound Vendor File",
+		href: "/admin/claim-encounter/inbound",
+		permission: "file-management-view",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+	{
+		title: "Outbound Vendor File",
+		href: "/admin/claim-encounter/outbound",
+		permission: "file-management-view",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+	{
+		title: "Responses",
+		href: "/admin/claim-encounter/responses",
+		permission: "file-management-view",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+	{
+		title: "Acceptance Analytics",
+		href: "/admin/claim-encounter/acceptance-analytics",
+		permission: "dashboard-view",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+	{
+		title: "Exceptions / Rejections",
+		href: "/admin/claim-encounter/exceptions",
+		permission: "file-management-view",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+	{
+		title: "Vendor Comparison",
+		href: "/admin/claim-encounter/vendor-comparison",
+		permission: "vendors-list",
+		section: "claim_encounter",
+		module: "claim_encounter",
+	},
+];
 
 export const siteConfig = {
 	name: "Vendor Management",
@@ -27,116 +204,22 @@ export const siteConfig = {
 		sidebarWidthMax: "380px",
 		footerHeight: "64px",
 	},
-	sidebarNav: [
-		{
-			title: "Dashboard",
-			href: "/",
-			permission: "dashboard-view",
-			section: "top",
+	modules: {
+		vendor_management: {
+			id: "vendor_management" as const,
+			label: "Vendor Management",
+			homeHref: "/",
+			sidebarNav: vendorManagementNav,
 		},
-		{
-			title: "Vendors",
-			href: "/admin/vendors",
-			permission: "vendors-list",
-			section: "vendor_management",
+		claim_encounter: {
+			id: "claim_encounter" as const,
+			label: "Claim & Encounter",
+			homeHref: "/admin/claim-encounter/inbound",
+			sidebarNav: claimEncounterNav,
 		},
-		{
-			title: "File Monitoring",
-			href: "/admin/file-monitoring",
-			permission: "file-management-view",
-			section: "vendor_management",
-		},
-		{
-			title: "Processing Status",
-			href: "/admin/processing-status",
-			permission: "file-management-view",
-			section: "vendor_management",
-		},
-		{
-			title: "File History",
-			href: "/admin/file-history",
-			permission: "file-management-view",
-			section: "vendor_management",
-		},
-		{
-			title: "Schedules",
-			href: "/admin/schedules",
-			permission: "file-management-view",
-			section: "vendor_management",
-		},
-		{
-			title: "Processing Logs",
-			href: "/admin/processing-logs",
-			permission: "processing-logs-view",
-			section: "operations",
-		},
-		{
-			title: "Error Management",
-			href: "/admin/error-management",
-			permission: "file-management-view",
-			section: "operations",
-		},
-		{
-			title: "Notifications",
-			href: "/admin/notifications",
-			permission: "dashboard-view",
-			section: "operations",
-		},
-		{
-			title: "SLA Monitoring",
-			href: "/admin/sla-monitoring",
-			permission: "dashboard-view",
-			section: "operations",
-		},
-		{
-			title: "Risk Scoring",
-			href: "/admin/risk-scoring",
-			permission: "dashboard-view",
-			section: "operations",
-		},
-		{
-			title: "Command Center",
-			href: "/admin/activity",
-			permission: "dashboard-view",
-			section: "operations",
-		},
-		{
-			title: "Automations",
-			href: "/admin/automations",
-			permission: "dashboard-view",
-			section: "operations",
-		},
-		{
-			title: "Vendor Comparison",
-			href: "/admin/vendor-comparison",
-			permission: "vendors-list",
-			section: "vendor_management",
-		},
-		{
-			title: "Audit Trail",
-			href: "/admin/audit-trail",
-			permission: "dashboard-view",
-			section: "administration",
-		},
-		{
-			title: "Reports",
-			href: "/admin/reports",
-			permission: "reports-view",
-			section: "administration",
-		},
-		{
-			title: "Export Center",
-			href: "/admin/exports",
-			permission: "reports-view",
-			section: "administration",
-		},
-		{
-			title: "Settings",
-			href: "/admin/settings",
-			permission: "settings-view",
-			section: "administration",
-		},
-	] as SidebarNavItem[],
+	},
+	/** @deprecated Prefer getModuleSidebarNav(moduleId) — kept for breadcrumb lookups */
+	sidebarNav: [...vendorManagementNav, ...claimEncounterNav] as SidebarNavItem[],
 	settings: {
 		themeToggle: true,
 		languageSelector: true,
@@ -194,5 +277,9 @@ export const siteConfig = {
 		issues: "https://github.com/kalabAmssalu/issues",
 	},
 };
+
+export function getModuleSidebarNav(moduleId: AdminModuleId): SidebarNavItem[] {
+	return siteConfig.modules[moduleId].sidebarNav;
+}
 
 export type SiteConfig = typeof siteConfig;

@@ -11,10 +11,11 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
-import { siteConfig } from "@/constants/siteconfig";
+import { getModuleSidebarNav } from "@/constants/siteconfig";
 import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { useRouter } from "@/i18n/navigation";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const EXTRA_PAGES = [
 	{ title: "Risk Scoring", href: "/admin/risk-scoring" },
@@ -34,6 +35,7 @@ export function CommandPalette() {
 	const router = useRouter();
 	const { vendors } = useVendorsList();
 	const [open, setOpen] = useState(false);
+	const { moduleId, fileType } = useAdminModuleStore();
 
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
@@ -47,13 +49,19 @@ export function CommandPalette() {
 	}, []);
 
 	const pages = useMemo(() => {
-		const nav = siteConfig.sidebarNav
+		const nav = getModuleSidebarNav(moduleId)
 			.filter((item) => item.href)
 			.map((item) => ({ title: item.title, href: item.href as string }));
+		if (moduleId !== "vendor_management") return nav;
 		const seen = new Set(nav.map((item) => item.href));
 		const extras = EXTRA_PAGES.filter((item) => !seen.has(item.href));
 		return [...nav, ...extras];
-	}, []);
+	}, [moduleId]);
+
+	const filteredRuns = useMemo(
+		() => FILE_RUNS.filter((run) => run.program === fileType).slice(0, 20),
+		[fileType]
+	);
 
 	function go(href: string) {
 		setOpen(false);
@@ -81,32 +89,36 @@ export function CommandPalette() {
 						</CommandItem>
 					))}
 				</CommandGroup>
-				<CommandSeparator />
-				<CommandGroup heading="Vendors">
-					{vendors.slice(0, 20).map((vendor) => (
-						<CommandItem
-							key={vendor.id}
-							value={`vendor ${vendor.tradeName ?? vendor.legalName}`}
-							onSelect={() => go(`/admin/vendors/${vendor.id}`)}
-						>
-							{vendor.tradeName ?? vendor.legalName}
-						</CommandItem>
-					))}
-				</CommandGroup>
-				<CommandSeparator />
-				<CommandGroup heading="File runs">
-					{FILE_RUNS.slice(0, 20).map((run) => (
-						<CommandItem
-							key={run.id}
-							value={`run ${run.fileName ?? ""} ${run.runId} ${run.vendor}`}
-							onSelect={() => go(`/admin/file-monitoring/${run.id}`)}
-						>
-							<span className="truncate">
-								{run.fileName ?? run.runId} · {run.vendor}
-							</span>
-						</CommandItem>
-					))}
-				</CommandGroup>
+				{moduleId === "vendor_management" ? (
+					<>
+						<CommandSeparator />
+						<CommandGroup heading="Vendors">
+							{vendors.slice(0, 20).map((vendor) => (
+								<CommandItem
+									key={vendor.id}
+									value={`vendor ${vendor.tradeName ?? vendor.legalName}`}
+									onSelect={() => go(`/admin/vendors/${vendor.id}`)}
+								>
+									{vendor.tradeName ?? vendor.legalName}
+								</CommandItem>
+							))}
+						</CommandGroup>
+						<CommandSeparator />
+						<CommandGroup heading="File runs">
+							{filteredRuns.map((run) => (
+								<CommandItem
+									key={run.id}
+									value={`run ${run.fileName ?? ""} ${run.runId} ${run.vendor}`}
+									onSelect={() => go(`/admin/file-monitoring/${run.id}`)}
+								>
+									<span className="truncate">
+										{run.fileName ?? run.runId} · {run.vendor}
+									</span>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</>
+				) : null}
 			</CommandList>
 		</CommandDialog>
 	);

@@ -1,3 +1,5 @@
+import type { ProgramFileType } from "@/types/UI/system.types";
+
 export type FileDirection = "inbound" | "outbound";
 export type ProcessStatus =
 	| "success"
@@ -6,6 +8,8 @@ export type ProcessStatus =
 	| "missing"
 	| "processing"
 	| "warning";
+
+export type { ProgramFileType };
 
 export type PipelineStepStatus =
 	| "completed"
@@ -77,6 +81,8 @@ export type FileRun = {
 	account: string;
 	client: string;
 	fileType: string;
+	/** Program jurisdiction — filtered by global MDH/DHCF/BHP selector */
+	program: ProgramFileType;
 	direction: FileDirection;
 	frequency: string;
 	expectedAt: string;
@@ -109,7 +115,9 @@ export type FileRun = {
 	logs: LogEntry[];
 };
 
-const RAW_FILE_RUNS: FileRun[] = [
+type RawFileRun = Omit<FileRun, "program">;
+
+const RAW_FILE_RUNS: RawFileRun[] = [
 	{
 		id: "f1",
 		runId: "FR-2026-0727-00142",
@@ -2541,10 +2549,18 @@ function enrichIssue(run: FileRun, issue: ValidationIssue): ValidationIssue {
 	};
 }
 
-export const FILE_RUNS: FileRun[] = RAW_FILE_RUNS.map((run) => ({
-	...run,
-	issues: run.issues.map((issue) => enrichIssue(run, issue)),
-}));
+export const FILE_RUNS: FileRun[] = RAW_FILE_RUNS.map((run, index) => {
+	const withProgram: FileRun = {
+		...run,
+		program: index % 3 === 0 ? "MDH" : index % 3 === 1 ? "DHCF" : "BHP",
+	};
+	return {
+		...withProgram,
+		issues: withProgram.issues.map((issue) =>
+			enrichIssue(withProgram, issue)
+		),
+	};
+});
 
 export function getFileRun(id: string): FileRun | undefined {
 	return FILE_RUNS.find((run) => run.id === id || run.runId === id);

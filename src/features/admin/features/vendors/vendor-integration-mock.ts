@@ -187,7 +187,7 @@ export const VENDOR_DIRECTORY: VendorDirectoryRow[] = [
 	},
 	{
 		id: "vnd-5",
-		name: "OptumRx",
+		name: "Optum",
 		vendorCode: "VND-0002",
 		vendorType: "PBM",
 		status: "active",
@@ -522,8 +522,15 @@ export function vendorIdForRun(run: FileRun): string | null {
 	return null;
 }
 
-export function runsForVendor(vendorId: string): FileRun[] {
-	return FILE_RUNS.filter((run) => vendorIdForRun(run) === vendorId);
+export function runsForVendor(
+	vendorId: string,
+	program?: FileRun["program"]
+): FileRun[] {
+	return FILE_RUNS.filter(
+		(run) =>
+			vendorIdForRun(run) === vendorId &&
+			(program == null || run.program === program)
+	);
 }
 
 export function getVendorIntegration(
@@ -703,3 +710,229 @@ export const VENDOR_ALERTS: VendorAlert[] = [
 		runId: "f7",
 	},
 ];
+
+export type AccountFileStatus = "success" | "none" | "warning" | "error";
+
+export type VendorAccountRow = {
+	id: string;
+	name: string;
+	accountId: string;
+	lineOfBusiness: "Commercial" | "Medicare" | "Medicaid" | "Marketplace";
+	status: "healthy" | "warning" | "error" | "inactive";
+	healthScore: number;
+	lastFileReceived: string;
+	lastFileType: string;
+	eligibility: AccountFileStatus;
+	medical: AccountFileStatus;
+	pharmacy: AccountFileStatus;
+	accumulator: AccountFileStatus;
+	payerId: string;
+	timezone: string;
+	openIssues: number;
+	active: boolean;
+};
+
+const ACCOUNT_NAMES = [
+	"Alpha Benefits Group",
+	"Beta Health Partners",
+	"Cascade Care Network",
+	"Delta Employer Trust",
+	"Evergreen Health Plan",
+	"Frontier Mutual",
+	"Gateway Benefits Co",
+	"Harbor Group Benefits",
+	"Ironwood Insurance",
+	"Juniper Health Alliance",
+	"Keystone Coverage",
+	"Lakeside Employer Plan",
+];
+
+const LOBS: VendorAccountRow["lineOfBusiness"][] = [
+	"Commercial",
+	"Medicare",
+	"Medicaid",
+	"Marketplace",
+];
+
+function fileStatusFor(seed: number, bias: "good" | "mixed" = "good"): AccountFileStatus {
+	const roll = seed % (bias === "good" ? 10 : 6);
+	if (roll === 0) return "none";
+	if (roll === 1 && bias === "mixed") return "warning";
+	if (roll === 2 && bias === "mixed") return "error";
+	return "success";
+}
+
+export function getVendorAccounts(vendorId: string): VendorAccountRow[] {
+	const profile = getVendorIntegration(vendorId);
+	const directory = VENDOR_DIRECTORY.find((row) => row.id === vendorId);
+	const count = Math.max(
+		directory?.linkedAccounts ?? profile.accountsCount,
+		profile.accountsCount,
+		4
+	);
+
+	return Array.from({ length: count }, (_, index) => {
+		const seed = vendorId.charCodeAt(vendorId.length - 1) + index * 7;
+		const warning = index === 2 || index === 8;
+		const inactive = index === count - 1 && count > 8;
+		const healthScore = inactive
+			? 40
+			: warning
+				? 68 + (seed % 8)
+				: 88 + (seed % 10);
+		const lob = LOBS[index % LOBS.length]!;
+		const name = ACCOUNT_NAMES[index % ACCOUNT_NAMES.length]!;
+		const accountId = `ACC-${1001 + index}`;
+		return {
+			id: `${vendorId}-acc-${index + 1}`,
+			name,
+			accountId,
+			lineOfBusiness: lob,
+			status: inactive
+				? "inactive"
+				: warning
+					? "warning"
+					: healthScore >= 85
+						? "healthy"
+						: "warning",
+			healthScore,
+			lastFileReceived:
+				index === 0
+					? "Today, 7:15 AM"
+					: index === 1
+						? "Today, 6:42 AM"
+						: index % 3 === 0
+							? "Yesterday, 8:10 PM"
+							: `Today, ${6 + (index % 4)}:${(index * 7) % 60}`.replace(
+									/:(\d)$/,
+									":0$1"
+								) + " AM",
+			lastFileType:
+				index % 4 === 0
+					? "Eligibility (834)"
+					: index % 4 === 1
+						? "Medical Claims (837)"
+						: index % 4 === 2
+							? "Pharmacy Claims (835)"
+							: "Accumulator",
+			eligibility: fileStatusFor(seed + 1, warning ? "mixed" : "good"),
+			medical: fileStatusFor(seed + 2, warning ? "mixed" : "good"),
+			pharmacy: fileStatusFor(seed + 3),
+			accumulator: fileStatusFor(seed + 4),
+			payerId: `PAY-${8200 + index}`,
+			timezone: profile.timezone,
+			openIssues: warning ? 1 + (seed % 2) : 0,
+			active: !inactive,
+		};
+	});
+}
+
+export type VendorConfigJob = {
+	id: string;
+	name: string;
+	fileType: string;
+	direction: "Incoming" | "Outgoing";
+	frequency: "Daily" | "Weekly" | "Hourly";
+	status: "Active" | "Paused";
+	lastRun: string;
+	nextRun: string;
+	lastFileReceived: string;
+};
+
+export type VendorSftpConnection = {
+	host: string;
+	port: number;
+	username: string;
+	authMethod: string;
+	authKey: string;
+	lastVerified: string;
+	remoteDirectory: string;
+	status: "Connected" | "Disconnected";
+	testConnection: "Successful" | "Failed";
+	connectionName: string;
+};
+
+const CONFIG_FILE_TYPES = [
+	"Eligibility (834)",
+	"Medical Claims (837)",
+	"Pharmacy Claims (835)",
+	"Accumulator",
+] as const;
+
+export function getVendorSftpConnection(
+	vendorId: string,
+	vendorName?: string
+): VendorSftpConnection {
+	const profile = getVendorIntegration(vendorId);
+	const short =
+		(vendorName ?? profile.tradingPartnerId)
+			.replace(/[^a-zA-Z0-9]+/g, " ")
+			.trim()
+			.split(/\s+/)
+			.slice(0, 2)
+			.map((p) => p.slice(0, 3).toUpperCase())
+			.join("") || "VND";
+	const host =
+		profile.sftpHost === "—"
+			? "sftp.partner.example"
+			: profile.sftpHost.replace(/\.example$/, ".com");
+	return {
+		host,
+		port: 22,
+		username: `${short.toLowerCase()}_mfc`,
+		authMethod: "Key Based",
+		authKey: `id_rsa_${short.toLowerCase()}`,
+		lastVerified: "07/24/2026 6:00 AM",
+		remoteDirectory: `/${short}/incoming`,
+		status: profile.health === "failed" ? "Disconnected" : "Connected",
+		testConnection: profile.health === "failed" ? "Failed" : "Successful",
+		connectionName: `${short} - SFTP Connection`,
+	};
+}
+
+export function getVendorConfigJobs(
+	vendorId: string,
+	vendorName?: string
+): VendorConfigJob[] {
+	const profile = getVendorIntegration(vendorId);
+	const short =
+		(vendorName ?? profile.tradingPartnerId)
+			.replace(/[^a-zA-Z0-9]+/g, " ")
+			.trim()
+			.split(/\s+/)
+			.slice(0, 2)
+			.map((p) => p[0]?.toUpperCase() ?? "")
+			.join("") || "Vendor";
+	const label = vendorName?.split(/\s+/).slice(0, 2).join(" ") ?? short;
+	const count = Math.min(Math.max(profile.jobsCount || 4, 4), 4);
+
+	return Array.from({ length: count }, (_, index) => {
+		const fileType = CONFIG_FILE_TYPES[index % CONFIG_FILE_TYPES.length]!;
+		const frequency =
+			index % 3 === 0 ? "Weekly" : index % 2 === 0 ? "Daily" : "Daily";
+		return {
+			id: `${vendorId}-job-${index + 1}`,
+			name: `${label} - ${fileType.split(" (")[0]} Import`,
+			fileType,
+			direction: "Incoming" as const,
+			frequency: frequency as VendorConfigJob["frequency"],
+			status: "Active" as const,
+			lastRun:
+				index === 0
+					? "Today, 6:00 AM"
+					: index === 1
+						? "Today, 5:30 AM"
+						: `Yesterday, ${8 + index}:00 AM`,
+			nextRun:
+				frequency === "Weekly"
+					? "Mon, 6:00 AM"
+					: `Tomorrow, ${6 + (index % 2)}:00 AM`,
+			lastFileReceived:
+				index === 0
+					? "Today, 6:05 AM"
+					: index === 1
+						? "Today, 5:42 AM"
+						: `Yesterday, ${8 + index}:12 AM`,
+		};
+	});
+}

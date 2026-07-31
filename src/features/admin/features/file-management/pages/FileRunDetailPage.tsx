@@ -38,6 +38,7 @@ import {
 import { runBucket } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import {
 	FILE_RUNS,
@@ -142,6 +143,7 @@ function DetailField({ label, value }: { label: string; value: ReactNode }) {
 export function FileRunDetailPage() {
 	const params = useParams<{ runId: string }>();
 	const router = useRouter();
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const selected = useMemo(() => getFileRun(params.runId), [params.runId]);
 	const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 	const [reviewed, setReviewed] = useState(false);
@@ -164,6 +166,7 @@ export function FileRunDetailPage() {
 	const recentRuns = useMemo(() => {
 		if (!selected) return [];
 		return FILE_RUNS.filter((run) => {
+			if (run.program !== programFilter) return false;
 			if (run.vendor !== selected.vendor) return false;
 			if (statusFilter !== "all" && runBucket(run.status) !== statusFilter) {
 				return false;
@@ -174,7 +177,7 @@ export function FileRunDetailPage() {
 			const bDate = b.startedAt ?? b.expectedAt;
 			return bDate.localeCompare(aDate);
 		});
-	}, [selected, statusFilter]);
+	}, [selected, statusFilter, programFilter]);
 
 	const selectedIssue = useMemo(
 		() =>

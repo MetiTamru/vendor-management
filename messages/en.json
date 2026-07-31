@@ -48,7 +48,8 @@
 			"top": "Overview",
 			"vendor_management": "Vendor Management",
 			"operations": "Operations",
-			"administration": "Administration"
+			"administration": "Administration",
+			"claim_encounter": "Claim & Encounter"
 		},
 		"nav": {
 			"dashboard": "Dashboard",
@@ -69,7 +70,12 @@
 			"reports": "Reports",
 			"exportcenter": "Export Center",
 			"settings": "Settings",
-			"support": "Support"
+			"support": "Support",
+			"inboundvendorfile": "Inbound Vendor File",
+			"outboundvendorfile": "Outbound Vendor File",
+			"responses": "Responses",
+			"acceptanceanalytics": "Acceptance Analytics",
+			"exceptionsrejections": "Exceptions / Rejections"
 		},
 		"placeholders": {
 			"usersTitle": "Users",

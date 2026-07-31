@@ -39,6 +39,7 @@ import {
 } from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type VendorSlaRow = {
 	vendor: string;
@@ -50,18 +51,24 @@ type VendorSlaRow = {
 };
 
 export function SlaMonitoringPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [status, setStatus] = useState("all");
 
+	const programRuns = useMemo(
+		() => FILE_RUNS.filter((run) => run.program === programFilter),
+		[programFilter]
+	);
+
 	const vendors = useMemo(
-		() => Array.from(new Set(FILE_RUNS.map((run) => run.vendor))).sort(),
-		[]
+		() => Array.from(new Set(programRuns.map((run) => run.vendor))).sort(),
+		[programRuns]
 	);
 
 	const filteredRuns = useMemo(() => {
 		const query = search.trim().toLowerCase();
-		return FILE_RUNS.filter((run) => {
+		return programRuns.filter((run) => {
 			if (vendor !== "all" && run.vendor !== vendor) return false;
 			if (status !== "all" && run.status !== status) return false;
 			if (!query) return true;
@@ -70,7 +77,7 @@ export function SlaMonitoringPage() {
 				.toLowerCase()
 				.includes(query);
 		});
-	}, [search, status, vendor]);
+	}, [programRuns, search, status, vendor]);
 
 	const summary = useMemo(() => {
 		const monitored = filteredRuns.length;

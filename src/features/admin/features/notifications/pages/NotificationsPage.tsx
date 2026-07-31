@@ -36,6 +36,7 @@ import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
 import { VENDOR_ALERTS } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type NotificationRow = {
 	id: string;
@@ -123,7 +124,11 @@ export function NotificationsPage() {
 		return { total, errors, warnings, unread, escalated };
 	}, [filteredNotifications]);
 
-	const recentRuns = FILE_RUNS.slice(0, 4);
+	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const recentRuns = FILE_RUNS.filter((r) => r.program === programFilter).slice(
+		0,
+		4
+	);
 
 	function clearFilters() {
 		setSearch("");

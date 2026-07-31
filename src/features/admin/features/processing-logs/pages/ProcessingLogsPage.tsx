@@ -53,6 +53,7 @@ import {
 } from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type LogSource = "File Receiver" | "Parser" | "Validation" | "Processor";
 
@@ -368,11 +369,14 @@ const outlineBtn =
 export function ProcessingLogsPage() {
 	const params = useParams();
 	const searchParams = useSearchParams();
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const runIdFromPath = typeof params?.runId === "string" ? params.runId : null;
 	const runFilter = runIdFromPath ?? searchParams.get("run");
+	const programRuns = FILE_RUNS.filter((r) => r.program === programFilter);
 	const run =
 		(runFilter ? getFileRun(runFilter) : undefined) ??
-		FILE_RUNS.find((r) => r.status === "failed") ??
+		programRuns.find((r) => r.status === "failed") ??
+		programRuns[0] ??
 		FILE_RUNS[0]!;
 
 	const runHref = `/admin/file-monitoring/${run.id}`;

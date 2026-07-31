@@ -37,6 +37,7 @@ import {
 import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type ErrorRow = ValidationIssue & {
 	rowId: string;
@@ -100,13 +101,18 @@ function buildErrors(runs: FileRun[]) {
 }
 
 export function ErrorManagementPage() {
+	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [severity, setSeverity] = useState("all");
 	const [query, setQuery] = useState("");
 	const [page, setPage] = useState(1);
 	const [refreshing, setRefreshing] = useState(false);
 	const pageSize = 12;
 
-	const rows = useMemo(() => buildErrors(FILE_RUNS), []);
+	const rows = useMemo(
+		() =>
+			buildErrors(FILE_RUNS.filter((run) => run.program === programFilter)),
+		[programFilter]
+	);
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
