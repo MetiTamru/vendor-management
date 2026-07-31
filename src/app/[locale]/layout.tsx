@@ -11,7 +11,7 @@ const geistSans = Geist({
 	variable: "--font-geist-sans",
 	subsets: ["latin"],
 });
-
+// update
 const poppins = Poppins({
 	subsets: ["latin"],
 	weight: ["400", "500", "600", "700"],
