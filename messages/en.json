@@ -54,6 +54,7 @@
 		"nav": {
 			"dashboard": "Dashboard",
 			"vendors": "Vendors",
+			"integrationintake": "Integration Intake",
 			"filemonitoring": "File Monitoring",
 			"processingstatus": "Processing Status",
 			"filehistory": "File History",

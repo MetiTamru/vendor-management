@@ -4,6 +4,7 @@ import {
 	AlertTriangle,
 	BarChart3,
 	Bell,
+	Cable,
 	CalendarDays,
 	CheckCircle2,
 	ClipboardList,
@@ -52,6 +53,7 @@ import { useAdminModuleStore } from "@/stores/admin-module-store";
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
 	Vendors: Users,
+	"Integration Intake": Cable,
 	"File Monitoring": FolderKanban,
 	"Processing Status": FileSearch,
 	"File History": History,

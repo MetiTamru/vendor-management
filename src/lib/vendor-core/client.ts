@@ -1,0 +1,146 @@
+/**
+ * HTTP client for services/vendor-management-core (Django JWT API).
+ * Base URL: NEXT_PUBLIC_VENDOR_CORE_API_URL (default http://localhost:8010)
+ */
+
+import type { ApiEnvelope, TokenPair } from "./types";
+
+const ACCESS_KEY = "vendor_core_access_token";
+const REFRESH_KEY = "vendor_core_refresh_token";
+
+export function getVendorCoreBaseUrl(): string {
+	return (
+		process.env.NEXT_PUBLIC_VENDOR_CORE_API_URL ?? "http://localhost:8010"
+	).replace(/\/$/, "");
+}
+
+export function isVendorCoreLive(): boolean {
+	return process.env.NEXT_PUBLIC_USE_VENDOR_CORE_API === "true";
+}
+
+export function getStoredAccessToken(): string | null {
+	if (typeof window === "undefined") return null;
+	return window.localStorage.getItem(ACCESS_KEY);
+}
+
+export function storeTokens(tokens: TokenPair) {
+	if (typeof window === "undefined") return;
+	window.localStorage.setItem(ACCESS_KEY, tokens.access);
+	window.localStorage.setItem(REFRESH_KEY, tokens.refresh);
+}
+
+export function clearTokens() {
+	if (typeof window === "undefined") return;
+	window.localStorage.removeItem(ACCESS_KEY);
+	window.localStorage.removeItem(REFRESH_KEY);
+}
+
+export class VendorCoreApiError extends Error {
+	status: number;
+	body: unknown;
+
+	constructor(message: string, status: number, body?: unknown) {
+		super(message);
+		this.name = "VendorCoreApiError";
+		this.status = status;
+		this.body = body;
+	}
+}
+
+type RequestOptions = RequestInit & {
+	params?: Record<string, string | number | undefined | null>;
+	auth?: boolean;
+	raw?: boolean;
+};
+
+function buildUrl(path: string, params?: RequestOptions["params"]) {
+	const base = getVendorCoreBaseUrl();
+	const normalized = path.startsWith("/") ? path : `/${path}`;
+	const url = new URL(normalized, `${base}/`);
+	if (params) {
+		Object.entries(params).forEach(([key, value]) => {
+			if (value === undefined || value === null || value === "") return;
+			url.searchParams.set(key, String(value));
+		});
+	}
+	return url.toString();
+}
+
+export async function vendorCoreLogin(input: {
+	username: string;
+	password: string;
+}): Promise<TokenPair> {
+	const response = await fetch(
+		buildUrl("/api/v1/authentication/token/"),
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(input),
+		}
+	);
+	const text = await response.text();
+	const data = text ? JSON.parse(text) : {};
+	if (!response.ok) {
+		throw new VendorCoreApiError(
+			data?.detail ?? data?.message ?? "Login failed",
+			response.status,
+			data
+		);
+	}
+	// SimpleJWT may return flat {access,refresh} or envelope
+	const tokens: TokenPair = data.access
+		? { access: data.access, refresh: data.refresh }
+		: {
+				access: data.result?.access,
+				refresh: data.result?.refresh,
+			};
+	if (!tokens.access) {
+		throw new VendorCoreApiError("Token response missing access", 500, data);
+	}
+	storeTokens(tokens);
+	return tokens;
+}
+
+export async function vendorCoreFetch<T>(
+	path: string,
+	options: RequestOptions = {}
+): Promise<T> {
+	const { params, auth = true, raw = false, headers, ...init } = options;
+	const reqHeaders: HeadersInit = {
+		Accept: "application/json",
+		...(init.body ? { "Content-Type": "application/json" } : {}),
+		...headers,
+	};
+	if (auth) {
+		const token = getStoredAccessToken();
+		if (token) {
+			(reqHeaders as Record<string, string>).Authorization = `Bearer ${token}`;
+		}
+	}
+
+	const response = await fetch(buildUrl(path, params), {
+		...init,
+		headers: reqHeaders,
+	});
+
+	const text = await response.text();
+	const data = text ? JSON.parse(text) : undefined;
+
+	if (!response.ok) {
+		throw new VendorCoreApiError(
+			data?.message ?? data?.detail ?? `Request failed (${response.status})`,
+			response.status,
+			data
+		);
+	}
+
+	if (raw) {
+		return data as T;
+	}
+
+	// Prefer envelope.result when present
+	if (data && typeof data === "object" && "result" in data) {
+		return (data as ApiEnvelope<T>).result;
+	}
+	return data as T;
+}
