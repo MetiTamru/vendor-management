@@ -69,14 +69,14 @@ import {
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
 import {
+	type ClaimLine,
+	type ClaimVendorFile,
 	REJECT_REASON_CATALOG,
 	claimsForFile,
 	filesForProgram,
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-	type ClaimLine,
-	type ClaimVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -113,7 +113,8 @@ export function OutboundVendorFilePage() {
 	const rows = useMemo(() => {
 		const filtered = base.filter((f) => {
 			if (vendor !== "all" && f.vendor !== vendor) return false;
-			if (decision === "accepted" && f.reviewStatus !== "accepted") return false;
+			if (decision === "accepted" && f.reviewStatus !== "accepted")
+				return false;
 			if (decision === "denied" && f.reviewStatus !== "denied") return false;
 			if (sendStatus !== "all" && f.outboundSendStatus !== sendStatus)
 				return false;
@@ -149,7 +150,16 @@ export function OutboundVendorFilePage() {
 				);
 			return sortDir === "asc" ? cmp : -cmp;
 		});
-	}, [base, vendor, decision, sendStatus, reasonCode, search, sortKey, sortDir]);
+	}, [
+		base,
+		vendor,
+		decision,
+		sendStatus,
+		reasonCode,
+		search,
+		sortKey,
+		sortDir,
+	]);
 
 	const { pageRows, pageCount, safePage } = usePagedRows(
 		rows,
@@ -195,26 +205,24 @@ export function OutboundVendorFilePage() {
 		const reasonCounts = REJECT_REASON_CATALOG.map((r) => ({
 			code: r.code,
 			description: r.description,
-			count: base.filter((f) =>
-				f.rejectReasons.some((x) => x.code === r.code)
-			).length,
+			count: base.filter((f) => f.rejectReasons.some((x) => x.code === r.code))
+				.length,
 		}))
 			.filter((r) => r.count > 0)
 			.sort((a, b) => b.count - a.count);
 
 		const byReviewer = Object.entries(
-			base.reduce<Record<string, { files: number; accepted: number; denied: number }>>(
-				(acc, f) => {
-					const name = f.reviewedBy ?? "Unknown";
-					const cur = acc[name] ?? { files: 0, accepted: 0, denied: 0 };
-					cur.files += 1;
-					if (f.reviewStatus === "accepted") cur.accepted += 1;
-					else if (f.reviewStatus === "denied") cur.denied += 1;
-					acc[name] = cur;
-					return acc;
-				},
-				{}
-			)
+			base.reduce<
+				Record<string, { files: number; accepted: number; denied: number }>
+			>((acc, f) => {
+				const name = f.reviewedBy ?? "Unknown";
+				const cur = acc[name] ?? { files: 0, accepted: 0, denied: 0 };
+				cur.files += 1;
+				if (f.reviewStatus === "accepted") cur.accepted += 1;
+				else if (f.reviewStatus === "denied") cur.denied += 1;
+				acc[name] = cur;
+				return acc;
+			}, {})
 		)
 			.map(([name, v]) => ({ name, ...v }))
 			.sort((a, b) => b.files - a.files);
@@ -598,9 +606,7 @@ export function OutboundVendorFilePage() {
 														{row.accepted} ok
 													</span>
 													{" · "}
-													<span className="text-red-700">
-														{row.denied} dn
-													</span>
+													<span className="text-red-700">{row.denied} dn</span>
 												</p>
 											</div>
 										</TableCell>
@@ -787,7 +793,11 @@ export function OutboundVendorFilePage() {
 							<BarChart data={analytics.sendPipeline}>
 								<CartesianGrid strokeDasharray="3 3" vertical={false} />
 								<XAxis dataKey="name" tick={{ fontSize: 11 }} />
-								<YAxis allowDecimals={false} width={28} tick={{ fontSize: 11 }} />
+								<YAxis
+									allowDecimals={false}
+									width={28}
+									tick={{ fontSize: 11 }}
+								/>
 								<Tooltip />
 								<Bar dataKey="value" radius={[4, 4, 0, 0]}>
 									{analytics.sendPipeline.map((s) => (
@@ -848,9 +858,7 @@ export function OutboundVendorFilePage() {
 									value={r.count}
 									max={analytics.maxReason}
 									suffix="pkgs"
-									tone={
-										reasonCode === r.code ? "bg-red-600" : "bg-red-400/80"
-									}
+									tone={reasonCode === r.code ? "bg-red-600" : "bg-red-400/80"}
 								/>
 								<p className="mt-0.5 truncate text-[10px] text-muted-foreground">
 									{r.description}
@@ -915,7 +923,11 @@ export function OutboundVendorFilePage() {
 							>
 								<CartesianGrid strokeDasharray="3 3" vertical={false} />
 								<XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
-								<YAxis allowDecimals={false} width={32} tick={{ fontSize: 11 }} />
+								<YAxis
+									allowDecimals={false}
+									width={32}
+									tick={{ fontSize: 11 }}
+								/>
 								<Tooltip />
 								<Bar
 									dataKey="accepted"

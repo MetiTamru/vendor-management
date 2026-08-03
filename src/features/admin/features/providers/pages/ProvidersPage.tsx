@@ -32,10 +32,10 @@ import {
 } from "@/components/ui/table";
 import {
 	PROVIDER_SUMMARIES,
+	type ProviderStatus,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
-	type ProviderStatus,
 } from "@/features/admin/features/providers/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -86,7 +86,8 @@ export function ProvidersPage() {
 		return programScoped.filter((p) => {
 			if (status !== "all" && p.status !== status) return false;
 			if (specialty !== "all" && p.specialty !== specialty) return false;
-			if (providerType !== "all" && p.providerType !== providerType) return false;
+			if (providerType !== "all" && p.providerType !== providerType)
+				return false;
 			if (!q) return true;
 			const hay = [
 				p.name,
@@ -389,7 +390,12 @@ export function ProvidersPage() {
 										className="pr-3"
 										onClick={(e) => e.stopPropagation()}
 									>
-										<Button asChild variant="outline" size="sm" className="h-7 text-xs">
+										<Button
+											asChild
+											variant="outline"
+											size="sm"
+											className="h-7 text-xs"
+										>
 											<Link href={`/admin/providers/${p.id}`}>Open</Link>
 										</Button>
 									</TableCell>

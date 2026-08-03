@@ -161,9 +161,7 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 			if (prev === "providers") {
 				const provider = getProvider(decodeURIComponent(segment));
 				items.push({
-					label: provider
-						? displayProviderName(provider)
-						: "Provider Profile",
+					label: provider ? displayProviderName(provider) : "Provider Profile",
 					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;

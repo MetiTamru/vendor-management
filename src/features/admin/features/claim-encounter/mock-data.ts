@@ -19,12 +19,18 @@ export type RejectReason = {
 /** Catalog of MFC reject reasons shown in review + exceptions. */
 export const REJECT_REASON_CATALOG: RejectReason[] = [
 	{ code: "CLM-4010", description: "Invalid member ID for program" },
-	{ code: "NM1-2100", description: "Billing provider NPI missing or mismatched" },
+	{
+		code: "NM1-2100",
+		description: "Billing provider NPI missing or mismatched",
+	},
 	{ code: "CLM-4022", description: "Duplicate claim submission" },
 	{ code: "DTP-4720", description: "Service date outside coverage window" },
 	{ code: "HI-ABK0", description: "Missing or invalid principal diagnosis" },
 	{ code: "SV2-1200", description: "Service line units exceed expected range" },
-	{ code: "CLM-4031", description: "Claim charge does not balance to service lines" },
+	{
+		code: "CLM-4031",
+		description: "Claim charge does not balance to service lines",
+	},
 ];
 
 export type ClaimVendorFile = {
@@ -600,13 +606,12 @@ export function applyClaimReviews(
 	reviewedBy = "Current User"
 ) {
 	const file = getVendorFile(fileId);
-	const now = new Date()
-		.toISOString()
-		.slice(0, 16)
-		.replace("T", " ");
+	const now = new Date().toISOString().slice(0, 16).replace("T", " ");
 	for (const update of updates) {
 		const line = CLAIM_LINES.find(
-			(c) => c.claimId === update.claimId && (c.fileId === fileId || c.fileId === file?.fileId)
+			(c) =>
+				c.claimId === update.claimId &&
+				(c.fileId === fileId || c.fileId === file?.fileId)
 		);
 		if (!line) continue;
 		line.mfcReviewStatus = update.status;
@@ -623,8 +628,12 @@ export function applyClaimReviews(
 		const fileClaims = claimsForFile(file.fileId);
 		const allDecided = fileClaims.every((c) => c.mfcReviewStatus !== "pending");
 		if (allDecided) {
-			const anyRejected = fileClaims.some((c) => c.mfcReviewStatus === "rejected");
-			const allRejected = fileClaims.every((c) => c.mfcReviewStatus === "rejected");
+			const anyRejected = fileClaims.some(
+				(c) => c.mfcReviewStatus === "rejected"
+			);
+			const allRejected = fileClaims.every(
+				(c) => c.mfcReviewStatus === "rejected"
+			);
 			const acceptedCount = fileClaims.filter(
 				(c) => c.mfcReviewStatus === "accepted"
 			).length;
@@ -647,8 +656,7 @@ export function applyClaimReviews(
 				file.reviewStatus = "rejected";
 				file.status = "rejected";
 				file.outboundSendStatus = "notified";
-				file.notes =
-					"MFC rejected — returned to inbound for vendor correction";
+				file.notes = "MFC rejected — returned to inbound for vendor correction";
 			} else {
 				// Accepted (or mixed with accepts) move to outbound
 				file.direction = "outbound";

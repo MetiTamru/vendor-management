@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -33,15 +33,15 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	type ClaimStatus,
+	type EligibilityStatus,
+	type ExceptionStatus,
+	type MemberStatus,
 	displayName,
 	formatCurrency,
 	formatDate,
 	getMember,
 	maskSsn,
-	type ClaimStatus,
-	type EligibilityStatus,
-	type ExceptionStatus,
-	type MemberStatus,
 } from "@/features/admin/features/members/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -199,8 +199,7 @@ export function MemberDetailPage({
 	}
 
 	const name = displayName(member);
-	const claimRows =
-		claimsPane === "claims" ? member.claims : member.encounters;
+	const claimRows = claimsPane === "claims" ? member.claims : member.encounters;
 
 	return (
 		<div className="space-y-3">
@@ -878,8 +877,13 @@ function TabBody({
 						["Program", member.program],
 						["Status", member.status],
 					].map(([k, v]) => (
-						<div key={k} className="rounded-md border border-border/40 px-3 py-2">
-							<dt className="text-[10px] uppercase text-muted-foreground">{k}</dt>
+						<div
+							key={k}
+							className="rounded-md border border-border/40 px-3 py-2"
+						>
+							<dt className="text-[10px] uppercase text-muted-foreground">
+								{k}
+							</dt>
 							<dd className="mt-0.5 text-sm font-medium">{v}</dd>
 						</div>
 					))}
@@ -943,7 +947,9 @@ function TabBody({
 						<TableBody>
 							{member.planHistory.map((r) => (
 								<TableRow key={r.id}>
-									<TableCell className="text-sm font-medium">{r.planName}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{r.planName}
+									</TableCell>
 									<TableCell className="text-sm">{r.planType}</TableCell>
 									<TableCell className="tabular-nums text-sm">
 										{formatDate(r.startDate)}
@@ -978,7 +984,9 @@ function TabBody({
 						<TableBody>
 							{member.dependents.map((d) => (
 								<TableRow key={d.id}>
-									<TableCell className="text-sm font-medium">{d.name}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{d.name}
+									</TableCell>
 									<TableCell className="text-sm">{d.relationship}</TableCell>
 									<TableCell className="tabular-nums text-sm">
 										{formatDate(d.dob)}
@@ -1022,7 +1030,9 @@ function TabBody({
 									<TableCell className="tabular-nums text-sm">
 										{formatDate(c.dos)}
 									</TableCell>
-									<TableCell className="font-mono text-xs">{c.claimNumber}</TableCell>
+									<TableCell className="font-mono text-xs">
+										{c.claimNumber}
+									</TableCell>
 									<TableCell className="text-sm">{c.type}</TableCell>
 									<TableCell className="text-sm">{c.provider}</TableCell>
 									<TableCell className="text-right tabular-nums text-sm">
@@ -1060,7 +1070,9 @@ function TabBody({
 						<TableBody>
 							{member.accumulators.map((a) => (
 								<TableRow key={a.id}>
-									<TableCell className="text-sm font-medium">{a.label}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{a.label}
+									</TableCell>
 									<TableCell className="text-right tabular-nums text-sm">
 										{formatCurrency(a.individual)}
 									</TableCell>
@@ -1098,7 +1110,9 @@ function TabBody({
 						<TableBody>
 							{member.vendorHistory.map((v) => (
 								<TableRow key={v.id}>
-									<TableCell className="text-sm font-medium">{v.vendor}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{v.vendor}
+									</TableCell>
 									<TableCell className="text-sm">{v.fileFeedType}</TableCell>
 									<TableCell className="tabular-nums text-sm">
 										{v.lastReceived}

@@ -50,7 +50,13 @@ import {
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-const TABS = ["Overview", "Claim Outcomes", "Remittance", "EDI", "Linked Batch"] as const;
+const TABS = [
+	"Overview",
+	"Claim Outcomes",
+	"Remittance",
+	"EDI",
+	"Linked Batch",
+] as const;
 type Tab = (typeof TABS)[number];
 
 export function ResponseDetailPage() {
@@ -527,6 +533,10 @@ function ResponseEdiPanel({
 }) {
 	const load = useCallback(() => loadEdiFixture(fixture), [fixture]);
 	return (
-		<EdiViewerLoader load={load} fileName={fileName} className="min-h-[520px]" />
+		<EdiViewerLoader
+			load={load}
+			fileName={fileName}
+			className="min-h-[520px]"
+		/>
 	);
 }

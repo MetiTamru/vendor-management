@@ -75,12 +75,7 @@ function depthFor835(tag: string): number {
 	if (tag === "ISA") return 0;
 	if (tag === "GS" || tag === "GE" || tag === "IEA") return 1;
 	if (tag === "ST" || tag === "SE") return 2;
-	if (
-		tag === "BPR" ||
-		tag === "TRN" ||
-		tag === "REF" ||
-		tag === "DTM"
-	)
+	if (tag === "BPR" || tag === "TRN" || tag === "REF" || tag === "DTM")
 		return 3;
 	if (tag === "N1" || tag === "N3" || tag === "N4" || tag === "PER") return 3;
 	if (tag === "LX") return 3;
@@ -141,7 +136,8 @@ function findGroupEnd(
 
 function groupLabel(seg: X12Segment): string {
 	const tag = seg.tag;
-	if (tag === "ST") return `ST ${seg.elements[1] ?? ""} #${seg.elements[2] ?? ""}`.trim();
+	if (tag === "ST")
+		return `ST ${seg.elements[1] ?? ""} #${seg.elements[2] ?? ""}`.trim();
 	if (tag === "HL")
 		return `HL ${seg.elements[1] ?? ""} lvl ${seg.elements[3] ?? ""}`;
 	if (tag === "CLM") return `Claim ${seg.elements[1] ?? ""}`;
@@ -149,7 +145,8 @@ function groupLabel(seg: X12Segment): string {
 	if (tag === "LX") return `LX ${seg.elements[1] ?? ""}`;
 	if (tag === "SVC" || tag === "SV1" || tag === "SV2")
 		return `Service ${seg.elements[1] ?? ""}`;
-	if (tag === "N1") return `N1 ${seg.elements[1] ?? ""} ${seg.elements[2] ?? ""}`.trim();
+	if (tag === "N1")
+		return `N1 ${seg.elements[1] ?? ""} ${seg.elements[2] ?? ""}`.trim();
 	if (tag === "NM1")
 		return `NM1 ${seg.elements[1] ?? ""} ${seg.elements[3] ?? ""}`.trim();
 	if (tag === "GS") return `GS ${seg.elements[1] ?? ""}`;

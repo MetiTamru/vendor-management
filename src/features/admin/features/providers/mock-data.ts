@@ -138,7 +138,7 @@ const PRACTICES = [
 	"Georgetown Medical Associates",
 ];
 
-const NAMES = [
+const NAMES: Array<[string, string, string]> = [
 	["John", "Smith", "MD"],
 	["Maria", "Garcia", "MD"],
 	["James", "Williams", "DO"],
@@ -186,7 +186,13 @@ function buildSummaries(): ProviderSummary[] {
 		const [specialty, subspecialty] = SPECIALTIES[i % SPECIALTIES.length]!;
 		const program = PROGRAMS[i % 3]!;
 		const status: ProviderStatus =
-			i % 11 === 0 ? "termed" : i % 9 === 0 ? "pending" : i % 7 === 0 ? "inactive" : "active";
+			i % 11 === 0
+				? "termed"
+				: i % 9 === 0
+					? "pending"
+					: i % 7 === 0
+						? "inactive"
+						: "active";
 		const claims = 4200 + ((i * 317) % 6000);
 		const encounters = Math.round(claims * 0.84);
 		const billed = 1_800_000 + i * 95_000 + ((i * 12345) % 400_000);
@@ -212,7 +218,11 @@ function buildSummaries(): ProviderSummary[] {
 			practiceAddress: `${100 + i * 11} ${["K St NW", "M St NE", "Connecticut Ave", "Georgia Ave"][i % 4]}, Washington, DC 200${10 + (i % 40)}`,
 			practicePhone: `(202) ${555 + (i % 40)}-${2000 + ((i * 13) % 7000)}`,
 			enrollmentStatus:
-				status === "termed" ? "terminated" : status === "pending" ? "pending" : "enrolled",
+				status === "termed"
+					? "terminated"
+					: status === "pending"
+						? "pending"
+						: "enrolled",
 			enrollmentEffective: `202${i % 4}-0${(i % 8) + 1}-15`,
 			claims12m: claims,
 			encounters12m: encounters,
@@ -275,10 +285,30 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 	});
 
 	const rejectionReasons: RejectionReason[] = [
-		{ id: "rr1", reason: "Invalid member ID", count: isJohn ? 184 : 42, pct: 22.4 },
-		{ id: "rr2", reason: "Missing authorization", count: isJohn ? 156 : 38, pct: 19.0 },
-		{ id: "rr3", reason: "Duplicate claim", count: isJohn ? 121 : 29, pct: 14.7 },
-		{ id: "rr4", reason: "Coding / diagnosis error", count: isJohn ? 98 : 24, pct: 11.9 },
+		{
+			id: "rr1",
+			reason: "Invalid member ID",
+			count: isJohn ? 184 : 42,
+			pct: 22.4,
+		},
+		{
+			id: "rr2",
+			reason: "Missing authorization",
+			count: isJohn ? 156 : 38,
+			pct: 19.0,
+		},
+		{
+			id: "rr3",
+			reason: "Duplicate claim",
+			count: isJohn ? 121 : 29,
+			pct: 14.7,
+		},
+		{
+			id: "rr4",
+			reason: "Coding / diagnosis error",
+			count: isJohn ? 98 : 24,
+			pct: 11.9,
+		},
 		{ id: "rr5", reason: "Timely filing", count: isJohn ? 76 : 18, pct: 9.2 },
 	];
 
@@ -455,7 +485,8 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 					{
 						id: "ex2",
 						exceptionType: "Network Pending",
-						description: "DC Healthy Families participation pending payer response",
+						description:
+							"DC Healthy Families participation pending payer response",
 						status: "open",
 						dateIdentified: "2026-06-22",
 					},
@@ -481,11 +512,12 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 	};
 }
 
-export const PROVIDER_DETAILS: Record<string, ProviderDetail> = Object.fromEntries(
-	PROVIDER_SUMMARIES.map((s) => [s.id, detailFor(s)])
-);
+export const PROVIDER_DETAILS: Record<string, ProviderDetail> =
+	Object.fromEntries(PROVIDER_SUMMARIES.map((s) => [s.id, detailFor(s)]));
 
-export function displayProviderName(p: Pick<ProviderSummary, "name" | "credentials">) {
+export function displayProviderName(
+	p: Pick<ProviderSummary, "name" | "credentials">
+) {
 	return `${p.name}, ${p.credentials}`;
 }
 

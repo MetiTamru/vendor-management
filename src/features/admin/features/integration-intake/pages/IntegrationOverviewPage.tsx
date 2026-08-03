@@ -27,19 +27,19 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { cn } from "@/lib/utils";
 import {
+	type ConnectionDto,
+	type ErrorRecordDto,
+	type IntakeJobDto,
+	type MonitoringDashboardDto,
 	clearTokens,
 	getStoredAccessToken,
 	getVendorCoreBaseUrl,
 	isVendorCoreLive,
 	vendorCoreApi,
 	vendorCoreLogin,
-	type ConnectionDto,
-	type ErrorRecordDto,
-	type IntakeJobDto,
-	type MonitoringDashboardDto,
 } from "@/lib/vendor-core";
-import { cn } from "@/lib/utils";
 
 function StatCard({
 	title,
@@ -102,7 +102,10 @@ export function IntegrationOverviewPage() {
 			const message =
 				err instanceof Error ? err.message : "Failed to load vendor-core data";
 			setError(message);
-			if (message.toLowerCase().includes("401") || message.includes("credent")) {
+			if (
+				message.toLowerCase().includes("401") ||
+				message.includes("credent")
+			) {
 				setAuthed(false);
 				clearTokens();
 			}
@@ -183,7 +186,9 @@ export function IntegrationOverviewPage() {
 					</h1>
 					<p className="text-muted-foreground mt-1 text-sm">
 						Connect this dashboard to{" "}
-						<code className="rounded bg-muted px-1">vendor-management-core</code>{" "}
+						<code className="rounded bg-muted px-1">
+							vendor-management-core
+						</code>{" "}
 						to visualize connections, intake jobs, monitoring, and errors.
 					</p>
 				</div>
@@ -193,7 +198,7 @@ export function IntegrationOverviewPage() {
 							Set in <code>.env</code>:
 						</p>
 						<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
-{`NEXT_PUBLIC_USE_VENDOR_CORE_API=true
+							{`NEXT_PUBLIC_USE_VENDOR_CORE_API=true
 NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 						</pre>
 						<p>
@@ -233,9 +238,7 @@ NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 						autoComplete="current-password"
 						required
 					/>
-					{error ? (
-						<p className="text-sm text-destructive">{error}</p>
-					) : null}
+					{error ? <p className="text-sm text-destructive">{error}</p> : null}
 					<Button type="submit" disabled={loading} className="w-full">
 						{loading ? (
 							<>
@@ -339,7 +342,9 @@ NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 								))}
 							</ul>
 						) : (
-							<p className="text-sm text-muted-foreground">No file stage data yet.</p>
+							<p className="text-sm text-muted-foreground">
+								No file stage data yet.
+							</p>
 						)}
 					</CardContent>
 				</Card>
@@ -514,7 +519,9 @@ NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 							{errors.map((err) => (
 								<TableRow key={err.id}>
 									<TableCell>{err.category}</TableCell>
-									<TableCell className="font-mono text-xs">{err.code}</TableCell>
+									<TableCell className="font-mono text-xs">
+										{err.code}
+									</TableCell>
 									<TableCell className="max-w-md truncate text-sm">
 										{err.business_explanation || err.technical_message}
 									</TableCell>

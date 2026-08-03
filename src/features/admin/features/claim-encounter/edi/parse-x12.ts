@@ -51,9 +51,7 @@ export function parseX12(raw: string): X12Document {
 		const elements = rawSeg.split(delimiters.element);
 		const tag = elements[0] ?? "";
 		const composites = elements.map((el) =>
-			el.includes(delimiters.composite)
-				? el.split(delimiters.composite)
-				: [el]
+			el.includes(delimiters.composite) ? el.split(delimiters.composite) : [el]
 		);
 		return { index, tag, raw: rawSeg, elements, composites };
 	});
@@ -138,10 +136,7 @@ export function summarizeX12(doc: X12Document): EdiSummary {
 	};
 }
 
-export function findSegmentIndexes(
-	doc: X12Document,
-	query: string
-): number[] {
+export function findSegmentIndexes(doc: X12Document, query: string): number[] {
 	const q = query.trim().toLowerCase();
 	if (!q) return [];
 	const hits: number[] = [];

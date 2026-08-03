@@ -9,8 +9,8 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
-	EdiViewerLoader,
 	type EdiFixtureKey,
+	EdiViewerLoader,
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
 

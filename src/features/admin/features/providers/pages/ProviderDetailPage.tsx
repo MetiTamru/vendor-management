@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	Activity,
@@ -56,17 +56,17 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	type CredentialStatus,
+	type ExceptionStatus,
+	type FeedStatus,
+	type NetworkStatus,
+	type ProviderStatus,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
 	formatDate,
 	getProvider,
 	initials,
-	type CredentialStatus,
-	type ExceptionStatus,
-	type FeedStatus,
-	type NetworkStatus,
-	type ProviderStatus,
 } from "@/features/admin/features/providers/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -401,7 +401,9 @@ export function ProviderDetailPage({
 								</p>
 								<p>
 									<span className="text-muted-foreground">Tax ID:</span>{" "}
-									<span className="font-mono font-medium">{provider.taxId}</span>
+									<span className="font-mono font-medium">
+										{provider.taxId}
+									</span>
 								</p>
 								<p>
 									<span className="text-muted-foreground">UPIN:</span>{" "}
@@ -434,7 +436,9 @@ export function ProviderDetailPage({
 							["Years in practice", `${provider.yearsInPractice} years`],
 						].map(([k, v]) => (
 							<div key={k}>
-								<p className="text-[10px] uppercase text-muted-foreground">{k}</p>
+								<p className="text-[10px] uppercase text-muted-foreground">
+									{k}
+								</p>
 								<p className="font-medium">{v}</p>
 							</div>
 						))}
@@ -530,7 +534,9 @@ export function ProviderDetailPage({
 								<Table>
 									<TableHeader>
 										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-8 text-[10px]">Location</TableHead>
+											<TableHead className="h-8 text-[10px]">
+												Location
+											</TableHead>
 											<TableHead className="h-8 text-[10px]">Status</TableHead>
 											<TableHead className="h-8 text-[10px]">Primary</TableHead>
 										</TableRow>
@@ -571,7 +577,9 @@ export function ProviderDetailPage({
 										<TableRow className="hover:bg-transparent">
 											<TableHead className="h-8 text-[10px]">Network</TableHead>
 											<TableHead className="h-8 text-[10px]">Status</TableHead>
-											<TableHead className="h-8 text-[10px]">Effective</TableHead>
+											<TableHead className="h-8 text-[10px]">
+												Effective
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -661,11 +669,7 @@ export function ProviderDetailPage({
 									<ComposedChart data={provider.monthlyVolume}>
 										<CartesianGrid strokeDasharray="3 3" vertical={false} />
 										<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-										<YAxis
-											yAxisId="left"
-											tick={{ fontSize: 10 }}
-											width={28}
-										/>
+										<YAxis yAxisId="left" tick={{ fontSize: 10 }} width={28} />
 										<YAxis
 											yAxisId="right"
 											orientation="right"
@@ -938,7 +942,9 @@ function TabBody({
 							key={k}
 							className="rounded-md border border-border/40 px-3 py-2"
 						>
-							<dt className="text-[10px] uppercase text-muted-foreground">{k}</dt>
+							<dt className="text-[10px] uppercase text-muted-foreground">
+								{k}
+							</dt>
 							<dd className="mt-0.5 text-sm font-medium">{v}</dd>
 						</div>
 					))}
@@ -970,7 +976,9 @@ function TabBody({
 			<Panel title="Enrollment">
 				<div className="grid gap-3 sm:grid-cols-3">
 					<div className="rounded-md border border-border/40 p-3">
-						<p className="text-[10px] uppercase text-muted-foreground">Status</p>
+						<p className="text-[10px] uppercase text-muted-foreground">
+							Status
+						</p>
 						<p className="mt-1 text-sm font-semibold capitalize">
 							{provider.enrollmentStatus}
 						</p>
@@ -984,7 +992,9 @@ function TabBody({
 						</p>
 					</div>
 					<div className="rounded-md border border-border/40 p-3">
-						<p className="text-[10px] uppercase text-muted-foreground">Program</p>
+						<p className="text-[10px] uppercase text-muted-foreground">
+							Program
+						</p>
 						<p className="mt-1 text-sm font-semibold">{provider.program}</p>
 					</div>
 				</div>
@@ -1048,7 +1058,9 @@ function TabBody({
 						<TableBody>
 							{provider.locations.map((loc) => (
 								<TableRow key={loc.id}>
-									<TableCell className="text-sm font-medium">{loc.name}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{loc.name}
+									</TableCell>
 									<TableCell className="text-sm">{loc.address}</TableCell>
 									<TableCell className="text-sm">{loc.phone}</TableCell>
 									<TableCell>
@@ -1077,7 +1089,12 @@ function TabBody({
 							<YAxis tick={{ fontSize: 11 }} width={40} />
 							<Tooltip />
 							<Legend />
-							<Bar dataKey="claims" name="Claims" fill="#13446c" radius={[4, 4, 0, 0]} />
+							<Bar
+								dataKey="claims"
+								name="Claims"
+								fill="#13446c"
+								radius={[4, 4, 0, 0]}
+							/>
 							<Line
 								type="monotone"
 								dataKey="encounters"
@@ -1161,7 +1178,9 @@ function TabBody({
 						<TableBody>
 							{provider.vendors.map((v) => (
 								<TableRow key={v.id}>
-									<TableCell className="text-sm font-medium">{v.vendor}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{v.vendor}
+									</TableCell>
 									<TableCell className="text-sm">{v.fileType}</TableCell>
 									<TableCell className="text-sm">{v.dataSent}</TableCell>
 									<TableCell className="text-sm">{v.frequency}</TableCell>
