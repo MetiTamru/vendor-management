@@ -26,6 +26,20 @@ const vendorManagementNav: SidebarNavItem[] = [
 		module: "vendor_management",
 	},
 	{
+		title: "Members",
+		href: "/admin/members",
+		permission: "vendors-list",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
+		title: "Providers",
+		href: "/admin/providers",
+		permission: "vendors-list",
+		section: "vendor_management",
+		module: "vendor_management",
+	},
+	{
 		title: "File Monitoring",
 		href: "/admin/file-monitoring",
 		permission: "file-management-view",

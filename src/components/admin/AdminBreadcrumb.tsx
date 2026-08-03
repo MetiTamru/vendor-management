@@ -22,11 +22,20 @@ import { siteConfig } from "@/constants/siteconfig";
 import {
 	getClaimResponse,
 	getSubmissionBatch,
+	getVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import {
 	getFileRun,
 	getValidationIssue,
 } from "@/features/admin/features/file-management/mock-data";
+import {
+	displayName,
+	getMember,
+} from "@/features/admin/features/members/mock-data";
+import {
+	displayProviderName,
+	getProvider,
+} from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -37,6 +46,8 @@ type Crumb = {
 
 const STATIC_LABELS: Record<string, string> = {
 	vendors: "Vendors",
+	members: "Members",
+	providers: "Providers",
 	create: "Create",
 	invite: "Invite",
 	"file-monitoring": "File Monitoring",
@@ -79,6 +90,8 @@ const STATIC_LABELS: Record<string, string> = {
 	"acceptance-analytics": "Acceptance Analytics",
 	exceptions: "Exceptions / Rejections",
 	batches: "Submission Batches",
+	files: "Files",
+	review: "Review",
 };
 
 function formatSegment(segment: string) {
@@ -136,6 +149,26 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				continue;
 			}
 
+			if (prev === "members") {
+				const member = getMember(decodeURIComponent(segment));
+				items.push({
+					label: member ? displayName(member) : "Member Profile",
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (prev === "providers") {
+				const provider = getProvider(decodeURIComponent(segment));
+				items.push({
+					label: provider
+						? displayProviderName(provider)
+						: "Provider Profile",
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
 			if (
 				prev === "file-monitoring" &&
 				segment !== "select" &&
@@ -176,6 +209,15 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				const batch = getSubmissionBatch(decodeURIComponent(segment));
 				items.push({
 					label: batch?.batchId ?? "Batch Details",
+				});
+				continue;
+			}
+
+			if (prev === "files") {
+				const file = getVendorFile(decodeURIComponent(segment));
+				items.push({
+					label: file?.fileName ?? "File Details",
+					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;
 			}

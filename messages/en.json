@@ -55,6 +55,8 @@
 			"dashboard": "Dashboard",
 			"vendors": "Vendors",
 			"integrationintake": "Integration Intake",
+			"members": "Members",
+			"providers": "Providers",
 			"filemonitoring": "File Monitoring",
 			"processingstatus": "Processing Status",
 			"filehistory": "File History",

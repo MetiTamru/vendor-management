@@ -23,7 +23,9 @@ import {
 	Radio,
 	ScrollText,
 	Settings,
+	Stethoscope,
 	Timer,
+	UserRound,
 	Users,
 	Workflow,
 } from "lucide-react";
@@ -54,6 +56,8 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
 	Vendors: Users,
 	"Integration Intake": Cable,
+	Members: UserRound,
+	Providers: Stethoscope,
 	"File Monitoring": FolderKanban,
 	"Processing Status": FileSearch,
 	"File History": History,

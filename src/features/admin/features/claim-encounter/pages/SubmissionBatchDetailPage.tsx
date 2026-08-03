@@ -210,6 +210,16 @@ export function SubmissionBatchDetailPage() {
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-1.5">
+						{relatedFile ? (
+							<Button asChild variant="outline" size="sm" className="h-8 text-xs">
+								<Link
+									href={`/admin/claim-encounter/files/${encodeURIComponent(relatedFile.fileId)}`}
+								>
+									<FileText className="mr-1.5 size-3.5" />
+									View EDI
+								</Link>
+							</Button>
+						) : null}
 						<Button
 							variant="outline"
 							size="sm"

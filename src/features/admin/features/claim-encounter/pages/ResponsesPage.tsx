@@ -416,6 +416,13 @@ export function ResponsesPage() {
 													</DropdownMenuItem>
 													<DropdownMenuItem asChild>
 														<Link
+															href={`/admin/claim-encounter/responses/${row.id}`}
+														>
+															View EDI
+														</Link>
+													</DropdownMenuItem>
+													<DropdownMenuItem asChild>
+														<Link
 															href={`/admin/claim-encounter/batches/${encodeURIComponent(row.submissionBatch)}`}
 														>
 															View submission batch

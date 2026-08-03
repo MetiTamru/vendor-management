@@ -13,6 +13,14 @@ import {
 } from "@/components/ui/command";
 import { getModuleSidebarNav } from "@/constants/siteconfig";
 import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import {
+	MEMBER_SUMMARIES,
+	displayName,
+} from "@/features/admin/features/members/mock-data";
+import {
+	PROVIDER_SUMMARIES,
+	displayProviderName,
+} from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { useRouter } from "@/i18n/navigation";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -73,9 +81,9 @@ export function CommandPalette() {
 			open={open}
 			onOpenChange={setOpen}
 			title="Search"
-			description="Jump to pages, vendors, and file runs"
+			description="Jump to pages, vendors, members, providers, and file runs"
 		>
-			<CommandInput placeholder="Search pages, vendors, file runs…" />
+			<CommandInput placeholder="Search pages, vendors, members, providers…" />
 			<CommandList>
 				<CommandEmpty>No results found.</CommandEmpty>
 				<CommandGroup heading="Pages">
@@ -102,6 +110,38 @@ export function CommandPalette() {
 									{vendor.tradeName ?? vendor.legalName}
 								</CommandItem>
 							))}
+						</CommandGroup>
+						<CommandSeparator />
+						<CommandGroup heading="Members">
+							{MEMBER_SUMMARIES.filter((m) => m.program === fileType)
+								.slice(0, 20)
+								.map((member) => (
+									<CommandItem
+										key={member.id}
+										value={`member ${displayName(member)} ${member.memberId}`}
+										onSelect={() => go(`/admin/members/${member.id}`)}
+									>
+										<span className="truncate">
+											{displayName(member)} · {member.memberId}
+										</span>
+									</CommandItem>
+								))}
+						</CommandGroup>
+						<CommandSeparator />
+						<CommandGroup heading="Providers">
+							{PROVIDER_SUMMARIES.filter((p) => p.program === fileType)
+								.slice(0, 20)
+								.map((provider) => (
+									<CommandItem
+										key={provider.id}
+										value={`provider ${displayProviderName(provider)} ${provider.npi}`}
+										onSelect={() => go(`/admin/providers/${provider.id}`)}
+									>
+										<span className="truncate">
+											{displayProviderName(provider)} · {provider.npi}
+										</span>
+									</CommandItem>
+								))}
 						</CommandGroup>
 						<CommandSeparator />
 						<CommandGroup heading="File runs">

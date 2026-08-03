@@ -52,6 +52,9 @@
 		"nav": {
 			"dashboard": "ዳሽቦርድ",
 			"vendors": "አቅራቢዎች",
+			"integrationintake": "Integration Intake",
+			"members": "አባላት",
+			"providers": "አቅራቢ ሐኪሞች",
 			"filemonitoring": "የፋይል ክትትል",
 			"processingstatus": "የሂደት ሁኔታ",
 			"filehistory": "የፋይል ታሪክ",

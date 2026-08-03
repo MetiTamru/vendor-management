@@ -12,11 +12,13 @@ function ScrollArea({
 	scrollbarClassName,
 	thumbClassName,
 	viewportClassName,
+	viewportRef,
 	...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
 	scrollbarClassName?: string;
 	thumbClassName?: string;
 	viewportClassName?: string;
+	viewportRef?: React.Ref<HTMLDivElement>;
 }) {
 	return (
 		<ScrollAreaPrimitive.Root
@@ -26,6 +28,7 @@ function ScrollArea({
 		>
 			<ScrollAreaPrimitive.Viewport
 				data-slot="scroll-area-viewport"
+				ref={viewportRef}
 				className={cn(
 					"focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1",
 					viewportClassName ?? "[&>div]:!block [&>div]:min-w-0"

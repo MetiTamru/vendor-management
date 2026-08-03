@@ -9,6 +9,24 @@ export type ClaimFileStatus =
 	| "paid"
 	| "denied";
 
+export type MfcReviewStatus = "pending" | "accepted" | "rejected" | "denied";
+
+export type RejectReason = {
+	code: string;
+	description: string;
+};
+
+/** Catalog of MFC reject reasons shown in review + exceptions. */
+export const REJECT_REASON_CATALOG: RejectReason[] = [
+	{ code: "CLM-4010", description: "Invalid member ID for program" },
+	{ code: "NM1-2100", description: "Billing provider NPI missing or mismatched" },
+	{ code: "CLM-4022", description: "Duplicate claim submission" },
+	{ code: "DTP-4720", description: "Service date outside coverage window" },
+	{ code: "HI-ABK0", description: "Missing or invalid principal diagnosis" },
+	{ code: "SV2-1200", description: "Service line units exceed expected range" },
+	{ code: "CLM-4031", description: "Claim charge does not balance to service lines" },
+];
+
 export type ClaimVendorFile = {
 	id: string;
 	fileId: string;
@@ -30,6 +48,17 @@ export type ClaimVendorFile = {
 	responseCode: string | null;
 	notes: string | null;
 	avgResponseMinutes: number | null;
+	/** MFC review lifecycle */
+	reviewStatus: MfcReviewStatus;
+	rejectReasons: RejectReason[];
+	reviewedAt: string | null;
+	reviewedBy: string | null;
+	/** For outbound rows: the inbound file this was reviewed from */
+	sourceInboundFileId: string | null;
+	/** Queued / sent for accepted outbound; notified for rejected */
+	outboundSendStatus: "queued" | "sent" | "notified" | null;
+	/** EDI fixture key used by the viewer */
+	ediFixture: "837I" | "835";
 };
 
 export type ClaimResponse = {
@@ -53,6 +82,7 @@ export type ClaimResponse = {
 	status: ClaimFileStatus;
 	summary: string;
 	direction: "inbound" | "outbound";
+	ediFixture: "837I" | "835";
 };
 
 export type ClaimException = {
@@ -91,154 +121,209 @@ const VENDORS = [
 
 function seedFiles(): ClaimVendorFile[] {
 	const rows: ClaimVendorFile[] = [];
-	const statuses: ClaimFileStatus[] = [
-		"accepted",
-		"rejected",
-		"pending",
-		"partial",
-		"paid",
-		"denied",
-	];
+	const reviewers = ["A. Mensah", "J. Okonkwo", "S. Diallo", "M. Abebe"];
 
-	for (let i = 0; i < 28; i++) {
+	// Inbound: pending review + MFC-rejected (stay inbound for vendor rework)
+	for (let i = 0; i < 14; i++) {
 		const program: ProgramFileType =
 			i % 3 === 0 ? "MDH" : i % 3 === 1 ? "DHCF" : "BHP";
-		const direction = i % 3 === 0 ? "outbound" : "inbound";
 		const vendorMeta = VENDORS[i % VENDORS.length]!;
-		const transactionType: ClaimVendorFile["transactionType"] =
-			direction === "inbound"
-				? i % 4 === 3
-					? "999"
-					: "837"
-				: (["835", "277CA", "999", "TA1"] as const)[i % 4]!;
-		const records = 800 + ((i * 137) % 4200);
-		const submitted = Math.max(records - (i % 5), Math.floor(records * 0.97));
-		const rejected = i % 5 === 0 ? Math.floor(submitted * 0.035) : (i % 11) * 8;
-		const partial = i % 4 === 0 ? Math.floor(submitted * 0.012) : (i % 6) * 5;
-		const accepted = Math.max(0, submitted - rejected - partial);
-		const paid = Math.floor(accepted * (0.82 + (i % 5) * 0.03));
-		const denied = Math.max(0, accepted - paid);
+		const records = 40 + ((i * 17) % 120);
 		const day = String(20 + (i % 8)).padStart(2, "0");
 		const hour = String(7 + (i % 10)).padStart(2, "0");
-
+		const isRejected = i % 5 === 0 && i > 0;
+		const reasons = isRejected
+			? [
+					REJECT_REASON_CATALOG[i % REJECT_REASON_CATALOG.length]!,
+					REJECT_REASON_CATALOG[(i + 2) % REJECT_REASON_CATALOG.length]!,
+				]
+			: [];
 		rows.push({
-			id: `cf-${i + 1}`,
-			fileId: `CE-2026-07${day}-${String(100 + i).padStart(3, "0")}`,
+			id: `cf-in-${i + 1}`,
+			fileId: `CE-IN-2026-07${day}-${String(100 + i).padStart(3, "0")}`,
 			vendor: vendorMeta.name,
-			direction,
+			direction: "inbound",
 			program,
 			fileTypeLabel: vendorMeta.fileType,
-			transactionType: transactionType as ClaimVendorFile["transactionType"],
-			fileName: `${program}_${vendorMeta.name.toUpperCase()}_${vendorMeta.fileType.replace(/\s|\//g, "")}_202607${day}.edi`,
+			transactionType: "837",
+			fileName:
+				i === 0
+					? "837I_Magellan_sample.txt"
+					: isRejected
+						? `${program}_${vendorMeta.name.toUpperCase()}_837_REJECTED_202607${day}.edi`
+						: `${program}_${vendorMeta.name.toUpperCase()}_837_202607${day}.edi`,
 			receivedAt: `2026-07-${day} ${hour}:${String((i * 7) % 60).padStart(2, "0")}`,
 			records,
-			submitted,
-			accepted,
-			rejected,
-			partial,
-			paid,
-			denied,
-			status: statuses[i % statuses.length]!,
-			responseCode: i % 4 === 0 ? null : `R-${9000 + i}`,
-			notes:
-				i % 6 === 0
-					? "Awaiting Gainwell acknowledgement"
-					: i % 5 === 0
-						? "Segment-level rejections present"
-						: null,
-			avgResponseMinutes: 18 + (i % 9) * 7,
+			submitted: records,
+			accepted: 0,
+			rejected: isRejected ? records : 0,
+			partial: 0,
+			paid: 0,
+			denied: 0,
+			status: isRejected ? "rejected" : "pending",
+			responseCode: isRejected ? `RJ-${9000 + i}` : null,
+			notes: isRejected
+				? "MFC rejected — returned to inbound for vendor correction"
+				: "Awaiting MFC claim review",
+			avgResponseMinutes: isRejected ? 18 + (i % 5) * 4 : null,
+			reviewStatus: isRejected ? "rejected" : "pending",
+			rejectReasons: reasons,
+			reviewedAt: isRejected
+				? `2026-07-${day} ${String(11 + (i % 5)).padStart(2, "0")}:${String((i * 9) % 60).padStart(2, "0")}`
+				: null,
+			reviewedBy: isRejected ? reviewers[i % reviewers.length]! : null,
+			sourceInboundFileId: null,
+			outboundSendStatus: isRejected ? "notified" : null,
+			ediFixture: "837I",
 		});
 	}
+
+	// Outbound: accepted (to Gainwell) + denied (Gainwell/payer denials)
+	for (let i = 0; i < 12; i++) {
+		const program: ProgramFileType =
+			i % 3 === 0 ? "MDH" : i % 3 === 1 ? "DHCF" : "BHP";
+		const vendorMeta = VENDORS[i % VENDORS.length]!;
+		const records = 35 + ((i * 13) % 90);
+		const isDeniedPackage = i % 4 === 0;
+		const deniedCount = isDeniedPackage
+			? records
+			: i % 3 === 0
+				? Math.max(2, Math.floor(records * 0.1))
+				: 0;
+		const accepted = records - deniedCount;
+		const day = String(18 + (i % 10)).padStart(2, "0");
+		const hour = String(9 + (i % 8)).padStart(2, "0");
+		const reasons = isDeniedPackage
+			? [
+					REJECT_REASON_CATALOG[i % REJECT_REASON_CATALOG.length]!,
+					REJECT_REASON_CATALOG[(i + 1) % REJECT_REASON_CATALOG.length]!,
+				]
+			: deniedCount > 0
+				? [REJECT_REASON_CATALOG[i % REJECT_REASON_CATALOG.length]!]
+				: [];
+		const sourceId = `CE-IN-2026-07${day}-${String(200 + i).padStart(3, "0")}`;
+		rows.push({
+			id: `cf-out-${i + 1}`,
+			fileId: `CE-OUT-2026-07${day}-${String(300 + i).padStart(3, "0")}`,
+			vendor: vendorMeta.name,
+			direction: "outbound",
+			program,
+			fileTypeLabel: vendorMeta.fileType,
+			transactionType: "837",
+			fileName: isDeniedPackage
+				? `${program}_${vendorMeta.name.toUpperCase()}_DENIED_202607${day}.edi`
+				: `${program}_${vendorMeta.name.toUpperCase()}_837_ACCEPTED_202607${day}.edi`,
+			receivedAt: `2026-07-${day} ${hour}:${String((i * 11) % 60).padStart(2, "0")}`,
+			records,
+			submitted: records,
+			accepted: isDeniedPackage ? 0 : accepted,
+			rejected: 0,
+			partial: 0,
+			paid: isDeniedPackage ? 0 : Math.floor(accepted * 0.85),
+			denied: deniedCount,
+			status: isDeniedPackage ? "denied" : "accepted",
+			responseCode: isDeniedPackage ? `DN-${9100 + i}` : `AC-${9200 + i}`,
+			notes: isDeniedPackage
+				? "Gainwell denied — denial codes returned to vendor"
+				: "MFC accepted — queued/sent to Gainwell",
+			avgResponseMinutes: 22 + (i % 6) * 5,
+			reviewStatus: isDeniedPackage ? "denied" : "accepted",
+			rejectReasons: reasons,
+			reviewedAt: `2026-07-${day} ${String(10 + (i % 6)).padStart(2, "0")}:${String((i * 13) % 60).padStart(2, "0")}`,
+			reviewedBy: reviewers[i % reviewers.length]!,
+			sourceInboundFileId: sourceId,
+			outboundSendStatus: isDeniedPackage
+				? "notified"
+				: i % 2 === 0
+					? "sent"
+					: "queued",
+			ediFixture: "837I",
+		});
+	}
+
 	return rows;
 }
 
 export const CLAIM_VENDOR_FILES: ClaimVendorFile[] = seedFiles();
 
-export const CLAIM_RESPONSES: ClaimResponse[] = CLAIM_VENDOR_FILES.map(
-	(file, i) => {
-		const pending = Math.max(
-			0,
-			file.submitted - file.paid - file.rejected - file.partial
-		);
-		const tabStatus: ClaimFileStatus =
-			i % 6 === 0
-				? "exception"
-				: i % 5 === 0
+export const CLAIM_RESPONSES: ClaimResponse[] = CLAIM_VENDOR_FILES.filter(
+	(f) => f.direction === "outbound" && f.reviewStatus === "accepted"
+).map((file, i) => {
+	const pending = Math.max(
+		0,
+		file.submitted - file.paid - file.denied - file.partial
+	);
+	const paid = Math.floor(file.accepted * 0.88);
+	const rejected = Math.max(
+		0,
+		file.accepted - paid - Math.floor(file.accepted * 0.05)
+	);
+	const partialPaid = Math.max(0, file.accepted - paid - rejected);
+	const tabStatus: ClaimFileStatus =
+		i % 5 === 0
+			? "partial"
+			: i % 4 === 0
+				? "denied"
+				: i % 3 === 0
 					? "pending"
-					: i % 4 === 0
-						? "partial"
-						: i % 3 === 0
-							? "rejected"
-							: "paid";
-		return {
-			id: `cr-${i + 1}`,
-			responseId: `RESP-${file.fileId}`,
-			responseFile: `GW_RSP_${file.vendor.toUpperCase()}_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}.edi`,
-			submissionBatch: `GW_SUB_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}`,
-			relatedFileId: file.fileId,
-			vendor: file.vendor,
-			program: file.program,
-			claimType: file.fileTypeLabel,
-			responseType: (["277CA", "999", "TA1", "835"] as const)[i % 4]!,
-			receivedAt: file.receivedAt,
-			totalSubmitted: file.submitted,
-			paid: file.paid,
-			rejected: file.rejected,
-			partialPaid: file.partial,
-			pending,
-			acceptedCount: file.accepted,
-			rejectedCount: file.rejected,
-			status: tabStatus,
-			summary:
-				file.rejected > 0
-					? `${file.rejected} claims rejected; ${file.accepted} accepted`
-					: `All ${file.accepted} claims accepted`,
-			direction: file.direction,
-		};
-	}
-);
+					: "paid";
+	return {
+		id: `cr-${i + 1}`,
+		responseId: `RESP-${file.fileId}`,
+		responseFile:
+			i === 0
+				? "835_P_sample.txt"
+				: `GW_RSP_${file.vendor.toUpperCase()}_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}.edi`,
+		submissionBatch: `GW_SUB_202607${file.receivedAt.slice(8, 10)}_${String(i + 1).padStart(3, "0")}`,
+		relatedFileId: file.fileId,
+		vendor: file.vendor,
+		program: file.program,
+		claimType: file.fileTypeLabel,
+		responseType: (["835", "277CA", "999", "TA1"] as const)[i % 4]!,
+		receivedAt: file.reviewedAt ?? file.receivedAt,
+		totalSubmitted: file.accepted || file.submitted,
+		paid,
+		rejected,
+		partialPaid,
+		pending,
+		acceptedCount: file.accepted,
+		rejectedCount: rejected,
+		status: tabStatus,
+		summary:
+			rejected > 0
+				? `${rejected} claims denied; ${paid} paid`
+				: `All ${paid} claims paid`,
+		direction: "outbound",
+		ediFixture: "835",
+	};
+});
 
 export const CLAIM_EXCEPTIONS: ClaimException[] = CLAIM_VENDOR_FILES.filter(
 	(f) =>
+		f.reviewStatus === "rejected" ||
+		f.reviewStatus === "denied" ||
+		f.rejectReasons.length > 0 ||
 		f.status === "rejected" ||
-		f.status === "exception" ||
-		f.status === "denied" ||
-		f.rejected > 0
-).flatMap((file, i) => [
-	{
-		id: `ex-${i + 1}a`,
-		exceptionId: `EX-${file.fileId}-01`,
+		f.status === "denied"
+).flatMap((file, i) => {
+	const reasons =
+		file.rejectReasons.length > 0
+			? file.rejectReasons
+			: [REJECT_REASON_CATALOG[i % REJECT_REASON_CATALOG.length]!];
+	return reasons.map((reason, ri) => ({
+		id: `ex-${file.id}-${ri}`,
+		exceptionId: `EX-${file.fileId}-${String(ri + 1).padStart(2, "0")}`,
 		fileId: file.fileId,
 		vendor: file.vendor,
 		program: file.program,
-		severity: "error" as const,
-		code: i % 2 === 0 ? "CLM-4010" : "NM1-2100",
-		message:
-			i % 2 === 0
-				? "Claim rejected: invalid member ID for program"
-				: "Billing provider NPI missing or mismatched",
-		claimId: `CLM-${800000 + i}`,
-		status: (["open", "in_progress", "resolved"] as const)[i % 3]!,
-		detectedAt: file.receivedAt,
-	},
-	...(i % 3 === 0
-		? [
-				{
-					id: `ex-${i + 1}b`,
-					exceptionId: `EX-${file.fileId}-02`,
-					fileId: file.fileId,
-					vendor: file.vendor,
-					program: file.program,
-					severity: "warning" as const,
-					code: "SVC-1200",
-					message: "Service line units exceed expected range",
-					claimId: `CLM-${800100 + i}`,
-					status: "open" as const,
-					detectedAt: file.receivedAt,
-				},
-			]
-		: []),
-]);
+		severity: (ri === 0 ? "error" : "warning") as "error" | "warning",
+		code: reason.code,
+		message: reason.description,
+		claimId: `CLM-${800000 + i * 10 + ri}`,
+		status: (["open", "in_progress", "resolved"] as const)[(i + ri) % 3]!,
+		detectedAt: file.reviewedAt ?? file.receivedAt,
+	}));
+});
 
 export function filesForProgram(
 	program: ProgramFileType,
@@ -320,7 +405,10 @@ export type ClaimLine = {
 		| "partial"
 		| "pending";
 	gainwellStatus: "paid" | "rejected" | "partial" | "pending" | "denied";
+	/** MFC review decision at claim level */
+	mfcReviewStatus: MfcReviewStatus;
 	rejectReason: string | null;
+	rejectReasons: RejectReason[];
 	responseFileName: string;
 	traceId: string;
 	batchId: string;
@@ -358,71 +446,83 @@ const PROVIDERS = [
 	"Summit Orthopedics",
 ];
 
-const REJECT_REASONS = [
-	"Invalid member ID for program",
-	"Billing provider NPI mismatched",
-	"Duplicate claim submission",
-	"Service date outside coverage",
-	null,
-	null,
-	null,
-];
-
 function seedClaimLines(): ClaimLine[] {
 	const lines: ClaimLine[] = [];
 	let seq = 0;
-	for (const response of CLAIM_RESPONSES) {
-		const count = 8 + (seq % 5);
+
+	// Claims for inbound + outbound vendor files (MFC review)
+	for (const file of CLAIM_VENDOR_FILES) {
+		const count = Math.min(12, Math.max(4, Math.floor(file.records / 10)));
 		for (let j = 0; j < count; j++) {
 			seq += 1;
 			const billed = 120 + ((seq * 37) % 2800);
+			let mfcReviewStatus: MfcReviewStatus = file.reviewStatus;
+			if (file.reviewStatus === "pending") mfcReviewStatus = "pending";
+			else if (file.reviewStatus === "rejected") mfcReviewStatus = "rejected";
+			else if (file.reviewStatus === "denied") mfcReviewStatus = "denied";
+			else if (j % 7 === 0 && file.denied > 0) mfcReviewStatus = "denied";
+			else mfcReviewStatus = "accepted";
+
+			const reasons =
+				mfcReviewStatus === "rejected" || mfcReviewStatus === "denied"
+					? [
+							file.rejectReasons[0] ??
+								REJECT_REASON_CATALOG[seq % REJECT_REASON_CATALOG.length]!,
+						]
+					: [];
+
 			const gainwellStatus =
-				j % 7 === 0
-					? "rejected"
-					: j % 5 === 0
+				file.direction === "outbound" && mfcReviewStatus === "accepted"
+					? j % 6 === 0
 						? "partial"
-						: j % 4 === 0
+						: j % 8 === 0
 							? "pending"
-							: j % 6 === 0
-								? "denied"
-								: "paid";
+							: "paid"
+					: mfcReviewStatus === "denied"
+						? "denied"
+						: mfcReviewStatus === "rejected"
+							? "rejected"
+							: "pending";
+
 			const paid =
 				gainwellStatus === "paid"
 					? billed
 					: gainwellStatus === "partial"
 						? Math.round(billed * 0.62)
 						: 0;
+
+			const relatedResponse = CLAIM_RESPONSES.find(
+				(r) => r.relatedFileId === file.fileId
+			);
+
 			lines.push({
 				id: `cl-${seq}`,
 				claimId: `CLM-${900000 + seq}`,
 				memberId: `MBR-${440000 + seq}`,
 				provider: PROVIDERS[seq % PROVIDERS.length]!,
-				vendor: response.vendor,
-				account: `${response.vendor.slice(0, 3).toUpperCase()}-ACC-${(seq % 4) + 1}`,
-				claimType: response.claimType,
+				vendor: file.vendor,
+				account: `${file.vendor.slice(0, 3).toUpperCase()}-ACC-${(seq % 4) + 1}`,
+				claimType: file.fileTypeLabel,
 				dateOfService: `2026-07-${String(10 + (seq % 18)).padStart(2, "0")}`,
 				amountBilled: billed,
 				amountPaid: paid,
 				submissionStatus:
-					gainwellStatus === "rejected"
+					mfcReviewStatus === "rejected" || mfcReviewStatus === "denied"
 						? "rejected"
-						: gainwellStatus === "pending"
+						: mfcReviewStatus === "pending"
 							? "pending"
-							: gainwellStatus === "partial"
-								? "partial"
-								: "accepted",
+							: "accepted",
 				gainwellStatus,
-				rejectReason:
-					gainwellStatus === "rejected" || gainwellStatus === "denied"
-						? REJECT_REASONS[seq % REJECT_REASONS.length]!
-						: null,
-				responseFileName: response.responseFile,
-				traceId: `TRC-${response.submissionBatch}-${String(j + 1).padStart(4, "0")}`,
-				batchId: response.submissionBatch,
-				fileId: response.relatedFileId,
-				responseId: response.id,
-				program: response.program,
-				direction: response.direction,
+				mfcReviewStatus,
+				rejectReason: reasons[0]?.description ?? null,
+				rejectReasons: reasons,
+				responseFileName: relatedResponse?.responseFile ?? "",
+				traceId: `TRC-${file.fileId}-${String(j + 1).padStart(4, "0")}`,
+				batchId: relatedResponse?.submissionBatch ?? `MFC-${file.fileId}`,
+				fileId: file.fileId,
+				responseId: relatedResponse?.id ?? "",
+				program: file.program,
+				direction: file.direction,
 			});
 		}
 	}
@@ -470,6 +570,13 @@ export function getVendorFile(fileId: string) {
 	return CLAIM_VENDOR_FILES.find((f) => f.id === fileId || f.fileId === fileId);
 }
 
+export function claimsForFile(fileId: string) {
+	const decoded = decodeURIComponent(fileId);
+	return CLAIM_LINES.filter(
+		(c) => c.fileId === decoded || c.fileId === getVendorFile(decoded)?.fileId
+	);
+}
+
 export function claimsForBatch(batchId: string) {
 	const decoded = decodeURIComponent(batchId);
 	return CLAIM_LINES.filter((c) => c.batchId === decoded);
@@ -480,6 +587,82 @@ export function claimsForResponse(responseId: string) {
 		(c) =>
 			c.responseId === responseId || c.responseFileName.includes(responseId)
 	);
+}
+
+/** Apply MFC accept/reject to claims in memory (mock). */
+export function applyClaimReviews(
+	fileId: string,
+	updates: Array<{
+		claimId: string;
+		status: MfcReviewStatus;
+		reasons?: RejectReason[];
+	}>,
+	reviewedBy = "Current User"
+) {
+	const file = getVendorFile(fileId);
+	const now = new Date()
+		.toISOString()
+		.slice(0, 16)
+		.replace("T", " ");
+	for (const update of updates) {
+		const line = CLAIM_LINES.find(
+			(c) => c.claimId === update.claimId && (c.fileId === fileId || c.fileId === file?.fileId)
+		);
+		if (!line) continue;
+		line.mfcReviewStatus = update.status;
+		line.submissionStatus =
+			update.status === "rejected"
+				? "rejected"
+				: update.status === "accepted"
+					? "accepted"
+					: "pending";
+		line.rejectReasons = update.reasons ?? [];
+		line.rejectReason = update.reasons?.[0]?.description ?? null;
+	}
+	if (file && updates.length > 0) {
+		const fileClaims = claimsForFile(file.fileId);
+		const allDecided = fileClaims.every((c) => c.mfcReviewStatus !== "pending");
+		if (allDecided) {
+			const anyRejected = fileClaims.some((c) => c.mfcReviewStatus === "rejected");
+			const allRejected = fileClaims.every((c) => c.mfcReviewStatus === "rejected");
+			const acceptedCount = fileClaims.filter(
+				(c) => c.mfcReviewStatus === "accepted"
+			).length;
+			const rejectedCount = fileClaims.filter(
+				(c) => c.mfcReviewStatus === "rejected"
+			).length;
+			file.reviewedAt = now;
+			file.reviewedBy = reviewedBy;
+			file.accepted = acceptedCount;
+			file.rejected = rejectedCount;
+			file.rejectReasons = fileClaims
+				.flatMap((c) => c.rejectReasons)
+				.filter(
+					(r, idx, arr) => arr.findIndex((x) => x.code === r.code) === idx
+				);
+
+			if (allRejected) {
+				// MFC rejects stay on inbound for vendor correction
+				file.direction = "inbound";
+				file.reviewStatus = "rejected";
+				file.status = "rejected";
+				file.outboundSendStatus = "notified";
+				file.notes =
+					"MFC rejected — returned to inbound for vendor correction";
+			} else {
+				// Accepted (or mixed with accepts) move to outbound
+				file.direction = "outbound";
+				file.reviewStatus = "accepted";
+				file.status = anyRejected ? "partial" : "accepted";
+				file.outboundSendStatus = "queued";
+				file.sourceInboundFileId = file.sourceInboundFileId ?? file.fileId;
+				file.notes = anyRejected
+					? "MFC accepted with some claim rejects — queued for Gainwell"
+					: "MFC accepted — queued for Gainwell";
+			}
+		}
+	}
+	return claimsForFile(fileId);
 }
 
 export function formatCurrency(value: number) {

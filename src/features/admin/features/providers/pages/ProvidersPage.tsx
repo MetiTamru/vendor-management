@@ -1,0 +1,474 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import {
+	ChevronLeft,
+	ChevronRight,
+	Download,
+	RefreshCw,
+	Search,
+	Stethoscope,
+	Users,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import {
+	PROVIDER_SUMMARIES,
+	displayProviderName,
+	formatCompact,
+	formatCurrency,
+	type ProviderStatus,
+} from "@/features/admin/features/providers/mock-data";
+import { Link, useRouter } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
+
+function StatusPill({ status }: { status: ProviderStatus }) {
+	const map: Record<ProviderStatus, string> = {
+		active: "bg-emerald-100 text-emerald-800",
+		inactive: "bg-slate-100 text-slate-700",
+		pending: "bg-amber-100 text-amber-900",
+		termed: "bg-red-100 text-red-800",
+	};
+	return (
+		<span
+			className={cn(
+				"inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium capitalize",
+				map[status]
+			)}
+		>
+			{status}
+		</span>
+	);
+}
+
+export function ProvidersPage() {
+	const router = useRouter();
+	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState("all");
+	const [specialty, setSpecialty] = useState("all");
+	const [providerType, setProviderType] = useState("all");
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const programScoped = useMemo(
+		() => PROVIDER_SUMMARIES.filter((p) => p.program === programFilter),
+		[programFilter]
+	);
+
+	const specialties = useMemo(
+		() => Array.from(new Set(programScoped.map((p) => p.specialty))).sort(),
+		[programScoped]
+	);
+
+	const filtered = useMemo(() => {
+		const q = search.trim().toLowerCase();
+		return programScoped.filter((p) => {
+			if (status !== "all" && p.status !== status) return false;
+			if (specialty !== "all" && p.specialty !== specialty) return false;
+			if (providerType !== "all" && p.providerType !== providerType) return false;
+			if (!q) return true;
+			const hay = [
+				p.name,
+				p.credentials,
+				p.npi,
+				p.taxId,
+				p.medicaidId,
+				p.specialty,
+				p.subspecialty,
+				p.practiceName,
+				p.upin,
+			]
+				.join(" ")
+				.toLowerCase();
+			return hay.includes(q);
+		});
+	}, [programScoped, search, status, specialty, providerType]);
+
+	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+	const safePage = Math.min(page, pageCount);
+	const pageRows = filtered.slice(
+		(safePage - 1) * pageSize,
+		safePage * pageSize
+	);
+
+	const stats = useMemo(() => {
+		const active = programScoped.filter((p) => p.status === "active").length;
+		const pending = programScoped.filter((p) => p.status === "pending").length;
+		const termed = programScoped.filter((p) => p.status === "termed").length;
+		return { total: programScoped.length, active, pending, termed };
+	}, [programScoped]);
+
+	async function handleRefresh() {
+		setRefreshing(true);
+		await new Promise((r) => setTimeout(r, 350));
+		setRefreshing(false);
+		toast.success("Provider directory refreshed");
+	}
+
+	const hasFilters =
+		search.trim().length > 0 ||
+		status !== "all" ||
+		specialty !== "all" ||
+		providerType !== "all";
+
+	return (
+		<div className="space-y-3">
+			<div className="flex flex-wrap items-start justify-between gap-2">
+				<div>
+					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+						Providers
+					</h1>
+					<p className="mt-0.5 text-xs text-muted-foreground">
+						Search and manage provider profiles · {programFilter}
+					</p>
+				</div>
+				<div className="flex flex-wrap gap-1.5">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={handleRefresh}
+						disabled={refreshing}
+					>
+						<RefreshCw
+							className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
+						/>
+						Refresh
+					</Button>
+					<Button variant="outline" size="sm" className="h-9">
+						<Download className="mr-1.5 size-3.5" />
+						Export
+					</Button>
+				</div>
+			</div>
+
+			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+				{[
+					{
+						label: "Providers",
+						value: stats.total,
+						hint: programFilter,
+						icon: Users,
+					},
+					{
+						label: "Active",
+						value: stats.active,
+						hint: "Currently enrolled",
+						icon: Stethoscope,
+					},
+					{
+						label: "Pending",
+						value: stats.pending,
+						hint: "Awaiting credentialing",
+						icon: Stethoscope,
+					},
+					{
+						label: "Termed",
+						value: stats.termed,
+						hint: "Enrollment ended",
+						icon: Stethoscope,
+					},
+				].map((s) => {
+					const Icon = s.icon;
+					return (
+						<div
+							key={s.label}
+							className="rounded-lg border border-border/50 bg-card/70 p-2.5"
+						>
+							<div className="flex items-start justify-between gap-2">
+								<div>
+									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+										{s.label}
+									</p>
+									<p className="mt-1 text-lg font-medium tabular-nums">
+										{s.value.toLocaleString()}
+									</p>
+									<p className="mt-1 text-xs text-muted-foreground">{s.hint}</p>
+								</div>
+								<span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+									<Icon className="size-4" />
+								</span>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+
+			<div className="rounded-lg border border-border/50 bg-card/70 p-3">
+				<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+					Provider search
+				</label>
+				<div className="relative mt-1">
+					<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						value={search}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
+						placeholder="Search providers by Name, NPI, Tax ID, TIN, or Specialty..."
+						className="h-11 pl-10 text-sm"
+					/>
+				</div>
+				<div className="mt-2.5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Status
+						</label>
+						<Select
+							value={status}
+							onValueChange={(v) => {
+								setStatus(v);
+								setPage(1);
+							}}
+						>
+							<SelectTrigger className="h-9">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All statuses</SelectItem>
+								<SelectItem value="active">Active</SelectItem>
+								<SelectItem value="pending">Pending</SelectItem>
+								<SelectItem value="inactive">Inactive</SelectItem>
+								<SelectItem value="termed">Termed</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Specialty
+						</label>
+						<Select
+							value={specialty}
+							onValueChange={(v) => {
+								setSpecialty(v);
+								setPage(1);
+							}}
+						>
+							<SelectTrigger className="h-9">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All specialties</SelectItem>
+								{specialties.map((s) => (
+									<SelectItem key={s} value={s}>
+										{s}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+							Provider type
+						</label>
+						<Select
+							value={providerType}
+							onValueChange={(v) => {
+								setProviderType(v);
+								setPage(1);
+							}}
+						>
+							<SelectTrigger className="h-9">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All types</SelectItem>
+								<SelectItem value="Individual">Individual</SelectItem>
+								<SelectItem value="Group">Group</SelectItem>
+								<SelectItem value="Facility">Facility</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex items-end">
+						{hasFilters ? (
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-9"
+								onClick={() => {
+									setSearch("");
+									setStatus("all");
+									setSpecialty("all");
+									setProviderType("all");
+									setPage(1);
+								}}
+							>
+								Clear filters
+							</Button>
+						) : (
+							<p className="pb-2 text-[11px] text-muted-foreground">
+								{filtered.length} providers match
+							</p>
+						)}
+					</div>
+				</div>
+			</div>
+
+			<section className="overflow-hidden rounded-lg border border-border/50 bg-card/70">
+				<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 px-3 py-2">
+					<div>
+						<p className="text-sm font-medium">Provider directory</p>
+						<p className="text-[11px] text-muted-foreground">
+							{filtered.length} matching · click a row to open the profile
+						</p>
+					</div>
+				</div>
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="pl-3">Provider</TableHead>
+								<TableHead>NPI</TableHead>
+								<TableHead>Specialty</TableHead>
+								<TableHead>Practice</TableHead>
+								<TableHead>Type</TableHead>
+								<TableHead>Status</TableHead>
+								<TableHead className="text-right">Claims (12m)</TableHead>
+								<TableHead className="text-right">Paid (12m)</TableHead>
+								<TableHead className="pr-3">Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{pageRows.map((p) => (
+								<TableRow
+									key={p.id}
+									className="cursor-pointer hover:bg-muted/30"
+									onClick={() => router.push(`/admin/providers/${p.id}`)}
+								>
+									<TableCell className="pl-3">
+										<div className="min-w-0">
+											<p className="text-sm font-medium text-primary">
+												{displayProviderName(p)}
+											</p>
+											<p className="truncate text-[11px] text-muted-foreground">
+												{p.subspecialty}
+											</p>
+										</div>
+									</TableCell>
+									<TableCell className="font-mono text-xs">{p.npi}</TableCell>
+									<TableCell className="text-sm">{p.specialty}</TableCell>
+									<TableCell className="max-w-[180px]">
+										<p className="truncate text-sm">{p.practiceName}</p>
+										<p className="truncate text-[10px] text-muted-foreground">
+											{p.practicePhone}
+										</p>
+									</TableCell>
+									<TableCell className="text-sm">{p.providerType}</TableCell>
+									<TableCell>
+										<StatusPill status={p.status} />
+									</TableCell>
+									<TableCell className="text-right text-sm tabular-nums">
+										{formatCompact(p.claims12m)}
+									</TableCell>
+									<TableCell className="text-right text-sm tabular-nums">
+										{formatCurrency(p.paid12m)}
+									</TableCell>
+									<TableCell
+										className="pr-3"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<Button asChild variant="outline" size="sm" className="h-7 text-xs">
+											<Link href={`/admin/providers/${p.id}`}>Open</Link>
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
+							{pageRows.length === 0 && (
+								<TableRow>
+									<TableCell
+										colSpan={9}
+										className="h-24 text-center text-muted-foreground"
+									>
+										No providers match the current search and filters.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-3 py-2.5 text-sm text-muted-foreground">
+					<p className="text-xs sm:text-sm">
+						Showing{" "}
+						<span className="font-medium tabular-nums text-foreground">
+							{filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1}
+						</span>
+						–
+						<span className="font-medium tabular-nums text-foreground">
+							{Math.min(safePage * pageSize, filtered.length)}
+						</span>{" "}
+						of{" "}
+						<span className="font-medium tabular-nums text-foreground">
+							{filtered.length}
+						</span>
+					</p>
+					<div className="flex items-center gap-1">
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8"
+							disabled={safePage <= 1}
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+						>
+							<ChevronLeft className="size-4" />
+						</Button>
+						<span className="px-2 text-xs tabular-nums">
+							{safePage} / {pageCount}
+						</span>
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8"
+							disabled={safePage >= pageCount}
+							onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+						>
+							<ChevronRight className="size-4" />
+						</Button>
+					</div>
+					<div className="flex items-center gap-2">
+						<span className="text-xs">Rows</span>
+						<Select
+							value={String(pageSize)}
+							onValueChange={(v) => {
+								setPageSize(Number(v));
+								setPage(1);
+							}}
+						>
+							<SelectTrigger className="h-8 w-[72px]">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{[10, 25, 50].map((n) => (
+									<SelectItem key={n} value={String(n)}>
+										{n}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</div>
+			</section>
+		</div>
+	);
+}

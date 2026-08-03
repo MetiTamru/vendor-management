@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
 	ArrowLeft,
@@ -33,6 +33,11 @@ import {
 	StatusPill,
 } from "@/features/admin/features/claim-encounter/components/ClaimDetailShared";
 import {
+	EdiViewerDialog,
+	EdiViewerLoader,
+	loadEdiFixture,
+} from "@/features/admin/features/claim-encounter/edi";
+import {
 	claimsForResponse,
 	downloadTextFile,
 	exportRowsAsCsv,
@@ -45,12 +50,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-const TABS = [
-	"Overview",
-	"Claim Outcomes",
-	"Remittance",
-	"Linked Batch",
-] as const;
+const TABS = ["Overview", "Claim Outcomes", "Remittance", "EDI", "Linked Batch"] as const;
 type Tab = (typeof TABS)[number];
 
 export function ResponseDetailPage() {
@@ -60,6 +60,7 @@ export function ResponseDetailPage() {
 		[params.responseId]
 	);
 	const [tab, setTab] = useState<Tab>("Overview");
+	const [ediOpen, setEdiOpen] = useState(false);
 
 	const claims = useMemo(
 		() => (response ? claimsForResponse(response.id) : []),
@@ -108,21 +109,14 @@ export function ResponseDetailPage() {
 		);
 	}
 
-	function handleDownload() {
-		downloadTextFile(
-			response!.responseFile,
-			[
-				`ISA*00*          *00*          *ZZ*GAINWELL       *ZZ*${response!.vendor.toUpperCase()}*`,
-				`GS*HP*GAINWELL*${response!.vendor.toUpperCase()}*20260725*1200*1*X*005010X221A1~`,
-				`ST*${response!.responseType === "835" ? "835" : "277"}*0001~`,
-				`BPR*I*${response!.paid}*C*ACH*CCP*01*999999999*DA*123456789*`,
-				`REF*F2*${response!.responseId}~`,
-				`SE*4*0001~`,
-				`GE*1*1~`,
-				`IEA*1*000000001~`,
-			].join("\n")
-		);
-		toast.success("Response file downloaded");
+	async function handleDownload() {
+		try {
+			const raw = await loadEdiFixture(response!.ediFixture ?? "835");
+			downloadTextFile(response!.responseFile, raw);
+			toast.success("Response EDI downloaded");
+		} catch {
+			toast.error("Failed to load EDI fixture");
+		}
 	}
 
 	function handleExportClaims() {
@@ -188,6 +182,15 @@ export function ResponseDetailPage() {
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-8 text-xs"
+							onClick={() => setEdiOpen(true)}
+						>
+							<FileText className="mr-1.5 size-3.5" />
+							View EDI
+						</Button>
 						<Button
 							variant="outline"
 							size="sm"
@@ -454,6 +457,18 @@ export function ResponseDetailPage() {
 				</div>
 			)}
 
+			{tab === "EDI" && (
+				<div className="space-y-2">
+					<p className="text-xs text-muted-foreground">
+						Full X12 remittance / acknowledgement viewer.
+					</p>
+					<ResponseEdiPanel
+						fixture={response.ediFixture ?? "835"}
+						fileName={response.responseFile}
+					/>
+				</div>
+			)}
+
 			{tab === "Linked Batch" && (
 				<div className="rounded-lg border border-border/50 bg-card/70 p-4">
 					{batch ? (
@@ -491,6 +506,27 @@ export function ResponseDetailPage() {
 					)}
 				</div>
 			)}
+
+			<EdiViewerDialog
+				open={ediOpen}
+				onOpenChange={setEdiOpen}
+				fixture={response.ediFixture ?? "835"}
+				fileName={response.responseFile}
+				title={response.responseFile}
+			/>
 		</div>
+	);
+}
+
+function ResponseEdiPanel({
+	fixture,
+	fileName,
+}: {
+	fixture: "835" | "837I";
+	fileName: string;
+}) {
+	const load = useCallback(() => loadEdiFixture(fixture), [fixture]);
+	return (
+		<EdiViewerLoader load={load} fileName={fileName} className="min-h-[520px]" />
 	);
 }

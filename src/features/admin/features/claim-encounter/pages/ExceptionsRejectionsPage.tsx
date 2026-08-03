@@ -40,7 +40,10 @@ import {
 	ClaimKpiGrid,
 	ClaimPageHeader,
 } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
-import { exceptionsForProgram } from "@/features/admin/features/claim-encounter/mock-data";
+import {
+	REJECT_REASON_CATALOG,
+	exceptionsForProgram,
+} from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -439,6 +442,32 @@ export function ExceptionsRejectionsPage() {
 					</CardContent>
 				</Card>
 			</div>
+
+			<Card className="gap-1 bg-card/70 py-2">
+				<CardHeader className="px-3 pb-0.5 pt-0">
+					<CardTitle className="text-sm font-medium">
+						MFC reject reason catalog
+					</CardTitle>
+					<p className="text-[11px] text-muted-foreground">
+						Required codes when rejecting inbound claims during review.
+					</p>
+				</CardHeader>
+				<CardContent className="px-3">
+					<div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+						{REJECT_REASON_CATALOG.map((reason) => (
+							<div
+								key={reason.code}
+								className="rounded-md border border-border/40 px-2.5 py-1.5"
+							>
+								<p className="font-mono text-xs font-semibold">{reason.code}</p>
+								<p className="text-[11px] text-muted-foreground">
+									{reason.description}
+								</p>
+							</div>
+						))}
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
