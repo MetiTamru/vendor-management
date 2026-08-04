@@ -45,6 +45,7 @@ import {
 	exceptionsForProgram,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function timeOnly(value: string) {
@@ -68,10 +69,7 @@ export function ExceptionsRejectionsPage() {
 		[programFilter]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(baseRows.map((r) => r.vendor))).sort(),
-		[baseRows]
-	);
+	const vendors = VENDOR_NAMES;
 
 	const filteredRows = useMemo(() => {
 		return baseRows.filter((row) => {

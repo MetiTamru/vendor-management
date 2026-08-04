@@ -48,6 +48,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -87,7 +88,6 @@ import {
 	getVendorIntegration,
 	runBucket,
 	runsForVendor,
-	summarizeRuns,
 } from "../vendor-integration-mock";
 
 const TABS = [
@@ -228,17 +228,17 @@ function MetaItem({
 	icon?: React.ComponentType<{ className?: string }>;
 }) {
 	return (
-		<div className="flex items-start gap-2 py-0.5">
+		<div className="flex items-start gap-2.5 rounded-lg border border-border/30 bg-gradient-to-br from-muted/40 to-transparent px-2.5 py-2">
 			{Icon ? (
-				<div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary">
-					<Icon className="size-3" />
+				<div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+					<Icon className="size-3.5" />
 				</div>
 			) : null}
 			<div className="min-w-0">
 				<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 					{label}
 				</p>
-				<div className="mt-0.5 text-xs font-normal break-words">
+				<div className="mt-0.5 text-xs font-medium break-words text-foreground">
 					{value ?? "—"}
 				</div>
 			</div>
@@ -271,28 +271,23 @@ export function VendorDetailPage() {
 		[vendor, programFilter]
 	);
 
-	const summary = useMemo(() => summarizeRuns(runs), [runs]);
-
-	const totalFiles30 = Math.max(summary.total * 15, summary.total || 12);
-
 	const fileTypePie = useMemo(() => {
+		if (runs.length === 0) return [];
 		const counts = new Map<string, number>();
 		for (const run of runs) {
 			counts.set(run.fileType, (counts.get(run.fileType) ?? 0) + 1);
 		}
 		const colors = ["#13446c", "#059669", "#d97706", "#0284c7", "#7c3aed"];
-		const rawTotal = runs.length || 1;
-		const scale = totalFiles30 / rawTotal;
-		return Array.from(counts.entries()).map(([name, value], i) => {
-			const scaled = Math.max(1, Math.round(value * scale));
-			return {
-				name,
-				value: scaled,
-				pct: ((value / rawTotal) * 100).toFixed(1),
-				color: colors[i % colors.length],
-			};
-		});
-	}, [runs, totalFiles30]);
+		const rawTotal = runs.length;
+		return Array.from(counts.entries()).map(([name, value], i) => ({
+			name,
+			value,
+			pct: ((value / rawTotal) * 100).toFixed(1),
+			color: colors[i % colors.length]!,
+		}));
+	}, [runs]);
+
+	const totalFiles30 = fileTypePie.reduce((sum, item) => sum + item.value, 0);
 
 	const trend = vendor
 		? (VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"])
@@ -356,10 +351,10 @@ export function VendorDetailPage() {
 	return (
 		<div className="space-y-3">
 			{/* Header */}
-			<div className="space-y-3 border-b border-border/50 pb-3">
+			<div className="space-y-3 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/[0.05] via-card to-sky-500/[0.04] p-4 shadow-sm">
 				<div className="flex flex-wrap items-start justify-between gap-2">
 					<div className="flex min-w-0 items-center gap-2">
-						<div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+						<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground shadow-sm">
 							{initials(displayName)}
 						</div>
 						<div className="min-w-0">
@@ -498,9 +493,9 @@ export function VendorDetailPage() {
 						value={formatDate(vendor.updatedAt)}
 						icon={Calendar}
 					/>
-					<div className="flex items-start gap-2 py-0.5">
-						<div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary">
-							<CheckCircle2 className="size-3" />
+					<div className="flex items-start gap-2.5 rounded-lg border border-border/30 bg-gradient-to-br from-muted/40 to-transparent px-2.5 py-2">
+						<div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+							<CheckCircle2 className="size-3.5" />
 						</div>
 						<div>
 							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -549,7 +544,7 @@ export function VendorDetailPage() {
 			{tab === "Overview" && (
 				<div className="min-w-0 space-y-5">
 					<section className="overflow-hidden rounded-lg border border-border/60 bg-card">
-						<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-4 py-3">
+						<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-primary/[0.06] via-emerald-500/[0.04] to-transparent px-4 py-3">
 							<div>
 								<h2 className="text-sm font-medium">Recent File Activity</h2>
 								<p className="mt-0.5 text-xs text-muted-foreground">
@@ -564,8 +559,9 @@ export function VendorDetailPage() {
 								View all file history →
 							</button>
 						</div>
-						<div className="w-full overflow-x-auto">
-							<Table className="min-w-[900px] text-xs">
+						<ScrollArea className="w-full">
+							<div className="min-w-[900px]">
+								<Table className="text-xs">
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
 										<TableHead className="pl-4">File Type</TableHead>
@@ -657,12 +653,13 @@ export function VendorDetailPage() {
 									)}
 								</TableBody>
 							</Table>
-						</div>
+							</div>
+						</ScrollArea>
 					</section>
 
 					<div className="grid min-w-0 gap-4 lg:grid-cols-2">
 						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="border-b border-border/50 px-4 py-3">
+							<div className="border-b border-border/50 bg-gradient-to-r from-primary/[0.06] via-sky-500/[0.04] to-transparent px-4 py-3">
 								<h2 className="text-sm font-medium">File Type Summary</h2>
 								<p className="mt-0.5 text-xs text-muted-foreground">
 									Distribution of processed files over the last 30 days.
@@ -676,22 +673,22 @@ export function VendorDetailPage() {
 												data={
 													fileTypePie.length
 														? fileTypePie
-														: [{ name: "None", value: 1, color: "#cbd5e1" }]
+														: [{ name: "None", value: 1, color: "#e2e8f0" }]
 												}
 												dataKey="value"
 												nameKey="name"
 												innerRadius={40}
 												outerRadius={62}
-												paddingAngle={2}
+												paddingAngle={fileTypePie.length ? 2 : 0}
 											>
 												{(fileTypePie.length
 													? fileTypePie
-													: [{ name: "None", value: 1, color: "#cbd5e1" }]
+													: [{ name: "None", value: 1, color: "#e2e8f0" }]
 												).map((entry) => (
 													<Cell key={entry.name} fill={entry.color} />
 												))}
 											</Pie>
-											<Tooltip />
+											{fileTypePie.length ? <Tooltip /> : null}
 										</PieChart>
 									</ResponsiveContainer>
 									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -736,7 +733,7 @@ export function VendorDetailPage() {
 							id="trend"
 							className="rounded-lg border border-border/60 bg-card"
 						>
-							<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-4 py-3">
+							<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-emerald-500/[0.07] via-amber-500/[0.04] to-transparent px-4 py-3">
 								<div>
 									<h2 className="text-sm font-medium">Processing Trend</h2>
 									<p className="mt-0.5 text-xs text-muted-foreground">
@@ -796,14 +793,14 @@ export function VendorDetailPage() {
 
 					<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
 						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="flex items-center justify-between gap-2 border-b border-border/50 px-4 py-3">
+							<div className="flex items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-primary/[0.07] via-sky-500/[0.04] to-transparent px-4 py-3">
 								<div>
 									<h2 className="text-sm font-medium">Vendor Details</h2>
 									<p className="mt-0.5 text-xs text-muted-foreground">
 										Core profile and integration settings.
 									</p>
 								</div>
-								<span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[11px] font-medium text-muted-foreground">
+								<span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-medium text-primary">
 									{formatVendorCode(vendor.id)}
 								</span>
 							</div>
@@ -864,7 +861,7 @@ export function VendorDetailPage() {
 						</section>
 
 						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="border-b border-border/50 px-4 py-3">
+							<div className="border-b border-border/50 bg-gradient-to-r from-sky-500/[0.08] via-primary/[0.04] to-transparent px-4 py-3">
 								<h2 className="text-sm font-medium">Quick Actions</h2>
 								<p className="mt-0.5 text-xs text-muted-foreground">
 									Common tasks for this vendor.
@@ -912,7 +909,7 @@ export function VendorDetailPage() {
 								].map((action) => {
 									const Icon = action.icon;
 									const className =
-										"flex items-center gap-3 rounded-lg border border-border/50 px-3 py-3 text-left transition-colors hover:bg-muted/40";
+										"flex items-center gap-3 rounded-lg border border-border/40 bg-gradient-to-br from-muted/30 to-transparent px-3 py-3 text-left transition-colors hover:border-primary/30 hover:from-primary/[0.06]";
 									if (action.onClick) {
 										return (
 											<button
@@ -921,7 +918,7 @@ export function VendorDetailPage() {
 												className={className}
 												onClick={action.onClick}
 											>
-												<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+												<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
 													<Icon className="size-4" />
 												</div>
 												<p className="text-sm font-medium">{action.label}</p>
@@ -934,7 +931,7 @@ export function VendorDetailPage() {
 											href={action.href}
 											className={className}
 										>
-											<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+											<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
 												<Icon className="size-4" />
 											</div>
 											<p className="text-sm font-medium">{action.label}</p>

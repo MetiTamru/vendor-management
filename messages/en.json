@@ -46,10 +46,11 @@
 		"offline": "You are offline. Changes will resume when connection is restored.",
 		"sections": {
 			"top": "Overview",
-			"vendor_management": "Vendor Management",
+			"master_data": "Master Data",
+			"integration_file_operations": "Integration & File Operations",
 			"operations": "Operations",
 			"administration": "Administration",
-			"claim_encounter": "Claim & Encounter"
+			"claim_encounter": "Claims & Encounters"
 		},
 		"nav": {
 			"dashboard": "Dashboard",
@@ -74,6 +75,9 @@
 			"exportcenter": "Export Center",
 			"settings": "Settings",
 			"support": "Support",
+			"claims": "Claims",
+			"inboundvendorfiles": "Inbound Vendor Files",
+			"outboundvendorfiles": "Outbound Vendor Files",
 			"inboundvendorfile": "Inbound Vendor File",
 			"outboundvendorfile": "Outbound Vendor File",
 			"responses": "Responses",

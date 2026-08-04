@@ -46,10 +46,11 @@ import {
 	filesForProgram,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type Props = {
-	direction: "inbound" | "outbound";
+	direction?: "inbound" | "outbound";
 	title: string;
 	description: string;
 };
@@ -120,10 +121,7 @@ export function ClaimVendorFilePage({ direction, title, description }: Props) {
 		[direction, programFilter]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(baseRows.map((r) => r.vendor))).sort(),
-		[baseRows]
-	);
+	const vendors = VENDOR_NAMES;
 
 	const txnTypes = useMemo(
 		() => Array.from(new Set(baseRows.map((r) => r.transactionType))).sort(),

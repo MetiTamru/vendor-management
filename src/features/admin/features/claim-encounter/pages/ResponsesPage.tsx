@@ -48,6 +48,7 @@ import {
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function statusBadge(status: ClaimFileStatus) {
@@ -97,10 +98,7 @@ export function ResponsesPage() {
 		[programFilter]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(baseRows.map((r) => r.vendor))).sort(),
-		[baseRows]
-	);
+	const vendors = VENDOR_NAMES;
 
 	const filteredRows = useMemo(() => {
 		return baseRows.filter((row) => {

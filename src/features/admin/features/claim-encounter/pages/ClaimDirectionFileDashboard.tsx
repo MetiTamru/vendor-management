@@ -62,6 +62,7 @@ import {
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type ResponseTab =
@@ -124,10 +125,7 @@ export function ClaimDirectionFileDashboard({
 		[direction, programFilter]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(directionFiles.map((r) => r.vendor))).sort(),
-		[directionFiles]
-	);
+	const vendors = VENDOR_NAMES;
 
 	const fileTypes = useMemo(
 		() =>
@@ -828,7 +826,7 @@ export function ClaimDirectionFileDashboard({
 							iconTone="text-sky-700 bg-sky-500/10"
 						>
 							<p className="mb-2 text-sm font-semibold">
-								UST Medical Claims File
+								UST Healthcare Medical Claims File
 							</p>
 							<ul className="space-y-1 text-xs text-muted-foreground">
 								<li>
@@ -867,7 +865,7 @@ export function ClaimDirectionFileDashboard({
 										GW_SUB_20260725_001
 									</span>
 								</li>
-								<li>Vendor: UST</li>
+								<li>Vendor: UST Healthcare</li>
 								<li>Claims submitted: {formatCount(21980)}</li>
 								<li>Response received: Yes</li>
 								<li className="font-medium text-emerald-700">

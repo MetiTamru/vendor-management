@@ -64,6 +64,7 @@ import {
 	formatCount,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const PIE_COLORS: Record<string, string> = {
@@ -109,10 +110,7 @@ export function AcceptanceAnalyticsPage() {
 		[programFilter]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(baseRows.map((r) => r.vendor))).sort(),
-		[baseRows]
-	);
+	const vendors = VENDOR_NAMES;
 	const claimTypes = useMemo(
 		() => Array.from(new Set(baseRows.map((r) => r.fileTypeLabel))).sort(),
 		[baseRows]

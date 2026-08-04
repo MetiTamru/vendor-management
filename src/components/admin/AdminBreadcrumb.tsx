@@ -83,7 +83,8 @@ const STATIC_LABELS: Record<string, string> = {
 	users: "Users",
 	edit: "Edit",
 	match: "Match",
-	"claim-encounter": "Claim & Encounter",
+	"claim-encounter": "Claims & Encounters",
+	claims: "Claims",
 	inbound: "Inbound Vendor File",
 	outbound: "Outbound Vendor File",
 	responses: "Responses",
@@ -197,6 +198,11 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				continue;
 			}
 
+			if (prev === "claims") {
+				items.push({ label: "Claim Overview" });
+				continue;
+			}
+
 			if (prev === "responses" && segment !== "responses") {
 				const response = getClaimResponse(decodeURIComponent(segment));
 				items.push({
@@ -217,6 +223,14 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				const file = getVendorFile(decodeURIComponent(segment));
 				items.push({
 					label: file?.fileName ?? "File Details",
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (segment === "claim-encounter") {
+				items.push({
+					label: "Claims & Encounters",
 					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;

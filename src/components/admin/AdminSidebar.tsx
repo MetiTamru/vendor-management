@@ -8,13 +8,12 @@ import {
 	CalendarDays,
 	CheckCircle2,
 	ClipboardList,
-	Download,
 	FileInput,
 	FileOutput,
 	FileSearch,
 	FileWarning,
+	Files,
 	FolderKanban,
-	Gauge,
 	GitCompare,
 	History,
 	Home,
@@ -36,7 +35,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Sidebar,
 	SidebarContent,
-	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -55,42 +53,51 @@ import { useAdminModuleStore } from "@/stores/admin-module-store";
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
 	Vendors: Users,
-	"Integration Intake": Cable,
 	Members: UserRound,
 	Providers: Stethoscope,
+	"Integration Intake": Cable,
 	"File Monitoring": FolderKanban,
 	"Processing Status": FileSearch,
 	"File History": History,
 	Schedules: CalendarDays,
+	"Vendor Comparison": GitCompare,
 	"Processing Logs": ScrollText,
 	"Error Management": AlertTriangle,
 	Notifications: Bell,
 	"SLA Monitoring": Timer,
-	"Risk Scoring": Gauge,
 	"Command Center": Radio,
 	Automations: Workflow,
-	"Vendor Comparison": GitCompare,
 	"Audit Trail": ClipboardList,
 	Reports: BarChart3,
-	"Export Center": Download,
 	Settings: Settings,
-	"Inbound Vendor File": FileInput,
-	"Outbound Vendor File": FileOutput,
+	Support: LifeBuoy,
+	Claims: Files,
+	"Inbound Vendor Files": FileInput,
+	"Outbound Vendor Files": FileOutput,
 	Responses: MessageSquareReply,
 	"Acceptance Analytics": CheckCircle2,
 	"Exceptions / Rejections": FileWarning,
 };
 
-const SECTION_ORDER = [
+const VENDOR_SECTION_ORDER = [
 	"top",
-	"vendor_management",
+	"master_data",
+	"integration_file_operations",
 	"operations",
 	"administration",
+] as const;
+
+const CLAIM_SECTION_ORDER = [
+	"top",
 	"claim_encounter",
+	"operations",
+	"administration",
 ] as const;
 
 function isActivePath(pathname: string, href: string) {
-	if (href === "/") return pathname === "/";
+	if (href === "/" || href === "/admin/claim-encounter") {
+		return pathname === href;
+	}
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -111,8 +118,8 @@ export function AdminSidebar() {
 
 	const sections =
 		moduleId === "claim_encounter"
-			? (["claim_encounter"] as const)
-			: SECTION_ORDER.filter((s) => s !== "claim_encounter");
+			? CLAIM_SECTION_ORDER
+			: VENDOR_SECTION_ORDER;
 
 	return (
 		<Sidebar collapsible="icon">
@@ -156,18 +163,26 @@ export function AdminSidebar() {
 												const label = t.has(`nav.${labelKey}`)
 													? t(`nav.${labelKey}`)
 													: item.title;
+												const isExternal = item.href.startsWith("mailto:");
 
 												return (
 													<SidebarMenuItem key={item.href}>
 														<SidebarMenuButton
 															asChild
-															isActive={active}
+															isActive={!isExternal && active}
 															tooltip={label}
 														>
-															<Link href={item.href}>
-																<Icon />
-																<span>{label}</span>
-															</Link>
+															{isExternal ? (
+																<a href={item.href}>
+																	<Icon />
+																	<span>{label}</span>
+																</a>
+															) : (
+																<Link href={item.href}>
+																	<Icon />
+																	<span>{label}</span>
+																</Link>
+															)}
 														</SidebarMenuButton>
 													</SidebarMenuItem>
 												);
@@ -185,18 +200,6 @@ export function AdminSidebar() {
 					</div>
 				</ScrollArea>
 			</SidebarContent>
-			<SidebarFooter className="border-t border-sidebar-border p-2">
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild tooltip={t("nav.support")}>
-							<a href={`mailto:${siteConfig.support.email}`}>
-								<LifeBuoy />
-								<span>{t("nav.support")}</span>
-							</a>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
 	);

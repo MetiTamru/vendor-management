@@ -68,6 +68,7 @@ import {
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type SortKey = "receivedAt" | "records" | "vendor" | "wait";
@@ -107,10 +108,7 @@ export function InboundVendorFilePage() {
 		[inboundQueue]
 	);
 
-	const vendors = useMemo(
-		() => Array.from(new Set(inboundQueue.map((f) => f.vendor))).sort(),
-		[inboundQueue]
-	);
+	const vendors = VENDOR_NAMES;
 	const fileTypes = useMemo(
 		() => Array.from(new Set(inboundQueue.map((f) => f.fileTypeLabel))).sort(),
 		[inboundQueue]

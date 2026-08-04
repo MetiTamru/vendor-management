@@ -40,6 +40,7 @@ import {
 } from "@/features/admin/features/members/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: MemberStatus }) {
@@ -81,10 +82,7 @@ export function MembersPage() {
 		() => Array.from(new Set(programScoped.map((m) => m.planName))).sort(),
 		[programScoped]
 	);
-	const vendors = useMemo(
-		() => Array.from(new Set(programScoped.map((m) => m.vendorSource))).sort(),
-		[programScoped]
-	);
+	const vendors = VENDOR_NAMES;
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();
