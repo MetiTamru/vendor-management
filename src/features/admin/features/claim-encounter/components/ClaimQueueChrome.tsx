@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo } from "react";
 
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export function parseClaimDate(value: string): Date {
 	// "2026-07-20 07:14" → Date
-	return new Date(value.replace(" ", "T") + ":00");
+	return new Date(`${value.replace(" ", "T")}:00`);
 }
 
 /** Age in hours vs reference (defaults to 2026-07-31 noon for stable mock UX). */
@@ -93,11 +93,8 @@ export function ClaimTablePagination({
 		<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 px-3 py-2.5 text-sm text-muted-foreground sm:px-4">
 			<p className="text-xs sm:text-sm">
 				Showing{" "}
-				<span className="font-medium tabular-nums text-foreground">
-					{from}
-				</span>
-				–
-				<span className="font-medium tabular-nums text-foreground">{to}</span>{" "}
+				<span className="font-medium tabular-nums text-foreground">{from}</span>
+				–<span className="font-medium tabular-nums text-foreground">{to}</span>{" "}
 				of{" "}
 				<span className="font-medium tabular-nums text-foreground">
 					{total}
@@ -226,10 +223,7 @@ export function ClaimSectionCard({
 }) {
 	return (
 		<div
-			className={cn(
-				"rounded-lg border border-border/50 bg-card/70",
-				className
-			)}
+			className={cn("rounded-lg border border-border/50 bg-card/70", className)}
 		>
 			<div className="flex flex-wrap items-start justify-between gap-2 border-b border-border/40 px-3 py-2">
 				<div className="min-w-0">

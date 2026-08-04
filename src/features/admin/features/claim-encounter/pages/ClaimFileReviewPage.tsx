@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 
 import { ArrowLeft, Check, X } from "lucide-react";
 import { toast } from "sonner";
@@ -29,11 +29,11 @@ import {
 } from "@/features/admin/features/claim-encounter/edi";
 import {
 	REJECT_REASON_CATALOG,
+	type RejectReason,
 	applyClaimReviews,
 	claimsForFile,
 	formatCurrency,
 	getVendorFile,
-	type RejectReason,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";

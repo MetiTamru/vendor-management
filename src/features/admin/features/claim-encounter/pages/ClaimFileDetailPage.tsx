@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 
 import { ArrowLeft, CheckCircle2, ClipboardCheck, XCircle } from "lucide-react";
 
@@ -18,11 +18,11 @@ import {
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
 import {
+	type ClaimLine,
 	claimsForFile,
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-	type ClaimLine,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,10 @@ export function ClaimFileDetailPage() {
 	const params = useParams<{ fileId: string }>();
 	const fileId = decodeURIComponent(params.fileId);
 	const file = useMemo(() => getVendorFile(fileId), [fileId]);
-	const claims = useMemo(() => (file ? claimsForFile(file.fileId) : []), [file]);
+	const claims = useMemo(
+		() => (file ? claimsForFile(file.fileId) : []),
+		[file]
+	);
 	const [focusedClaimId, setFocusedClaimId] = useState<string | null>(null);
 
 	const showClaimsPanel =
@@ -59,9 +62,15 @@ export function ClaimFileDetailPage() {
 		return loadEdiFixture(file?.ediFixture ?? key);
 	}, [file]);
 
-	const acceptedCount = claims.filter((c) => c.mfcReviewStatus === "accepted").length;
-	const rejectedCount = claims.filter((c) => c.mfcReviewStatus === "rejected").length;
-	const deniedCount = claims.filter((c) => c.mfcReviewStatus === "denied").length;
+	const acceptedCount = claims.filter(
+		(c) => c.mfcReviewStatus === "accepted"
+	).length;
+	const rejectedCount = claims.filter(
+		(c) => c.mfcReviewStatus === "rejected"
+	).length;
+	const deniedCount = claims.filter(
+		(c) => c.mfcReviewStatus === "denied"
+	).length;
 
 	if (!file) {
 		return (
@@ -109,12 +118,16 @@ export function ClaimFileDetailPage() {
 								<>
 									{" "}
 									·{" "}
-									<span className="text-emerald-700">{acceptedCount} accepted</span>
+									<span className="text-emerald-700">
+										{acceptedCount} accepted
+									</span>
 									{" · "}
 									{file.direction === "outbound" ? (
 										<span className="text-red-700">{deniedCount} denied</span>
 									) : (
-										<span className="text-red-700">{rejectedCount} rejected</span>
+										<span className="text-red-700">
+											{rejectedCount} rejected
+										</span>
 									)}
 								</>
 							) : null}

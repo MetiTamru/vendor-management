@@ -1,12 +1,12 @@
 "use client";
 
 import {
+	type CSSProperties,
 	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
 	useState,
-	type CSSProperties,
 } from "react";
 
 import {
@@ -33,18 +33,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 import {
+	type StructuredSegment,
 	allCollapsedIds,
 	extractClaimRaw,
 	listClaimControls,
 	structureDocument,
 	visibleStructuredRows,
-	type StructuredSegment,
 } from "./loop-structure";
 import {
+	type X12Document,
 	findSegmentIndexes,
 	parseX12,
 	summarizeX12,
-	type X12Document,
 } from "./parse-x12";
 import {
 	SEGMENT_ROLE_BADGE,
@@ -392,25 +392,76 @@ export function EdiViewer({
 				) : search.trim() ? (
 					<span className="text-[11px] text-muted-foreground">No hits</span>
 				) : null}
-				<Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={goPrevHit} disabled={!hits.length}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="h-8 text-xs"
+					onClick={goPrevHit}
+					disabled={!hits.length}
+				>
 					Prev
 				</Button>
-				<Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={goNextHit} disabled={!hits.length}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="h-8 text-xs"
+					onClick={goNextHit}
+					disabled={!hits.length}
+				>
 					Next
 				</Button>
-				<Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={expandAll}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="h-8 text-xs"
+					onClick={expandAll}
+				>
 					Expand
 				</Button>
-				<Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={collapseAll}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="h-8 text-xs"
+					onClick={collapseAll}
+				>
 					Collapse
 				</Button>
-				<Button type="button" variant="outline" size="icon" className="size-8" onClick={() => setWrap((w) => !w)} title="Toggle wrap">
-					{wrap ? <UnfoldHorizontal className="size-3.5" /> : <WrapText className="size-3.5" />}
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="size-8"
+					onClick={() => setWrap((w) => !w)}
+					title="Toggle wrap"
+				>
+					{wrap ? (
+						<UnfoldHorizontal className="size-3.5" />
+					) : (
+						<WrapText className="size-3.5" />
+					)}
 				</Button>
-				<Button type="button" variant="outline" size="icon" className="size-8" onClick={copySelected} title="Copy segment">
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="size-8"
+					onClick={copySelected}
+					title="Copy segment"
+				>
 					<Copy className="size-3.5" />
 				</Button>
-				<Button type="button" variant="outline" size="icon" className="size-8" onClick={downloadRaw} title="Download raw">
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="size-8"
+					onClick={downloadRaw}
+					title="Download raw"
+				>
 					<Download className="size-3.5" />
 				</Button>
 				{showInspector ? (

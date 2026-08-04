@@ -2,7 +2,6 @@
  * HTTP client for services/vendor-management-core (Django JWT API).
  * Base URL: NEXT_PUBLIC_VENDOR_CORE_API_URL (default http://localhost:8010)
  */
-
 import type { ApiEnvelope, TokenPair } from "./types";
 
 const ACCESS_KEY = "vendor_core_access_token";
@@ -70,14 +69,11 @@ export async function vendorCoreLogin(input: {
 	username: string;
 	password: string;
 }): Promise<TokenPair> {
-	const response = await fetch(
-		buildUrl("/api/v1/authentication/token/"),
-		{
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(input),
-		}
-	);
+	const response = await fetch(buildUrl("/api/v1/authentication/token/"), {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
 	const text = await response.text();
 	const data = text ? JSON.parse(text) : {};
 	if (!response.ok) {

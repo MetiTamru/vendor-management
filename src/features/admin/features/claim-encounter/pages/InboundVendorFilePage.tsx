@@ -62,9 +62,9 @@ import {
 	usePagedRows,
 } from "@/features/admin/features/claim-encounter/components/ClaimQueueChrome";
 import {
+	type ClaimVendorFile,
 	filesForProgram,
 	formatCount,
-	type ClaimVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -79,9 +79,9 @@ export function InboundVendorFilePage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [vendor, setVendor] = useState("all");
 	const [fileType, setFileType] = useState("all");
-	const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "rejected">(
-		"all"
-	);
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "pending" | "rejected"
+	>("all");
 	const [waitBucket, setWaitBucket] = useState("all");
 	const [search, setSearch] = useState("");
 	const [sortKey, setSortKey] = useState<SortKey>("wait");
@@ -116,12 +116,14 @@ export function InboundVendorFilePage() {
 
 	const rows = useMemo(() => {
 		const filtered = inboundQueue.filter((f) => {
-			if (statusFilter !== "all" && f.reviewStatus !== statusFilter) return false;
+			if (statusFilter !== "all" && f.reviewStatus !== statusFilter)
+				return false;
 			if (vendor !== "all" && f.vendor !== vendor) return false;
 			if (fileType !== "all" && f.fileTypeLabel !== fileType) return false;
 			const wait = hoursSince(f.receivedAt);
 			if (waitBucket === "fresh" && wait >= 24) return false;
-			if (waitBucket === "aging" && (wait < 24 || wait >= SLA_HOURS)) return false;
+			if (waitBucket === "aging" && (wait < 24 || wait >= SLA_HOURS))
+				return false;
 			if (waitBucket === "sla" && wait < SLA_HOURS) return false;
 			const q = search.trim().toLowerCase();
 			if (!q) return true;
@@ -164,7 +166,9 @@ export function InboundVendorFilePage() {
 		const waits = awaiting.map((f) => hoursSince(f.receivedAt));
 		const claimsPending = awaiting.reduce((s, f) => s + f.records, 0);
 		const claimsRejected = rejectedIn.reduce((s, f) => s + f.rejected, 0);
-		const slaRisk = awaiting.filter((f) => hoursSince(f.receivedAt) >= SLA_HOURS);
+		const slaRisk = awaiting.filter(
+			(f) => hoursSince(f.receivedAt) >= SLA_HOURS
+		);
 		const aging = awaiting.filter((f) => {
 			const h = hoursSince(f.receivedAt);
 			return h >= 24 && h < SLA_HOURS;
@@ -210,7 +214,9 @@ export function InboundVendorFilePage() {
 			},
 		];
 
-		const acceptedOut = allOutbound.filter((f) => f.reviewStatus === "accepted");
+		const acceptedOut = allOutbound.filter(
+			(f) => f.reviewStatus === "accepted"
+		);
 		const deniedOut = allOutbound.filter((f) => f.reviewStatus === "denied");
 		const throughputClaims = allOutbound.reduce((s, f) => s + f.records, 0);
 		const acceptRate = pct(
@@ -346,13 +352,19 @@ export function InboundVendorFilePage() {
 
 			{/* Review queue — directly under stats */}
 			<div className="flex flex-wrap gap-1.5">
-				{(
-					[
-						{ id: "all" as const, label: "All inbound", count: inboundQueue.length },
-						{ id: "pending" as const, label: "Pending", count: pending.length },
-						{ id: "rejected" as const, label: "Rejected", count: rejectedIn.length },
-					]
-				).map((chip) => (
+				{[
+					{
+						id: "all" as const,
+						label: "All inbound",
+						count: inboundQueue.length,
+					},
+					{ id: "pending" as const, label: "Pending", count: pending.length },
+					{
+						id: "rejected" as const,
+						label: "Rejected",
+						count: rejectedIn.length,
+					},
+				].map((chip) => (
 					<button
 						key={chip.id}
 						type="button"
@@ -628,12 +640,11 @@ export function InboundVendorFilePage() {
 										"bg-muted/60"
 								)}
 								onClick={() => {
-									const next =
-										b.name.startsWith("<")
-											? "fresh"
-											: b.name.startsWith("24")
-												? "aging"
-												: "sla";
+									const next = b.name.startsWith("<")
+										? "fresh"
+										: b.name.startsWith("24")
+											? "aging"
+											: "sla";
 									setWaitBucket((cur) => (cur === next ? "all" : next));
 									setPage(1);
 								}}
@@ -742,7 +753,9 @@ export function InboundVendorFilePage() {
 						)}
 						<div className="rounded-md border border-border/50 bg-background/50 px-2.5 py-2">
 							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">Outbound accept rate</span>
+								<span className="text-muted-foreground">
+									Outbound accept rate
+								</span>
 								<span className="font-semibold tabular-nums">
 									{analytics.acceptRate}%
 								</span>
@@ -775,7 +788,8 @@ export function InboundVendorFilePage() {
 							<span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
 								3
 							</span>
-							Accepted packages go outbound; full MFC rejects stay inbound for vendor rework
+							Accepted packages go outbound; full MFC rejects stay inbound for
+							vendor rework
 						</li>
 					</ol>
 				</ClaimSectionCard>
@@ -847,7 +861,12 @@ export function InboundVendorFilePage() {
 							</p>
 						</div>
 					</div>
-					<Button asChild variant="outline" size="sm" className="mt-3 h-8 w-full text-xs">
+					<Button
+						asChild
+						variant="outline"
+						size="sm"
+						className="mt-3 h-8 w-full text-xs"
+					>
 						<Link href="/admin/claim-encounter/acceptance-analytics">
 							<FileSearch className="mr-1.5 size-3.5" />
 							Open acceptance analytics

@@ -32,11 +32,11 @@ import {
 } from "@/components/ui/table";
 import {
 	MEMBER_SUMMARIES,
+	type MemberStatus,
 	displayName,
 	formatCurrency,
 	formatDate,
 	maskSsn,
-	type MemberStatus,
 } from "@/features/admin/features/members/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -372,7 +372,9 @@ export function MembersPage() {
 											</p>
 										</div>
 									</TableCell>
-									<TableCell className="font-mono text-xs">{m.memberId}</TableCell>
+									<TableCell className="font-mono text-xs">
+										{m.memberId}
+									</TableCell>
 									<TableCell className="text-xs tabular-nums">
 										{formatDate(m.dob)}
 									</TableCell>
@@ -396,7 +398,12 @@ export function MembersPage() {
 										className="pr-3"
 										onClick={(e) => e.stopPropagation()}
 									>
-										<Button asChild variant="outline" size="sm" className="h-7 text-xs">
+										<Button
+											asChild
+											variant="outline"
+											size="sm"
+											className="h-7 text-xs"
+										>
 											<Link href={`/admin/members/${m.id}`}>Open</Link>
 										</Button>
 									</TableCell>
