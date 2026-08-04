@@ -24,7 +24,10 @@ export async function createProcessingLogs(body: ProcessingLogsCreateDto) {
 	});
 }
 
-export async function updateProcessingLogs(id: string, body: ProcessingLogsUpdateDto) {
+export async function updateProcessingLogs(
+	id: string,
+	body: ProcessingLogsUpdateDto
+) {
 	return apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

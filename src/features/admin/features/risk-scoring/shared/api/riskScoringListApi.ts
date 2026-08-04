@@ -11,7 +11,9 @@ export type RiskScoringListResponse = {
 };
 
 export async function listRiskScoringRecords(params?: Record<string, string>) {
-	return apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), { params });
+	return apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getRiskScoringRecord(id: string) {

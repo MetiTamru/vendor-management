@@ -24,7 +24,10 @@ export async function createRiskScoring(body: RiskScoringCreateDto) {
 	});
 }
 
-export async function updateRiskScoring(id: string, body: RiskScoringUpdateDto) {
+export async function updateRiskScoring(
+	id: string,
+	body: RiskScoringUpdateDto
+) {
 	return apiClient<ApiRiskScoringDto>(riskScoringEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

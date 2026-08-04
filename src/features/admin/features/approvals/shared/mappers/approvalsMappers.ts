@@ -1,5 +1,5 @@
-import type { ApiApprovalsRecordDto } from "../dto/approvalsRecordDto";
 import type { ApprovalsModel } from "../../feature/types/approvalsModel";
+import type { ApiApprovalsRecordDto } from "../dto/approvalsRecordDto";
 
 export function toApprovalsModel(
 	row: ApiApprovalsRecordDto,

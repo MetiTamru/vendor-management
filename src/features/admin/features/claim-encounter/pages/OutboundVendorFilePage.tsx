@@ -78,9 +78,9 @@ import {
 	formatCurrency,
 	getVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
+import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const WORKSPACE_H = "h-[calc(100svh-5rem)]";

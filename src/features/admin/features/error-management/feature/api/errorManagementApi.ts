@@ -24,7 +24,10 @@ export async function createErrorManagement(body: ErrorManagementCreateDto) {
 	});
 }
 
-export async function updateErrorManagement(id: string, body: ErrorManagementUpdateDto) {
+export async function updateErrorManagement(
+	id: string,
+	body: ErrorManagementUpdateDto
+) {
 	return apiClient<ApiErrorManagementDto>(errorManagementEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

@@ -10,10 +10,17 @@ export type ErrorManagementListResponse = {
 	count?: number | null;
 };
 
-export async function listErrorManagementRecords(params?: Record<string, string>) {
-	return apiClient<ErrorManagementListResponse>(errorManagementEndpoints.list(), { params });
+export async function listErrorManagementRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<ErrorManagementListResponse>(
+		errorManagementEndpoints.list(),
+		{ params }
+	);
 }
 
 export async function getErrorManagementRecord(id: string) {
-	return apiClient<ApiErrorManagementRecordDto>(errorManagementEndpoints.detail(id));
+	return apiClient<ApiErrorManagementRecordDto>(
+		errorManagementEndpoints.detail(id)
+	);
 }

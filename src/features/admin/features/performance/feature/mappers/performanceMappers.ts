@@ -1,9 +1,14 @@
-export { toPerformanceModel } from "../../shared/mappers/performanceMappers";
-
-import type { PerformanceCreateDto, PerformanceUpdateDto } from "../dto/performanceDto";
+import type {
+	PerformanceCreateDto,
+	PerformanceUpdateDto,
+} from "../dto/performanceDto";
 import type { PerformanceModel } from "../types/performanceModel";
 
-export function toPerformanceCreateDto(model: Pick<PerformanceModel, "name">): PerformanceCreateDto {
+export { toPerformanceModel } from "../../shared/mappers/performanceMappers";
+
+export function toPerformanceCreateDto(
+	model: Pick<PerformanceModel, "name">
+): PerformanceCreateDto {
 	return { name: model.name };
 }
 

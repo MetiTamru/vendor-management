@@ -1,9 +1,14 @@
-export { toIntegrationIntakeModel } from "../../shared/mappers/integrationIntakeMappers";
-
-import type { IntegrationIntakeCreateDto, IntegrationIntakeUpdateDto } from "../dto/integrationIntakeDto";
+import type {
+	IntegrationIntakeCreateDto,
+	IntegrationIntakeUpdateDto,
+} from "../dto/integrationIntakeDto";
 import type { IntegrationIntakeModel } from "../types/integrationIntakeModel";
 
-export function toIntegrationIntakeCreateDto(model: Pick<IntegrationIntakeModel, "name">): IntegrationIntakeCreateDto {
+export { toIntegrationIntakeModel } from "../../shared/mappers/integrationIntakeMappers";
+
+export function toIntegrationIntakeCreateDto(
+	model: Pick<IntegrationIntakeModel, "name">
+): IntegrationIntakeCreateDto {
 	return { name: model.name };
 }
 

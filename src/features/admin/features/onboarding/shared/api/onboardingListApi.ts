@@ -11,7 +11,9 @@ export type OnboardingListResponse = {
 };
 
 export async function listOnboardingRecords(params?: Record<string, string>) {
-	return apiClient<OnboardingListResponse>(onboardingEndpoints.list(), { params });
+	return apiClient<OnboardingListResponse>(onboardingEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getOnboardingRecord(id: string) {

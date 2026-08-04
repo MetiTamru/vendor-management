@@ -1,9 +1,14 @@
-export { toOnboardingModel } from "../../shared/mappers/onboardingMappers";
-
-import type { OnboardingCreateDto, OnboardingUpdateDto } from "../dto/onboardingDto";
+import type {
+	OnboardingCreateDto,
+	OnboardingUpdateDto,
+} from "../dto/onboardingDto";
 import type { OnboardingModel } from "../types/onboardingModel";
 
-export function toOnboardingCreateDto(model: Pick<OnboardingModel, "name">): OnboardingCreateDto {
+export { toOnboardingModel } from "../../shared/mappers/onboardingMappers";
+
+export function toOnboardingCreateDto(
+	model: Pick<OnboardingModel, "name">
+): OnboardingCreateDto {
 	return { name: model.name };
 }
 

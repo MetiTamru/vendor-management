@@ -11,7 +11,9 @@ export type ProvidersListResponse = {
 };
 
 export async function listProvidersRecords(params?: Record<string, string>) {
-	return apiClient<ProvidersListResponse>(providersEndpoints.list(), { params });
+	return apiClient<ProvidersListResponse>(providersEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getProvidersRecord(id: string) {

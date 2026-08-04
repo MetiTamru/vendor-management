@@ -14,7 +14,9 @@ export async function listVendorComparison() {
 }
 
 export async function getVendorComparison(id: string) {
-	return apiClient<ApiVendorComparisonDto>(vendorComparisonEndpoints.detail(id));
+	return apiClient<ApiVendorComparisonDto>(
+		vendorComparisonEndpoints.detail(id)
+	);
 }
 
 export async function createVendorComparison(body: VendorComparisonCreateDto) {
@@ -24,11 +26,17 @@ export async function createVendorComparison(body: VendorComparisonCreateDto) {
 	});
 }
 
-export async function updateVendorComparison(id: string, body: VendorComparisonUpdateDto) {
-	return apiClient<ApiVendorComparisonDto>(vendorComparisonEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	});
+export async function updateVendorComparison(
+	id: string,
+	body: VendorComparisonUpdateDto
+) {
+	return apiClient<ApiVendorComparisonDto>(
+		vendorComparisonEndpoints.update(id),
+		{
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}
+	);
 }
 
 export async function deleteVendorComparison(id: string) {

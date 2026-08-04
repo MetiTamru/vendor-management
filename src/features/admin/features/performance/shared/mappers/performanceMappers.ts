@@ -1,5 +1,5 @@
-import type { ApiPerformanceRecordDto } from "../dto/performanceRecordDto";
 import type { PerformanceModel } from "../../feature/types/performanceModel";
+import type { ApiPerformanceRecordDto } from "../dto/performanceRecordDto";
 
 export function toPerformanceModel(
 	row: ApiPerformanceRecordDto,

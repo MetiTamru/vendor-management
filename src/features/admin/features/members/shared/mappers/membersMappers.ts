@@ -1,5 +1,5 @@
-import type { ApiMembersRecordDto } from "../dto/membersRecordDto";
 import type { MembersModel } from "../../feature/types/membersModel";
+import type { ApiMembersRecordDto } from "../dto/membersRecordDto";
 
 export function toMembersModel(
 	row: ApiMembersRecordDto,

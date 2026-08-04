@@ -11,7 +11,9 @@ export type CategoriesListResponse = {
 };
 
 export async function listCategoriesRecords(params?: Record<string, string>) {
-	return apiClient<CategoriesListResponse>(categoriesEndpoints.list(), { params });
+	return apiClient<CategoriesListResponse>(categoriesEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getCategoriesRecord(id: string) {

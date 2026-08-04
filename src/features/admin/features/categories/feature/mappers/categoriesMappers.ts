@@ -1,9 +1,14 @@
-export { toCategoriesModel } from "../../shared/mappers/categoriesMappers";
-
-import type { CategoriesCreateDto, CategoriesUpdateDto } from "../dto/categoriesDto";
+import type {
+	CategoriesCreateDto,
+	CategoriesUpdateDto,
+} from "../dto/categoriesDto";
 import type { CategoriesModel } from "../types/categoriesModel";
 
-export function toCategoriesCreateDto(model: Pick<CategoriesModel, "name">): CategoriesCreateDto {
+export { toCategoriesModel } from "../../shared/mappers/categoriesMappers";
+
+export function toCategoriesCreateDto(
+	model: Pick<CategoriesModel, "name">
+): CategoriesCreateDto {
 	return { name: model.name };
 }
 

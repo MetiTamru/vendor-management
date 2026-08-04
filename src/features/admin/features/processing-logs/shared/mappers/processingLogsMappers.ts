@@ -1,5 +1,5 @@
-import type { ApiProcessingLogsRecordDto } from "../dto/processingLogsRecordDto";
 import type { ProcessingLogsModel } from "../../feature/types/processingLogsModel";
+import type { ApiProcessingLogsRecordDto } from "../dto/processingLogsRecordDto";
 
 export function toProcessingLogsModel(
 	row: ApiProcessingLogsRecordDto,

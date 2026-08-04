@@ -10,10 +10,16 @@ export type ProcessingLogsListResponse = {
 	count?: number | null;
 };
 
-export async function listProcessingLogsRecords(params?: Record<string, string>) {
-	return apiClient<ProcessingLogsListResponse>(processingLogsEndpoints.list(), { params });
+export async function listProcessingLogsRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<ProcessingLogsListResponse>(processingLogsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getProcessingLogsRecord(id: string) {
-	return apiClient<ApiProcessingLogsRecordDto>(processingLogsEndpoints.detail(id));
+	return apiClient<ApiProcessingLogsRecordDto>(
+		processingLogsEndpoints.detail(id)
+	);
 }

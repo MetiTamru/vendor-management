@@ -10,10 +10,16 @@ export type SlaMonitoringListResponse = {
 	count?: number | null;
 };
 
-export async function listSlaMonitoringRecords(params?: Record<string, string>) {
-	return apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), { params });
+export async function listSlaMonitoringRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getSlaMonitoringRecord(id: string) {
-	return apiClient<ApiSlaMonitoringRecordDto>(slaMonitoringEndpoints.detail(id));
+	return apiClient<ApiSlaMonitoringRecordDto>(
+		slaMonitoringEndpoints.detail(id)
+	);
 }

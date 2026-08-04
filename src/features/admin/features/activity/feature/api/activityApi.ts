@@ -2,9 +2,9 @@ import { apiClient } from "@/lib/api/client";
 
 import { activityEndpoints } from "../../activity-endpoints";
 import type {
-	ApiActivityDto,
 	ActivityCreateDto,
 	ActivityUpdateDto,
+	ApiActivityDto,
 } from "../dto/activityDto";
 
 export async function listActivity() {

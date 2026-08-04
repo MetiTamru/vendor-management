@@ -11,7 +11,9 @@ export type PerformanceListResponse = {
 };
 
 export async function listPerformanceRecords(params?: Record<string, string>) {
-	return apiClient<PerformanceListResponse>(performanceEndpoints.list(), { params });
+	return apiClient<PerformanceListResponse>(performanceEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getPerformanceRecord(id: string) {

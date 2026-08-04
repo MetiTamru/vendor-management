@@ -11,7 +11,9 @@ export type ComplianceListResponse = {
 };
 
 export async function listComplianceRecords(params?: Record<string, string>) {
-	return apiClient<ComplianceListResponse>(complianceEndpoints.list(), { params });
+	return apiClient<ComplianceListResponse>(complianceEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getComplianceRecord(id: string) {

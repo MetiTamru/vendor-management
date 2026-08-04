@@ -11,7 +11,9 @@ export type DocumentsListResponse = {
 };
 
 export async function listDocumentsRecords(params?: Record<string, string>) {
-	return apiClient<DocumentsListResponse>(documentsEndpoints.list(), { params });
+	return apiClient<DocumentsListResponse>(documentsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getDocumentsRecord(id: string) {

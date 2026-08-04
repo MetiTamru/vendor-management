@@ -24,7 +24,10 @@ export async function createAutomations(body: AutomationsCreateDto) {
 	});
 }
 
-export async function updateAutomations(id: string, body: AutomationsUpdateDto) {
+export async function updateAutomations(
+	id: string,
+	body: AutomationsUpdateDto
+) {
 	return apiClient<ApiAutomationsDto>(automationsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

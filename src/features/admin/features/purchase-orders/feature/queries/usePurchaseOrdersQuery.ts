@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getPurchaseOrders, listPurchaseOrders } from "../api/purchaseOrdersApi";
+import {
+	getPurchaseOrders,
+	listPurchaseOrders,
+} from "../api/purchaseOrdersApi";
 import { toPurchaseOrdersModel } from "../mappers/purchaseOrdersMappers";
 
 export function usePurchaseOrdersQuery() {

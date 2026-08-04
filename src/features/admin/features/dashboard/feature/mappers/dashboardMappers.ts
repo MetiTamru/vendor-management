@@ -1,9 +1,14 @@
-export { toDashboardModel } from "../../shared/mappers/dashboardMappers";
-
-import type { DashboardCreateDto, DashboardUpdateDto } from "../dto/dashboardDto";
+import type {
+	DashboardCreateDto,
+	DashboardUpdateDto,
+} from "../dto/dashboardDto";
 import type { DashboardModel } from "../types/dashboardModel";
 
-export function toDashboardCreateDto(model: Pick<DashboardModel, "name">): DashboardCreateDto {
+export { toDashboardModel } from "../../shared/mappers/dashboardMappers";
+
+export function toDashboardCreateDto(
+	model: Pick<DashboardModel, "name">
+): DashboardCreateDto {
 	return { name: model.name };
 }
 

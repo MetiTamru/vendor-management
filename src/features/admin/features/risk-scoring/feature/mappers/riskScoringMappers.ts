@@ -1,9 +1,14 @@
-export { toRiskScoringModel } from "../../shared/mappers/riskScoringMappers";
-
-import type { RiskScoringCreateDto, RiskScoringUpdateDto } from "../dto/riskScoringDto";
+import type {
+	RiskScoringCreateDto,
+	RiskScoringUpdateDto,
+} from "../dto/riskScoringDto";
 import type { RiskScoringModel } from "../types/riskScoringModel";
 
-export function toRiskScoringCreateDto(model: Pick<RiskScoringModel, "name">): RiskScoringCreateDto {
+export { toRiskScoringModel } from "../../shared/mappers/riskScoringMappers";
+
+export function toRiskScoringCreateDto(
+	model: Pick<RiskScoringModel, "name">
+): RiskScoringCreateDto {
 	return { name: model.name };
 }
 

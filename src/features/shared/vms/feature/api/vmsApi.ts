@@ -1,11 +1,7 @@
 import { apiClient } from "@/lib/api/client";
 
 import { vmsEndpoints } from "../../vms-endpoints";
-import type {
-	ApiVmsDto,
-	VmsCreateDto,
-	VmsUpdateDto,
-} from "../dto/vmsDto";
+import type { ApiVmsDto, VmsCreateDto, VmsUpdateDto } from "../dto/vmsDto";
 
 export async function listVms() {
 	return apiClient<{ results?: ApiVmsDto[]; count?: number }>(

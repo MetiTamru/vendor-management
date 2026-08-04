@@ -24,7 +24,10 @@ export async function createNotifications(body: NotificationsCreateDto) {
 	});
 }
 
-export async function updateNotifications(id: string, body: NotificationsUpdateDto) {
+export async function updateNotifications(
+	id: string,
+	body: NotificationsUpdateDto
+) {
 	return apiClient<ApiNotificationsDto>(notificationsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

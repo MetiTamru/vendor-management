@@ -1,5 +1,5 @@
-import type { ApiOnboardingRecordDto } from "../dto/onboardingRecordDto";
 import type { OnboardingModel } from "../../feature/types/onboardingModel";
+import type { ApiOnboardingRecordDto } from "../dto/onboardingRecordDto";
 
 export function toOnboardingModel(
 	row: ApiOnboardingRecordDto,

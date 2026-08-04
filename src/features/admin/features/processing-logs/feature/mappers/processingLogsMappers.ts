@@ -1,9 +1,14 @@
-export { toProcessingLogsModel } from "../../shared/mappers/processingLogsMappers";
-
-import type { ProcessingLogsCreateDto, ProcessingLogsUpdateDto } from "../dto/processingLogsDto";
+import type {
+	ProcessingLogsCreateDto,
+	ProcessingLogsUpdateDto,
+} from "../dto/processingLogsDto";
 import type { ProcessingLogsModel } from "../types/processingLogsModel";
 
-export function toProcessingLogsCreateDto(model: Pick<ProcessingLogsModel, "name">): ProcessingLogsCreateDto {
+export { toProcessingLogsModel } from "../../shared/mappers/processingLogsMappers";
+
+export function toProcessingLogsCreateDto(
+	model: Pick<ProcessingLogsModel, "name">
+): ProcessingLogsCreateDto {
 	return { name: model.name };
 }
 

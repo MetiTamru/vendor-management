@@ -1,5 +1,5 @@
-import type { ApiComplianceRecordDto } from "../dto/complianceRecordDto";
 import type { ComplianceModel } from "../../feature/types/complianceModel";
+import type { ApiComplianceRecordDto } from "../dto/complianceRecordDto";
 
 export function toComplianceModel(
 	row: ApiComplianceRecordDto,

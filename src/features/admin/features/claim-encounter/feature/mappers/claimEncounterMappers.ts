@@ -1,9 +1,14 @@
-export { toClaimEncounterModel } from "../../shared/mappers/claimEncounterMappers";
-
-import type { ClaimEncounterCreateDto, ClaimEncounterUpdateDto } from "../dto/claimEncounterDto";
+import type {
+	ClaimEncounterCreateDto,
+	ClaimEncounterUpdateDto,
+} from "../dto/claimEncounterDto";
 import type { ClaimEncounterModel } from "../types/claimEncounterModel";
 
-export function toClaimEncounterCreateDto(model: Pick<ClaimEncounterModel, "name">): ClaimEncounterCreateDto {
+export { toClaimEncounterModel } from "../../shared/mappers/claimEncounterMappers";
+
+export function toClaimEncounterCreateDto(
+	model: Pick<ClaimEncounterModel, "name">
+): ClaimEncounterCreateDto {
 	return { name: model.name };
 }
 

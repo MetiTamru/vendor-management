@@ -11,7 +11,8 @@ export const errorManagementCreateSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 });
 
-export const errorManagementUpdateSchema = errorManagementCreateSchema.partial();
+export const errorManagementUpdateSchema =
+	errorManagementCreateSchema.partial();
 
 export function parseErrorManagementList(payload: unknown): {
 	data: z.infer<typeof apiErrorManagementRecordSchema>[];

@@ -24,7 +24,10 @@ export async function createFileHistory(body: FileHistoryCreateDto) {
 	});
 }
 
-export async function updateFileHistory(id: string, body: FileHistoryUpdateDto) {
+export async function updateFileHistory(
+	id: string,
+	body: FileHistoryUpdateDto
+) {
 	return apiClient<ApiFileHistoryDto>(fileHistoryEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

@@ -1,5 +1,5 @@
-import type { ApiDashboardRecordDto } from "../dto/dashboardRecordDto";
 import type { DashboardModel } from "../../feature/types/dashboardModel";
+import type { ApiDashboardRecordDto } from "../dto/dashboardRecordDto";
 
 export function toDashboardModel(
 	row: ApiDashboardRecordDto,

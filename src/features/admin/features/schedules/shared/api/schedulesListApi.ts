@@ -11,7 +11,9 @@ export type SchedulesListResponse = {
 };
 
 export async function listSchedulesRecords(params?: Record<string, string>) {
-	return apiClient<SchedulesListResponse>(schedulesEndpoints.list(), { params });
+	return apiClient<SchedulesListResponse>(schedulesEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getSchedulesRecord(id: string) {

@@ -11,7 +11,9 @@ export type ApprovalsListResponse = {
 };
 
 export async function listApprovalsRecords(params?: Record<string, string>) {
-	return apiClient<ApprovalsListResponse>(approvalsEndpoints.list(), { params });
+	return apiClient<ApprovalsListResponse>(approvalsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getApprovalsRecord(id: string) {

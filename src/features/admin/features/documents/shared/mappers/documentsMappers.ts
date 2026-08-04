@@ -1,5 +1,5 @@
-import type { ApiDocumentsRecordDto } from "../dto/documentsRecordDto";
 import type { DocumentsModel } from "../../feature/types/documentsModel";
+import type { ApiDocumentsRecordDto } from "../dto/documentsRecordDto";
 
 export function toDocumentsModel(
 	row: ApiDocumentsRecordDto,

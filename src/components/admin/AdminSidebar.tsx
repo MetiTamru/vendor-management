@@ -117,9 +117,7 @@ export function AdminSidebar() {
 	});
 
 	const sections =
-		moduleId === "claim_encounter"
-			? CLAIM_SECTION_ORDER
-			: VENDOR_SECTION_ORDER;
+		moduleId === "claim_encounter" ? CLAIM_SECTION_ORDER : VENDOR_SECTION_ORDER;
 
 	return (
 		<Sidebar collapsible="icon">

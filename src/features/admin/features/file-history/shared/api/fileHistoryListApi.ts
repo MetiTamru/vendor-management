@@ -11,7 +11,9 @@ export type FileHistoryListResponse = {
 };
 
 export async function listFileHistoryRecords(params?: Record<string, string>) {
-	return apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), { params });
+	return apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getFileHistoryRecord(id: string) {

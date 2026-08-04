@@ -10,10 +10,17 @@ export type IntegrationIntakeListResponse = {
 	count?: number | null;
 };
 
-export async function listIntegrationIntakeRecords(params?: Record<string, string>) {
-	return apiClient<IntegrationIntakeListResponse>(integrationIntakeEndpoints.list(), { params });
+export async function listIntegrationIntakeRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<IntegrationIntakeListResponse>(
+		integrationIntakeEndpoints.list(),
+		{ params }
+	);
 }
 
 export async function getIntegrationIntakeRecord(id: string) {
-	return apiClient<ApiIntegrationIntakeRecordDto>(integrationIntakeEndpoints.detail(id));
+	return apiClient<ApiIntegrationIntakeRecordDto>(
+		integrationIntakeEndpoints.detail(id)
+	);
 }

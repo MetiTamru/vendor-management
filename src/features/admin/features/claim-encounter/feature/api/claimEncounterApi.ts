@@ -24,7 +24,10 @@ export async function createClaimEncounter(body: ClaimEncounterCreateDto) {
 	});
 }
 
-export async function updateClaimEncounter(id: string, body: ClaimEncounterUpdateDto) {
+export async function updateClaimEncounter(
+	id: string,
+	body: ClaimEncounterUpdateDto
+) {
 	return apiClient<ApiClaimEncounterDto>(claimEncounterEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

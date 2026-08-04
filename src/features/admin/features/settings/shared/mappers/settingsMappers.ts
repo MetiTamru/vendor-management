@@ -1,5 +1,5 @@
-import type { ApiSettingsRecordDto } from "../dto/settingsRecordDto";
 import type { SettingsModel } from "../../feature/types/settingsModel";
+import type { ApiSettingsRecordDto } from "../dto/settingsRecordDto";
 
 export function toSettingsModel(
 	row: ApiSettingsRecordDto,

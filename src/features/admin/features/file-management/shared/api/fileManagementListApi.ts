@@ -10,10 +10,16 @@ export type FileManagementListResponse = {
 	count?: number | null;
 };
 
-export async function listFileManagementRecords(params?: Record<string, string>) {
-	return apiClient<FileManagementListResponse>(fileManagementEndpoints.list(), { params });
+export async function listFileManagementRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<FileManagementListResponse>(fileManagementEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getFileManagementRecord(id: string) {
-	return apiClient<ApiFileManagementRecordDto>(fileManagementEndpoints.detail(id));
+	return apiClient<ApiFileManagementRecordDto>(
+		fileManagementEndpoints.detail(id)
+	);
 }

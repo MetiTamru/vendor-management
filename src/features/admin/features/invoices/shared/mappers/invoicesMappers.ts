@@ -1,5 +1,5 @@
-import type { ApiInvoicesRecordDto } from "../dto/invoicesRecordDto";
 import type { InvoicesModel } from "../../feature/types/invoicesModel";
+import type { ApiInvoicesRecordDto } from "../dto/invoicesRecordDto";
 
 export function toInvoicesModel(
 	row: ApiInvoicesRecordDto,

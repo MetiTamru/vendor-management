@@ -1,5 +1,5 @@
-import type { ApiSourcingRecordDto } from "../dto/sourcingRecordDto";
 import type { SourcingModel } from "../../feature/types/sourcingModel";
+import type { ApiSourcingRecordDto } from "../dto/sourcingRecordDto";
 
 export function toSourcingModel(
 	row: ApiSourcingRecordDto,

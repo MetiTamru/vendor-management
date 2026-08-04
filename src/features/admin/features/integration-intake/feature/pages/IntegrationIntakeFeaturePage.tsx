@@ -13,7 +13,9 @@ export function IntegrationIntakeFeaturePage() {
 	return (
 		<IntegrationIntakeFeatureRoot>
 			<div className="space-y-3">
-				<h2 className="text-sm font-semibold tracking-tight">IntegrationIntake</h2>
+				<h2 className="text-sm font-semibold tracking-tight">
+					IntegrationIntake
+				</h2>
 				{isLoading ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
 				) : isError ? (

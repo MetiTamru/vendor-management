@@ -1,5 +1,5 @@
-import type { ProgramFileType } from "@/types/UI/system.types";
 import { CLAIM_VENDOR_SEED } from "@/features/admin/features/vendors/vendor-integration-mock";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
 export type ClaimFileStatus =
 	| "accepted"
@@ -826,9 +826,7 @@ function buildClaimDetailFromLine(line: ClaimLine, index = 0): ClaimDetail {
 	const payer = payers[seq % payers.length]!;
 	const receivedAt = file?.receivedAt ?? `${line.dateOfService} 09:14:22`;
 	const paidDate =
-		status === "Paid" || status === "Partial"
-			? receivedAt.slice(0, 10)
-			: null;
+		status === "Paid" || status === "Partial" ? receivedAt.slice(0, 10) : null;
 	const svcCount = 2 + (seq % 3);
 	const serviceLines: ClaimDetailServiceLine[] = [];
 	for (let i = 0; i < svcCount; i++) {

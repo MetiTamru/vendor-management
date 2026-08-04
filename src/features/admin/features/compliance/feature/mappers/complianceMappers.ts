@@ -1,9 +1,14 @@
-export { toComplianceModel } from "../../shared/mappers/complianceMappers";
-
-import type { ComplianceCreateDto, ComplianceUpdateDto } from "../dto/complianceDto";
+import type {
+	ComplianceCreateDto,
+	ComplianceUpdateDto,
+} from "../dto/complianceDto";
 import type { ComplianceModel } from "../types/complianceModel";
 
-export function toComplianceCreateDto(model: Pick<ComplianceModel, "name">): ComplianceCreateDto {
+export { toComplianceModel } from "../../shared/mappers/complianceMappers";
+
+export function toComplianceCreateDto(
+	model: Pick<ComplianceModel, "name">
+): ComplianceCreateDto {
 	return { name: model.name };
 }
 

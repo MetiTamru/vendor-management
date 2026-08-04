@@ -10,10 +10,17 @@ export type VendorComparisonListResponse = {
 	count?: number | null;
 };
 
-export async function listVendorComparisonRecords(params?: Record<string, string>) {
-	return apiClient<VendorComparisonListResponse>(vendorComparisonEndpoints.list(), { params });
+export async function listVendorComparisonRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<VendorComparisonListResponse>(
+		vendorComparisonEndpoints.list(),
+		{ params }
+	);
 }
 
 export async function getVendorComparisonRecord(id: string) {
-	return apiClient<ApiVendorComparisonRecordDto>(vendorComparisonEndpoints.detail(id));
+	return apiClient<ApiVendorComparisonRecordDto>(
+		vendorComparisonEndpoints.detail(id)
+	);
 }

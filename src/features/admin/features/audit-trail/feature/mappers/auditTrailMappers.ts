@@ -1,9 +1,14 @@
-export { toAuditTrailModel } from "../../shared/mappers/auditTrailMappers";
-
-import type { AuditTrailCreateDto, AuditTrailUpdateDto } from "../dto/auditTrailDto";
+import type {
+	AuditTrailCreateDto,
+	AuditTrailUpdateDto,
+} from "../dto/auditTrailDto";
 import type { AuditTrailModel } from "../types/auditTrailModel";
 
-export function toAuditTrailCreateDto(model: Pick<AuditTrailModel, "name">): AuditTrailCreateDto {
+export { toAuditTrailModel } from "../../shared/mappers/auditTrailMappers";
+
+export function toAuditTrailCreateDto(
+	model: Pick<AuditTrailModel, "name">
+): AuditTrailCreateDto {
 	return { name: model.name };
 }
 

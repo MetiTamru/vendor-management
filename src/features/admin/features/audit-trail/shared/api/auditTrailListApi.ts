@@ -11,7 +11,9 @@ export type AuditTrailListResponse = {
 };
 
 export async function listAuditTrailRecords(params?: Record<string, string>) {
-	return apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), { params });
+	return apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getAuditTrailRecord(id: string) {

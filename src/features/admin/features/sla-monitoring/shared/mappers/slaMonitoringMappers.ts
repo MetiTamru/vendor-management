@@ -1,5 +1,5 @@
-import type { ApiSlaMonitoringRecordDto } from "../dto/slaMonitoringRecordDto";
 import type { SlaMonitoringModel } from "../../feature/types/slaMonitoringModel";
+import type { ApiSlaMonitoringRecordDto } from "../dto/slaMonitoringRecordDto";
 
 export function toSlaMonitoringModel(
 	row: ApiSlaMonitoringRecordDto,

@@ -1,5 +1,5 @@
-import type { ApiPurchaseOrdersRecordDto } from "../dto/purchaseOrdersRecordDto";
 import type { PurchaseOrdersModel } from "../../feature/types/purchaseOrdersModel";
+import type { ApiPurchaseOrdersRecordDto } from "../dto/purchaseOrdersRecordDto";
 
 export function toPurchaseOrdersModel(
 	row: ApiPurchaseOrdersRecordDto,

@@ -24,7 +24,10 @@ export async function createFileManagement(body: FileManagementCreateDto) {
 	});
 }
 
-export async function updateFileManagement(id: string, body: FileManagementUpdateDto) {
+export async function updateFileManagement(
+	id: string,
+	body: FileManagementUpdateDto
+) {
 	return apiClient<ApiFileManagementDto>(fileManagementEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

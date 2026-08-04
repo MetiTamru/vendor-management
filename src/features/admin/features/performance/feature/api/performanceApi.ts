@@ -24,7 +24,10 @@ export async function createPerformance(body: PerformanceCreateDto) {
 	});
 }
 
-export async function updatePerformance(id: string, body: PerformanceUpdateDto) {
+export async function updatePerformance(
+	id: string,
+	body: PerformanceUpdateDto
+) {
 	return apiClient<ApiPerformanceDto>(performanceEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

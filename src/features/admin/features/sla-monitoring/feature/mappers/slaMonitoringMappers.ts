@@ -1,9 +1,14 @@
-export { toSlaMonitoringModel } from "../../shared/mappers/slaMonitoringMappers";
-
-import type { SlaMonitoringCreateDto, SlaMonitoringUpdateDto } from "../dto/slaMonitoringDto";
+import type {
+	SlaMonitoringCreateDto,
+	SlaMonitoringUpdateDto,
+} from "../dto/slaMonitoringDto";
 import type { SlaMonitoringModel } from "../types/slaMonitoringModel";
 
-export function toSlaMonitoringCreateDto(model: Pick<SlaMonitoringModel, "name">): SlaMonitoringCreateDto {
+export { toSlaMonitoringModel } from "../../shared/mappers/slaMonitoringMappers";
+
+export function toSlaMonitoringCreateDto(
+	model: Pick<SlaMonitoringModel, "name">
+): SlaMonitoringCreateDto {
 	return { name: model.name };
 }
 

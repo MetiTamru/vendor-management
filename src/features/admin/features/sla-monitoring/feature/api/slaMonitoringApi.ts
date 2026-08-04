@@ -24,7 +24,10 @@ export async function createSlaMonitoring(body: SlaMonitoringCreateDto) {
 	});
 }
 
-export async function updateSlaMonitoring(id: string, body: SlaMonitoringUpdateDto) {
+export async function updateSlaMonitoring(
+	id: string,
+	body: SlaMonitoringUpdateDto
+) {
 	return apiClient<ApiSlaMonitoringDto>(slaMonitoringEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

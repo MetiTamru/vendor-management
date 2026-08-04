@@ -1,5 +1,5 @@
-import type { ApiActivityRecordDto } from "../dto/activityRecordDto";
 import type { ActivityModel } from "../../feature/types/activityModel";
+import type { ApiActivityRecordDto } from "../dto/activityRecordDto";
 
 export function toActivityModel(
 	row: ApiActivityRecordDto,

@@ -1,14 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 
-import {
-	CheckCircle2,
-	ChevronDown,
-	ChevronRight,
-	Printer,
-} from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -31,10 +26,10 @@ import {
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
 import {
+	type ClaimDetail,
 	exportRowsAsCsv,
 	formatCurrency,
 	getClaimDetail,
-	type ClaimDetail,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -42,12 +37,7 @@ import { cn } from "@/lib/utils";
 const MAIN_TABS = ["Overview", "Operations & Audit"] as const;
 type MainTab = (typeof MAIN_TABS)[number];
 
-const RELATED_FILTERS = [
-	"All",
-	"Adjustments",
-	"Voids",
-	"Reversals",
-] as const;
+const RELATED_FILTERS = ["All", "Adjustments", "Voids", "Reversals"] as const;
 
 function formatDos(iso: string) {
 	const [y, m, d] = iso.split("-");
@@ -146,11 +136,7 @@ function MetaChip({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
-function FileTable({
-	rows,
-}: {
-	rows: ClaimDetail["responseFiles"];
-}) {
+function FileTable({ rows }: { rows: ClaimDetail["responseFiles"] }) {
 	return (
 		<div className="overflow-x-auto">
 			<Table>
@@ -165,7 +151,9 @@ function FileTable({
 				<TableBody>
 					{rows.map((row) => (
 						<TableRow key={row.fileName} className="hover:bg-muted/20">
-							<TableCell className="py-2.5 pl-0 text-xs">{row.fileType}</TableCell>
+							<TableCell className="py-2.5 pl-0 text-xs">
+								{row.fileType}
+							</TableCell>
 							<TableCell className="max-w-[180px] truncate py-2.5 font-mono text-[11px] text-primary">
 								{row.fileName}
 							</TableCell>
@@ -274,10 +262,18 @@ function OverviewTab({ claim }: { claim: ClaimDetail }) {
 								<TableHead className="h-9 pl-0 text-[11px]">Code</TableHead>
 								<TableHead className="h-9 text-[11px]">Mod</TableHead>
 								<TableHead className="h-9 text-[11px]">Diagnosis</TableHead>
-								<TableHead className="h-9 text-right text-[11px]">Units</TableHead>
-								<TableHead className="h-9 text-right text-[11px]">Charge</TableHead>
-								<TableHead className="h-9 text-right text-[11px]">Allowed</TableHead>
-								<TableHead className="h-9 text-right text-[11px]">Paid</TableHead>
+								<TableHead className="h-9 text-right text-[11px]">
+									Units
+								</TableHead>
+								<TableHead className="h-9 text-right text-[11px]">
+									Charge
+								</TableHead>
+								<TableHead className="h-9 text-right text-[11px]">
+									Allowed
+								</TableHead>
+								<TableHead className="h-9 text-right text-[11px]">
+									Paid
+								</TableHead>
 								<TableHead className="h-9 pr-0 text-[11px]">Status</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -560,7 +556,9 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 									<TableHead className="h-9 text-[11px]">Step</TableHead>
 									<TableHead className="h-9 text-[11px]">Message</TableHead>
 									<TableHead className="h-9 text-[11px]">Status</TableHead>
-									<TableHead className="h-9 pr-0 text-[11px]">Details</TableHead>
+									<TableHead className="h-9 pr-0 text-[11px]">
+										Details
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -622,8 +620,12 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 									<TableHead className="h-9 pl-0 text-[11px]">
 										Claim ID
 									</TableHead>
-									<TableHead className="h-9 text-[11px]">Relationship</TableHead>
-									<TableHead className="h-9 text-[11px]">Service Date</TableHead>
+									<TableHead className="h-9 text-[11px]">
+										Relationship
+									</TableHead>
+									<TableHead className="h-9 text-[11px]">
+										Service Date
+									</TableHead>
 									<TableHead className="h-9 text-[11px]">Status</TableHead>
 									<TableHead className="h-9 pr-0 text-right text-[11px]">
 										Paid Amount
@@ -694,8 +696,12 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 										Date / Time
 									</TableHead>
 									<TableHead className="h-9 text-[11px]">Action</TableHead>
-									<TableHead className="h-9 text-[11px]">User / System</TableHead>
-									<TableHead className="h-9 pr-0 text-[11px]">Details</TableHead>
+									<TableHead className="h-9 text-[11px]">
+										User / System
+									</TableHead>
+									<TableHead className="h-9 pr-0 text-[11px]">
+										Details
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -830,7 +836,9 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 											File Name
 										</TableHead>
 										<TableHead className="h-9 text-[11px]">Type</TableHead>
-										<TableHead className="h-9 text-[11px]">Uploaded By</TableHead>
+										<TableHead className="h-9 text-[11px]">
+											Uploaded By
+										</TableHead>
 										<TableHead className="h-9 pr-0 text-[11px]">Date</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -840,7 +848,9 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 											<TableCell className="py-2.5 pl-0 font-mono text-[11px] text-primary">
 												{att.fileName}
 											</TableCell>
-											<TableCell className="py-2.5 text-xs">{att.type}</TableCell>
+											<TableCell className="py-2.5 text-xs">
+												{att.type}
+											</TableCell>
 											<TableCell className="py-2.5 text-xs">
 												{att.uploadedBy}
 											</TableCell>
@@ -896,10 +906,7 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 
 export function ClaimDetailPage() {
 	const params = useParams<{ claimId: string }>();
-	const claim = useMemo(
-		() => getClaimDetail(params.claimId),
-		[params.claimId]
-	);
+	const claim = useMemo(() => getClaimDetail(params.claimId), [params.claimId]);
 	const [tab, setTab] = useState<MainTab>("Operations & Audit");
 
 	if (!claim) {

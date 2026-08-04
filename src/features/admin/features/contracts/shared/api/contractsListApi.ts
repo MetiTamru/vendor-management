@@ -11,7 +11,9 @@ export type ContractsListResponse = {
 };
 
 export async function listContractsRecords(params?: Record<string, string>) {
-	return apiClient<ContractsListResponse>(contractsEndpoints.list(), { params });
+	return apiClient<ContractsListResponse>(contractsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getContractsRecord(id: string) {

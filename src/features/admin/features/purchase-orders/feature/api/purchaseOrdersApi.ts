@@ -24,7 +24,10 @@ export async function createPurchaseOrders(body: PurchaseOrdersCreateDto) {
 	});
 }
 
-export async function updatePurchaseOrders(id: string, body: PurchaseOrdersUpdateDto) {
+export async function updatePurchaseOrders(
+	id: string,
+	body: PurchaseOrdersUpdateDto
+) {
 	return apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),

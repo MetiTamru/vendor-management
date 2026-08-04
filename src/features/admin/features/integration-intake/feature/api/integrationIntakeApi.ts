@@ -14,21 +14,34 @@ export async function listIntegrationIntake() {
 }
 
 export async function getIntegrationIntake(id: string) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.detail(id));
+	return apiClient<ApiIntegrationIntakeDto>(
+		integrationIntakeEndpoints.detail(id)
+	);
 }
 
-export async function createIntegrationIntake(body: IntegrationIntakeCreateDto) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.create(), {
-		method: "POST",
-		body: JSON.stringify(body),
-	});
+export async function createIntegrationIntake(
+	body: IntegrationIntakeCreateDto
+) {
+	return apiClient<ApiIntegrationIntakeDto>(
+		integrationIntakeEndpoints.create(),
+		{
+			method: "POST",
+			body: JSON.stringify(body),
+		}
+	);
 }
 
-export async function updateIntegrationIntake(id: string, body: IntegrationIntakeUpdateDto) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	});
+export async function updateIntegrationIntake(
+	id: string,
+	body: IntegrationIntakeUpdateDto
+) {
+	return apiClient<ApiIntegrationIntakeDto>(
+		integrationIntakeEndpoints.update(id),
+		{
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}
+	);
 }
 
 export async function deleteIntegrationIntake(id: string) {

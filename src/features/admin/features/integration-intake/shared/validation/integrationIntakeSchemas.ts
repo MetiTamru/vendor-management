@@ -11,7 +11,8 @@ export const integrationIntakeCreateSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 });
 
-export const integrationIntakeUpdateSchema = integrationIntakeCreateSchema.partial();
+export const integrationIntakeUpdateSchema =
+	integrationIntakeCreateSchema.partial();
 
 export function parseIntegrationIntakeList(payload: unknown): {
 	data: z.infer<typeof apiIntegrationIntakeRecordSchema>[];

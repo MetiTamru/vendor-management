@@ -1,5 +1,5 @@
-import type { ApiSchedulesRecordDto } from "../dto/schedulesRecordDto";
 import type { SchedulesModel } from "../../feature/types/schedulesModel";
+import type { ApiSchedulesRecordDto } from "../dto/schedulesRecordDto";
 
 export function toSchedulesModel(
 	row: ApiSchedulesRecordDto,

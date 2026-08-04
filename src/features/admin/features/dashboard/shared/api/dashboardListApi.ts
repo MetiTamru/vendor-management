@@ -11,7 +11,9 @@ export type DashboardListResponse = {
 };
 
 export async function listDashboardRecords(params?: Record<string, string>) {
-	return apiClient<DashboardListResponse>(dashboardEndpoints.list(), { params });
+	return apiClient<DashboardListResponse>(dashboardEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getDashboardRecord(id: string) {

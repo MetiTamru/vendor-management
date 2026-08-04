@@ -10,10 +10,16 @@ export type ClaimEncounterListResponse = {
 	count?: number | null;
 };
 
-export async function listClaimEncounterRecords(params?: Record<string, string>) {
-	return apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), { params });
+export async function listClaimEncounterRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getClaimEncounterRecord(id: string) {
-	return apiClient<ApiClaimEncounterRecordDto>(claimEncounterEndpoints.detail(id));
+	return apiClient<ApiClaimEncounterRecordDto>(
+		claimEncounterEndpoints.detail(id)
+	);
 }

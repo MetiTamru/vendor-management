@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getErrorManagement, listErrorManagement } from "../api/errorManagementApi";
+import {
+	getErrorManagement,
+	listErrorManagement,
+} from "../api/errorManagementApi";
 import { toErrorManagementModel } from "../mappers/errorManagementMappers";
 
 export function useErrorManagementQuery() {

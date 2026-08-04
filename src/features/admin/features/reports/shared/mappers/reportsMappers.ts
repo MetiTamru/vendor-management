@@ -1,5 +1,5 @@
-import type { ApiReportsRecordDto } from "../dto/reportsRecordDto";
 import type { ReportsModel } from "../../feature/types/reportsModel";
+import type { ApiReportsRecordDto } from "../dto/reportsRecordDto";
 
 export function toReportsModel(
 	row: ApiReportsRecordDto,

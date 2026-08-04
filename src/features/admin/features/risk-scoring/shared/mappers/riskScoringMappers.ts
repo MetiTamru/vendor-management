@@ -1,5 +1,5 @@
-import type { ApiRiskScoringRecordDto } from "../dto/riskScoringRecordDto";
 import type { RiskScoringModel } from "../../feature/types/riskScoringModel";
+import type { ApiRiskScoringRecordDto } from "../dto/riskScoringRecordDto";
 
 export function toRiskScoringModel(
 	row: ApiRiskScoringRecordDto,

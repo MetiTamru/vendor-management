@@ -10,10 +10,16 @@ export type NotificationsListResponse = {
 	count?: number | null;
 };
 
-export async function listNotificationsRecords(params?: Record<string, string>) {
-	return apiClient<NotificationsListResponse>(notificationsEndpoints.list(), { params });
+export async function listNotificationsRecords(
+	params?: Record<string, string>
+) {
+	return apiClient<NotificationsListResponse>(notificationsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getNotificationsRecord(id: string) {
-	return apiClient<ApiNotificationsRecordDto>(notificationsEndpoints.detail(id));
+	return apiClient<ApiNotificationsRecordDto>(
+		notificationsEndpoints.detail(id)
+	);
 }

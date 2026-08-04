@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getClaimEncounter, listClaimEncounter } from "../api/claimEncounterApi";
+import {
+	getClaimEncounter,
+	listClaimEncounter,
+} from "../api/claimEncounterApi";
 import { toClaimEncounterModel } from "../mappers/claimEncounterMappers";
 
 export function useClaimEncounterQuery() {

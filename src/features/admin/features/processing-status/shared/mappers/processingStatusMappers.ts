@@ -1,5 +1,5 @@
-import type { ApiProcessingStatusRecordDto } from "../dto/processingStatusRecordDto";
 import type { ProcessingStatusModel } from "../../feature/types/processingStatusModel";
+import type { ApiProcessingStatusRecordDto } from "../dto/processingStatusRecordDto";
 
 export function toProcessingStatusModel(
 	row: ApiProcessingStatusRecordDto,

@@ -1,7 +1,11 @@
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 
 export type MemberStatus = "active" | "inactive" | "pending" | "termed";
-export type EligibilityStatus = "eligible" | "termed" | "pending" | "ineligible";
+export type EligibilityStatus =
+	| "eligible"
+	| "termed"
+	| "pending"
+	| "ineligible";
 export type ClaimStatus = "paid" | "denied" | "pending" | "partial";
 export type ExceptionStatus = "open" | "in_progress" | "resolved";
 
@@ -216,7 +220,13 @@ function buildSummaries(): MemberSummary[] {
 		const last = LAST[i % LAST.length]!;
 		const program = PROGRAMS[i % 3]!;
 		const status: MemberStatus =
-			i % 11 === 0 ? "termed" : i % 9 === 0 ? "pending" : i % 7 === 0 ? "inactive" : "active";
+			i % 11 === 0
+				? "termed"
+				: i % 9 === 0
+					? "pending"
+					: i % 7 === 0
+						? "inactive"
+						: "active";
 		const day = String(10 + (i % 18)).padStart(2, "0");
 		rows.push({
 			id: `mem-${i + 1}`,
@@ -238,9 +248,12 @@ function buildSummaries(): MemberSummary[] {
 			planName: PLANS[i % PLANS.length]!,
 			planType: "Medicaid",
 			lob: i % 4 === 0 ? "Pharmacy" : "Medical",
-			pcpName: ["Jane Smith, MD", "Omar Khalil, MD", "Lisa Chen, MD", "Marcus Reed, MD"][
-				i % 4
-			]!,
+			pcpName: [
+				"Jane Smith, MD",
+				"Omar Khalil, MD",
+				"Lisa Chen, MD",
+				"Marcus Reed, MD",
+			][i % 4]!,
 			pcpNpi: `1${pad(234567890 + i, 9)}`.slice(0, 10),
 			memberSince: `20${10 + (i % 14)}-0${(i % 8) + 1}-15`,
 			lastClaimDate: status === "pending" ? null : `2026-07-${day}`,
@@ -308,24 +321,22 @@ function detailFor(summary: MemberSummary): MemberDetail {
 	return {
 		...summary,
 		eligibilityStatus: summary.status === "termed" ? "termed" : "eligible",
-		coverageStart: isJohn ? "2026-01-01" : `${summary.memberSince.slice(0, 4)}-01-01`,
+		coverageStart: isJohn
+			? "2026-01-01"
+			: `${summary.memberSince.slice(0, 4)}-01-01`,
 		coverageEnd: summary.status === "termed" ? "2026-06-30" : null,
-		planId: isJohn ? "MFC-DC-MED-001" : `PLAN-${summary.program}-00${summary.id.slice(-1)}`,
+		planId: isJohn
+			? "MFC-DC-MED-001"
+			: `PLAN-${summary.program}-00${summary.id.slice(-1)}`,
 		preferredName: isJohn ? "Johnny" : null,
 		preferredLanguage: isJohn ? "English" : languages[idx % languages.length]!,
 		race: isJohn ? "White" : races[idx % races.length]!,
 		ethnicity: isJohn
 			? "Not Hispanic or Latino"
 			: ethnicities[idx % ethnicities.length]!,
-		communicationPreference: isJohn
-			? "Email"
-			: comms[idx % comms.length]!,
-		emergencyContactName: isJohn
-			? "Jane Doe"
-			: `${summary.lastName}, Contact`,
-		emergencyContactPhone: isJohn
-			? "(202) 555-0190"
-			: summary.phone,
+		communicationPreference: isJohn ? "Email" : comms[idx % comms.length]!,
+		emergencyContactName: isJohn ? "Jane Doe" : `${summary.lastName}, Contact`,
+		emergencyContactPhone: isJohn ? "(202) 555-0190" : summary.phone,
 		emergencyContactRelation: isJohn
 			? "Spouse"
 			: idx % 2 === 0
@@ -434,7 +445,9 @@ function detailFor(summary: MemberSummary): MemberDetail {
 				planId: isJohn
 					? "MFC-DC-MED-001"
 					: `PLAN-${summary.program}-00${summary.id.slice(-1)}`,
-				carrier: isJohn ? "MedStar Family Choice" : `${summary.program} Carrier`,
+				carrier: isJohn
+					? "MedStar Family Choice"
+					: `${summary.program} Carrier`,
 				startDate: isJohn ? "2024-01-01" : summary.memberSince,
 				endDate: null,
 				changeReason: "Current active plan",
@@ -444,7 +457,9 @@ function detailFor(summary: MemberSummary): MemberDetail {
 				planName: "Legacy Medicaid Plan",
 				planType: "Medicaid",
 				planId: isJohn ? "MFC-DC-LEG-009" : `PLAN-${summary.program}-LEG`,
-				carrier: isJohn ? "MedStar Family Choice" : `${summary.program} Carrier`,
+				carrier: isJohn
+					? "MedStar Family Choice"
+					: `${summary.program} Carrier`,
 				startDate: "2021-01-01",
 				endDate: "2023-12-31",
 				changeReason: "Plan redesign / product migration",
@@ -730,9 +745,7 @@ function detailFor(summary: MemberSummary): MemberDetail {
 	};
 }
 
-function buildExceptions(
-	summary: MemberSummary
-): EligibilityExceptionRow[] {
+function buildExceptions(summary: MemberSummary): EligibilityExceptionRow[] {
 	const seq = Number(summary.id.replace(/\D/g, "")) || 1;
 	const catalog: EligibilityExceptionRow[] = [
 		{
@@ -757,7 +770,8 @@ function buildExceptions(
 		{
 			id: `${summary.id}-ex3`,
 			exceptionType: "Duplicate Enrollment",
-			description: "Member appears under two active Medicaid IDs for the same period",
+			description:
+				"Member appears under two active Medicaid IDs for the same period",
 			startDetected: "2026-05-08",
 			status: "open",
 			source: "834 Eligibility",
@@ -775,7 +789,8 @@ function buildExceptions(
 		{
 			id: `${summary.id}-ex5`,
 			exceptionType: "SSN Verification Failed",
-			description: "SSN check returned no match against SSA verification service",
+			description:
+				"SSN check returned no match against SSA verification service",
 			startDetected: "2026-04-21",
 			status: "open",
 			source: "Identity Service",
@@ -784,7 +799,8 @@ function buildExceptions(
 		{
 			id: `${summary.id}-ex6`,
 			exceptionType: "Plan Code Invalid",
-			description: "Inbound 834 plan code not mapped to an active benefit package",
+			description:
+				"Inbound 834 plan code not mapped to an active benefit package",
 			startDetected: "2026-03-30",
 			status: "resolved",
 			source: "834 Eligibility",
@@ -838,7 +854,9 @@ export const MEMBER_DETAILS: Record<string, MemberDetail> = Object.fromEntries(
 	MEMBER_SUMMARIES.map((s) => [s.id, detailFor(s)])
 );
 
-export function displayName(m: Pick<MemberSummary, "firstName" | "middleName" | "lastName">) {
+export function displayName(
+	m: Pick<MemberSummary, "firstName" | "middleName" | "lastName">
+) {
 	return [m.firstName, m.middleName, m.lastName].filter(Boolean).join(" ");
 }
 

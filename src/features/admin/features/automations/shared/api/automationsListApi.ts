@@ -11,7 +11,9 @@ export type AutomationsListResponse = {
 };
 
 export async function listAutomationsRecords(params?: Record<string, string>) {
-	return apiClient<AutomationsListResponse>(automationsEndpoints.list(), { params });
+	return apiClient<AutomationsListResponse>(automationsEndpoints.list(), {
+		params,
+	});
 }
 
 export async function getAutomationsRecord(id: string) {

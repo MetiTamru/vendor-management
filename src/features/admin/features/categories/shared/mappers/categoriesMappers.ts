@@ -1,5 +1,5 @@
-import type { ApiCategoriesRecordDto } from "../dto/categoriesRecordDto";
 import type { CategoriesModel } from "../../feature/types/categoriesModel";
+import type { ApiCategoriesRecordDto } from "../dto/categoriesRecordDto";
 
 export function toCategoriesModel(
 	row: ApiCategoriesRecordDto,

@@ -1,9 +1,14 @@
-export { toErrorManagementModel } from "../../shared/mappers/errorManagementMappers";
-
-import type { ErrorManagementCreateDto, ErrorManagementUpdateDto } from "../dto/errorManagementDto";
+import type {
+	ErrorManagementCreateDto,
+	ErrorManagementUpdateDto,
+} from "../dto/errorManagementDto";
 import type { ErrorManagementModel } from "../types/errorManagementModel";
 
-export function toErrorManagementCreateDto(model: Pick<ErrorManagementModel, "name">): ErrorManagementCreateDto {
+export { toErrorManagementModel } from "../../shared/mappers/errorManagementMappers";
+
+export function toErrorManagementCreateDto(
+	model: Pick<ErrorManagementModel, "name">
+): ErrorManagementCreateDto {
 	return { name: model.name };
 }
 

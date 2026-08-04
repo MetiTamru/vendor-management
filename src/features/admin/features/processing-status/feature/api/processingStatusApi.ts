@@ -14,7 +14,9 @@ export async function listProcessingStatus() {
 }
 
 export async function getProcessingStatus(id: string) {
-	return apiClient<ApiProcessingStatusDto>(processingStatusEndpoints.detail(id));
+	return apiClient<ApiProcessingStatusDto>(
+		processingStatusEndpoints.detail(id)
+	);
 }
 
 export async function createProcessingStatus(body: ProcessingStatusCreateDto) {
@@ -24,11 +26,17 @@ export async function createProcessingStatus(body: ProcessingStatusCreateDto) {
 	});
 }
 
-export async function updateProcessingStatus(id: string, body: ProcessingStatusUpdateDto) {
-	return apiClient<ApiProcessingStatusDto>(processingStatusEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	});
+export async function updateProcessingStatus(
+	id: string,
+	body: ProcessingStatusUpdateDto
+) {
+	return apiClient<ApiProcessingStatusDto>(
+		processingStatusEndpoints.update(id),
+		{
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}
+	);
 }
 
 export async function deleteProcessingStatus(id: string) {

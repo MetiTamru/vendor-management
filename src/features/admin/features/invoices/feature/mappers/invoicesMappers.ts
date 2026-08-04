@@ -1,9 +1,11 @@
-export { toInvoicesModel } from "../../shared/mappers/invoicesMappers";
-
 import type { InvoicesCreateDto, InvoicesUpdateDto } from "../dto/invoicesDto";
 import type { InvoicesModel } from "../types/invoicesModel";
 
-export function toInvoicesCreateDto(model: Pick<InvoicesModel, "name">): InvoicesCreateDto {
+export { toInvoicesModel } from "../../shared/mappers/invoicesMappers";
+
+export function toInvoicesCreateDto(
+	model: Pick<InvoicesModel, "name">
+): InvoicesCreateDto {
 	return { name: model.name };
 }
 
