@@ -2,10 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import {
-	SummaryCard,
-	SummaryCardsGrid,
-} from "@/components/admin/SummaryCard";
+import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 
 import type { GroupModel } from "../types/group.types";
 

@@ -11,16 +11,22 @@ export type SlaMonitoringListResponse = {
 	count?: number | null;
 };
 
-export async function listSlaMonitoringRecords(params?: Record<string, string>) {
+export async function listSlaMonitoringRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), { params })
+		() =>
+			apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getSlaMonitoringRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiSlaMonitoringRecordDto>(slaMonitoringEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiSlaMonitoringRecordDto>(slaMonitoringEndpoints.detail(id))
 	);
 }

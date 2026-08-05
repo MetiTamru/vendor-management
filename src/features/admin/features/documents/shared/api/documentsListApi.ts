@@ -14,13 +14,14 @@ export type DocumentsListResponse = {
 export async function listDocumentsRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<DocumentsListResponse>(documentsEndpoints.list(), { params })
+		() =>
+			apiClient<DocumentsListResponse>(documentsEndpoints.list(), { params })
 	);
 }
 
 export async function getDocumentsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiDocumentsRecordDto>(documentsEndpoints.detail(id))
 	);
 }

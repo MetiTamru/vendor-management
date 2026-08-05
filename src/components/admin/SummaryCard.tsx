@@ -74,14 +74,16 @@ export type SummaryCardsGridProps = {
 	className?: string;
 };
 
-const GRID_COLS: Record<NonNullable<SummaryCardsGridProps["columns"]>, string> =
-	{
-		2: "sm:grid-cols-2",
-		3: "sm:grid-cols-2 lg:grid-cols-3",
-		4: "sm:grid-cols-2 lg:grid-cols-4",
-		5: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
-		6: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
-	};
+const GRID_COLS: Record<
+	NonNullable<SummaryCardsGridProps["columns"]>,
+	string
+> = {
+	2: "sm:grid-cols-2",
+	3: "sm:grid-cols-2 lg:grid-cols-3",
+	4: "sm:grid-cols-2 lg:grid-cols-4",
+	5: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
+	6: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
+};
 
 export function SummaryCardsGrid({
 	children,

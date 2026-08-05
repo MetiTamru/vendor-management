@@ -20,7 +20,7 @@ export async function listSourcingRecords(params?: Record<string, string>) {
 
 export async function getSourcingRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiSourcingRecordDto>(sourcingEndpoints.detail(id))
 	);
 }

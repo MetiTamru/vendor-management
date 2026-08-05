@@ -11,44 +11,51 @@ import type {
 export async function listPurchaseOrders() {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<{ results?: ApiPurchaseOrdersDto[]; count?: number }>(
-		purchaseOrdersEndpoints.list()
-	)
+		() =>
+			apiClient<{ results?: ApiPurchaseOrdersDto[]; count?: number }>(
+				purchaseOrdersEndpoints.list()
+			)
 	);
 }
 
 export async function getPurchaseOrders(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.detail(id))
 	);
 }
 
 export async function createPurchaseOrders(body: PurchaseOrdersCreateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.create(), {
-		method: "POST",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.create(), {
+				method: "POST",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
-export async function updatePurchaseOrders(id: string, body: PurchaseOrdersUpdateDto) {
+export async function updatePurchaseOrders(
+	id: string,
+	body: PurchaseOrdersUpdateDto
+) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.update(id), {
+				method: "PATCH",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function deletePurchaseOrders(id: string) {
 	return withMockOrRemote(
 		() => undefined,
-		() => apiClient<void>(purchaseOrdersEndpoints.delete(id), {
-		method: "DELETE",
-	})
+		() =>
+			apiClient<void>(purchaseOrdersEndpoints.delete(id), {
+				method: "DELETE",
+			})
 	);
 }

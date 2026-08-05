@@ -1,5 +1,5 @@
-import type { ApiFileManagementRecordDto } from "../dto/fileManagementRecordDto";
 import type { FileManagementModel } from "../../feature/types/fileManagementModel";
+import type { ApiFileManagementRecordDto } from "../dto/fileManagementRecordDto";
 
 export function toFileManagementModel(
 	row: ApiFileManagementRecordDto,

@@ -1,9 +1,14 @@
-export { toProvidersModel } from "../../shared/mappers/providersMappers";
-
-import type { ProvidersCreateDto, ProvidersUpdateDto } from "../dto/providersDto";
+import type {
+	ProvidersCreateDto,
+	ProvidersUpdateDto,
+} from "../dto/providersDto";
 import type { ProvidersModel } from "../types/providersModel";
 
-export function toProvidersCreateDto(model: Pick<ProvidersModel, "name">): ProvidersCreateDto {
+export { toProvidersModel } from "../../shared/mappers/providersMappers";
+
+export function toProvidersCreateDto(
+	model: Pick<ProvidersModel, "name">
+): ProvidersCreateDto {
 	return { name: model.name };
 }
 

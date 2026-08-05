@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -43,16 +43,16 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	type ClaimStatus,
+	type EligibilityStatus,
+	type ExceptionStatus,
+	type MemberStatus,
 	displayName,
 	formatCurrency,
 	formatDate,
 	getMember,
 	maskSsn,
 	memberAge,
-	type ClaimStatus,
-	type EligibilityStatus,
-	type ExceptionStatus,
-	type MemberStatus,
 } from "@/features/admin/features/members/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -247,7 +247,8 @@ function MetricStrip({
 						<div
 							className={cn(
 								"mt-1 truncate text-sm font-semibold",
-								item.mono && "font-mono text-[13px] tabular-nums tracking-tight",
+								item.mono &&
+									"font-mono text-[13px] tabular-nums tracking-tight",
 								item.accent ? "text-emerald-700" : "text-foreground"
 							)}
 						>
@@ -305,8 +306,7 @@ export function MemberDetailPage({
 	}
 
 	const name = displayName(member);
-	const claimRows =
-		claimsPane === "claims" ? member.claims : member.encounters;
+	const claimRows = claimsPane === "claims" ? member.claims : member.encounters;
 
 	return (
 		<div className="space-y-5">
@@ -425,8 +425,9 @@ export function MemberDetailPage({
 									<MapPin className="mt-0.5 size-3.5 shrink-0" />
 									<span>
 										{member.addressLine1}
-										{member.addressLine2 ? `, ${member.addressLine2}` : ""},{" "}
-										{member.city}, {member.state} {member.zip}
+										{member.addressLine2
+											? `, ${member.addressLine2}`
+											: ""}, {member.city}, {member.state} {member.zip}
 									</span>
 								</span>
 							</div>
@@ -442,9 +443,7 @@ export function MemberDetailPage({
 						<MetaField label="PCP" value={member.pcpName} />
 						<MetaField
 							label="PCP NPI"
-							value={
-								<span className="font-mono text-sm">{member.pcpNpi}</span>
-							}
+							value={<span className="font-mono text-sm">{member.pcpNpi}</span>}
 						/>
 					</div>
 				</div>
@@ -534,9 +533,10 @@ export function MemberDetailPage({
 
 						<Panel title="Plan Information">
 							<div className="grid grid-cols-2 gap-x-4 gap-y-4">
-								<MetaField label="Plan ID" value={
-									<span className="font-mono">{member.planId}</span>
-								} />
+								<MetaField
+									label="Plan ID"
+									value={<span className="font-mono">{member.planId}</span>}
+								/>
 								<MetaField label="Type" value={member.planType} />
 								<MetaField label="LOB" value={member.lob} />
 								<MetaField label="Program" value={member.program} />
@@ -549,17 +549,16 @@ export function MemberDetailPage({
 							) : (
 								<ul className="space-y-4">
 									{member.alerts.map((a) => (
-										<li
-											key={a.id}
-											className="flex items-start gap-3"
-										>
+										<li key={a.id} className="flex items-start gap-3">
 											{a.severity === "info" ? (
 												<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
 											) : (
 												<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
 											)}
 											<div className="min-w-0 flex-1">
-												<p className="text-sm font-medium leading-snug">{a.title}</p>
+												<p className="text-sm font-medium leading-snug">
+													{a.title}
+												</p>
 												<button
 													type="button"
 													className="text-xs font-medium text-primary hover:underline"
@@ -624,7 +623,7 @@ export function MemberDetailPage({
 										))}
 									</TableBody>
 								</Table>
-								</TableScroll>
+							</TableScroll>
 						</Panel>
 
 						<Panel
@@ -664,7 +663,7 @@ export function MemberDetailPage({
 										))}
 									</TableBody>
 								</Table>
-								</TableScroll>
+							</TableScroll>
 						</Panel>
 					</div>
 
@@ -708,7 +707,7 @@ export function MemberDetailPage({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 					</Panel>
 
 					{/* Bottom row */}
@@ -785,7 +784,7 @@ export function MemberDetailPage({
 										))}
 									</TableBody>
 								</Table>
-								</TableScroll>
+							</TableScroll>
 						</Panel>
 
 						<Panel
@@ -835,7 +834,7 @@ export function MemberDetailPage({
 										))}
 									</TableBody>
 								</Table>
-								</TableScroll>
+							</TableScroll>
 						</Panel>
 					</div>
 
@@ -891,7 +890,7 @@ export function MemberDetailPage({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 					</Panel>
 
 					{/* Full-width exceptions */}
@@ -942,7 +941,7 @@ export function MemberDetailPage({
 									)}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 						<ViewAllLink onClick={() => setTab("Eligibility Exceptions")} />
 					</Panel>
 				</div>
@@ -1041,7 +1040,9 @@ function MemberClaimsEncountersTab({
 						<p className="text-[11px] font-medium text-muted-foreground uppercase">
 							{card.label}
 						</p>
-						<p className="mt-1 text-sm font-semibold tabular-nums">{card.value}</p>
+						<p className="mt-1 text-sm font-semibold tabular-nums">
+							{card.value}
+						</p>
 					</div>
 				))}
 			</div>
@@ -1117,7 +1118,7 @@ function MemberClaimsEncountersTab({
 							))}
 						</TableBody>
 					</Table>
-					</TableScroll>
+				</TableScroll>
 				<p className="mt-3 text-[11px] text-muted-foreground">
 					Showing recent {pane} for this member · Data as of {member.dataAsOf}
 				</p>
@@ -1206,8 +1207,7 @@ function TabBody({
 							},
 							{
 								label: "Case / group",
-								value:
-									member.eligibilityHistory[0]?.groupCaseId ?? "—",
+								value: member.eligibilityHistory[0]?.groupCaseId ?? "—",
 								mono: true,
 							},
 							{
@@ -1424,7 +1424,8 @@ function TabBody({
 	}
 
 	if (tab === "Eligibility") {
-		const current = member.eligibilityHistory.find((r) => !r.endDate) ??
+		const current =
+			member.eligibilityHistory.find((r) => !r.endDate) ??
 			member.eligibilityHistory[0];
 		const openExceptions = member.exceptions.filter(
 			(e) => e.status === "open" || e.status === "in_progress"
@@ -1477,9 +1478,7 @@ function TabBody({
 						dense
 						title="Current eligibility"
 						className="lg:col-span-2"
-						action={
-							<ShieldCheck className="size-3.5 text-muted-foreground" />
-						}
+						action={<ShieldCheck className="size-3.5 text-muted-foreground" />}
 					>
 						<div className="space-y-4">
 							<div className="flex items-start gap-3 rounded-lg border border-border/30 bg-muted/15 p-3.5">
@@ -1515,19 +1514,17 @@ function TabBody({
 
 							<div className="grid grid-cols-2 gap-x-4 gap-y-3">
 								<MetaField label="Program" value={member.program} />
-								<MetaField label="Member status" value={
-									<MemberStatusPill status={member.status} />
-								} />
+								<MetaField
+									label="Member status"
+									value={<MemberStatusPill status={member.status} />}
+								/>
 								<MetaField
 									label="Verified by"
 									value={current?.verifiedBy ?? "—"}
 								/>
 								<MetaField label="Source file" value={current?.source ?? "—"} />
 								<div className="col-span-2">
-									<MetaField
-										label="Reason"
-										value={current?.reason ?? "—"}
-									/>
+									<MetaField label="Reason" value={current?.reason ?? "—"} />
 								</div>
 								<div className="col-span-2">
 									<MetaField
@@ -1600,7 +1597,9 @@ function TabBody({
 												{formatDate(r.startDate)}
 											</TableCell>
 											<TableCell className="py-2.5 text-sm tabular-nums">
-												{r.endDate ? formatDate(r.endDate) : (
+												{r.endDate ? (
+													formatDate(r.endDate)
+												) : (
 													<span className="font-medium text-emerald-700">
 														Present
 													</span>
@@ -1609,7 +1608,9 @@ function TabBody({
 											<TableCell className="py-2.5">
 												<EligPill status={r.status} />
 											</TableCell>
-											<TableCell className="py-2.5 text-sm">{r.source}</TableCell>
+											<TableCell className="py-2.5 text-sm">
+												{r.source}
+											</TableCell>
 											<TableCell className="py-2.5 font-mono text-xs">
 												{r.groupCaseId}
 											</TableCell>
@@ -1620,7 +1621,7 @@ function TabBody({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 						<p className="mt-3 text-[11px] text-muted-foreground">
 							Eligibility spans are ordered newest first · Verified via{" "}
 							{current?.verifiedBy ?? "system"} · Data as of {member.dataAsOf}
@@ -1658,7 +1659,9 @@ function TabBody({
 											<TableCell className="py-2.5 text-sm leading-relaxed">
 												{ex.description}
 											</TableCell>
-											<TableCell className="py-2.5 text-sm">{ex.source}</TableCell>
+											<TableCell className="py-2.5 text-sm">
+												{ex.source}
+											</TableCell>
 											<TableCell className="py-2.5">
 												<ExceptionPill status={ex.status} />
 											</TableCell>
@@ -1669,7 +1672,7 @@ function TabBody({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 					</Panel>
 				) : null}
 			</div>
@@ -1707,9 +1710,7 @@ function TabBody({
 						dense
 						title="Active plan"
 						className="lg:col-span-2"
-						action={
-							<BadgeCheck className="size-3.5 text-muted-foreground" />
-						}
+						action={<BadgeCheck className="size-3.5 text-muted-foreground" />}
 					>
 						<div className="space-y-4">
 							<div>
@@ -1817,8 +1818,12 @@ function TabBody({
 													</span>
 												) : null}
 											</TableCell>
-											<TableCell className="py-2.5 text-sm">{r.carrier}</TableCell>
-											<TableCell className="py-2.5 text-sm">{r.planType}</TableCell>
+											<TableCell className="py-2.5 text-sm">
+												{r.carrier}
+											</TableCell>
+											<TableCell className="py-2.5 text-sm">
+												{r.planType}
+											</TableCell>
 											<TableCell className="py-2.5 font-mono text-xs">
 												{r.planId}
 											</TableCell>
@@ -1826,7 +1831,9 @@ function TabBody({
 												{formatDate(r.startDate)}
 											</TableCell>
 											<TableCell className="py-2.5 text-sm tabular-nums">
-												{r.endDate ? formatDate(r.endDate) : (
+												{r.endDate ? (
+													formatDate(r.endDate)
+												) : (
 													<span className="font-medium text-emerald-700">
 														Present
 													</span>
@@ -1839,7 +1846,7 @@ function TabBody({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 						<p className="mt-3 text-[11px] text-muted-foreground">
 							Data as of {member.dataAsOf}
 						</p>
@@ -1854,8 +1861,8 @@ function TabBody({
 		const activeCovered = member.dependents.filter(
 			(d) => d.coverageStatus === "active"
 		).length;
-		const children = member.dependents.filter((d) =>
-			d.relationship === "Daughter" || d.relationship === "Son"
+		const children = member.dependents.filter(
+			(d) => d.relationship === "Daughter" || d.relationship === "Son"
 		).length;
 		const subscriber = member.dependents.find((d) => d.relationship === "Self");
 
@@ -1918,9 +1925,7 @@ function TabBody({
 												.toUpperCase()}
 										</span>
 										<div className="min-w-0">
-											<p className="truncate text-sm font-semibold">
-												{d.name}
-											</p>
+											<p className="truncate text-sm font-semibold">{d.name}</p>
 											<p className="text-sm leading-relaxed text-muted-foreground">
 												{d.relationship}
 												{age != null ? ` · ${age} yrs` : ""}
@@ -2023,7 +2028,9 @@ function TabBody({
 													</span>
 												) : null}
 											</TableCell>
-											<TableCell className="py-2.5 text-sm">{d.gender}</TableCell>
+											<TableCell className="py-2.5 text-sm">
+												{d.gender}
+											</TableCell>
 											<TableCell className="py-2.5 font-mono text-xs">
 												{d.memberId ?? "—"}
 											</TableCell>
@@ -2038,7 +2045,7 @@ function TabBody({
 								})}
 							</TableBody>
 						</Table>
-						</TableScroll>
+					</TableScroll>
 					<p className="mt-3 text-[11px] text-muted-foreground">
 						Household coverage under {member.planName} · Data as of{" "}
 						{member.dataAsOf}
@@ -2056,7 +2063,9 @@ function TabBody({
 		const oop = member.accumulators.find((a) =>
 			a.label.toLowerCase().includes("out of pocket")
 		);
-		const deductible = member.accumulators.find((a) => a.label === "Deductible");
+		const deductible = member.accumulators.find(
+			(a) => a.label === "Deductible"
+		);
 		const metCount = member.accumulators.filter((a) => a.remaining <= 0).length;
 
 		return (
@@ -2066,15 +2075,11 @@ function TabBody({
 					items={[
 						{
 							label: "Deductible used",
-							value: deductible
-								? formatCurrency(deductible.individual)
-								: "—",
+							value: deductible ? formatCurrency(deductible.individual) : "—",
 						},
 						{
 							label: "Deductible remaining",
-							value: deductible
-								? formatCurrency(deductible.remaining)
-								: "—",
+							value: deductible ? formatCurrency(deductible.remaining) : "—",
 							accent: (deductible?.remaining ?? 1) === 0,
 						},
 						{
@@ -2182,8 +2187,12 @@ function TabBody({
 									<TableHead className="h-9 text-right text-xs">
 										Individual
 									</TableHead>
-									<TableHead className="h-9 text-right text-xs">Family</TableHead>
-									<TableHead className="h-9 text-right text-xs">Limit</TableHead>
+									<TableHead className="h-9 text-right text-xs">
+										Family
+									</TableHead>
+									<TableHead className="h-9 text-right text-xs">
+										Limit
+									</TableHead>
 									<TableHead className="h-9 text-right text-xs">
 										Remaining
 									</TableHead>
@@ -2224,7 +2233,7 @@ function TabBody({
 								))}
 							</TableBody>
 						</Table>
-						</TableScroll>
+					</TableScroll>
 					<p className="mt-3 text-[11px] text-muted-foreground">
 						Plan year accumulators for {member.planName} · Data as of{" "}
 						{member.dataAsOf}
@@ -2235,9 +2244,15 @@ function TabBody({
 	}
 
 	if (tab === "Vendor / Source History") {
-		const success = member.vendorHistory.filter((v) => v.status === "success").length;
-		const warning = member.vendorHistory.filter((v) => v.status === "warning").length;
-		const failed = member.vendorHistory.filter((v) => v.status === "failed").length;
+		const success = member.vendorHistory.filter(
+			(v) => v.status === "success"
+		).length;
+		const warning = member.vendorHistory.filter(
+			(v) => v.status === "warning"
+		).length;
+		const failed = member.vendorHistory.filter(
+			(v) => v.status === "failed"
+		).length;
 		const totalRecords = member.vendorHistory.reduce(
 			(s, v) => s + v.recordsProcessed,
 			0
@@ -2309,13 +2324,15 @@ function TabBody({
 									/>
 								</div>
 								<p className="text-[11px] leading-relaxed text-muted-foreground">
-									Vendor feeds drive eligibility, claims, and encounter
-									updates for this member. Failed or warning feeds may delay
-									downstream adjudication.
+									Vendor feeds drive eligibility, claims, and encounter updates
+									for this member. Failed or warning feeds may delay downstream
+									adjudication.
 								</p>
 							</div>
 						) : (
-							<p className="text-sm text-muted-foreground">No vendor history.</p>
+							<p className="text-sm text-muted-foreground">
+								No vendor history.
+							</p>
 						)}
 					</Panel>
 
@@ -2333,7 +2350,9 @@ function TabBody({
 							<Table>
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Vendor / source</TableHead>
+										<TableHead className="h-9 text-xs">
+											Vendor / source
+										</TableHead>
 										<TableHead className="h-9 text-xs">Feed type</TableHead>
 										<TableHead className="h-9 text-xs">Direction</TableHead>
 										<TableHead className="h-9 text-xs">Frequency</TableHead>
@@ -2372,7 +2391,7 @@ function TabBody({
 									))}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 						<p className="mt-3 text-[11px] text-muted-foreground">
 							Data as of {member.dataAsOf}
 						</p>
@@ -2429,9 +2448,7 @@ function TabBody({
 						dense
 						title="Needs attention"
 						className="lg:col-span-2"
-						action={
-							<ShieldAlert className="size-3.5 text-muted-foreground" />
-						}
+						action={<ShieldAlert className="size-3.5 text-muted-foreground" />}
 					>
 						{actionNeeded.length === 0 ? (
 							<div className="flex flex-col items-center gap-2 py-6 text-center">
@@ -2526,7 +2543,7 @@ function TabBody({
 									)}
 								</TableBody>
 							</Table>
-							</TableScroll>
+						</TableScroll>
 						<p className="mt-3 text-[11px] text-muted-foreground">
 							Exceptions may block eligibility confirmation or claims
 							adjudication · Data as of {member.dataAsOf}

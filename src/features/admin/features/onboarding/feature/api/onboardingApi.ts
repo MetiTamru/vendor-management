@@ -11,44 +11,48 @@ import type {
 export async function listOnboarding() {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<{ results?: ApiOnboardingDto[]; count?: number }>(
-		onboardingEndpoints.list()
-	)
+		() =>
+			apiClient<{ results?: ApiOnboardingDto[]; count?: number }>(
+				onboardingEndpoints.list()
+			)
 	);
 }
 
 export async function getOnboarding(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiOnboardingDto>(onboardingEndpoints.detail(id))
 	);
 }
 
 export async function createOnboarding(body: OnboardingCreateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiOnboardingDto>(onboardingEndpoints.create(), {
-		method: "POST",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiOnboardingDto>(onboardingEndpoints.create(), {
+				method: "POST",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function updateOnboarding(id: string, body: OnboardingUpdateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiOnboardingDto>(onboardingEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiOnboardingDto>(onboardingEndpoints.update(id), {
+				method: "PATCH",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function deleteOnboarding(id: string) {
 	return withMockOrRemote(
 		() => undefined,
-		() => apiClient<void>(onboardingEndpoints.delete(id), {
-		method: "DELETE",
-	})
+		() =>
+			apiClient<void>(onboardingEndpoints.delete(id), {
+				method: "DELETE",
+			})
 	);
 }

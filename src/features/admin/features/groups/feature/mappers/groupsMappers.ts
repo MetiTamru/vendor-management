@@ -1,9 +1,11 @@
-export { toGroupsModel } from "../../shared/mappers/groupsMappers";
-
 import type { GroupsCreateDto, GroupsUpdateDto } from "../dto/groupsDto";
 import type { GroupsModel } from "../types/groupsModel";
 
-export function toGroupsCreateDto(model: Pick<GroupsModel, "name">): GroupsCreateDto {
+export { toGroupsModel } from "../../shared/mappers/groupsMappers";
+
+export function toGroupsCreateDto(
+	model: Pick<GroupsModel, "name">
+): GroupsCreateDto {
 	return { name: model.name };
 }
 

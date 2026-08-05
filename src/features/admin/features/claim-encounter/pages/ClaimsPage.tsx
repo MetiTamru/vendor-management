@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	ChevronDown,
@@ -18,10 +18,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Collapsible,
-	CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -50,11 +47,11 @@ import { usePagedRows } from "@/features/admin/features/claim-encounter/componen
 import { EdiViewerDialog } from "@/features/admin/features/claim-encounter/edi";
 import {
 	CLAIM_LINES,
+	type ClaimLine,
 	SHOWCASE_CLAIM_DETAIL,
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-	type ClaimLine,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
@@ -251,9 +248,8 @@ export function ClaimsPage() {
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const [detailTab, setDetailTab] = useState<(typeof DETAIL_TABS)[number]>(
-		"Claim Summary"
-	);
+	const [detailTab, setDetailTab] =
+		useState<(typeof DETAIL_TABS)[number]>("Claim Summary");
 	const [ediOpen, setEdiOpen] = useState(false);
 
 	const allRows = useMemo(() => {
@@ -385,7 +381,9 @@ export function ClaimsPage() {
 			if (
 				providerNpi.trim() &&
 				!(
-					row.provider.toLowerCase().includes(providerNpi.trim().toLowerCase()) ||
+					row.provider
+						.toLowerCase()
+						.includes(providerNpi.trim().toLowerCase()) ||
 					row.providerNpi.includes(providerNpi.trim())
 				)
 			)
@@ -403,8 +401,10 @@ export function ClaimsPage() {
 				return false;
 			if (dosFrom && row.dateOfService < dosFrom) return false;
 			if (dosTo && row.dateOfService > dosTo) return false;
-			if (claimStatus !== "all" && row.claimStatus !== claimStatus) return false;
-			if (claimType !== "all" && row.displayClaimType !== claimType) return false;
+			if (claimStatus !== "all" && row.claimStatus !== claimStatus)
+				return false;
+			if (claimType !== "all" && row.displayClaimType !== claimType)
+				return false;
 			if (payer !== "all" && row.payer !== payer) return false;
 			if (group !== "all" && row.group !== group) return false;
 			if (plan !== "all" && row.plan !== plan) return false;
@@ -1036,8 +1036,8 @@ export function ClaimsPage() {
 								<ClaimStatusBadge status={selected.claimStatus} />
 							</div>
 							<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-								{selected.memberName} · {selected.memberId} · {selected.vendor} ·{" "}
-								{selected.payer} · Received {selected.receivedAt.slice(0, 10)}
+								{selected.memberName} · {selected.memberId} · {selected.vendor}{" "}
+								· {selected.payer} · Received {selected.receivedAt.slice(0, 10)}
 							</p>
 						</div>
 						<div className="flex items-center gap-1.5">
@@ -1126,10 +1126,7 @@ export function ClaimsPage() {
 												? `EFT-${selected.claimId.replace(/\D/g, "").slice(-8)}`
 												: "—",
 										],
-										[
-											"Payment Method",
-											selected.amountPaid > 0 ? "EFT" : "—",
-										],
+										["Payment Method", selected.amountPaid > 0 ? "EFT" : "—"],
 										["Repriced / Adjusted", "No"],
 									]}
 								/>
@@ -1408,7 +1405,9 @@ export function ClaimsPage() {
 						<TabsContent value="Responses" className="mt-0 p-3">
 							<div className="space-y-2 text-sm">
 								<p>
-									<span className="text-muted-foreground">Response status: </span>
+									<span className="text-muted-foreground">
+										Response status:{" "}
+									</span>
 									<ClaimStatusBadge status={selected.responseStatus} />
 								</p>
 								<p className="text-muted-foreground">
@@ -1424,7 +1423,9 @@ export function ClaimsPage() {
 												key={r.code}
 												className="rounded border border-red-200/60 bg-red-50/80 px-2 py-1.5 text-xs dark:border-red-900/40 dark:bg-red-950/30"
 											>
-												<span className="font-mono font-semibold">{r.code}</span>{" "}
+												<span className="font-mono font-semibold">
+													{r.code}
+												</span>{" "}
 												— {r.description}
 											</li>
 										))}

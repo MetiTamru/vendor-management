@@ -45,8 +45,7 @@ import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: ProviderStatus }) {
 	const map: Record<ProviderStatus, string> = {
-		active:
-			"border-emerald-200/80 bg-emerald-50 text-emerald-900",
+		active: "border-emerald-200/80 bg-emerald-50 text-emerald-900",
 		inactive: "border-slate-200/80 bg-slate-50 text-slate-800",
 		pending: "border-amber-200/80 bg-amber-50 text-amber-950",
 		termed: "border-red-200/80 bg-red-50 text-red-900",
@@ -217,7 +216,9 @@ export function ProvidersPage() {
 									<p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
 										{s.value.toLocaleString()}
 									</p>
-									<p className="mt-1.5 text-xs text-muted-foreground">{s.hint}</p>
+									<p className="mt-1.5 text-xs text-muted-foreground">
+										{s.hint}
+									</p>
 								</div>
 								<span
 									className={cn(

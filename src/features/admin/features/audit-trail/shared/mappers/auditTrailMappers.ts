@@ -1,5 +1,5 @@
-import type { ApiAuditTrailRecordDto } from "../dto/auditTrailRecordDto";
 import type { AuditTrailModel } from "../../feature/types/auditTrailModel";
+import type { ApiAuditTrailRecordDto } from "../dto/auditTrailRecordDto";
 
 export function toAuditTrailModel(
 	row: ApiAuditTrailRecordDto,

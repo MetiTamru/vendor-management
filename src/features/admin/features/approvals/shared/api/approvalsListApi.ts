@@ -14,13 +14,14 @@ export type ApprovalsListResponse = {
 export async function listApprovalsRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ApprovalsListResponse>(approvalsEndpoints.list(), { params })
+		() =>
+			apiClient<ApprovalsListResponse>(approvalsEndpoints.list(), { params })
 	);
 }
 
 export async function getApprovalsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiApprovalsRecordDto>(approvalsEndpoints.detail(id))
 	);
 }

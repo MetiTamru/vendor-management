@@ -1,5 +1,5 @@
-import type { ApiVendorsRecordDto } from "../dto/vendorsRecordDto";
 import type { VendorsModel } from "../../feature/types/vendorsModel";
+import type { ApiVendorsRecordDto } from "../dto/vendorsRecordDto";
 
 export function toVendorsModel(
 	row: ApiVendorsRecordDto,

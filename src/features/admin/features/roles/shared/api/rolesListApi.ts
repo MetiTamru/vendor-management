@@ -20,7 +20,7 @@ export async function listRolesRecords(params?: Record<string, string>) {
 
 export async function getRolesRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiRolesRecordDto>(rolesEndpoints.detail(id))
 	);
 }

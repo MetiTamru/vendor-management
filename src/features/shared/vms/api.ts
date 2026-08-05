@@ -3,14 +3,21 @@ import { isMockEnabled, withMockOrRemote } from "@/lib/mock-mode";
 
 import { CURRENT_VENDOR_ID, vmsStore } from "./mock-store";
 import type {
+	ActivityEventModel,
+	ApprovalRequestModel,
 	BidModel,
+	CertificateModel,
 	ContractModel,
 	DocumentModel,
 	InvoiceModel,
+	NotificationModel,
 	OnboardingCaseModel,
 	PurchaseOrderModel,
 	RfxModel,
+	ScorecardModel,
+	VendorCategoryModel,
 	VendorModel,
+	VendorTeamMember,
 } from "./types";
 
 /** NestJS admin paths — see docs/api-contracts/vms.md */
@@ -136,7 +143,7 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listCategories()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(
+				apiClient<VendorCategoryModel[] | { results?: VendorCategoryModel[] }>(
 					vmsPaths.categories
 				).then(unwrapList)
 		);
@@ -145,9 +152,9 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listOnboarding()),
 			() =>
-				apiClient<
-					OnboardingCaseModel[] | { results?: OnboardingCaseModel[] }
-				>(vmsPaths.onboarding).then(unwrapList)
+				apiClient<OnboardingCaseModel[] | { results?: OnboardingCaseModel[] }>(
+					vmsPaths.onboarding
+				).then(unwrapList)
 		);
 	},
 	async getOnboarding(id: string) {
@@ -206,7 +213,7 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listCertificates()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(
+				apiClient<CertificateModel[] | { results?: CertificateModel[] }>(
 					vmsPaths.certificates
 				).then(unwrapList)
 		);
@@ -309,11 +316,12 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listPurchaseOrders(vendorId)),
 			() =>
-				apiClient<
-					PurchaseOrderModel[] | { results?: PurchaseOrderModel[] }
-				>(vmsPaths.purchaseOrders, {
-					params: vendorId ? { vendorId } : undefined,
-				}).then(unwrapList)
+				apiClient<PurchaseOrderModel[] | { results?: PurchaseOrderModel[] }>(
+					vmsPaths.purchaseOrders,
+					{
+						params: vendorId ? { vendorId } : undefined,
+					}
+				).then(unwrapList)
 		);
 	},
 	async getPurchaseOrder(id: string) {
@@ -384,9 +392,9 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listApprovals()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(
-					vmsPaths.approvals
-				).then(unwrapList)
+				apiClient<
+					ApprovalRequestModel[] | { results?: ApprovalRequestModel[] }
+				>(vmsPaths.approvals).then(unwrapList)
 		);
 	},
 	async updateApproval(
@@ -396,7 +404,7 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.updateApproval(id, status)),
 			() =>
-				apiClient<unknown>(vmsPaths.approval(id), {
+				apiClient<ApprovalRequestModel>(vmsPaths.approval(id), {
 					method: "PATCH",
 					body: JSON.stringify({ status }),
 				})
@@ -406,7 +414,7 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listScorecards()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(
+				apiClient<ScorecardModel[] | { results?: ScorecardModel[] }>(
 					vmsPaths.scorecards
 				).then(unwrapList)
 		);
@@ -415,16 +423,19 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listActivities(vendorId)),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(vmsPaths.activities, {
-					params: vendorId ? { vendorId } : undefined,
-				}).then(unwrapList)
+				apiClient<ActivityEventModel[] | { results?: ActivityEventModel[] }>(
+					vmsPaths.activities,
+					{
+						params: vendorId ? { vendorId } : undefined,
+					}
+				).then(unwrapList)
 		);
 	},
 	async listNotifications() {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listNotifications()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(
+				apiClient<NotificationModel[] | { results?: NotificationModel[] }>(
 					vmsPaths.notifications
 				).then(unwrapList)
 		);
@@ -445,9 +456,9 @@ export const vmsApi = {
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listTeam()),
 			() =>
-				apiClient<unknown[] | { results?: unknown[] }>(vmsPaths.team).then(
-					unwrapList
-				)
+				apiClient<VendorTeamMember[] | { results?: VendorTeamMember[] }>(
+					vmsPaths.team
+				).then(unwrapList)
 		);
 	},
 	async getCurrentVendor() {

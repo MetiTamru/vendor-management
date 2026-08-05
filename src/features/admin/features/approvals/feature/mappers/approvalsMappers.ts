@@ -1,9 +1,14 @@
-export { toApprovalsModel } from "../../shared/mappers/approvalsMappers";
-
-import type { ApprovalsCreateDto, ApprovalsUpdateDto } from "../dto/approvalsDto";
+import type {
+	ApprovalsCreateDto,
+	ApprovalsUpdateDto,
+} from "../dto/approvalsDto";
 import type { ApprovalsModel } from "../types/approvalsModel";
 
-export function toApprovalsCreateDto(model: Pick<ApprovalsModel, "name">): ApprovalsCreateDto {
+export { toApprovalsModel } from "../../shared/mappers/approvalsMappers";
+
+export function toApprovalsCreateDto(
+	model: Pick<ApprovalsModel, "name">
+): ApprovalsCreateDto {
 	return { name: model.name };
 }
 

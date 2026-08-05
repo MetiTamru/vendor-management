@@ -20,7 +20,7 @@ export async function listGroupsRecords(params?: Record<string, string>) {
 
 export async function getGroupsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiGroupsRecordDto>(groupsEndpoints.detail(id))
 	);
 }

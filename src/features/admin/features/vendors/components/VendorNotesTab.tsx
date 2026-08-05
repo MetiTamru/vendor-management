@@ -756,7 +756,9 @@ export function VendorNotesTab({
 						<>
 							<div className="flex items-start justify-between gap-2 border-b border-border bg-violet-500/10 px-4 py-3.5">
 								<div>
-									<p className="text-sm font-semibold tracking-tight text-foreground">Note Details</p>
+									<p className="text-sm font-semibold tracking-tight text-foreground">
+										Note Details
+									</p>
 									<div className="mt-1.5 flex flex-wrap items-center gap-2">
 										<span
 											className={cn(

@@ -20,7 +20,7 @@ export async function listMembersRecords(params?: Record<string, string>) {
 
 export async function getMembersRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiMembersRecordDto>(membersEndpoints.detail(id))
 	);
 }

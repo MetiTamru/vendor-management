@@ -11,16 +11,25 @@ export type ProcessingStatusListResponse = {
 	count?: number | null;
 };
 
-export async function listProcessingStatusRecords(params?: Record<string, string>) {
+export async function listProcessingStatusRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ProcessingStatusListResponse>(processingStatusEndpoints.list(), { params })
+		() =>
+			apiClient<ProcessingStatusListResponse>(
+				processingStatusEndpoints.list(),
+				{ params }
+			)
 	);
 }
 
 export async function getProcessingStatusRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiProcessingStatusRecordDto>(processingStatusEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiProcessingStatusRecordDto>(
+				processingStatusEndpoints.detail(id)
+			)
 	);
 }

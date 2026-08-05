@@ -11,7 +11,8 @@ export const processingStatusCreateSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 });
 
-export const processingStatusUpdateSchema = processingStatusCreateSchema.partial();
+export const processingStatusUpdateSchema =
+	processingStatusCreateSchema.partial();
 
 export function parseProcessingStatusList(payload: unknown): {
 	data: z.infer<typeof apiProcessingStatusRecordSchema>[];

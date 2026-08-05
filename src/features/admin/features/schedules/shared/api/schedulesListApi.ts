@@ -14,13 +14,14 @@ export type SchedulesListResponse = {
 export async function listSchedulesRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<SchedulesListResponse>(schedulesEndpoints.list(), { params })
+		() =>
+			apiClient<SchedulesListResponse>(schedulesEndpoints.list(), { params })
 	);
 }
 
 export async function getSchedulesRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiSchedulesRecordDto>(schedulesEndpoints.detail(id))
 	);
 }

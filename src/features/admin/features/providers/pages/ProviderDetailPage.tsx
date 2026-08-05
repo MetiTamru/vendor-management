@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	Activity,
@@ -63,6 +63,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	type ClaimActivityStatus,
+	type CredentialStatus,
+	type ExceptionStatus,
+	type FeedStatus,
+	type NetworkStatus,
+	type ProviderStatus,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
@@ -70,12 +76,6 @@ import {
 	getProvider,
 	initials,
 	providerAge,
-	type ClaimActivityStatus,
-	type CredentialStatus,
-	type ExceptionStatus,
-	type FeedStatus,
-	type NetworkStatus,
-	type ProviderStatus,
 } from "@/features/admin/features/providers/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -284,7 +284,8 @@ function MetricStrip({
 						<div
 							className={cn(
 								"mt-1 truncate text-sm font-semibold",
-								item.mono && "font-mono text-[13px] tabular-nums tracking-tight",
+								item.mono &&
+									"font-mono text-[13px] tabular-nums tracking-tight",
 								item.accent ? "text-emerald-700" : "text-foreground"
 							)}
 						>
@@ -693,9 +694,7 @@ export function ProviderDetailPage({
 										{provider.networks.slice(0, 5).map((n) => (
 											<TableRow key={n.id}>
 												<TableCell className="py-2.5">
-													<p className="text-sm font-medium">
-														{n.networkPlan}
-													</p>
+													<p className="text-sm font-medium">{n.networkPlan}</p>
 													<p className="text-sm leading-relaxed text-muted-foreground">
 														{n.payer}
 													</p>
@@ -724,9 +723,7 @@ export function ProviderDetailPage({
 								<MetaField
 									key={id.id}
 									label={id.label}
-									value={
-										<span className="font-mono text-sm">{id.value}</span>
-									}
+									value={<span className="font-mono text-sm">{id.value}</span>}
 								/>
 							))}
 						</div>
@@ -776,11 +773,7 @@ export function ProviderDetailPage({
 									<ComposedChart data={provider.monthlyVolume}>
 										<CartesianGrid strokeDasharray="3 3" vertical={false} />
 										<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-										<YAxis
-											yAxisId="left"
-											tick={{ fontSize: 10 }}
-											width={28}
-										/>
+										<YAxis yAxisId="left" tick={{ fontSize: 10 }} width={28} />
 										<YAxis
 											yAxisId="right"
 											orientation="right"
@@ -912,9 +905,7 @@ export function ProviderDetailPage({
 										<p className="text-lg font-semibold tabular-nums">
 											{credPct}%
 										</p>
-										<p className="text-xs text-muted-foreground">
-											Complete
-										</p>
+										<p className="text-xs text-muted-foreground">Complete</p>
 									</div>
 								</div>
 								<ul className="w-full space-y-2 text-sm">
@@ -1290,7 +1281,8 @@ function ClaimsEncountersTab({
 					</Table>
 				</div>
 				<p className="mt-3 text-[11px] text-muted-foreground">
-					Showing recent {pane} for this provider · Data as of {provider.dataAsOf}
+					Showing recent {pane} for this provider · Data as of{" "}
+					{provider.dataAsOf}
 				</p>
 			</Panel>
 		</div>
@@ -1327,14 +1319,15 @@ function CredentialingTab({
 	for (const c of provider.credentialing) counts[c.status] += 1;
 	const total =
 		counts.complete + counts.expiring + counts.expired + counts.pending;
-	const completePct = total
-		? Math.round((counts.complete / total) * 100)
-		: 0;
+	const completePct = total ? Math.round((counts.complete / total) * 100) : 0;
 	const openExceptions = provider.exceptions.filter(
 		(e) => e.status === "open" || e.status === "in_progress"
 	).length;
 	const actionNeeded = provider.credentialing.filter(
-		(c) => c.status === "expiring" || c.status === "expired" || c.status === "pending"
+		(c) =>
+			c.status === "expiring" ||
+			c.status === "expired" ||
+			c.status === "pending"
 	);
 
 	return (
@@ -1499,7 +1492,9 @@ function CredentialingTab({
 				}
 			>
 				{provider.exceptions.length === 0 ? (
-					<p className="text-sm text-muted-foreground">No exceptions on file.</p>
+					<p className="text-sm text-muted-foreground">
+						No exceptions on file.
+					</p>
 				) : (
 					<div className="overflow-x-auto">
 						<Table>
@@ -1582,9 +1577,7 @@ function TabBody({
 							{ label: "Program", value: provider.program },
 							{
 								label: "Patients",
-								value: provider.acceptingNewPatients
-									? "Accepting"
-									: "Closed",
+								value: provider.acceptingNewPatients ? "Accepting" : "Closed",
 								accent: provider.acceptingNewPatients,
 							},
 						]}
@@ -1652,9 +1645,7 @@ function TabBody({
 					<Panel
 						dense
 						title="Professional profile"
-						action={
-							<Stethoscope className="size-3.5 text-muted-foreground" />
-						}
+						action={<Stethoscope className="size-3.5 text-muted-foreground" />}
 					>
 						<div className="grid grid-cols-2 gap-x-4 gap-y-3">
 							<MetaField label="Provider type" value={provider.providerType} />
@@ -1811,9 +1802,7 @@ function TabBody({
 							/>
 							<MetaField
 								label="Fax"
-								value={
-									<span className="tabular-nums">{provider.fax}</span>
-								}
+								value={<span className="tabular-nums">{provider.fax}</span>}
 							/>
 							<MetaField
 								label="Email"
@@ -1953,7 +1942,9 @@ function TabBody({
 						<TableBody>
 							{provider.locations.map((loc) => (
 								<TableRow key={loc.id}>
-									<TableCell className="text-sm font-medium">{loc.name}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{loc.name}
+									</TableCell>
 									<TableCell className="text-sm">{loc.address}</TableCell>
 									<TableCell className="text-sm">{loc.phone}</TableCell>
 									<TableCell>
@@ -2044,7 +2035,9 @@ function TabBody({
 						<TableBody>
 							{provider.vendors.map((v) => (
 								<TableRow key={v.id}>
-									<TableCell className="text-sm font-medium">{v.vendor}</TableCell>
+									<TableCell className="text-sm font-medium">
+										{v.vendor}
+									</TableCell>
 									<TableCell className="text-sm">{v.fileType}</TableCell>
 									<TableCell className="text-sm">{v.dataSent}</TableCell>
 									<TableCell className="text-sm">{v.frequency}</TableCell>

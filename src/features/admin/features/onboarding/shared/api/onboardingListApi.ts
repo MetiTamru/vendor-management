@@ -14,13 +14,14 @@ export type OnboardingListResponse = {
 export async function listOnboardingRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<OnboardingListResponse>(onboardingEndpoints.list(), { params })
+		() =>
+			apiClient<OnboardingListResponse>(onboardingEndpoints.list(), { params })
 	);
 }
 
 export async function getOnboardingRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiOnboardingRecordDto>(onboardingEndpoints.detail(id))
 	);
 }

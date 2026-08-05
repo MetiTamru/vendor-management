@@ -1,5 +1,5 @@
-import type { ApiVendorComparisonRecordDto } from "../dto/vendorComparisonRecordDto";
 import type { VendorComparisonModel } from "../../feature/types/vendorComparisonModel";
+import type { ApiVendorComparisonRecordDto } from "../dto/vendorComparisonRecordDto";
 
 export function toVendorComparisonModel(
 	row: ApiVendorComparisonRecordDto,

@@ -1,5 +1,5 @@
-import type { ApiIntegrationIntakeRecordDto } from "../dto/integrationIntakeRecordDto";
 import type { IntegrationIntakeModel } from "../../feature/types/integrationIntakeModel";
+import type { ApiIntegrationIntakeRecordDto } from "../dto/integrationIntakeRecordDto";
 
 export function toIntegrationIntakeModel(
 	row: ApiIntegrationIntakeRecordDto,

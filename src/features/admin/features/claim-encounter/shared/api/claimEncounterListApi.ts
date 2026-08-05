@@ -11,16 +11,22 @@ export type ClaimEncounterListResponse = {
 	count?: number | null;
 };
 
-export async function listClaimEncounterRecords(params?: Record<string, string>) {
+export async function listClaimEncounterRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), { params })
+		() =>
+			apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getClaimEncounterRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiClaimEncounterRecordDto>(claimEncounterEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiClaimEncounterRecordDto>(claimEncounterEndpoints.detail(id))
 	);
 }

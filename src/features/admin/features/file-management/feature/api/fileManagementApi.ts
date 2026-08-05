@@ -11,44 +11,51 @@ import type {
 export async function listFileManagement() {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<{ results?: ApiFileManagementDto[]; count?: number }>(
-		fileManagementEndpoints.list()
-	)
+		() =>
+			apiClient<{ results?: ApiFileManagementDto[]; count?: number }>(
+				fileManagementEndpoints.list()
+			)
 	);
 }
 
 export async function getFileManagement(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiFileManagementDto>(fileManagementEndpoints.detail(id))
 	);
 }
 
 export async function createFileManagement(body: FileManagementCreateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiFileManagementDto>(fileManagementEndpoints.create(), {
-		method: "POST",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiFileManagementDto>(fileManagementEndpoints.create(), {
+				method: "POST",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
-export async function updateFileManagement(id: string, body: FileManagementUpdateDto) {
+export async function updateFileManagement(
+	id: string,
+	body: FileManagementUpdateDto
+) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiFileManagementDto>(fileManagementEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiFileManagementDto>(fileManagementEndpoints.update(id), {
+				method: "PATCH",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function deleteFileManagement(id: string) {
 	return withMockOrRemote(
 		() => undefined,
-		() => apiClient<void>(fileManagementEndpoints.delete(id), {
-		method: "DELETE",
-	})
+		() =>
+			apiClient<void>(fileManagementEndpoints.delete(id), {
+				method: "DELETE",
+			})
 	);
 }

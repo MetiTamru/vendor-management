@@ -14,13 +14,16 @@ export type FileHistoryListResponse = {
 export async function listFileHistoryRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), { params })
+		() =>
+			apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getFileHistoryRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiFileHistoryRecordDto>(fileHistoryEndpoints.detail(id))
 	);
 }

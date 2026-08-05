@@ -20,7 +20,7 @@ export async function listVmsRecords(params?: Record<string, string>) {
 
 export async function getVmsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiVmsRecordDto>(vmsEndpoints.detail(id))
 	);
 }

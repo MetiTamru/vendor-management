@@ -1,9 +1,14 @@
-export { toPurchaseOrdersModel } from "../../shared/mappers/purchaseOrdersMappers";
-
-import type { PurchaseOrdersCreateDto, PurchaseOrdersUpdateDto } from "../dto/purchaseOrdersDto";
+import type {
+	PurchaseOrdersCreateDto,
+	PurchaseOrdersUpdateDto,
+} from "../dto/purchaseOrdersDto";
 import type { PurchaseOrdersModel } from "../types/purchaseOrdersModel";
 
-export function toPurchaseOrdersCreateDto(model: Pick<PurchaseOrdersModel, "name">): PurchaseOrdersCreateDto {
+export { toPurchaseOrdersModel } from "../../shared/mappers/purchaseOrdersMappers";
+
+export function toPurchaseOrdersCreateDto(
+	model: Pick<PurchaseOrdersModel, "name">
+): PurchaseOrdersCreateDto {
 	return { name: model.name };
 }
 

@@ -267,7 +267,9 @@ export function VendorComparisonPage({
 					<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 						{title}
 					</h1>
-					<p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+					<p className="text-sm leading-relaxed text-muted-foreground">
+						{description}
+					</p>
 				</div>
 				{headerActions ? (
 					<div className="flex flex-wrap gap-2">{headerActions}</div>

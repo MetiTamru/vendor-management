@@ -11,16 +11,22 @@ export type FileManagementListResponse = {
 	count?: number | null;
 };
 
-export async function listFileManagementRecords(params?: Record<string, string>) {
+export async function listFileManagementRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<FileManagementListResponse>(fileManagementEndpoints.list(), { params })
+		() =>
+			apiClient<FileManagementListResponse>(fileManagementEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getFileManagementRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiFileManagementRecordDto>(fileManagementEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiFileManagementRecordDto>(fileManagementEndpoints.detail(id))
 	);
 }

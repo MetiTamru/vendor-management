@@ -20,7 +20,7 @@ export async function listSettingsRecords(params?: Record<string, string>) {
 
 export async function getSettingsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiSettingsRecordDto>(settingsEndpoints.detail(id))
 	);
 }

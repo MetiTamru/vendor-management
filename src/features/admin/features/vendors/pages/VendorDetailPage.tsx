@@ -617,97 +617,99 @@ export function VendorDetailPage() {
 						<ScrollArea className="w-full">
 							<div className="min-w-[900px]">
 								<Table className="text-xs">
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="pl-4">File Type</TableHead>
-										<TableHead>File Name</TableHead>
-										<TableHead>Frequency</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="text-right">Records</TableHead>
-										<TableHead>Received</TableHead>
-										<TableHead>Processed</TableHead>
-										<TableHead>Duration</TableHead>
-										<TableHead className="pr-4 text-right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{runs.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={9}
-												className="h-24 text-center text-muted-foreground"
-											>
-												No file activity for this vendor yet.
-											</TableCell>
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<TableHead className="pl-4">File Type</TableHead>
+											<TableHead>File Name</TableHead>
+											<TableHead>Frequency</TableHead>
+											<TableHead>Status</TableHead>
+											<TableHead className="text-right">Records</TableHead>
+											<TableHead>Received</TableHead>
+											<TableHead>Processed</TableHead>
+											<TableHead>Duration</TableHead>
+											<TableHead className="pr-4 text-right">Actions</TableHead>
 										</TableRow>
-									) : (
-										runs.slice(0, 6).map((run) => (
-											<TableRow key={run.id} className="hover:bg-muted/30">
-												<TableCell className="pl-4 font-medium">
-													{run.fileType}
-												</TableCell>
-												<TableCell className="max-w-[220px] truncate font-mono text-[11px] text-muted-foreground">
-													{run.fileName ?? "—"}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{run.frequency}
-												</TableCell>
-												<TableCell>
-													<ActivityStatus status={run.status} />
-												</TableCell>
-												<TableCell className="text-right tabular-nums">
-													{run.records ?? "—"}
-												</TableCell>
-												<TableCell className="tabular-nums text-muted-foreground">
-													{run.receivedAt?.slice(11, 16) ?? "—"}
-												</TableCell>
-												<TableCell className="tabular-nums text-muted-foreground">
-													{run.completedAt?.slice(11, 16) ?? "—"}
-												</TableCell>
-												<TableCell className="tabular-nums text-muted-foreground">
-													{run.duration ?? "—"}
-												</TableCell>
-												<TableCell className="pr-4 text-right">
-													<DropdownMenu>
-														<DropdownMenuTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																className="size-8"
-															>
-																<MoreHorizontal className="size-3.5" />
-															</Button>
-														</DropdownMenuTrigger>
-														<DropdownMenuContent align="end">
-															<DropdownMenuItem asChild>
-																<Link href={`/admin/file-monitoring/${run.id}`}>
-																	View run detail
-																</Link>
-															</DropdownMenuItem>
-															{run.issues?.[0] ? (
-																<DropdownMenuItem asChild>
-																	<Link
-																		href={`/admin/file-monitoring/${run.id}/investigate/${run.issues[0].id}`}
-																	>
-																		Investigate
-																	</Link>
-																</DropdownMenuItem>
-															) : null}
-															<DropdownMenuItem asChild>
-																<Link
-																	href={`/admin/file-monitoring/${run.id}/processing-logs`}
-																>
-																	Processing logs
-																</Link>
-															</DropdownMenuItem>
-														</DropdownMenuContent>
-													</DropdownMenu>
+									</TableHeader>
+									<TableBody>
+										{runs.length === 0 ? (
+											<TableRow>
+												<TableCell
+													colSpan={9}
+													className="h-24 text-center text-muted-foreground"
+												>
+													No file activity for this vendor yet.
 												</TableCell>
 											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
+										) : (
+											runs.slice(0, 6).map((run) => (
+												<TableRow key={run.id} className="hover:bg-muted/30">
+													<TableCell className="pl-4 font-medium">
+														{run.fileType}
+													</TableCell>
+													<TableCell className="max-w-[220px] truncate font-mono text-[11px] text-muted-foreground">
+														{run.fileName ?? "—"}
+													</TableCell>
+													<TableCell className="text-muted-foreground">
+														{run.frequency}
+													</TableCell>
+													<TableCell>
+														<ActivityStatus status={run.status} />
+													</TableCell>
+													<TableCell className="text-right tabular-nums">
+														{run.records ?? "—"}
+													</TableCell>
+													<TableCell className="tabular-nums text-muted-foreground">
+														{run.receivedAt?.slice(11, 16) ?? "—"}
+													</TableCell>
+													<TableCell className="tabular-nums text-muted-foreground">
+														{run.completedAt?.slice(11, 16) ?? "—"}
+													</TableCell>
+													<TableCell className="tabular-nums text-muted-foreground">
+														{run.duration ?? "—"}
+													</TableCell>
+													<TableCell className="pr-4 text-right">
+														<DropdownMenu>
+															<DropdownMenuTrigger asChild>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	className="size-8"
+																>
+																	<MoreHorizontal className="size-3.5" />
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent align="end">
+																<DropdownMenuItem asChild>
+																	<Link
+																		href={`/admin/file-monitoring/${run.id}`}
+																	>
+																		View run detail
+																	</Link>
+																</DropdownMenuItem>
+																{run.issues?.[0] ? (
+																	<DropdownMenuItem asChild>
+																		<Link
+																			href={`/admin/file-monitoring/${run.id}/investigate/${run.issues[0].id}`}
+																		>
+																			Investigate
+																		</Link>
+																	</DropdownMenuItem>
+																) : null}
+																<DropdownMenuItem asChild>
+																	<Link
+																		href={`/admin/file-monitoring/${run.id}/processing-logs`}
+																	>
+																		Processing logs
+																	</Link>
+																</DropdownMenuItem>
+															</DropdownMenuContent>
+														</DropdownMenu>
+													</TableCell>
+												</TableRow>
+											))
+										)}
+									</TableBody>
+								</Table>
 							</div>
 						</ScrollArea>
 					</section>
@@ -1091,7 +1093,9 @@ export function VendorDetailPage() {
 													</span>
 												)}
 											</TableCell>
-											<TableCell className="font-medium">{contact.role}</TableCell>
+											<TableCell className="font-medium">
+												{contact.role}
+											</TableCell>
 											<TableCell>{contact.email}</TableCell>
 											<TableCell className="text-muted-foreground">
 												{contact.phone ?? "—"}

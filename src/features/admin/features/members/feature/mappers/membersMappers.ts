@@ -1,9 +1,11 @@
-export { toMembersModel } from "../../shared/mappers/membersMappers";
-
 import type { MembersCreateDto, MembersUpdateDto } from "../dto/membersDto";
 import type { MembersModel } from "../types/membersModel";
 
-export function toMembersCreateDto(model: Pick<MembersModel, "name">): MembersCreateDto {
+export { toMembersModel } from "../../shared/mappers/membersMappers";
+
+export function toMembersCreateDto(
+	model: Pick<MembersModel, "name">
+): MembersCreateDto {
 	return { name: model.name };
 }
 

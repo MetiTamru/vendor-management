@@ -111,7 +111,10 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 function normalizeStatusKey(status: string) {
-	return status.trim().toLowerCase().replace(/[\s-]+/g, "_");
+	return status
+		.trim()
+		.toLowerCase()
+		.replace(/[\s-]+/g, "_");
 }
 
 function formatLabel(status: string) {

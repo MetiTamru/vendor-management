@@ -385,7 +385,10 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 				].map((item) => {
 					const Icon = item.icon;
 					return (
-						<div key={item.label} className="rounded-xl border border-border bg-card p-3.5 shadow-sm">
+						<div
+							key={item.label}
+							className="rounded-xl border border-border bg-card p-3.5 shadow-sm"
+						>
 							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
 									<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">

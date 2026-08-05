@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getFileManagement, listFileManagement } from "../api/fileManagementApi";
+import {
+	getFileManagement,
+	listFileManagement,
+} from "../api/fileManagementApi";
 import { toFileManagementModel } from "../mappers/fileManagementMappers";
 
 export function useFileManagementQuery() {

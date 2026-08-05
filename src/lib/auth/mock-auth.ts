@@ -1,5 +1,4 @@
 /** Local-only mock auth — no NestJS / Better Auth required. */
-
 import { isMockEnabled } from "@/lib/mock-mode";
 
 export const MOCK_ADMIN_USER = {

@@ -14,13 +14,14 @@ export type DashboardListResponse = {
 export async function listDashboardRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<DashboardListResponse>(dashboardEndpoints.list(), { params })
+		() =>
+			apiClient<DashboardListResponse>(dashboardEndpoints.list(), { params })
 	);
 }
 
 export async function getDashboardRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiDashboardRecordDto>(dashboardEndpoints.detail(id))
 	);
 }

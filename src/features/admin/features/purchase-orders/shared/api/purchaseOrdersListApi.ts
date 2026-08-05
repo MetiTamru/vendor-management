@@ -11,16 +11,22 @@ export type PurchaseOrdersListResponse = {
 	count?: number | null;
 };
 
-export async function listPurchaseOrdersRecords(params?: Record<string, string>) {
+export async function listPurchaseOrdersRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<PurchaseOrdersListResponse>(purchaseOrdersEndpoints.list(), { params })
+		() =>
+			apiClient<PurchaseOrdersListResponse>(purchaseOrdersEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getPurchaseOrdersRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiPurchaseOrdersRecordDto>(purchaseOrdersEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiPurchaseOrdersRecordDto>(purchaseOrdersEndpoints.detail(id))
 	);
 }

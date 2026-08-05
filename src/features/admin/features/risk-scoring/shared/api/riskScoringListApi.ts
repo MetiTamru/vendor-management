@@ -14,13 +14,16 @@ export type RiskScoringListResponse = {
 export async function listRiskScoringRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), { params })
+		() =>
+			apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getRiskScoringRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiRiskScoringRecordDto>(riskScoringEndpoints.detail(id))
 	);
 }

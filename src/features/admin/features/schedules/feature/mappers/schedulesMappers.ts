@@ -1,9 +1,14 @@
-export { toSchedulesModel } from "../../shared/mappers/schedulesMappers";
-
-import type { SchedulesCreateDto, SchedulesUpdateDto } from "../dto/schedulesDto";
+import type {
+	SchedulesCreateDto,
+	SchedulesUpdateDto,
+} from "../dto/schedulesDto";
 import type { SchedulesModel } from "../types/schedulesModel";
 
-export function toSchedulesCreateDto(model: Pick<SchedulesModel, "name">): SchedulesCreateDto {
+export { toSchedulesModel } from "../../shared/mappers/schedulesMappers";
+
+export function toSchedulesCreateDto(
+	model: Pick<SchedulesModel, "name">
+): SchedulesCreateDto {
 	return { name: model.name };
 }
 

@@ -11,7 +11,8 @@ export const vendorComparisonCreateSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 });
 
-export const vendorComparisonUpdateSchema = vendorComparisonCreateSchema.partial();
+export const vendorComparisonUpdateSchema =
+	vendorComparisonCreateSchema.partial();
 
 export function parseVendorComparisonList(payload: unknown): {
 	data: z.infer<typeof apiVendorComparisonRecordSchema>[];

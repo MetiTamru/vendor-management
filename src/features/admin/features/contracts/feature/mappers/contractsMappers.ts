@@ -1,9 +1,14 @@
-export { toContractsModel } from "../../shared/mappers/contractsMappers";
-
-import type { ContractsCreateDto, ContractsUpdateDto } from "../dto/contractsDto";
+import type {
+	ContractsCreateDto,
+	ContractsUpdateDto,
+} from "../dto/contractsDto";
 import type { ContractsModel } from "../types/contractsModel";
 
-export function toContractsCreateDto(model: Pick<ContractsModel, "name">): ContractsCreateDto {
+export { toContractsModel } from "../../shared/mappers/contractsMappers";
+
+export function toContractsCreateDto(
+	model: Pick<ContractsModel, "name">
+): ContractsCreateDto {
 	return { name: model.name };
 }
 

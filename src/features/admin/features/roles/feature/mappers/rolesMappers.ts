@@ -1,9 +1,11 @@
-export { toRolesModel } from "../../shared/mappers/rolesMappers";
-
 import type { RolesCreateDto, RolesUpdateDto } from "../dto/rolesDto";
 import type { RolesModel } from "../types/rolesModel";
 
-export function toRolesCreateDto(model: Pick<RolesModel, "name">): RolesCreateDto {
+export { toRolesModel } from "../../shared/mappers/rolesMappers";
+
+export function toRolesCreateDto(
+	model: Pick<RolesModel, "name">
+): RolesCreateDto {
 	return { name: model.name };
 }
 

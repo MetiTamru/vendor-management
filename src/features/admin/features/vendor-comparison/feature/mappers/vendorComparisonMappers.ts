@@ -1,9 +1,14 @@
-export { toVendorComparisonModel } from "../../shared/mappers/vendorComparisonMappers";
-
-import type { VendorComparisonCreateDto, VendorComparisonUpdateDto } from "../dto/vendorComparisonDto";
+import type {
+	VendorComparisonCreateDto,
+	VendorComparisonUpdateDto,
+} from "../dto/vendorComparisonDto";
 import type { VendorComparisonModel } from "../types/vendorComparisonModel";
 
-export function toVendorComparisonCreateDto(model: Pick<VendorComparisonModel, "name">): VendorComparisonCreateDto {
+export { toVendorComparisonModel } from "../../shared/mappers/vendorComparisonMappers";
+
+export function toVendorComparisonCreateDto(
+	model: Pick<VendorComparisonModel, "name">
+): VendorComparisonCreateDto {
 	return { name: model.name };
 }
 

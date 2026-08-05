@@ -1,5 +1,5 @@
-import type { ApiErrorManagementRecordDto } from "../dto/errorManagementRecordDto";
 import type { ErrorManagementModel } from "../../feature/types/errorManagementModel";
+import type { ApiErrorManagementRecordDto } from "../dto/errorManagementRecordDto";
 
 export function toErrorManagementModel(
 	row: ApiErrorManagementRecordDto,

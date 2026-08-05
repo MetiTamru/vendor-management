@@ -11,16 +11,24 @@ export type ErrorManagementListResponse = {
 	count?: number | null;
 };
 
-export async function listErrorManagementRecords(params?: Record<string, string>) {
+export async function listErrorManagementRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ErrorManagementListResponse>(errorManagementEndpoints.list(), { params })
+		() =>
+			apiClient<ErrorManagementListResponse>(errorManagementEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getErrorManagementRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiErrorManagementRecordDto>(errorManagementEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiErrorManagementRecordDto>(
+				errorManagementEndpoints.detail(id)
+			)
 	);
 }

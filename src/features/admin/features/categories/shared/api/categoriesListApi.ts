@@ -14,13 +14,14 @@ export type CategoriesListResponse = {
 export async function listCategoriesRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<CategoriesListResponse>(categoriesEndpoints.list(), { params })
+		() =>
+			apiClient<CategoriesListResponse>(categoriesEndpoints.list(), { params })
 	);
 }
 
 export async function getCategoriesRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiCategoriesRecordDto>(categoriesEndpoints.detail(id))
 	);
 }

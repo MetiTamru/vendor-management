@@ -4,10 +4,7 @@ import type { ReactNode } from "react";
 
 import type { LucideIcon } from "lucide-react";
 
-import {
-	SummaryCard,
-	SummaryCardsGrid,
-} from "@/components/admin/SummaryCard";
+import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 
 export type ClaimKpiItem = {
 	label: string;

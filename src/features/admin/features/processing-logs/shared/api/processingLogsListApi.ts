@@ -11,16 +11,22 @@ export type ProcessingLogsListResponse = {
 	count?: number | null;
 };
 
-export async function listProcessingLogsRecords(params?: Record<string, string>) {
+export async function listProcessingLogsRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ProcessingLogsListResponse>(processingLogsEndpoints.list(), { params })
+		() =>
+			apiClient<ProcessingLogsListResponse>(processingLogsEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getProcessingLogsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiProcessingLogsRecordDto>(processingLogsEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiProcessingLogsRecordDto>(processingLogsEndpoints.detail(id))
 	);
 }

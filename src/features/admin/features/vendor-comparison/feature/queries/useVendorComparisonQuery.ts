@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getVendorComparison, listVendorComparison } from "../api/vendorComparisonApi";
+import {
+	getVendorComparison,
+	listVendorComparison,
+} from "../api/vendorComparisonApi";
 import { toVendorComparisonModel } from "../mappers/vendorComparisonMappers";
 
 export function useVendorComparisonQuery() {

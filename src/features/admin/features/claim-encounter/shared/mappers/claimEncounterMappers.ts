@@ -1,5 +1,5 @@
-import type { ApiClaimEncounterRecordDto } from "../dto/claimEncounterRecordDto";
 import type { ClaimEncounterModel } from "../../feature/types/claimEncounterModel";
+import type { ApiClaimEncounterRecordDto } from "../dto/claimEncounterRecordDto";
 
 export function toClaimEncounterModel(
 	row: ApiClaimEncounterRecordDto,

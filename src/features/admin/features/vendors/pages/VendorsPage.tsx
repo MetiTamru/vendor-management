@@ -25,10 +25,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { toast } from "sonner";
 
 import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
-import {
-	SummaryCard,
-	SummaryCardsGrid,
-} from "@/components/admin/SummaryCard";
+import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";

@@ -11,16 +11,25 @@ export type IntegrationIntakeListResponse = {
 	count?: number | null;
 };
 
-export async function listIntegrationIntakeRecords(params?: Record<string, string>) {
+export async function listIntegrationIntakeRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<IntegrationIntakeListResponse>(integrationIntakeEndpoints.list(), { params })
+		() =>
+			apiClient<IntegrationIntakeListResponse>(
+				integrationIntakeEndpoints.list(),
+				{ params }
+			)
 	);
 }
 
 export async function getIntegrationIntakeRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiIntegrationIntakeRecordDto>(integrationIntakeEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiIntegrationIntakeRecordDto>(
+				integrationIntakeEndpoints.detail(id)
+			)
 	);
 }

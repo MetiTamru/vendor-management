@@ -369,7 +369,10 @@ export function RiskScoringPage() {
 				{kpis.map((k) => {
 					const Icon = k.icon;
 					return (
-						<div key={k.label} className="rounded-xl border border-border bg-card shadow-sm p-2.5">
+						<div
+							key={k.label}
+							className="rounded-xl border border-border bg-card shadow-sm p-2.5"
+						>
 							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
 									<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">

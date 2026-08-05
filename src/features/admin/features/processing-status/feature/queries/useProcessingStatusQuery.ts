@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getProcessingStatus, listProcessingStatus } from "../api/processingStatusApi";
+import {
+	getProcessingStatus,
+	listProcessingStatus,
+} from "../api/processingStatusApi";
 import { toProcessingStatusModel } from "../mappers/processingStatusMappers";
 
 export function useProcessingStatusQuery() {

@@ -1,9 +1,11 @@
-export { toSourcingModel } from "../../shared/mappers/sourcingMappers";
-
 import type { SourcingCreateDto, SourcingUpdateDto } from "../dto/sourcingDto";
 import type { SourcingModel } from "../types/sourcingModel";
 
-export function toSourcingCreateDto(model: Pick<SourcingModel, "name">): SourcingCreateDto {
+export { toSourcingModel } from "../../shared/mappers/sourcingMappers";
+
+export function toSourcingCreateDto(
+	model: Pick<SourcingModel, "name">
+): SourcingCreateDto {
 	return { name: model.name };
 }
 

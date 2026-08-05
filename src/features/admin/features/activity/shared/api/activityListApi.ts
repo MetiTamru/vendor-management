@@ -20,7 +20,7 @@ export async function listActivityRecords(params?: Record<string, string>) {
 
 export async function getActivityRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiActivityRecordDto>(activityEndpoints.detail(id))
 	);
 }

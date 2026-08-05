@@ -31,10 +31,7 @@ import {
 	YAxis,
 } from "recharts";
 
-import {
-	SummaryCard,
-	SummaryCardsGrid,
-} from "@/components/admin/SummaryCard";
+import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

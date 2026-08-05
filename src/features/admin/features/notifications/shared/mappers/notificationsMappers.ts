@@ -1,5 +1,5 @@
-import type { ApiNotificationsRecordDto } from "../dto/notificationsRecordDto";
 import type { NotificationsModel } from "../../feature/types/notificationsModel";
+import type { ApiNotificationsRecordDto } from "../dto/notificationsRecordDto";
 
 export function toNotificationsModel(
 	row: ApiNotificationsRecordDto,

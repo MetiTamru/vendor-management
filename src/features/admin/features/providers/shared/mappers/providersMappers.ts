@@ -1,5 +1,5 @@
-import type { ApiProvidersRecordDto } from "../dto/providersRecordDto";
 import type { ProvidersModel } from "../../feature/types/providersModel";
+import type { ApiProvidersRecordDto } from "../dto/providersRecordDto";
 
 export function toProvidersModel(
 	row: ApiProvidersRecordDto,

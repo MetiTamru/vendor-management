@@ -11,16 +11,25 @@ export type VendorComparisonListResponse = {
 	count?: number | null;
 };
 
-export async function listVendorComparisonRecords(params?: Record<string, string>) {
+export async function listVendorComparisonRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<VendorComparisonListResponse>(vendorComparisonEndpoints.list(), { params })
+		() =>
+			apiClient<VendorComparisonListResponse>(
+				vendorComparisonEndpoints.list(),
+				{ params }
+			)
 	);
 }
 
 export async function getVendorComparisonRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiVendorComparisonRecordDto>(vendorComparisonEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiVendorComparisonRecordDto>(
+				vendorComparisonEndpoints.detail(id)
+			)
 	);
 }

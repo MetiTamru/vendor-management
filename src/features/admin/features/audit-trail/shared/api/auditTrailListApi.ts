@@ -14,13 +14,14 @@ export type AuditTrailListResponse = {
 export async function listAuditTrailRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), { params })
+		() =>
+			apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), { params })
 	);
 }
 
 export async function getAuditTrailRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiAuditTrailRecordDto>(auditTrailEndpoints.detail(id))
 	);
 }

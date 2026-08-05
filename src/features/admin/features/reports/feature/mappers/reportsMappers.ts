@@ -1,9 +1,11 @@
-export { toReportsModel } from "../../shared/mappers/reportsMappers";
-
 import type { ReportsCreateDto, ReportsUpdateDto } from "../dto/reportsDto";
 import type { ReportsModel } from "../types/reportsModel";
 
-export function toReportsCreateDto(model: Pick<ReportsModel, "name">): ReportsCreateDto {
+export { toReportsModel } from "../../shared/mappers/reportsMappers";
+
+export function toReportsCreateDto(
+	model: Pick<ReportsModel, "name">
+): ReportsCreateDto {
 	return { name: model.name };
 }
 

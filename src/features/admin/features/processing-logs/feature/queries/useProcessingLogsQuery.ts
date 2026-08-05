@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getProcessingLogs, listProcessingLogs } from "../api/processingLogsApi";
+import {
+	getProcessingLogs,
+	listProcessingLogs,
+} from "../api/processingLogsApi";
 import { toProcessingLogsModel } from "../mappers/processingLogsMappers";
 
 export function useProcessingLogsQuery() {

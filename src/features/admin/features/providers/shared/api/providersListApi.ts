@@ -14,13 +14,14 @@ export type ProvidersListResponse = {
 export async function listProvidersRecords(params?: Record<string, string>) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<ProvidersListResponse>(providersEndpoints.list(), { params })
+		() =>
+			apiClient<ProvidersListResponse>(providersEndpoints.list(), { params })
 	);
 }
 
 export async function getProvidersRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiProvidersRecordDto>(providersEndpoints.detail(id))
 	);
 }

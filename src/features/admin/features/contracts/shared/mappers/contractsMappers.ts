@@ -1,5 +1,5 @@
-import type { ApiContractsRecordDto } from "../dto/contractsRecordDto";
 import type { ContractsModel } from "../../feature/types/contractsModel";
+import type { ApiContractsRecordDto } from "../dto/contractsRecordDto";
 
 export function toContractsModel(
 	row: ApiContractsRecordDto,

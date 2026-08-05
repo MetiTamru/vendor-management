@@ -257,7 +257,14 @@ const SCHOOLS = [
 	"Virginia Commonwealth University School of Medicine",
 ];
 
-const LANGUAGES = ["English", "Spanish", "Amharic", "French", "Mandarin", "Vietnamese"];
+const LANGUAGES = [
+	"English",
+	"Spanish",
+	"Amharic",
+	"French",
+	"Mandarin",
+	"Vietnamese",
+];
 const RACES = [
 	"White",
 	"Black or African American",
@@ -267,7 +274,11 @@ const RACES = [
 	"Two or More Races",
 	"Decline to Answer",
 ];
-const ETHNICITIES = ["Not Hispanic or Latino", "Hispanic or Latino", "Decline to Answer"];
+const ETHNICITIES = [
+	"Not Hispanic or Latino",
+	"Hispanic or Latino",
+	"Decline to Answer",
+];
 
 function buildSummaries(): ProviderSummary[] {
 	return NAMES.map(([first, last, cred], i) => {
@@ -431,8 +442,20 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 		"accepted",
 		"paid",
 	];
-	const cptCodes = ["99213", "99214", "99215", "93000", "80053", "90471", "G0438", "99203"];
-	const buildActivity = (kind: "claim" | "encounter", count: number): ProviderClaimRow[] =>
+	const cptCodes = [
+		"99213",
+		"99214",
+		"99215",
+		"93000",
+		"80053",
+		"90471",
+		"G0438",
+		"99203",
+	];
+	const buildActivity = (
+		kind: "claim" | "encounter",
+		count: number
+	): ProviderClaimRow[] =>
 		Array.from({ length: count }, (_, i) => {
 			const billed = 120 + ((idx * 17 + i * 41) % 880);
 			const status = claimStatuses[(idx + i) % claimStatuses.length]!;
@@ -474,7 +497,10 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 		middleName: isJohn ? "Michael" : idx % 3 === 0 ? "A." : null,
 		lastName: isJohn ? "Smith" : lastName,
 		preferredName: isJohn ? "Dr. Smith" : null,
-		suffix: summary.credentials === "MD" || summary.credentials === "DO" ? null : null,
+		suffix:
+			summary.credentials === "MD" || summary.credentials === "DO"
+				? null
+				: null,
 		email: isJohn
 			? "john.smith@smithmedical.com"
 			: `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, "")}@${summary.practiceName
@@ -497,9 +523,7 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 		medicalSchool: isJohn
 			? "George Washington University School of Medicine"
 			: SCHOOLS[idx % SCHOOLS.length]!,
-		graduationYear: isJohn
-			? 2004
-			: 1995 + (idx % 20),
+		graduationYear: isJohn ? 2004 : 1995 + (idx % 20),
 		acceptingNewPatients: isJohn
 			? true
 			: summary.status === "active" && idx % 5 !== 0,

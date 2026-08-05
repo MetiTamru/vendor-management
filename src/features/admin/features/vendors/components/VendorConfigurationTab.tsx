@@ -374,7 +374,9 @@ export function VendorConfigurationTab({
 										step.id
 									)}
 								</span>
-								<p className="text-sm font-semibold tracking-tight text-foreground">{step.title}</p>
+								<p className="text-sm font-semibold tracking-tight text-foreground">
+									{step.title}
+								</p>
 							</div>
 							<p className="mt-1.5 pl-8 text-xs text-muted-foreground">
 								{step.description}
@@ -762,7 +764,9 @@ export function VendorConfigurationTab({
 											<div className="flex items-center gap-2">
 												<Bell className="size-4 text-muted-foreground" />
 												<div>
-													<p className="text-sm font-semibold tracking-tight text-foreground">{label}</p>
+													<p className="text-sm font-semibold tracking-tight text-foreground">
+														{label}
+													</p>
 													<p className="text-xs text-muted-foreground">
 														Email notification
 													</p>

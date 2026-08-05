@@ -134,8 +134,15 @@ export function ClaimEncounterDashboardPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<p className="text-xs text-muted-foreground">{item.description}</p>
-							<Button asChild variant="outline" size="sm" className="h-8 text-xs">
+							<p className="text-xs text-muted-foreground">
+								{item.description}
+							</p>
+							<Button
+								asChild
+								variant="outline"
+								size="sm"
+								className="h-8 text-xs"
+							>
 								<Link href={item.href}>Open</Link>
 							</Button>
 						</CardContent>

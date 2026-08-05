@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getIntegrationIntake, listIntegrationIntake } from "../api/integrationIntakeApi";
+import {
+	getIntegrationIntake,
+	listIntegrationIntake,
+} from "../api/integrationIntakeApi";
 import { toIntegrationIntakeModel } from "../mappers/integrationIntakeMappers";
 
 export function useIntegrationIntakeQuery() {

@@ -13,7 +13,9 @@ export function VendorComparisonFeaturePage() {
 	return (
 		<VendorComparisonFeatureRoot>
 			<div className="space-y-4">
-				<h2 className="text-sm font-semibold tracking-tight">VendorComparison</h2>
+				<h2 className="text-sm font-semibold tracking-tight">
+					VendorComparison
+				</h2>
 				{isLoading ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
 				) : isError ? (

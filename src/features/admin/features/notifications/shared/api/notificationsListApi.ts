@@ -11,16 +11,22 @@ export type NotificationsListResponse = {
 	count?: number | null;
 };
 
-export async function listNotificationsRecords(params?: Record<string, string>) {
+export async function listNotificationsRecords(
+	params?: Record<string, string>
+) {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<NotificationsListResponse>(notificationsEndpoints.list(), { params })
+		() =>
+			apiClient<NotificationsListResponse>(notificationsEndpoints.list(), {
+				params,
+			})
 	);
 }
 
 export async function getNotificationsRecord(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiNotificationsRecordDto>(notificationsEndpoints.detail(id))
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiNotificationsRecordDto>(notificationsEndpoints.detail(id))
 	);
 }

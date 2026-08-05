@@ -1,5 +1,5 @@
-import type { ApiFileHistoryRecordDto } from "../dto/fileHistoryRecordDto";
 import type { FileHistoryModel } from "../../feature/types/fileHistoryModel";
+import type { ApiFileHistoryRecordDto } from "../dto/fileHistoryRecordDto";
 
 export function toFileHistoryModel(
 	row: ApiFileHistoryRecordDto,

@@ -11,44 +11,48 @@ import type {
 export async function listContracts() {
 	return withMockOrRemote(
 		() => ({ results: [], count: 0 }),
-		() => apiClient<{ results?: ApiContractsDto[]; count?: number }>(
-		contractsEndpoints.list()
-	)
+		() =>
+			apiClient<{ results?: ApiContractsDto[]; count?: number }>(
+				contractsEndpoints.list()
+			)
 	);
 }
 
 export async function getContracts(id: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
+		() => ({ id: "mock" }) as never,
 		() => apiClient<ApiContractsDto>(contractsEndpoints.detail(id))
 	);
 }
 
 export async function createContracts(body: ContractsCreateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiContractsDto>(contractsEndpoints.create(), {
-		method: "POST",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiContractsDto>(contractsEndpoints.create(), {
+				method: "POST",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function updateContracts(id: string, body: ContractsUpdateDto) {
 	return withMockOrRemote(
-		() => ({ id: "mock" } as never),
-		() => apiClient<ApiContractsDto>(contractsEndpoints.update(id), {
-		method: "PATCH",
-		body: JSON.stringify(body),
-	})
+		() => ({ id: "mock" }) as never,
+		() =>
+			apiClient<ApiContractsDto>(contractsEndpoints.update(id), {
+				method: "PATCH",
+				body: JSON.stringify(body),
+			})
 	);
 }
 
 export async function deleteContracts(id: string) {
 	return withMockOrRemote(
 		() => undefined,
-		() => apiClient<void>(contractsEndpoints.delete(id), {
-		method: "DELETE",
-	})
+		() =>
+			apiClient<void>(contractsEndpoints.delete(id), {
+				method: "DELETE",
+			})
 	);
 }

@@ -1,5 +1,5 @@
-import type { ApiAutomationsRecordDto } from "../dto/automationsRecordDto";
 import type { AutomationsModel } from "../../feature/types/automationsModel";
+import type { ApiAutomationsRecordDto } from "../dto/automationsRecordDto";
 
 export function toAutomationsModel(
 	row: ApiAutomationsRecordDto,
