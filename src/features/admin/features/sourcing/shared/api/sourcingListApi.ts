@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { sourcingEndpoints } from "../../sourcing-endpoints";
 import type { ApiSourcingRecordDto } from "../dto/sourcingRecordDto";
@@ -11,9 +12,15 @@ export type SourcingListResponse = {
 };
 
 export async function listSourcingRecords(params?: Record<string, string>) {
-	return apiClient<SourcingListResponse>(sourcingEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<SourcingListResponse>(sourcingEndpoints.list(), { params })
+	);
 }
 
 export async function getSourcingRecord(id: string) {
-	return apiClient<ApiSourcingRecordDto>(sourcingEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiSourcingRecordDto>(sourcingEndpoints.detail(id))
+	);
 }

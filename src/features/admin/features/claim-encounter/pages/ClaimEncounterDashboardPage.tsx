@@ -116,7 +116,7 @@ export function ClaimEncounterDashboardPage() {
 	];
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Claims & Encounters"
 				description={`Claim review workspace · ${programFilter}`}
@@ -133,7 +133,7 @@ export function ClaimEncounterDashboardPage() {
 								{item.title}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="space-y-3">
+						<CardContent className="space-y-4">
 							<p className="text-xs text-muted-foreground">{item.description}</p>
 							<Button asChild variant="outline" size="sm" className="h-8 text-xs">
 								<Link href={item.href}>Open</Link>

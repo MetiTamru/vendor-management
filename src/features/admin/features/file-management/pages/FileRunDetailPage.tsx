@@ -93,7 +93,7 @@ function StatusPill({ status }: { status: ProcessStatus }) {
 		);
 	}
 	return (
-		<span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0 text-[10px] font-medium capitalize">
+		<span className="inline-flex items-center rounded-md border border-transparent bg-muted px-1.5 py-0 text-[10px] font-medium capitalize">
 			{displayRunStatus(status)}
 		</span>
 	);
@@ -116,7 +116,7 @@ function Panel({
 		<section
 			id={id}
 			className={cn(
-				"overflow-hidden rounded-lg border border-border/50 bg-card",
+				"overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
@@ -132,7 +132,7 @@ function Panel({
 function DetailField({ label, value }: { label: string; value: ReactNode }) {
 	return (
 		<div className="min-w-0">
-			<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+			<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 				{label}
 			</p>
 			<div className="mt-0.5 text-xs font-normal">{value}</div>
@@ -253,7 +253,7 @@ export function FileRunDetailPage() {
 
 	if (!selected) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<div className="rounded-lg border border-border/50 p-10 text-center">
 					<p className="text-base font-medium">File run not found</p>
 					<Button asChild className="mt-4" size="sm">
@@ -299,7 +299,7 @@ export function FileRunDetailPage() {
 			</div>
 
 			{/* File Runs (Last 7 Days) */}
-			<section className="overflow-hidden rounded-lg border border-border/50 bg-card">
+			<section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 				<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
 					<h2 className="text-sm font-medium">
 						File Runs (Last {dateRange} Days)
@@ -467,7 +467,7 @@ export function FileRunDetailPage() {
 			{/* Detailed Processing Information */}
 			<Panel title="Detailed Processing Information">
 				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-					<div className="space-y-3">
+					<div className="space-y-4">
 						<DetailField label="Vendor" value={selected.vendor} />
 						<DetailField label="Account" value={selected.account} />
 						<DetailField
@@ -480,7 +480,7 @@ export function FileRunDetailPage() {
 						/>
 						<DetailField label="File Type" value={selected.fileType} />
 					</div>
-					<div className="space-y-3">
+					<div className="space-y-4">
 						<DetailField
 							label="Direction"
 							value={
@@ -521,7 +521,7 @@ export function FileRunDetailPage() {
 							value={selected.startedAt ?? selected.expectedAt}
 						/>
 					</div>
-					<div className="space-y-3">
+					<div className="space-y-4">
 						<DetailField
 							label="Records Received"
 							value={
@@ -552,7 +552,7 @@ export function FileRunDetailPage() {
 							}
 						/>
 					</div>
-					<div className="space-y-3">
+					<div className="space-y-4">
 						<DetailField
 							label="Warnings"
 							value={
@@ -572,7 +572,7 @@ export function FileRunDetailPage() {
 			</Panel>
 
 			{/* Validation Results */}
-			<section className="overflow-hidden rounded-lg border border-border/50 bg-card">
+			<section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 				<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
 					<h2 className="text-sm font-medium">
 						Validation Results{" "}
@@ -747,7 +747,7 @@ export function FileRunDetailPage() {
 				>
 					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Received Value
 							</p>
 							<p className="mt-1 font-mono text-xs font-medium text-red-700">
@@ -755,7 +755,7 @@ export function FileRunDetailPage() {
 							</p>
 						</div>
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Expected Value
 							</p>
 							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -763,7 +763,7 @@ export function FileRunDetailPage() {
 							</p>
 						</div>
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Validation Rule
 							</p>
 							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -771,7 +771,7 @@ export function FileRunDetailPage() {
 							</p>
 						</div>
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Recommended Resolution
 							</p>
 							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -779,7 +779,7 @@ export function FileRunDetailPage() {
 							</p>
 						</div>
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Related Information
 							</p>
 							<p className="mt-1 text-xs leading-relaxed text-muted-foreground">

@@ -193,7 +193,7 @@ function Panel({
 	return (
 		<section
 			className={cn(
-				"flex flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-sm",
+				"flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
@@ -255,7 +255,7 @@ function MetricStrip({
 	return (
 		<section
 			className={cn(
-				"overflow-hidden rounded-xl border border-border/40 bg-card shadow-sm",
+				"overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
@@ -655,10 +655,10 @@ export function ProviderDetailPage({
 											<TableRow key={loc.id}>
 												<TableCell className="py-2.5">
 													<p className="text-sm font-medium">{loc.name}</p>
-													<p className="mt-0.5 text-xs text-muted-foreground">
+													<p className="text-sm leading-relaxed text-muted-foreground">
 														{loc.address}
 													</p>
-													<p className="mt-0.5 text-xs text-muted-foreground">
+													<p className="text-sm leading-relaxed text-muted-foreground">
 														{loc.phone}
 													</p>
 												</TableCell>
@@ -696,7 +696,7 @@ export function ProviderDetailPage({
 													<p className="text-sm font-medium">
 														{n.networkPlan}
 													</p>
-													<p className="mt-0.5 text-xs text-muted-foreground">
+													<p className="text-sm leading-relaxed text-muted-foreground">
 														{n.payer}
 													</p>
 												</TableCell>
@@ -868,7 +868,7 @@ export function ProviderDetailPage({
 											<TableRow key={v.id}>
 												<TableCell className="py-2.5">
 													<p className="text-sm font-medium">{v.vendor}</p>
-													<p className="mt-0.5 text-xs text-muted-foreground">
+													<p className="text-sm leading-relaxed text-muted-foreground">
 														{v.frequency} · {v.lastReceived}
 													</p>
 												</TableCell>
@@ -986,7 +986,7 @@ export function ProviderDetailPage({
 													<p className="text-sm font-medium text-amber-800">
 														{ex.exceptionType}
 													</p>
-													<p className="mt-0.5 text-xs text-muted-foreground">
+													<p className="text-sm leading-relaxed text-muted-foreground">
 														{ex.description}
 													</p>
 												</TableCell>
@@ -1046,7 +1046,7 @@ function ClaimsEncountersTab({
 		) / 100;
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<MetricStrip
 				title="12-month performance"
 				items={[
@@ -1126,7 +1126,7 @@ function ClaimsEncountersTab({
 						</span>
 					}
 				>
-					<div className="space-y-3">
+					<div className="space-y-4">
 						<div className="grid grid-cols-2 gap-2.5">
 							{[
 								{
@@ -1338,7 +1338,7 @@ function CredentialingTab({
 	);
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<MetricStrip
 				title="Credentialing health"
 				items={[
@@ -1424,7 +1424,7 @@ function CredentialingTab({
 									>
 										<div className="min-w-0">
 											<p className="text-sm font-medium">{c.label}</p>
-											<p className="mt-0.5 text-xs text-muted-foreground">
+											<p className="text-sm leading-relaxed text-muted-foreground">
 												{c.issuer}
 												{c.expirationDate
 													? ` · Exp ${formatDate(c.expirationDate)}`
@@ -1559,7 +1559,7 @@ function TabBody({
 			.join(" ");
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<div className="grid gap-3 xl:grid-cols-2">
 					<MetricStrip
 						compact
@@ -1849,7 +1849,7 @@ function TabBody({
 
 	if (tab === "Identifiers") {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Core identifiers"
 					items={provider.identifiers.map((id) => ({

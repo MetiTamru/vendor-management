@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { usersEndpoints } from "../../users-endpoints";
 import type { ApiUsersRecordDto } from "../dto/usersRecordDto";
@@ -11,9 +12,15 @@ export type UsersListResponse = {
 };
 
 export async function listUsersRecords(params?: Record<string, string>) {
-	return apiClient<UsersListResponse>(usersEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<UsersListResponse>(usersEndpoints.list(), { params })
+	);
 }
 
 export async function getUsersRecord(id: string) {
-	return apiClient<ApiUsersRecordDto>(usersEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiUsersRecordDto>(usersEndpoints.detail(id))
+	);
 }

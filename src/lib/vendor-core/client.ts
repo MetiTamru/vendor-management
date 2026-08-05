@@ -1,7 +1,11 @@
 /**
  * HTTP client for services/vendor-management-core (Django JWT API).
  * Base URL: NEXT_PUBLIC_VENDOR_CORE_API_URL (default http://localhost:8010)
+ *
+ * Live when `NEXT_PUBLIC_USE_MOCK=false` (same switch as the rest of the app).
  */
+import { isLiveIntegrationEnabled } from "@/lib/mock-mode";
+
 import type { ApiEnvelope, TokenPair } from "./types";
 
 const ACCESS_KEY = "vendor_core_access_token";
@@ -13,8 +17,9 @@ export function getVendorCoreBaseUrl(): string {
 	).replace(/\/$/, "");
 }
 
+/** Vendor-core is live whenever mocks are off. */
 export function isVendorCoreLive(): boolean {
-	return process.env.NEXT_PUBLIC_USE_VENDOR_CORE_API === "true";
+	return isLiveIntegrationEnabled();
 }
 
 export function getStoredAccessToken(): string | null {

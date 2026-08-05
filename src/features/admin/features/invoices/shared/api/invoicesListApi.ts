@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { invoicesEndpoints } from "../../invoices-endpoints";
 import type { ApiInvoicesRecordDto } from "../dto/invoicesRecordDto";
@@ -11,9 +12,15 @@ export type InvoicesListResponse = {
 };
 
 export async function listInvoicesRecords(params?: Record<string, string>) {
-	return apiClient<InvoicesListResponse>(invoicesEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<InvoicesListResponse>(invoicesEndpoints.list(), { params })
+	);
 }
 
 export async function getInvoicesRecord(id: string) {
-	return apiClient<ApiInvoicesRecordDto>(invoicesEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiInvoicesRecordDto>(invoicesEndpoints.detail(id))
+	);
 }

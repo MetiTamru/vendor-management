@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { activityEndpoints } from "../../activity-endpoints";
 import type { ApiActivityRecordDto } from "../dto/activityRecordDto";
@@ -11,9 +12,15 @@ export type ActivityListResponse = {
 };
 
 export async function listActivityRecords(params?: Record<string, string>) {
-	return apiClient<ActivityListResponse>(activityEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<ActivityListResponse>(activityEndpoints.list(), { params })
+	);
 }
 
 export async function getActivityRecord(id: string) {
-	return apiClient<ApiActivityRecordDto>(activityEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiActivityRecordDto>(activityEndpoints.detail(id))
+	);
 }

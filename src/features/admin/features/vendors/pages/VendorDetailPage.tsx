@@ -165,11 +165,11 @@ function HealthIndicator({ health }: { health: string }) {
 			/>
 			<span
 				className={cn(
-					"text-xs font-medium",
-					tone === "emerald" && "text-emerald-700",
-					tone === "amber" && "text-amber-700",
-					tone === "red" && "text-red-700",
-					tone === "sky" && "text-sky-700"
+					"text-sm font-semibold",
+					tone === "emerald" && "text-emerald-800",
+					tone === "amber" && "text-amber-900",
+					tone === "red" && "text-red-800",
+					tone === "sky" && "text-sky-800"
 				)}
 			>
 				{label}
@@ -181,7 +181,7 @@ function HealthIndicator({ health }: { health: string }) {
 function ActiveStatusPill({ status }: { status: string }) {
 	if (status === "active") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800">
+			<span className="inline-flex items-center rounded-md border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900">
 				Active
 			</span>
 		);
@@ -193,52 +193,68 @@ function ActivityStatus({ status }: { status: string }) {
 	const bucket = runBucket(status as never);
 	if (bucket === "success")
 		return (
-			<span className="inline-flex rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800">
+			<span className="inline-flex items-center rounded-md border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-900">
 				Success
 			</span>
 		);
 	if (bucket === "failed")
 		return (
-			<span className="inline-flex rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800">
+			<span className="inline-flex items-center rounded-md border border-red-200/80 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-900">
 				Failed
 			</span>
 		);
 	if (bucket === "warning")
 		return (
-			<span className="inline-flex rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900">
+			<span className="inline-flex items-center rounded-md border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-950">
 				Warning
 			</span>
 		);
 	if (bucket === "in_progress")
 		return (
-			<span className="inline-flex rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800">
+			<span className="inline-flex items-center rounded-md border border-sky-200/80 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-900">
 				In Progress
 			</span>
 		);
 	return <StatusBadge status={status} />;
 }
 
+const META_ICON_TONES = [
+	"bg-sky-500/15 text-sky-700 ring-sky-500/20",
+	"bg-violet-500/15 text-violet-700 ring-violet-500/20",
+	"bg-emerald-500/15 text-emerald-700 ring-emerald-500/20",
+	"bg-amber-500/15 text-amber-700 ring-amber-500/20",
+	"bg-primary/15 text-primary ring-primary/20",
+] as const;
+
 function MetaItem({
 	label,
 	value,
 	icon: Icon,
+	toneIndex = 0,
 }: {
 	label: string;
 	value: ReactNode;
 	icon?: React.ComponentType<{ className?: string }>;
+	toneIndex?: number;
 }) {
+	const tone = META_ICON_TONES[toneIndex % META_ICON_TONES.length];
 	return (
-		<div className="flex items-start gap-2.5 rounded-lg border border-border/30 bg-gradient-to-br from-muted/40 to-transparent px-2.5 py-2">
+		<div className="flex items-start gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 shadow-sm">
 			{Icon ? (
-				<div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+				<div
+					className={cn(
+						"mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+						tone
+					)}
+				>
 					<Icon className="size-3.5" />
 				</div>
 			) : null}
 			<div className="min-w-0">
-				<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+				<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 					{label}
 				</p>
-				<div className="mt-0.5 text-xs font-medium break-words text-foreground">
+				<div className="mt-1 text-sm font-semibold break-words text-foreground">
 					{value ?? "—"}
 				</div>
 			</div>
@@ -318,7 +334,7 @@ export function VendorDetailPage() {
 
 	if (isLoading) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-40 w-full rounded-xl" />
 				<Skeleton className="h-96 w-full rounded-xl" />
@@ -328,7 +344,7 @@ export function VendorDetailPage() {
 
 	if (error || !vendor || !integration) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<Link
 					href="/admin/vendors"
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -349,28 +365,31 @@ export function VendorDetailPage() {
 	};
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			{/* Header */}
-			<div className="space-y-3 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/[0.05] via-card to-sky-500/[0.04] p-4 shadow-sm">
-				<div className="flex flex-wrap items-start justify-between gap-2">
-					<div className="flex min-w-0 items-center gap-2">
-						<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground shadow-sm">
+			<div className="space-y-4 rounded-xl border border-primary/20 bg-card p-5 shadow-sm">
+				<div className="flex flex-wrap items-start justify-between gap-3">
+					<div className="flex min-w-0 items-center gap-3">
+						<div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm ring-4 ring-primary/15">
 							{initials(displayName)}
 						</div>
-						<div className="min-w-0">
-							<div className="flex flex-wrap items-center gap-2">
-								<h1 className="text-base font-medium tracking-tight">
+						<div className="min-w-0 space-y-1">
+							<div className="flex flex-wrap items-center gap-2.5">
+								<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 									{displayName}
 								</h1>
 								<ActiveStatusPill status={vendor.status} />
 							</div>
+							<p className="font-mono text-xs font-medium text-primary">
+								{formatVendorCode(vendor.id)} · {integration.vendorType}
+							</p>
 						</div>
 					</div>
-					<div className="flex flex-wrap items-center gap-1.5">
+					<div className="flex flex-wrap items-center gap-2">
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-8 text-xs"
+							className="h-9 border-primary/25 text-xs font-semibold"
 							onClick={() =>
 								toast.message("Vendor editor opens here in production")
 							}
@@ -380,7 +399,11 @@ export function VendorDetailPage() {
 						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm" className="h-8 text-xs">
+								<Button
+									variant="outline"
+									size="sm"
+									className="h-9 border-primary/25 text-xs font-semibold"
+								>
 									More Actions
 									<ChevronDown className="ml-1.5 size-3.5" />
 								</Button>
@@ -435,11 +458,12 @@ export function VendorDetailPage() {
 				</div>
 
 				{/* Metadata */}
-				<div className="grid gap-x-3 gap-y-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+				<div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 					<MetaItem
 						label="Vendor Type"
 						value={integration.vendorType}
 						icon={Building2}
+						toneIndex={0}
 					/>
 					<MetaItem
 						label="Primary Contact"
@@ -463,45 +487,72 @@ export function VendorDetailPage() {
 							)
 						}
 						icon={User}
+						toneIndex={1}
 					/>
-					<MetaItem label="Phone" value={primary?.phone ?? "—"} icon={Phone} />
-					<MetaItem label="Email" value={primary?.email ?? "—"} icon={Mail} />
+					<MetaItem
+						label="Phone"
+						value={primary?.phone ?? "—"}
+						icon={Phone}
+						toneIndex={2}
+					/>
+					<MetaItem
+						label="Email"
+						value={primary?.email ?? "—"}
+						icon={Mail}
+						toneIndex={3}
+					/>
 					<MetaItem
 						label="SFTP Server"
 						value={
 							<span className="font-mono text-xs">{integration.sftpHost}</span>
 						}
 						icon={Server}
+						toneIndex={4}
 					/>
 					<MetaItem
 						label="Time Zone"
 						value={integration.timezone}
 						icon={Clock3}
+						toneIndex={0}
 					/>
 					<MetaItem
 						label="Created On"
 						value={formatDate(vendor.createdAt)}
 						icon={Calendar}
+						toneIndex={1}
 					/>
 					<MetaItem
 						label="Created By"
 						value={integration.createdBy}
 						icon={User}
+						toneIndex={2}
 					/>
 					<MetaItem
 						label="Last Updated"
 						value={formatDate(vendor.updatedAt)}
 						icon={Calendar}
+						toneIndex={3}
 					/>
-					<div className="flex items-start gap-2.5 rounded-lg border border-border/30 bg-gradient-to-br from-muted/40 to-transparent px-2.5 py-2">
-						<div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+					<div className="flex items-start gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 shadow-sm">
+						<div
+							className={cn(
+								"mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+								integration.health === "healthy"
+									? "bg-emerald-500/15 text-emerald-700 ring-emerald-500/20"
+									: integration.health === "failed"
+										? "bg-red-500/15 text-red-700 ring-red-500/20"
+										: integration.health === "warning"
+											? "bg-amber-500/15 text-amber-700 ring-amber-500/20"
+											: "bg-sky-500/15 text-sky-700 ring-sky-500/20"
+							)}
+						>
 							<CheckCircle2 className="size-3.5" />
 						</div>
 						<div>
-							<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								Health Indicator
 							</p>
-							<div className="mt-0.5">
+							<div className="mt-1">
 								<HealthIndicator health={integration.health} />
 							</div>
 						</div>
@@ -511,7 +562,7 @@ export function VendorDetailPage() {
 
 			{/* Tabs */}
 			<nav
-				className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-7"
+				className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7"
 				aria-label="Vendor sections"
 			>
 				{TABS.map((item) => (
@@ -520,18 +571,20 @@ export function VendorDetailPage() {
 						type="button"
 						onClick={() => setTab(item)}
 						className={cn(
-							"rounded-md border px-2 py-2 text-center text-xs font-medium transition-colors",
+							"rounded-lg border px-2.5 py-2.5 text-center text-xs font-semibold transition-colors shadow-sm",
 							tab === item
-								? "border-primary/40 bg-primary/10 text-primary"
-								: "border-border/60 bg-card text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground"
+								? "border-primary bg-primary text-primary-foreground"
+								: "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
 						)}
 					>
 						{item}
 						{tabCounts[item] != null && (
 							<span
 								className={cn(
-									"ml-1 text-xs font-normal",
-									tab === item ? "text-primary/80" : "text-muted-foreground"
+									"ml-1 text-xs font-medium",
+									tab === item
+										? "text-primary-foreground/80"
+										: "text-muted-foreground"
 								)}
 							>
 								({tabCounts[item]})
@@ -543,17 +596,19 @@ export function VendorDetailPage() {
 
 			{tab === "Overview" && (
 				<div className="min-w-0 space-y-5">
-					<section className="overflow-hidden rounded-lg border border-border/60 bg-card">
-						<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-primary/[0.06] via-emerald-500/[0.04] to-transparent px-4 py-3">
+					<section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+						<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-3.5">
 							<div>
-								<h2 className="text-sm font-medium">Recent File Activity</h2>
-								<p className="mt-0.5 text-xs text-muted-foreground">
+								<h2 className="text-sm font-semibold tracking-tight text-foreground">
+									Recent File Activity
+								</h2>
+								<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
 									Latest inbound and outbound file runs for this vendor.
 								</p>
 							</div>
 							<button
 								type="button"
-								className="text-xs font-medium text-primary hover:underline"
+								className="text-xs font-semibold text-primary hover:underline"
 								onClick={() => setTab("Operations")}
 							>
 								View all file history →
@@ -658,10 +713,12 @@ export function VendorDetailPage() {
 					</section>
 
 					<div className="grid min-w-0 gap-4 lg:grid-cols-2">
-						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="border-b border-border/50 bg-gradient-to-r from-primary/[0.06] via-sky-500/[0.04] to-transparent px-4 py-3">
-								<h2 className="text-sm font-medium">File Type Summary</h2>
-								<p className="mt-0.5 text-xs text-muted-foreground">
+						<section className="rounded-xl border border-border bg-card shadow-sm">
+							<div className="border-b border-border bg-sky-500/10 px-4 py-3.5">
+								<h2 className="text-sm font-semibold tracking-tight text-foreground">
+									File Type Summary
+								</h2>
+								<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
 									Distribution of processed files over the last 30 days.
 								</p>
 							</div>
@@ -731,12 +788,14 @@ export function VendorDetailPage() {
 
 						<section
 							id="trend"
-							className="rounded-lg border border-border/60 bg-card"
+							className="rounded-xl border border-border bg-card shadow-sm"
 						>
-							<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-emerald-500/[0.07] via-amber-500/[0.04] to-transparent px-4 py-3">
+							<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-emerald-500/10 px-4 py-3.5">
 								<div>
-									<h2 className="text-sm font-medium">Processing Trend</h2>
-									<p className="mt-0.5 text-xs text-muted-foreground">
+									<h2 className="text-sm font-semibold tracking-tight text-foreground">
+										Processing Trend
+									</h2>
+									<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
 										Successful, warning, and failed runs over time.
 									</p>
 								</div>
@@ -792,15 +851,17 @@ export function VendorDetailPage() {
 					</div>
 
 					<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="flex items-center justify-between gap-2 border-b border-border/50 bg-gradient-to-r from-primary/[0.07] via-sky-500/[0.04] to-transparent px-4 py-3">
+						<section className="rounded-xl border border-border bg-card shadow-sm">
+							<div className="flex items-center justify-between gap-2 border-b border-border bg-primary/10 px-4 py-3.5">
 								<div>
-									<h2 className="text-sm font-medium">Vendor Details</h2>
-									<p className="mt-0.5 text-xs text-muted-foreground">
+									<h2 className="text-sm font-semibold tracking-tight text-foreground">
+										Vendor Details
+									</h2>
+									<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
 										Core profile and integration settings.
 									</p>
 								</div>
-								<span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-medium text-primary">
+								<span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-primary">
 									{formatVendorCode(vendor.id)}
 								</span>
 							</div>
@@ -860,10 +921,12 @@ export function VendorDetailPage() {
 							) : null}
 						</section>
 
-						<section className="rounded-lg border border-border/60 bg-card">
-							<div className="border-b border-border/50 bg-gradient-to-r from-sky-500/[0.08] via-primary/[0.04] to-transparent px-4 py-3">
-								<h2 className="text-sm font-medium">Quick Actions</h2>
-								<p className="mt-0.5 text-xs text-muted-foreground">
+						<section className="rounded-xl border border-border bg-card shadow-sm">
+							<div className="border-b border-border bg-violet-500/10 px-4 py-3.5">
+								<h2 className="text-sm font-semibold tracking-tight text-foreground">
+									Quick Actions
+								</h2>
+								<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
 									Common tasks for this vendor.
 								</p>
 							</div>
@@ -906,10 +969,32 @@ export function VendorDetailPage() {
 											toast.message("Switched to Notes tab");
 										},
 									},
-								].map((action) => {
+								].map((action, index) => {
 									const Icon = action.icon;
+									const tones = [
+										"bg-sky-500/15 text-sky-700 ring-sky-500/20",
+										"bg-emerald-500/15 text-emerald-700 ring-emerald-500/20",
+										"bg-amber-500/15 text-amber-700 ring-amber-500/20",
+										"bg-violet-500/15 text-violet-700 ring-violet-500/20",
+										"bg-primary/15 text-primary ring-primary/20",
+										"bg-rose-500/15 text-rose-700 ring-rose-500/20",
+									] as const;
+									const tone = tones[index % tones.length];
 									const className =
-										"flex items-center gap-3 rounded-lg border border-border/40 bg-gradient-to-br from-muted/30 to-transparent px-3 py-3 text-left transition-colors hover:border-primary/30 hover:from-primary/[0.06]";
+										"flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-3 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/5";
+									const content = (
+										<>
+											<div
+												className={cn(
+													"flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+													tone
+												)}
+											>
+												<Icon className="size-4" />
+											</div>
+											<p className="text-sm font-semibold">{action.label}</p>
+										</>
+									);
 									if (action.onClick) {
 										return (
 											<button
@@ -918,10 +1003,7 @@ export function VendorDetailPage() {
 												className={className}
 												onClick={action.onClick}
 											>
-												<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-													<Icon className="size-4" />
-												</div>
-												<p className="text-sm font-medium">{action.label}</p>
+												{content}
 											</button>
 										);
 									}
@@ -931,10 +1013,7 @@ export function VendorDetailPage() {
 											href={action.href}
 											className={className}
 										>
-											<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-												<Icon className="size-4" />
-											</div>
-											<p className="text-sm font-medium">{action.label}</p>
+											{content}
 										</Link>
 									);
 								})}
@@ -964,9 +1043,21 @@ export function VendorDetailPage() {
 			)}
 
 			{tab === "Contacts" && (
-				<section className="min-w-0">
-					<h2 className="mb-2 text-sm font-medium">Contacts</h2>
-					<div className="overflow-hidden rounded-lg border border-border/50">
+				<section className="min-w-0 space-y-3">
+					<div className="rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+						<h2 className="text-lg font-semibold tracking-tight text-foreground">
+							Contacts
+						</h2>
+						<p className="mt-0.5 text-sm text-muted-foreground">
+							People associated with this vendor relationship.
+						</p>
+					</div>
+					<div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+						<div className="border-b border-border bg-sky-500/10 px-4 py-2.5">
+							<p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-800">
+								Contact directory
+							</p>
+						</div>
 						<Table className="text-xs">
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
@@ -992,15 +1083,15 @@ export function VendorDetailPage() {
 								) : (
 									vendor.contacts.map((contact) => (
 										<TableRow key={contact.id} className="hover:bg-muted/30">
-											<TableCell className="pl-4 font-medium sm:pl-6">
+											<TableCell className="pl-4 font-semibold sm:pl-6">
 												{contact.name}
 												{contact.isPrimary && (
-													<span className="ml-2 text-xs text-muted-foreground">
+													<span className="ml-2 inline-flex items-center rounded-md border border-emerald-200/80 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-900">
 														Primary
 													</span>
 												)}
 											</TableCell>
-											<TableCell>{contact.role}</TableCell>
+											<TableCell className="font-medium">{contact.role}</TableCell>
 											<TableCell>{contact.email}</TableCell>
 											<TableCell className="text-muted-foreground">
 												{contact.phone ?? "—"}

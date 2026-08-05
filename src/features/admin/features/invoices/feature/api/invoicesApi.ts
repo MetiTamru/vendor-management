@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { invoicesEndpoints } from "../../invoices-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/invoicesDto";
 
 export async function listInvoices() {
-	return apiClient<{ results?: ApiInvoicesDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiInvoicesDto[]; count?: number }>(
 		invoicesEndpoints.list()
+	)
 	);
 }
 
 export async function getInvoices(id: string) {
-	return apiClient<ApiInvoicesDto>(invoicesEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiInvoicesDto>(invoicesEndpoints.detail(id))
+	);
 }
 
 export async function createInvoices(body: InvoicesCreateDto) {
-	return apiClient<ApiInvoicesDto>(invoicesEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiInvoicesDto>(invoicesEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateInvoices(id: string, body: InvoicesUpdateDto) {
-	return apiClient<ApiInvoicesDto>(invoicesEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiInvoicesDto>(invoicesEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteInvoices(id: string) {
-	return apiClient<void>(invoicesEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(invoicesEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

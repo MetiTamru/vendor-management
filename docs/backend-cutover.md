@@ -1,22 +1,21 @@
 # Backend cutover checklist
 
-When your NestJS API is ready, switch the frontend from mocks to live data.
+When your NestJS (and optional Django vendor-core) APIs are ready, switch the frontend from mocks to live data with **one env var**.
 
 ## 1. Environment
 
-In production/staging `.env`:
+In staging/production `.env`:
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.your-domain.com
 NEXT_PUBLIC_APP_URL=https://app.your-domain.com
 NEXT_PUBLIC_URL=https://app.your-domain.com
+NEXT_PUBLIC_VENDOR_CORE_API_URL=https://vendor-core.your-domain.com
 
-# Remove or set to false:
-# NEXT_PUBLIC_USE_MOCK_GROUPS=
-# NEXT_PUBLIC_USE_MOCK_USERS=
-# NEXT_PUBLIC_USE_MOCK_ROLES=
-# NEXT_PUBLIC_USE_MOCK_SETTINGS=
-# NEXT_PUBLIC_USE_MOCK_VMS=
+# Single switch — turns off all mocks (auth, VMS, identity, feature APIs, vendor-core)
+NEXT_PUBLIC_USE_MOCK=false
+
+# Optional ABAC overrides — leave unset in production
 # NEXT_PUBLIC_DEV_ADMIN=
 # NEXT_PUBLIC_DEV_MANAGER=
 # NEXT_PUBLIC_DEV_VENDOR=
@@ -29,6 +28,7 @@ NEXT_PUBLIC_URL=https://app.your-domain.com
 - Users: `GET /api/admin/users/`
 - Roles: `GET /api/admin/roles/`
 - Settings: `GET /api/admin/settings/`
+- Feature modules: `GET /api/admin/<module>/` (members, providers, file-management, claim-encounter, …)
 
 ## 3. Smoke tests
 
@@ -39,6 +39,7 @@ NEXT_PUBLIC_URL=https://app.your-domain.com
 | Create group | `/{locale}/admin/groups/create`                         |
 | Edit group   | `/{locale}/admin/groups/{id}/edit`                      |
 | Delete group | From groups table                                       |
+| Integration  | `/{locale}/admin/integration` (vendor-core JWT)         |
 | Offline sync | Create while offline → reconnect → pending badge clears |
 
 ## 4. CORS and auth
@@ -47,4 +48,4 @@ See [api-contracts/README.md](./api-contracts/README.md) for CORS and Better Aut
 
 ## 5. Rollback
 
-Re-enable `NEXT_PUBLIC_USE_MOCK_GROUPS=true` (and other mock flags) to isolate frontend issues without changing code.
+Set `NEXT_PUBLIC_USE_MOCK=true` and restart to isolate frontend issues without changing code.

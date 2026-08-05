@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { approvalsEndpoints } from "../../approvals-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/approvalsDto";
 
 export async function listApprovals() {
-	return apiClient<{ results?: ApiApprovalsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiApprovalsDto[]; count?: number }>(
 		approvalsEndpoints.list()
+	)
 	);
 }
 
 export async function getApprovals(id: string) {
-	return apiClient<ApiApprovalsDto>(approvalsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiApprovalsDto>(approvalsEndpoints.detail(id))
+	);
 }
 
 export async function createApprovals(body: ApprovalsCreateDto) {
-	return apiClient<ApiApprovalsDto>(approvalsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiApprovalsDto>(approvalsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateApprovals(id: string, body: ApprovalsUpdateDto) {
-	return apiClient<ApiApprovalsDto>(approvalsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiApprovalsDto>(approvalsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteApprovals(id: string) {
-	return apiClient<void>(approvalsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(approvalsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

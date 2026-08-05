@@ -12,7 +12,7 @@ export function VmsFeaturePage() {
 
 	return (
 		<VmsFeatureRoot>
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<h2 className="text-sm font-semibold tracking-tight">Vms</h2>
 				{isLoading ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>

@@ -57,6 +57,7 @@ import {
 	type ClaimLine,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -208,7 +209,7 @@ function Field({
 }) {
 	return (
 		<label className={cn("flex min-w-0 flex-col gap-1", className)}>
-			<span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+			<span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 				{label}
 			</span>
 			{children}
@@ -217,24 +218,7 @@ function Field({
 }
 
 function ClaimStatusBadge({ status }: { status: string }) {
-	const tone =
-		status === "Paid" || status === "Accepted"
-			? "bg-emerald-100 text-emerald-800"
-			: status === "Denied" || status === "Rejected"
-				? "bg-red-100 text-red-800"
-				: status === "Partial"
-					? "bg-amber-100 text-amber-900"
-					: "bg-amber-100 text-amber-900";
-	return (
-		<span
-			className={cn(
-				"inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium",
-				tone
-			)}
-		>
-			{status}
-		</span>
-	);
+	return <StatusBadge status={status} />;
 }
 
 export function ClaimsPage() {
@@ -499,7 +483,7 @@ export function ClaimsPage() {
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Claims"
 				description="Search, review and manage claims across all vendors and payers."
@@ -705,7 +689,7 @@ export function ClaimsPage() {
 								</Field>
 							</div>
 
-							<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+							<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 								<Field label="Claim Status">
 									<Select value={claimStatus} onValueChange={setClaimStatus}>
 										<SelectTrigger className="h-9 w-full">
@@ -1485,7 +1469,7 @@ function SummaryBlock({ items }: { items: Array<[string, ReactNode]> }) {
 			<dl className="space-y-2">
 				{items.map(([label, value]) => (
 					<div key={label}>
-						<dt className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						<dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							{label}
 						</dt>
 						<dd className="mt-0.5 text-xs font-medium break-all">
@@ -1519,7 +1503,7 @@ function ProviderRow({
 }) {
 	return (
 		<div className="rounded-md border border-border/40 px-2.5 py-2">
-			<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+			<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 				{role}
 			</p>
 			<p className="mt-0.5 text-xs font-medium">{name}</p>

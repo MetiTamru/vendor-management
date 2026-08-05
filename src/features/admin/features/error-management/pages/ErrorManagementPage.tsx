@@ -329,7 +329,7 @@ export function ErrorManagementPage() {
 				</div>
 			</div>
 
-			<div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+			<div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 				<div className="overflow-x-auto">
 					<Table>
 						<TableHeader>

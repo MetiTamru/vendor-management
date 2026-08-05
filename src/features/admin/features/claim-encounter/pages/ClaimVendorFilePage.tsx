@@ -90,7 +90,7 @@ function statusBadge(status: ClaimFileStatus) {
 	return (
 		<span
 			className={cn(
-				"inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize",
+				"inline-flex items-center rounded-md border border-transparent px-2 py-0.5 text-[10px] font-medium capitalize",
 				tone[status]
 			)}
 		>
@@ -255,13 +255,13 @@ export function ClaimVendorFilePage({ direction, title, description }: Props) {
 	}
 
 	return (
-		<div className="space-y-3">
-			<div className="flex flex-wrap items-start justify-between gap-2">
+		<div className="space-y-4">
+			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div>
-					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+					<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 						{title}
 					</h1>
-					<p className="mt-0.5 text-xs text-muted-foreground">
+					<p className="text-sm leading-relaxed text-muted-foreground">
 						{description} · Filtered to {programFilter}
 					</p>
 				</div>
@@ -374,27 +374,27 @@ export function ClaimVendorFilePage({ direction, title, description }: Props) {
 				</div>
 			</div>
 
-			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 				{kpis.map((k) => {
 					const Icon = k.icon;
 					return (
 						<div
 							key={k.label}
-							className="rounded-lg border border-border/50 bg-card/70 p-2.5"
+							className="rounded-xl border border-border bg-card p-3.5 shadow-sm"
 						>
 							<div className="flex items-start justify-between gap-2">
 								<div className="min-w-0">
-									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+									<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 										{k.label}
 									</p>
-									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
+									<p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
 										{k.value}
 									</p>
 									<p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
 								</div>
 								<div
 									className={cn(
-										"flex size-8 shrink-0 items-center justify-center rounded-lg",
+										"flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-black/5 dark:ring-white/10",
 										k.tone
 									)}
 								>

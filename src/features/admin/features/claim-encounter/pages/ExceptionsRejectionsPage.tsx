@@ -162,7 +162,7 @@ export function ExceptionsRejectionsPage() {
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Exceptions / Rejections"
 				description={`Claim and encounter exceptions requiring review · Filtered to ${programFilter}`}

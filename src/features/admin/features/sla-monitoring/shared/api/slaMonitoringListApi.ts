@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { slaMonitoringEndpoints } from "../../sla-monitoring-endpoints";
 import type { ApiSlaMonitoringRecordDto } from "../dto/slaMonitoringRecordDto";
@@ -11,9 +12,15 @@ export type SlaMonitoringListResponse = {
 };
 
 export async function listSlaMonitoringRecords(params?: Record<string, string>) {
-	return apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<SlaMonitoringListResponse>(slaMonitoringEndpoints.list(), { params })
+	);
 }
 
 export async function getSlaMonitoringRecord(id: string) {
-	return apiClient<ApiSlaMonitoringRecordDto>(slaMonitoringEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiSlaMonitoringRecordDto>(slaMonitoringEndpoints.detail(id))
+	);
 }

@@ -31,6 +31,10 @@ import {
 	YAxis,
 } from "recharts";
 
+import {
+	SummaryCard,
+	SummaryCardsGrid,
+} from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -88,28 +92,28 @@ function ActivityStatus({
 	const bucket = runBucket(status);
 	if (bucket === "success") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+			<span className="inline-flex items-center rounded-md border border-transparent bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
 				Success
 			</span>
 		);
 	}
 	if (bucket === "failed") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
+			<span className="inline-flex items-center rounded-md border border-transparent bg-red-100 px-1.5 py-0 text-[10px] font-medium text-red-800 dark:bg-red-950 dark:text-red-200">
 				Failed
 			</span>
 		);
 	}
 	if (bucket === "warning") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+			<span className="inline-flex items-center rounded-md border border-transparent bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
 				Warning
 			</span>
 		);
 	}
 	if (bucket === "in_progress") {
 		return (
-			<span className="inline-flex items-center rounded-full bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+			<span className="inline-flex items-center rounded-md border border-transparent bg-sky-100 px-1.5 py-0 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
 				In Progress
 			</span>
 		);
@@ -198,7 +202,7 @@ export function DashboardPage() {
 
 	if (isLoading) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<Skeleton className="h-8 w-64" />
 				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
 					{Array.from({ length: 6 }).map((_, i) => (
@@ -262,13 +266,13 @@ export function DashboardPage() {
 	];
 
 	return (
-		<div className="space-y-3">
-			<div className="flex flex-wrap items-start justify-between gap-2">
-				<div>
-					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+		<div className="space-y-4">
+			<div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
+				<div className="min-w-0 space-y-1">
+					<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 						Dashboard
 					</h1>
-					<p className="mt-0.5 text-xs text-muted-foreground">
+					<p className="text-sm leading-relaxed text-muted-foreground">
 						Monitor vendor file exchanges, health, and alerts across trading
 						partners.
 					</p>
@@ -365,47 +369,35 @@ export function DashboardPage() {
 
 			{/* KPI cards */}
 			{isEnabled("kpis") ? (
-				<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+				<SummaryCardsGrid>
 					{kpis.map((k) => {
 						const Icon = k.icon;
 						return (
-							<div key={k.label} className="rounded-lg bg-card p-2.5">
-								<div className="flex items-start justify-between gap-2">
-									<div className="min-w-0">
-										<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-											{k.label}
-										</p>
-										<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
-											{k.value}
-											{k.pct ? (
-												<span className="ml-1 text-sm font-medium text-muted-foreground">
-													({k.pct})
-												</span>
-											) : null}
-										</p>
-										{k.label === "Total Files" ? (
-											<p className="mt-1 text-xs text-muted-foreground">
-												{k.hint}
-											</p>
-										) : (
-											<p className="mt-1 text-xs font-medium text-primary">
-												{k.hint}
-											</p>
-										)}
-									</div>
-									<div
-										className={cn(
-											"flex size-8 shrink-0 items-center justify-center rounded-lg",
-											k.tone
-										)}
-									>
-										<Icon className="size-4" />
-									</div>
-								</div>
-							</div>
+							<SummaryCard
+								key={k.label}
+								label={k.label}
+								value={
+									<>
+										{k.value}
+										{k.pct ? (
+											<span className="ml-1 text-sm font-medium text-muted-foreground">
+												({k.pct})
+											</span>
+										) : null}
+									</>
+								}
+								hint={k.hint}
+								icon={Icon}
+								tone={k.tone}
+								hintClassName={
+									k.label === "Total Files"
+										? undefined
+										: "font-medium text-primary"
+								}
+							/>
 						);
 					})}
-				</div>
+				</SummaryCardsGrid>
 			) : null}
 
 			{/* Main + right column — 2/3 table, 1/3 sidebar */}

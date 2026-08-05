@@ -354,7 +354,7 @@ export function OutboundVendorFilePage() {
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Outbound Vendor File"
 				description={`Accepted to Gainwell + denied claims · ${programFilter}`}

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { riskScoringEndpoints } from "../../risk-scoring-endpoints";
 import type { ApiRiskScoringRecordDto } from "../dto/riskScoringRecordDto";
@@ -11,9 +12,15 @@ export type RiskScoringListResponse = {
 };
 
 export async function listRiskScoringRecords(params?: Record<string, string>) {
-	return apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<RiskScoringListResponse>(riskScoringEndpoints.list(), { params })
+	);
 }
 
 export async function getRiskScoringRecord(id: string) {
-	return apiClient<ApiRiskScoringRecordDto>(riskScoringEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiRiskScoringRecordDto>(riskScoringEndpoints.detail(id))
+	);
 }

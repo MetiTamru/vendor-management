@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { auditTrailEndpoints } from "../../audit-trail-endpoints";
 import type { ApiAuditTrailRecordDto } from "../dto/auditTrailRecordDto";
@@ -11,9 +12,15 @@ export type AuditTrailListResponse = {
 };
 
 export async function listAuditTrailRecords(params?: Record<string, string>) {
-	return apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<AuditTrailListResponse>(auditTrailEndpoints.list(), { params })
+	);
 }
 
 export async function getAuditTrailRecord(id: string) {
-	return apiClient<ApiAuditTrailRecordDto>(auditTrailEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiAuditTrailRecordDto>(auditTrailEndpoints.detail(id))
+	);
 }

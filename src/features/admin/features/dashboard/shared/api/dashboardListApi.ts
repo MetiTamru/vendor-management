@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { dashboardEndpoints } from "../../dashboard-endpoints";
 import type { ApiDashboardRecordDto } from "../dto/dashboardRecordDto";
@@ -11,9 +12,15 @@ export type DashboardListResponse = {
 };
 
 export async function listDashboardRecords(params?: Record<string, string>) {
-	return apiClient<DashboardListResponse>(dashboardEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<DashboardListResponse>(dashboardEndpoints.list(), { params })
+	);
 }
 
 export async function getDashboardRecord(id: string) {
-	return apiClient<ApiDashboardRecordDto>(dashboardEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiDashboardRecordDto>(dashboardEndpoints.detail(id))
+	);
 }

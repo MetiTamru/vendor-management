@@ -60,7 +60,7 @@ export function VendorCreatePage() {
 			</div>
 			<form
 				onSubmit={submit}
-				className="space-y-3 rounded-lg border bg-card p-4"
+				className="space-y-3 rounded-xl border border-border bg-card shadow-sm p-4"
 			>
 				<div className="grid gap-3 sm:grid-cols-2">
 					<Field label="Legal name" required>

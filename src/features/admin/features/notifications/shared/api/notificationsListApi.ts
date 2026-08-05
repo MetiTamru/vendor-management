@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { notificationsEndpoints } from "../../notifications-endpoints";
 import type { ApiNotificationsRecordDto } from "../dto/notificationsRecordDto";
@@ -11,9 +12,15 @@ export type NotificationsListResponse = {
 };
 
 export async function listNotificationsRecords(params?: Record<string, string>) {
-	return apiClient<NotificationsListResponse>(notificationsEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<NotificationsListResponse>(notificationsEndpoints.list(), { params })
+	);
 }
 
 export async function getNotificationsRecord(id: string) {
-	return apiClient<ApiNotificationsRecordDto>(notificationsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiNotificationsRecordDto>(notificationsEndpoints.detail(id))
+	);
 }

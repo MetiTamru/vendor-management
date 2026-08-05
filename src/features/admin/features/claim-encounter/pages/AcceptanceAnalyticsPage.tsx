@@ -461,7 +461,7 @@ export function AcceptanceAnalyticsPage() {
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Acceptance Analytics"
 				description={`Deep acceptance, rejection, and payment analysis across claim & encounter files · ${programFilter}`}

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { integrationIntakeEndpoints } from "../../integration-intake-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/integrationIntakeDto";
 
 export async function listIntegrationIntake() {
-	return apiClient<{ results?: ApiIntegrationIntakeDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiIntegrationIntakeDto[]; count?: number }>(
 		integrationIntakeEndpoints.list()
+	)
 	);
 }
 
 export async function getIntegrationIntake(id: string) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.detail(id))
+	);
 }
 
 export async function createIntegrationIntake(body: IntegrationIntakeCreateDto) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateIntegrationIntake(id: string, body: IntegrationIntakeUpdateDto) {
-	return apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteIntegrationIntake(id: string) {
-	return apiClient<void>(integrationIntakeEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(integrationIntakeEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

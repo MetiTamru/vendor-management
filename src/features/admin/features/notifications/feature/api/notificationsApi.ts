@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { notificationsEndpoints } from "../../notifications-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/notificationsDto";
 
 export async function listNotifications() {
-	return apiClient<{ results?: ApiNotificationsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiNotificationsDto[]; count?: number }>(
 		notificationsEndpoints.list()
+	)
 	);
 }
 
 export async function getNotifications(id: string) {
-	return apiClient<ApiNotificationsDto>(notificationsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiNotificationsDto>(notificationsEndpoints.detail(id))
+	);
 }
 
 export async function createNotifications(body: NotificationsCreateDto) {
-	return apiClient<ApiNotificationsDto>(notificationsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiNotificationsDto>(notificationsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateNotifications(id: string, body: NotificationsUpdateDto) {
-	return apiClient<ApiNotificationsDto>(notificationsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiNotificationsDto>(notificationsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteNotifications(id: string) {
-	return apiClient<void>(notificationsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(notificationsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

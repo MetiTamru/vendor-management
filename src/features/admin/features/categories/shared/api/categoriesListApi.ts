@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { categoriesEndpoints } from "../../categories-endpoints";
 import type { ApiCategoriesRecordDto } from "../dto/categoriesRecordDto";
@@ -11,9 +12,15 @@ export type CategoriesListResponse = {
 };
 
 export async function listCategoriesRecords(params?: Record<string, string>) {
-	return apiClient<CategoriesListResponse>(categoriesEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<CategoriesListResponse>(categoriesEndpoints.list(), { params })
+	);
 }
 
 export async function getCategoriesRecord(id: string) {
-	return apiClient<ApiCategoriesRecordDto>(categoriesEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiCategoriesRecordDto>(categoriesEndpoints.detail(id))
+	);
 }

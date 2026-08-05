@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { automationsEndpoints } from "../../automations-endpoints";
 import type { ApiAutomationsRecordDto } from "../dto/automationsRecordDto";
@@ -11,9 +12,15 @@ export type AutomationsListResponse = {
 };
 
 export async function listAutomationsRecords(params?: Record<string, string>) {
-	return apiClient<AutomationsListResponse>(automationsEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<AutomationsListResponse>(automationsEndpoints.list(), { params })
+	);
 }
 
 export async function getAutomationsRecord(id: string) {
-	return apiClient<ApiAutomationsRecordDto>(automationsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiAutomationsRecordDto>(automationsEndpoints.detail(id))
+	);
 }

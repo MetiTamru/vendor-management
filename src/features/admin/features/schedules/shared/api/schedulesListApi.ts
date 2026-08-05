@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { schedulesEndpoints } from "../../schedules-endpoints";
 import type { ApiSchedulesRecordDto } from "../dto/schedulesRecordDto";
@@ -11,9 +12,15 @@ export type SchedulesListResponse = {
 };
 
 export async function listSchedulesRecords(params?: Record<string, string>) {
-	return apiClient<SchedulesListResponse>(schedulesEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<SchedulesListResponse>(schedulesEndpoints.list(), { params })
+	);
 }
 
 export async function getSchedulesRecord(id: string) {
-	return apiClient<ApiSchedulesRecordDto>(schedulesEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiSchedulesRecordDto>(schedulesEndpoints.detail(id))
+	);
 }

@@ -25,6 +25,10 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { toast } from "sonner";
 
 import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
+import {
+	SummaryCard,
+	SummaryCardsGrid,
+} from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -57,29 +61,12 @@ import {
 	type VendorListStatus,
 	summarizeVendorDirectory,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
-	if (status === "active") {
-		return (
-			<span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-				Active
-			</span>
-		);
-	}
-	if (status === "at_risk") {
-		return (
-			<span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-				At Risk
-			</span>
-		);
-	}
-	return (
-		<span className="inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0 text-[10px] font-medium text-slate-700 dark:bg-slate-900 dark:text-slate-200">
-			Inactive
-		</span>
-	);
+	return <StatusBadge status={status} />;
 }
 
 function HealthDot({ health }: { health: VendorListHealth }) {
@@ -291,19 +278,19 @@ export function VendorsPage() {
 	];
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			{/* Header */}
-			<div className="flex flex-wrap items-start justify-between gap-2">
-				<div>
-					<nav className="mb-0.5 flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+			<div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
+				<div className="min-w-0 space-y-1">
+					<nav className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 						<span>Vendor Management</span>
-						<span>&gt;</span>
+						<span className="text-border">/</span>
 						<span className="text-foreground">Vendors</span>
 					</nav>
-					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+					<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 						Vendors
 					</h1>
-					<p className="mt-0.5 text-xs text-muted-foreground">
+					<p className="text-sm leading-relaxed text-muted-foreground">
 						Manage trading partners, monitor vendor health, and access
 						vendor-level operations.
 					</p>
@@ -430,50 +417,33 @@ export function VendorsPage() {
 			</div>
 
 			{/* KPIs */}
-			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				{kpis.map((k) => {
-					const Icon = k.icon;
-					return (
-						<div key={k.label} className="rounded-lg bg-card p-2.5">
-							<div className="flex items-start justify-between gap-2">
-								<div className="min-w-0">
-									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-										{k.label}
-									</p>
-									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
-										{k.value}
-									</p>
-									<p className={cn("mt-1 text-xs font-medium", k.trendTone)}>
-										{k.trend}
-									</p>
-								</div>
-								<div
-									className={cn(
-										"flex size-8 shrink-0 items-center justify-center rounded-lg",
-										k.tone
-									)}
-								>
-									<Icon className="size-4" />
-								</div>
-							</div>
-						</div>
-					);
-				})}
+			<SummaryCardsGrid>
+				{kpis.map((k) => (
+					<SummaryCard
+						key={k.label}
+						label={k.label}
+						value={k.value}
+						hint={k.trend}
+						icon={k.icon}
+						tone={k.tone}
+						hintClassName={cn("font-medium", k.trendTone)}
+					/>
+				))}
 
-				<div className="rounded-lg bg-card p-2.5">
-					<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+				<div className="rounded-xl border border-border bg-card p-3.5 shadow-sm">
+					<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 						Health Distribution
 					</p>
-					<div className="mt-1 flex items-center gap-2">
-						<ul className="min-w-0 flex-1 space-y-1 text-[11px]">
+					<div className="mt-2 flex items-center gap-3">
+						<ul className="min-w-0 flex-1 space-y-1.5 text-xs">
 							{summary.healthPie.map((item) => (
 								<li
 									key={item.name}
 									className="flex items-center justify-between gap-2"
 								>
-									<span className="flex items-center gap-1.5">
+									<span className="flex items-center gap-1.5 font-medium">
 										<span
-											className="size-1.5 rounded-full"
+											className="size-2 rounded-full"
 											style={{ backgroundColor: item.color }}
 										/>
 										{item.name}
@@ -484,15 +454,15 @@ export function VendorsPage() {
 								</li>
 							))}
 						</ul>
-						<div className="h-14 w-14 shrink-0">
+						<div className="h-16 w-16 shrink-0">
 							<ResponsiveContainer width="100%" height="100%">
 								<PieChart>
 									<Pie
 										data={summary.healthPie.filter((d) => d.value > 0)}
 										dataKey="value"
 										nameKey="name"
-										innerRadius={16}
-										outerRadius={26}
+										innerRadius={18}
+										outerRadius={28}
 										paddingAngle={2}
 									>
 										{summary.healthPie
@@ -507,7 +477,7 @@ export function VendorsPage() {
 						</div>
 					</div>
 				</div>
-			</div>
+			</SummaryCardsGrid>
 
 			{/* Vendor List */}
 			<BulkActionsToolbar

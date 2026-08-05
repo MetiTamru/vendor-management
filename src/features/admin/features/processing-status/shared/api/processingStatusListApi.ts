@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { processingStatusEndpoints } from "../../processing-status-endpoints";
 import type { ApiProcessingStatusRecordDto } from "../dto/processingStatusRecordDto";
@@ -11,9 +12,15 @@ export type ProcessingStatusListResponse = {
 };
 
 export async function listProcessingStatusRecords(params?: Record<string, string>) {
-	return apiClient<ProcessingStatusListResponse>(processingStatusEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<ProcessingStatusListResponse>(processingStatusEndpoints.list(), { params })
+	);
 }
 
 export async function getProcessingStatusRecord(id: string) {
-	return apiClient<ApiProcessingStatusRecordDto>(processingStatusEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiProcessingStatusRecordDto>(processingStatusEndpoints.detail(id))
+	);
 }

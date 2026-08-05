@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { vendorsEndpoints } from "../../vendors-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/vendorsDto";
 
 export async function listVendors() {
-	return apiClient<{ results?: ApiVendorsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiVendorsDto[]; count?: number }>(
 		vendorsEndpoints.list()
+	)
 	);
 }
 
 export async function getVendors(id: string) {
-	return apiClient<ApiVendorsDto>(vendorsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVendorsDto>(vendorsEndpoints.detail(id))
+	);
 }
 
 export async function createVendors(body: VendorsCreateDto) {
-	return apiClient<ApiVendorsDto>(vendorsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVendorsDto>(vendorsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateVendors(id: string, body: VendorsUpdateDto) {
-	return apiClient<ApiVendorsDto>(vendorsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVendorsDto>(vendorsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteVendors(id: string) {
-	return apiClient<void>(vendorsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(vendorsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

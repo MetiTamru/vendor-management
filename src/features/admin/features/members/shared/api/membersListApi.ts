@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { membersEndpoints } from "../../members-endpoints";
 import type { ApiMembersRecordDto } from "../dto/membersRecordDto";
@@ -11,9 +12,15 @@ export type MembersListResponse = {
 };
 
 export async function listMembersRecords(params?: Record<string, string>) {
-	return apiClient<MembersListResponse>(membersEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<MembersListResponse>(membersEndpoints.list(), { params })
+	);
 }
 
 export async function getMembersRecord(id: string) {
-	return apiClient<ApiMembersRecordDto>(membersEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiMembersRecordDto>(membersEndpoints.detail(id))
+	);
 }

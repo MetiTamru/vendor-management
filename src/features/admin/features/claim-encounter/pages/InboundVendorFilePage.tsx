@@ -323,7 +323,7 @@ export function InboundVendorFilePage() {
 	];
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<ClaimPageHeader
 				title="Inbound Vendor File"
 				description={`Pending review + MFC-rejected (vendor correction) · ${programFilter}`}

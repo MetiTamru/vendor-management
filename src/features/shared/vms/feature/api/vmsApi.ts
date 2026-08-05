@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { vmsEndpoints } from "../../vms-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/vmsDto";
 
 export async function listVms() {
-	return apiClient<{ results?: ApiVmsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiVmsDto[]; count?: number }>(
 		vmsEndpoints.list()
+	)
 	);
 }
 
 export async function getVms(id: string) {
-	return apiClient<ApiVmsDto>(vmsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVmsDto>(vmsEndpoints.detail(id))
+	);
 }
 
 export async function createVms(body: VmsCreateDto) {
-	return apiClient<ApiVmsDto>(vmsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVmsDto>(vmsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateVms(id: string, body: VmsUpdateDto) {
-	return apiClient<ApiVmsDto>(vmsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVmsDto>(vmsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteVms(id: string) {
-	return apiClient<void>(vmsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(vmsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

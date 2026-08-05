@@ -1,6 +1,6 @@
 # Identity Groups API contract
 
-NestJS (or any REST backend) should implement these endpoints so the Next.js frontend can disable mocks (`NEXT_PUBLIC_USE_MOCK_GROUPS` unset).
+NestJS (or any REST backend) should implement these endpoints so the Next.js frontend can disable mocks (`NEXT_PUBLIC_USE_MOCK` unset).
 
 Base URL: `{NEXT_PUBLIC_API_URL}` (e.g. `http://localhost:3001`)
 
@@ -89,5 +89,5 @@ Return standard HTTP status codes. JSON error body should be parseable by the fr
 
 1. Implement endpoints on NestJS matching this contract.
 2. Set `NEXT_PUBLIC_API_URL` to the backend.
-3. Remove or comment out `NEXT_PUBLIC_USE_MOCK_GROUPS` in `.env`.
+3. Remove or comment out `NEXT_PUBLIC_USE_MOCK` in `.env`.
 4. Run admin Groups smoke: list → create → edit → delete.

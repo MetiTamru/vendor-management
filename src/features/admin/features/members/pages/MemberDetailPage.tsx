@@ -150,7 +150,7 @@ function Panel({
 	return (
 		<section
 			className={cn(
-				"flex flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-sm",
+				"flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
@@ -218,7 +218,7 @@ function MetricStrip({
 	return (
 		<section
 			className={cn(
-				"overflow-hidden rounded-xl border border-border/40 bg-card shadow-sm",
+				"overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
@@ -295,7 +295,7 @@ export function MemberDetailPage({
 
 	if (!member) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<p className="text-sm text-destructive">Member not found.</p>
 				<Button asChild variant="outline" size="sm">
 					<Link href="/admin/members">Back to members</Link>
@@ -547,7 +547,7 @@ export function MemberDetailPage({
 							{member.alerts.length === 0 ? (
 								<p className="text-sm text-muted-foreground">No open alerts.</p>
 							) : (
-								<ul className="space-y-3">
+								<ul className="space-y-4">
 									{member.alerts.map((a) => (
 										<li
 											key={a.id}
@@ -987,7 +987,7 @@ function MemberClaimsEncountersTab({
 	).length;
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<MetricStrip
 				title="Claims & encounters snapshot"
 				items={[
@@ -1152,7 +1152,7 @@ function TabBody({
 			.join(", ");
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<div className="grid gap-3 xl:grid-cols-2">
 					<MetricStrip
 						compact
@@ -1437,7 +1437,7 @@ function TabBody({
 		).length;
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Eligibility snapshot"
 					items={[
@@ -1682,7 +1682,7 @@ function TabBody({
 		const priorPlans = member.planHistory.filter((p) => p.endDate);
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Coverage snapshot"
 					items={[
@@ -1719,7 +1719,7 @@ function TabBody({
 								<p className="mt-1 text-base font-semibold tracking-tight">
 									{currentPlan?.planName ?? member.planName}
 								</p>
-								<p className="mt-0.5 text-xs text-muted-foreground">
+								<p className="text-sm leading-relaxed text-muted-foreground">
 									{currentPlan?.carrier ?? "—"} ·{" "}
 									{currentPlan?.planType ?? member.planType}
 								</p>
@@ -1860,7 +1860,7 @@ function TabBody({
 		const subscriber = member.dependents.find((d) => d.relationship === "Self");
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Household snapshot"
 					items={[
@@ -1921,7 +1921,7 @@ function TabBody({
 											<p className="truncate text-sm font-semibold">
 												{d.name}
 											</p>
-											<p className="mt-0.5 text-xs text-muted-foreground">
+											<p className="text-sm leading-relaxed text-muted-foreground">
 												{d.relationship}
 												{age != null ? ` · ${age} yrs` : ""}
 											</p>
@@ -2060,7 +2060,7 @@ function TabBody({
 		const metCount = member.accumulators.filter((a) => a.remaining <= 0).length;
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Accumulator snapshot"
 					items={[
@@ -2245,7 +2245,7 @@ function TabBody({
 		const latest = member.vendorHistory[0];
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Source health"
 					items={[
@@ -2279,13 +2279,13 @@ function TabBody({
 						action={<Building2 className="size-3.5 text-muted-foreground" />}
 					>
 						{latest ? (
-							<div className="space-y-3">
+							<div className="space-y-4">
 								<div className="rounded-lg border border-border/30 bg-muted/15 p-3.5">
 									<p className="text-xs font-medium text-muted-foreground">
 										Most recent feed
 									</p>
 									<p className="mt-1 text-sm font-semibold">{latest.vendor}</p>
-									<p className="mt-0.5 text-xs text-muted-foreground">
+									<p className="text-sm leading-relaxed text-muted-foreground">
 										{latest.fileFeedType} · {latest.direction}
 									</p>
 								</div>
@@ -2391,7 +2391,7 @@ function TabBody({
 		const actionNeeded = [...open, ...inProgress];
 
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<MetricStrip
 					title="Exception health"
 					items={[

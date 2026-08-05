@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { processingLogsEndpoints } from "../../processing-logs-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/processingLogsDto";
 
 export async function listProcessingLogs() {
-	return apiClient<{ results?: ApiProcessingLogsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiProcessingLogsDto[]; count?: number }>(
 		processingLogsEndpoints.list()
+	)
 	);
 }
 
 export async function getProcessingLogs(id: string) {
-	return apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.detail(id))
+	);
 }
 
 export async function createProcessingLogs(body: ProcessingLogsCreateDto) {
-	return apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateProcessingLogs(id: string, body: ProcessingLogsUpdateDto) {
-	return apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiProcessingLogsDto>(processingLogsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteProcessingLogs(id: string) {
-	return apiClient<void>(processingLogsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(processingLogsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

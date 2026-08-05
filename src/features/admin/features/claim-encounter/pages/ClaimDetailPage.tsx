@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 
 import {
-	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
 	Printer,
@@ -36,6 +35,7 @@ import {
 	getClaimDetail,
 	type ClaimDetail,
 } from "@/features/admin/features/claim-encounter/mock-data";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -55,36 +55,6 @@ function formatDos(iso: string) {
 	return `${m}/${d}/${y}`;
 }
 
-function StatusBadge({ status }: { status: string }) {
-	const tone =
-		status === "Paid" ||
-		status === "Accepted" ||
-		status === "Processed" ||
-		status === "Success"
-			? "bg-emerald-100 text-emerald-800"
-			: status === "Denied" || status === "Rejected" || status === "Error"
-				? "bg-red-100 text-red-800"
-				: status === "Partial" || status === "Warning"
-					? "bg-amber-100 text-amber-900"
-					: "bg-slate-100 text-slate-700";
-
-	return (
-		<span
-			className={cn(
-				"inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
-				tone
-			)}
-		>
-			{status === "Success" ? (
-				<span className="mr-1 inline-flex">
-					<CheckCircle2 className="size-3" />
-				</span>
-			) : null}
-			{status}
-		</span>
-	);
-}
-
 function Panel({
 	title,
 	children,
@@ -101,18 +71,20 @@ function Panel({
 	return (
 		<section
 			className={cn(
-				"flex flex-col overflow-hidden rounded-lg border border-border/60 bg-card",
+				"flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
 				className
 			)}
 		>
-			<div className="shrink-0 border-b border-border/50 px-4 py-3.5">
-				<h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+			<div className="shrink-0 border-b border-border bg-muted/30 px-4 py-3">
+				<h2 className="text-sm font-semibold tracking-tight text-foreground">
+					{title}
+				</h2>
 			</div>
 			<div className={cn("min-h-0 flex-1 px-4 py-3.5", bodyClassName)}>
 				{children}
 			</div>
 			{footer ? (
-				<div className="shrink-0 border-t border-border/50 px-4 py-2.5">
+				<div className="shrink-0 border-t border-border px-4 py-2.5">
 					{footer.href ? (
 						<Link
 							href={footer.href}
@@ -200,7 +172,7 @@ function OverviewTab({ claim }: { claim: ClaimDetail }) {
 						key={label}
 						className="rounded-lg border border-border/60 bg-card px-4 py-3.5"
 					>
-						<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							{label}
 						</p>
 						<p className="mt-1 text-lg font-semibold tabular-nums tracking-tight">
@@ -412,7 +384,7 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 								key={item.label}
 								className="rounded-md border border-border/50 bg-muted/20 px-3 py-3"
 							>
-								<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 									{item.label}
 								</p>
 								<p
@@ -429,7 +401,7 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 				</Panel>
 			</div>
 
-			{/* EDI (short, equals File History + Batch height) | File History + Batch */}
+			{/* EDI | File History + Batch + Related Claims */}
 			<div className="grid items-stretch gap-4 xl:grid-cols-2">
 				<Panel
 					title="EDI Viewer"
@@ -437,7 +409,7 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 						label: "View in full screen",
 						onClick: () => setEdiFullscreen(true),
 					}}
-					className="h-full min-h-[320px]"
+					className="h-full min-h-[640px]"
 					bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
 				>
 					<div className="shrink-0 px-4 pt-3.5">
@@ -464,7 +436,6 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 							))}
 						</div>
 					</div>
-					{/* Only this region scrolls — height matches File History + Batch on the right */}
 					<div className="relative min-h-0 flex-1">
 						<div className="absolute inset-0 overflow-hidden px-4 py-3.5">
 							<EdiViewerLoader
@@ -483,7 +454,7 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 					</div>
 				</Panel>
 
-				<div className="flex flex-col gap-4">
+				<div className="flex h-full min-h-[640px] flex-col gap-4">
 					<Panel
 						title="File History"
 						footer={{
@@ -537,145 +508,146 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 							))}
 						</dl>
 					</Panel>
+
+					<Panel
+						title="Related Claims"
+						footer={{
+							label: "View all related claims",
+							href: "/admin/claim-encounter/claims",
+						}}
+						className="flex min-h-0 flex-1 flex-col"
+						bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
+					>
+						<div className="mb-2 flex shrink-0 flex-wrap gap-0 border-b border-border/50">
+							{RELATED_FILTERS.map((filter) => (
+								<button
+									key={filter}
+									type="button"
+									onClick={() => setRelatedFilter(filter)}
+									className={cn(
+										"border-b-2 px-2.5 py-2 text-[11px] font-medium transition-colors",
+										relatedFilter === filter
+											? "border-primary text-primary"
+											: "border-transparent text-muted-foreground hover:text-foreground"
+									)}
+								>
+									{filter} ({relatedCounts[filter]})
+								</button>
+							))}
+						</div>
+						<div className="min-h-0 flex-1 overflow-auto">
+							<Table>
+								<TableHeader>
+									<TableRow className="hover:bg-transparent">
+										<TableHead className="h-9 pl-0 text-[11px]">
+											Claim ID
+										</TableHead>
+										<TableHead className="h-9 text-[11px]">
+											Relationship
+										</TableHead>
+										<TableHead className="h-9 text-[11px]">
+											Service Date
+										</TableHead>
+										<TableHead className="h-9 text-[11px]">Status</TableHead>
+										<TableHead className="h-9 pr-0 text-right text-[11px]">
+											Paid Amount
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{filteredRelated.map((row) => (
+										<TableRow key={row.claimId} className="hover:bg-muted/20">
+											<TableCell className="py-2.5 pl-0">
+												{row.claimId === claim.claimId ? (
+													<span className="font-mono text-xs font-medium text-primary">
+														{row.claimId}
+													</span>
+												) : (
+													<Link
+														href={`/admin/claim-encounter/claims/${encodeURIComponent(row.claimId)}`}
+														className="font-mono text-xs font-medium text-primary hover:underline"
+													>
+														{row.claimId}
+													</Link>
+												)}
+											</TableCell>
+											<TableCell className="py-2.5 text-xs">
+												{row.relationship}
+											</TableCell>
+											<TableCell className="py-2.5 text-xs tabular-nums">
+												{formatDos(row.serviceDate)}
+											</TableCell>
+											<TableCell className="py-2.5">
+												<StatusBadge status={row.status} />
+											</TableCell>
+											<TableCell className="py-2.5 pr-0 text-right text-xs tabular-nums">
+												{formatCurrency(row.paidAmount)}
+											</TableCell>
+										</TableRow>
+									))}
+									{filteredRelated.length === 0 ? (
+										<TableRow>
+											<TableCell
+												colSpan={5}
+												className="py-6 text-center text-xs text-muted-foreground"
+											>
+												No related claims in this category.
+											</TableCell>
+										</TableRow>
+									) : null}
+								</TableBody>
+							</Table>
+						</div>
+					</Panel>
 				</div>
 			</div>
 
-			{/* Under EDI: Processing Logs + Related Claims */}
-			<div className="grid gap-4 xl:grid-cols-3">
-				<Panel
-					title="Processing Logs"
-					footer={{
-						label: "View full processing logs",
-						href: "/admin/processing-logs",
-					}}
-					className="xl:col-span-2"
-				>
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow className="hover:bg-transparent">
-									<TableHead className="h-9 pl-0 text-[11px]">
-										Timestamp
-									</TableHead>
-									<TableHead className="h-9 text-[11px]">Step</TableHead>
-									<TableHead className="h-9 text-[11px]">Message</TableHead>
-									<TableHead className="h-9 text-[11px]">Status</TableHead>
-									<TableHead className="h-9 pr-0 text-[11px]">Details</TableHead>
+			{/* Processing Logs — full width */}
+			<Panel
+				title="Processing Logs"
+				footer={{
+					label: "View full processing logs",
+					href: "/admin/processing-logs",
+				}}
+			>
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="h-9 pl-0 text-[11px]">Timestamp</TableHead>
+								<TableHead className="h-9 text-[11px]">Step</TableHead>
+								<TableHead className="h-9 text-[11px]">Message</TableHead>
+								<TableHead className="h-9 text-[11px]">Status</TableHead>
+								<TableHead className="h-9 pr-0 text-[11px]">Details</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{claim.processingLogs.map((row) => (
+								<TableRow
+									key={`${row.timestamp}-${row.step}`}
+									className="hover:bg-muted/20"
+								>
+									<TableCell className="py-2.5 pl-0 text-[11px] tabular-nums text-muted-foreground">
+										{row.timestamp}
+									</TableCell>
+									<TableCell className="py-2.5 text-xs font-medium">
+										{row.step}
+									</TableCell>
+									<TableCell className="max-w-[320px] truncate py-2.5 text-xs">
+										{row.message}
+									</TableCell>
+									<TableCell className="py-2.5">
+										<StatusBadge status={row.status} />
+									</TableCell>
+									<TableCell className="max-w-[240px] truncate py-2.5 pr-0 text-[11px] text-muted-foreground">
+										{row.details}
+									</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{claim.processingLogs.map((row) => (
-									<TableRow
-										key={`${row.timestamp}-${row.step}`}
-										className="hover:bg-muted/20"
-									>
-										<TableCell className="py-2.5 pl-0 text-[11px] tabular-nums text-muted-foreground">
-											{row.timestamp}
-										</TableCell>
-										<TableCell className="py-2.5 text-xs font-medium">
-											{row.step}
-										</TableCell>
-										<TableCell className="max-w-[220px] truncate py-2.5 text-xs">
-											{row.message}
-										</TableCell>
-										<TableCell className="py-2.5">
-											<StatusBadge status={row.status} />
-										</TableCell>
-										<TableCell className="max-w-[160px] truncate py-2.5 pr-0 text-[11px] text-muted-foreground">
-											{row.details}
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
-				</Panel>
-
-				<Panel
-					title="Related Claims"
-					footer={{
-						label: "View all related claims",
-						href: "/admin/claim-encounter/claims",
-					}}
-				>
-					<div className="mb-2 flex flex-wrap gap-0 border-b border-border/50">
-						{RELATED_FILTERS.map((filter) => (
-							<button
-								key={filter}
-								type="button"
-								onClick={() => setRelatedFilter(filter)}
-								className={cn(
-									"border-b-2 px-2.5 py-2 text-[11px] font-medium transition-colors",
-									relatedFilter === filter
-										? "border-primary text-primary"
-										: "border-transparent text-muted-foreground hover:text-foreground"
-								)}
-							>
-								{filter} ({relatedCounts[filter]})
-							</button>
-						))}
-					</div>
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow className="hover:bg-transparent">
-									<TableHead className="h-9 pl-0 text-[11px]">
-										Claim ID
-									</TableHead>
-									<TableHead className="h-9 text-[11px]">Relationship</TableHead>
-									<TableHead className="h-9 text-[11px]">Service Date</TableHead>
-									<TableHead className="h-9 text-[11px]">Status</TableHead>
-									<TableHead className="h-9 pr-0 text-right text-[11px]">
-										Paid Amount
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{filteredRelated.map((row) => (
-									<TableRow key={row.claimId} className="hover:bg-muted/20">
-										<TableCell className="py-2.5 pl-0">
-											{row.claimId === claim.claimId ? (
-												<span className="font-mono text-xs font-medium text-primary">
-													{row.claimId}
-												</span>
-											) : (
-												<Link
-													href={`/admin/claim-encounter/claims/${encodeURIComponent(row.claimId)}`}
-													className="font-mono text-xs font-medium text-primary hover:underline"
-												>
-													{row.claimId}
-												</Link>
-											)}
-										</TableCell>
-										<TableCell className="py-2.5 text-xs">
-											{row.relationship}
-										</TableCell>
-										<TableCell className="py-2.5 text-xs tabular-nums">
-											{formatDos(row.serviceDate)}
-										</TableCell>
-										<TableCell className="py-2.5">
-											<StatusBadge status={row.status} />
-										</TableCell>
-										<TableCell className="py-2.5 pr-0 text-right text-xs tabular-nums">
-											{formatCurrency(row.paidAmount)}
-										</TableCell>
-									</TableRow>
-								))}
-								{filteredRelated.length === 0 ? (
-									<TableRow>
-										<TableCell
-											colSpan={5}
-											className="py-6 text-center text-xs text-muted-foreground"
-										>
-											No related claims in this category.
-										</TableCell>
-									</TableRow>
-								) : null}
-							</TableBody>
-						</Table>
-					</div>
-				</Panel>
-			</div>
+							))}
+						</TableBody>
+					</Table>
+				</div>
+			</Panel>
 
 			{/* Bottom row */}
 			<div className="grid gap-4 lg:grid-cols-3">
@@ -904,7 +876,7 @@ export function ClaimDetailPage() {
 
 	if (!claim) {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<p className="text-sm text-destructive">Claim not found.</p>
 				<Link
 					href="/admin/claim-encounter/claims"

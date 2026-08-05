@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { errorManagementEndpoints } from "../../error-management-endpoints";
 import type { ApiErrorManagementRecordDto } from "../dto/errorManagementRecordDto";
@@ -11,9 +12,15 @@ export type ErrorManagementListResponse = {
 };
 
 export async function listErrorManagementRecords(params?: Record<string, string>) {
-	return apiClient<ErrorManagementListResponse>(errorManagementEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<ErrorManagementListResponse>(errorManagementEndpoints.list(), { params })
+	);
 }
 
 export async function getErrorManagementRecord(id: string) {
-	return apiClient<ApiErrorManagementRecordDto>(errorManagementEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiErrorManagementRecordDto>(errorManagementEndpoints.detail(id))
+	);
 }

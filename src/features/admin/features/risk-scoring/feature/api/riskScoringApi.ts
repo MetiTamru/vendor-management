@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { riskScoringEndpoints } from "../../risk-scoring-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/riskScoringDto";
 
 export async function listRiskScoring() {
-	return apiClient<{ results?: ApiRiskScoringDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiRiskScoringDto[]; count?: number }>(
 		riskScoringEndpoints.list()
+	)
 	);
 }
 
 export async function getRiskScoring(id: string) {
-	return apiClient<ApiRiskScoringDto>(riskScoringEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiRiskScoringDto>(riskScoringEndpoints.detail(id))
+	);
 }
 
 export async function createRiskScoring(body: RiskScoringCreateDto) {
-	return apiClient<ApiRiskScoringDto>(riskScoringEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiRiskScoringDto>(riskScoringEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateRiskScoring(id: string, body: RiskScoringUpdateDto) {
-	return apiClient<ApiRiskScoringDto>(riskScoringEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiRiskScoringDto>(riskScoringEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteRiskScoring(id: string) {
-	return apiClient<void>(riskScoringEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(riskScoringEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

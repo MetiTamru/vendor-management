@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { claimEncounterEndpoints } from "../../claim-encounter-endpoints";
 import type { ApiClaimEncounterRecordDto } from "../dto/claimEncounterRecordDto";
@@ -11,9 +12,15 @@ export type ClaimEncounterListResponse = {
 };
 
 export async function listClaimEncounterRecords(params?: Record<string, string>) {
-	return apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<ClaimEncounterListResponse>(claimEncounterEndpoints.list(), { params })
+	);
 }
 
 export async function getClaimEncounterRecord(id: string) {
-	return apiClient<ApiClaimEncounterRecordDto>(claimEncounterEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiClaimEncounterRecordDto>(claimEncounterEndpoints.detail(id))
+	);
 }

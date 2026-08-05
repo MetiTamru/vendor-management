@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { errorManagementEndpoints } from "../../error-management-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/errorManagementDto";
 
 export async function listErrorManagement() {
-	return apiClient<{ results?: ApiErrorManagementDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiErrorManagementDto[]; count?: number }>(
 		errorManagementEndpoints.list()
+	)
 	);
 }
 
 export async function getErrorManagement(id: string) {
-	return apiClient<ApiErrorManagementDto>(errorManagementEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiErrorManagementDto>(errorManagementEndpoints.detail(id))
+	);
 }
 
 export async function createErrorManagement(body: ErrorManagementCreateDto) {
-	return apiClient<ApiErrorManagementDto>(errorManagementEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiErrorManagementDto>(errorManagementEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateErrorManagement(id: string, body: ErrorManagementUpdateDto) {
-	return apiClient<ApiErrorManagementDto>(errorManagementEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiErrorManagementDto>(errorManagementEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteErrorManagement(id: string) {
-	return apiClient<void>(errorManagementEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(errorManagementEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

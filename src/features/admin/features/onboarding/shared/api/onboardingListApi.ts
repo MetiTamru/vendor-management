@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { onboardingEndpoints } from "../../onboarding-endpoints";
 import type { ApiOnboardingRecordDto } from "../dto/onboardingRecordDto";
@@ -11,9 +12,15 @@ export type OnboardingListResponse = {
 };
 
 export async function listOnboardingRecords(params?: Record<string, string>) {
-	return apiClient<OnboardingListResponse>(onboardingEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<OnboardingListResponse>(onboardingEndpoints.list(), { params })
+	);
 }
 
 export async function getOnboardingRecord(id: string) {
-	return apiClient<ApiOnboardingRecordDto>(onboardingEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiOnboardingRecordDto>(onboardingEndpoints.detail(id))
+	);
 }

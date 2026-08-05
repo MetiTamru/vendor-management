@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { fileHistoryEndpoints } from "../../file-history-endpoints";
 import type { ApiFileHistoryRecordDto } from "../dto/fileHistoryRecordDto";
@@ -11,9 +12,15 @@ export type FileHistoryListResponse = {
 };
 
 export async function listFileHistoryRecords(params?: Record<string, string>) {
-	return apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<FileHistoryListResponse>(fileHistoryEndpoints.list(), { params })
+	);
 }
 
 export async function getFileHistoryRecord(id: string) {
-	return apiClient<ApiFileHistoryRecordDto>(fileHistoryEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiFileHistoryRecordDto>(fileHistoryEndpoints.detail(id))
+	);
 }

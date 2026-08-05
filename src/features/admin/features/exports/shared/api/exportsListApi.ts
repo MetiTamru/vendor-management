@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { exportsEndpoints } from "../../exports-endpoints";
 import type { ApiExportsRecordDto } from "../dto/exportsRecordDto";
@@ -11,9 +12,15 @@ export type ExportsListResponse = {
 };
 
 export async function listExportsRecords(params?: Record<string, string>) {
-	return apiClient<ExportsListResponse>(exportsEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<ExportsListResponse>(exportsEndpoints.list(), { params })
+	);
 }
 
 export async function getExportsRecord(id: string) {
-	return apiClient<ApiExportsRecordDto>(exportsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiExportsRecordDto>(exportsEndpoints.detail(id))
+	);
 }

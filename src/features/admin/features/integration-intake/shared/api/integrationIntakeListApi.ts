@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { integrationIntakeEndpoints } from "../../integration-intake-endpoints";
 import type { ApiIntegrationIntakeRecordDto } from "../dto/integrationIntakeRecordDto";
@@ -11,9 +12,15 @@ export type IntegrationIntakeListResponse = {
 };
 
 export async function listIntegrationIntakeRecords(params?: Record<string, string>) {
-	return apiClient<IntegrationIntakeListResponse>(integrationIntakeEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<IntegrationIntakeListResponse>(integrationIntakeEndpoints.list(), { params })
+	);
 }
 
 export async function getIntegrationIntakeRecord(id: string) {
-	return apiClient<ApiIntegrationIntakeRecordDto>(integrationIntakeEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiIntegrationIntakeRecordDto>(integrationIntakeEndpoints.detail(id))
+	);
 }

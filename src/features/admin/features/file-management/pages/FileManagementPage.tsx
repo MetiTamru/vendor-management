@@ -18,6 +18,10 @@ import {
 	XCircle,
 } from "lucide-react";
 
+import {
+	SummaryCard,
+	SummaryCardsGrid,
+} from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -365,14 +369,14 @@ export function FileManagementPage() {
 	);
 
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			{/* Title */}
-			<div className="flex flex-wrap items-start justify-between gap-2">
+			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div>
-					<h1 className="text-lg font-medium tracking-tight sm:text-xl">
+					<h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
 						File Monitoring Dashboard
 					</h1>
-					<p className="mt-0.5 text-xs text-muted-foreground">
+					<p className="text-sm leading-relaxed text-muted-foreground">
 						Track file exchanges, SLAs, processing health, and active
 						exceptions.
 					</p>
@@ -507,37 +511,18 @@ export function FileManagementPage() {
 			</div>
 
 			{/* KPIs — icon on the right */}
-			<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				{kpis.map((k) => {
-					const Icon = k.icon;
-					return (
-						<div
-							key={k.label}
-							className="rounded-lg border border-border/50 bg-card/70 p-2.5"
-						>
-							<div className="flex items-start justify-between gap-2">
-								<div className="min-w-0">
-									<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-										{k.label}
-									</p>
-									<p className="mt-1 text-lg font-medium tabular-nums tracking-tight">
-										{k.value}
-									</p>
-									<p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
-								</div>
-								<div
-									className={cn(
-										"flex size-8 shrink-0 items-center justify-center rounded-lg",
-										k.tone
-									)}
-								>
-									<Icon className="size-4" />
-								</div>
-							</div>
-						</div>
-					);
-				})}
-			</div>
+			<SummaryCardsGrid>
+				{kpis.map((k) => (
+					<SummaryCard
+						key={k.label}
+						label={k.label}
+						value={k.value}
+						hint={k.hint}
+						icon={k.icon}
+						tone={k.tone}
+					/>
+				))}
+			</SummaryCardsGrid>
 
 			{/* Vendor health + alerts */}
 			<div className="grid gap-2 xl:grid-cols-5">

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { exportsEndpoints } from "../../exports-endpoints";
 import type {
@@ -8,31 +9,46 @@ import type {
 } from "../dto/exportsDto";
 
 export async function listExports() {
-	return apiClient<{ results?: ApiExportsDto[]; count?: number }>(
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<{ results?: ApiExportsDto[]; count?: number }>(
 		exportsEndpoints.list()
+	)
 	);
 }
 
 export async function getExports(id: string) {
-	return apiClient<ApiExportsDto>(exportsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiExportsDto>(exportsEndpoints.detail(id))
+	);
 }
 
 export async function createExports(body: ExportsCreateDto) {
-	return apiClient<ApiExportsDto>(exportsEndpoints.create(), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiExportsDto>(exportsEndpoints.create(), {
 		method: "POST",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function updateExports(id: string, body: ExportsUpdateDto) {
-	return apiClient<ApiExportsDto>(exportsEndpoints.update(id), {
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiExportsDto>(exportsEndpoints.update(id), {
 		method: "PATCH",
 		body: JSON.stringify(body),
-	});
+	})
+	);
 }
 
 export async function deleteExports(id: string) {
-	return apiClient<void>(exportsEndpoints.delete(id), {
+	return withMockOrRemote(
+		() => undefined,
+		() => apiClient<void>(exportsEndpoints.delete(id), {
 		method: "DELETE",
-	});
+	})
+	);
 }

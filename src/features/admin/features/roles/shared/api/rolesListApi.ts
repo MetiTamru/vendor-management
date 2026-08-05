@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { rolesEndpoints } from "../../roles-endpoints";
 import type { ApiRolesRecordDto } from "../dto/rolesRecordDto";
@@ -11,9 +12,15 @@ export type RolesListResponse = {
 };
 
 export async function listRolesRecords(params?: Record<string, string>) {
-	return apiClient<RolesListResponse>(rolesEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<RolesListResponse>(rolesEndpoints.list(), { params })
+	);
 }
 
 export async function getRolesRecord(id: string) {
-	return apiClient<ApiRolesRecordDto>(rolesEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiRolesRecordDto>(rolesEndpoints.detail(id))
+	);
 }

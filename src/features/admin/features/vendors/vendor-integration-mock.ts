@@ -243,7 +243,7 @@ export const VENDOR_DIRECTORY: VendorDirectoryRow[] = [
 	},
 	{
 		id: "vnd-9",
-		name: "Cotivity",
+		name: "Cotiviti",
 		vendorCode: "VND-0020",
 		vendorType: "Clearinghouse",
 		status: "active",

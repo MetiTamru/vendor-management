@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { vendorComparisonEndpoints } from "../../vendor-comparison-endpoints";
 import type { ApiVendorComparisonRecordDto } from "../dto/vendorComparisonRecordDto";
@@ -11,9 +12,15 @@ export type VendorComparisonListResponse = {
 };
 
 export async function listVendorComparisonRecords(params?: Record<string, string>) {
-	return apiClient<VendorComparisonListResponse>(vendorComparisonEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<VendorComparisonListResponse>(vendorComparisonEndpoints.list(), { params })
+	);
 }
 
 export async function getVendorComparisonRecord(id: string) {
-	return apiClient<ApiVendorComparisonRecordDto>(vendorComparisonEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVendorComparisonRecordDto>(vendorComparisonEndpoints.detail(id))
+	);
 }

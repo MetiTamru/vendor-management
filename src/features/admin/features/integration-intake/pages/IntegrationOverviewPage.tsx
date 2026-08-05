@@ -198,7 +198,8 @@ export function IntegrationOverviewPage() {
 							Set in <code>.env</code>:
 						</p>
 						<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
-							{`NEXT_PUBLIC_USE_VENDOR_CORE_API=true
+							{`NEXT_PUBLIC_USE_MOCK=false
+NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 						</pre>
 						<p>
@@ -222,7 +223,7 @@ NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010`}
 						Sign in to {getVendorCoreBaseUrl()}
 					</p>
 				</div>
-				<form onSubmit={onLogin} className="space-y-3">
+				<form onSubmit={onLogin} className="space-y-4">
 					<Input
 						placeholder="Username"
 						value={username}

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { vendorsEndpoints } from "../../vendors-endpoints";
 import type { ApiVendorsRecordDto } from "../dto/vendorsRecordDto";
@@ -11,9 +12,15 @@ export type VendorsListResponse = {
 };
 
 export async function listVendorsRecords(params?: Record<string, string>) {
-	return apiClient<VendorsListResponse>(vendorsEndpoints.list(), { params });
+	return withMockOrRemote(
+		() => ({ results: [], count: 0 }),
+		() => apiClient<VendorsListResponse>(vendorsEndpoints.list(), { params })
+	);
 }
 
 export async function getVendorsRecord(id: string) {
-	return apiClient<ApiVendorsRecordDto>(vendorsEndpoints.detail(id));
+	return withMockOrRemote(
+		() => ({ id: "mock" } as never),
+		() => apiClient<ApiVendorsRecordDto>(vendorsEndpoints.detail(id))
+	);
 }
