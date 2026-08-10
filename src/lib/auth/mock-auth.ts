@@ -10,7 +10,12 @@ export const MOCK_ADMIN_USER = {
 	image: null as string | null,
 };
 
-/** Controlled by `NEXT_PUBLIC_USE_MOCK` (see `@/lib/mock-mode`). */
+/**
+ * App-shell session without NestJS.
+ * - Full mocks on (`NEXT_PUBLIC_USE_MOCK=true`) — skips Nest login entirely, or
+ * - Dev admin bypass (`NEXT_PUBLIC_DEV_ADMIN=true`) for remote vendor-core without Nest.
+ */
 export function isMockAuthEnabled(): boolean {
-	return isMockEnabled();
+	if (isMockEnabled()) return true;
+	return process.env.NEXT_PUBLIC_DEV_ADMIN === "true";
 }

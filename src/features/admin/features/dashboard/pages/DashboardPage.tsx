@@ -61,6 +61,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
 import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
 import {
 	PROCESSING_TREND,
@@ -73,7 +74,12 @@ import {
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreInboundFiles,
+} from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 import {
 	DASHBOARD_WIDGET_LABELS,
@@ -120,7 +126,10 @@ function ActivityStatus({
 
 export function DashboardPage() {
 	const router = useRouter();
-	const { vendors, isLoading, error } = useVendorsList();
+	const { vendors, isLoading, error, refetch } = useVendorsList();
+	const live = !isMockEnabled();
+	const filesQ = useVendorCoreInboundFiles();
+	const invalidateVendorCore = useInvalidateVendorCore();
 	const { enabledWidgets, toggleWidget, resetWidgets, isEnabled } =
 		useDashboardWidgetsStore();
 	const [dateFilter, setDateFilter] = useState("today");
@@ -131,16 +140,36 @@ export function DashboardPage() {
 	const lastUpdated = "9:28 AM";
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 
+	const nameById = useMemo(
+		() => new Map(vendors.map((v) => [v.id, v.legalName])),
+		[vendors]
+	);
+
+	const allRuns = useMemo(() => {
+		// No mock FILE_RUNS when USE_MOCK=false — remote inbound files only
+		if (live) {
+			return inboundFilesToRuns(filesQ.data ?? [], nameById);
+		}
+		return FILE_RUNS;
+	}, [live, filesQ.data, nameById]);
+
 	const filteredRuns = useMemo(() => {
-		return FILE_RUNS.filter((run) => {
-			if (run.program !== programFilter) return false;
-			const vid = vendorIdForRun(run);
-			if (vendorFilter !== "all" && vid !== vendorFilter) return false;
+		return allRuns.filter((run) => {
+			if (!live && run.program !== programFilter) return false;
+			if (vendorFilter !== "all") {
+				if (live) {
+					const selected = vendors.find((v) => v.id === vendorFilter);
+					if (selected && run.vendor !== selected.legalName) return false;
+				} else {
+					const vid = vendorIdForRun(run);
+					if (vid !== vendorFilter) return false;
+				}
+			}
 			if (ediTypeFilter !== "all" && run.fileType !== ediTypeFilter)
 				return false;
 			return true;
 		});
-	}, [vendorFilter, ediTypeFilter, programFilter]);
+	}, [allRuns, vendorFilter, ediTypeFilter, programFilter, live, vendors]);
 
 	const summary = useMemo(() => summarizeRuns(filteredRuns), [filteredRuns]);
 
@@ -148,12 +177,12 @@ export function DashboardPage() {
 		() =>
 			Array.from(
 				new Set(
-					FILE_RUNS.filter((r) => r.program === programFilter).map(
-						(r) => r.fileType
-					)
+					allRuns
+						.filter((r) => live || r.program === programFilter)
+						.map((r) => r.fileType)
 				)
 			).sort(),
-		[programFilter]
+		[allRuns, programFilter, live]
 	);
 
 	const vendorStatusPie = useMemo(() => {
@@ -193,11 +222,14 @@ export function DashboardPage() {
 
 	async function handleRefresh() {
 		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 450));
-		setRefreshing(false);
+		try {
+			await Promise.all([refetch(), invalidateVendorCore()]);
+		} finally {
+			setRefreshing(false);
+		}
 	}
 
-	if (isLoading) {
+	if (isLoading || (live && filesQ.isLoading && !filesQ.data)) {
 		return (
 			<div className="space-y-4">
 				<Skeleton className="h-8 w-64" />

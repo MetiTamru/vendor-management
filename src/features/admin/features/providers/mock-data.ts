@@ -1,4 +1,5 @@
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { fixtureRecord, isMockEnabled } from "@/lib/mock-mode";
 
 export type ProviderStatus = "active" | "inactive" | "pending" | "termed";
 export type NetworkStatus = "in_network" | "out_of_network" | "pending";
@@ -333,11 +334,13 @@ function buildSummaries(): ProviderSummary[] {
 	});
 }
 
-export const PROVIDER_SUMMARIES: ProviderSummary[] = buildSummaries();
+const _PROVIDER_SUMMARIES: ProviderSummary[] = isMockEnabled()
+	? buildSummaries()
+	: [];
 
 // Match mockup hero provider
-(() => {
-	const john = PROVIDER_SUMMARIES[0]!;
+if (isMockEnabled() && _PROVIDER_SUMMARIES[0]) {
+	const john = _PROVIDER_SUMMARIES[0]!;
 	john.name = "John Smith";
 	john.credentials = "MD";
 	john.specialty = "Internal Medicine";
@@ -363,7 +366,9 @@ export const PROVIDER_SUMMARIES: ProviderSummary[] = buildSummaries();
 	john.paid12m = 3204551.32;
 	john.rejectionRate = 6.72;
 	john.netPayment12m = 2856422.18;
-})();
+}
+
+export const PROVIDER_SUMMARIES: ProviderSummary[] = _PROVIDER_SUMMARIES;
 
 function detailFor(summary: ProviderSummary): ProviderDetail {
 	const isJohn = summary.id === "prov-1";
@@ -846,8 +851,9 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 	};
 }
 
-export const PROVIDER_DETAILS: Record<string, ProviderDetail> =
-	Object.fromEntries(PROVIDER_SUMMARIES.map((s) => [s.id, detailFor(s)]));
+export const PROVIDER_DETAILS: Record<string, ProviderDetail> = fixtureRecord(
+	Object.fromEntries(PROVIDER_SUMMARIES.map((s) => [s.id, detailFor(s)]))
+);
 
 export function displayProviderName(
 	p: Pick<ProviderSummary, "name" | "credentials">
@@ -856,6 +862,7 @@ export function displayProviderName(
 }
 
 export function getProvider(idOrNpi: string): ProviderDetail | undefined {
+	if (!isMockEnabled()) return undefined;
 	const decoded = decodeURIComponent(idOrNpi);
 	const byId = PROVIDER_DETAILS[decoded];
 	if (byId) return byId;

@@ -14,19 +14,26 @@ pnpm dev -p 3006
 
 ### Mock vs live (one switch)
 
-| Variable               | Role                                                               |
-| ---------------------- | ------------------------------------------------------------------ |
-| `NEXT_PUBLIC_USE_MOCK` | `true` (default) = mocks; `false` = NestJS auth/REST + vendor-core |
+| Variable               | Role                                                                 |
+| ---------------------- | -------------------------------------------------------------------- |
+| `NEXT_PUBLIC_USE_MOCK` | `true` = fixtures on; `false` = live APIs (fixtures stay in source) |
 
 ```env
 # Demo / local UI without backends
 NEXT_PUBLIC_USE_MOCK=true
 
-# Live integration
+# Live NestJS + local vendor-core
 NEXT_PUBLIC_USE_MOCK=false
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010
+
+# Staging vendor-core (Nest can stay mocked only if USE_MOCK=true)
+# Admin UI: https://api.vm.tillahealth.com/admin/
+NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
 ```
+
+Toggle mocks without deleting fixture files — set `NEXT_PUBLIC_USE_MOCK` and restart `pnpm dev`.
+Remote vendor-core browser traffic is proxied via `/api/vendor-core/*`. Smoke: `pnpm test:vendor-core`.
 
 Optional: `NEXT_PUBLIC_DEV_ADMIN=true` for client ABAC admin role while developing.
 

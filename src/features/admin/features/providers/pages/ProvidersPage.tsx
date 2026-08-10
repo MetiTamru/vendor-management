@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,14 +33,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { providersToSummaries } from "@/features/admin/features/providers/live-providers";
 import {
 	PROVIDER_SUMMARIES,
 	type ProviderStatus,
+	type ProviderSummary,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
 } from "@/features/admin/features/providers/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreProviders,
+} from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -63,8 +71,21 @@ function StatusPill({ status }: { status: ProviderStatus }) {
 }
 
 export function ProvidersPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Providers">
+				<ProvidersBody useLive />
+			</VendorCoreGate>
+		);
+	}
+	return <ProvidersBody useLive={false} />;
+}
+
+function ProvidersBody({ useLive }: { useLive: boolean }) {
 	const router = useRouter();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const invalidate = useInvalidateVendorCore();
+	const providersQ = useVendorCoreProviders(useLive);
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
 	const [specialty, setSpecialty] = useState("all");
@@ -73,10 +94,15 @@ export function ProvidersPage() {
 	const [pageSize, setPageSize] = useState(10);
 	const [refreshing, setRefreshing] = useState(false);
 
-	const programScoped = useMemo(
-		() => PROVIDER_SUMMARIES.filter((p) => p.program === programFilter),
-		[programFilter]
-	);
+	const programScoped = useMemo((): ProviderSummary[] => {
+		if (useLive) {
+			return providersToSummaries(
+				providersQ.data ?? [],
+				programFilter as ProviderSummary["program"]
+			);
+		}
+		return PROVIDER_SUMMARIES.filter((p) => p.program === programFilter);
+	}, [useLive, providersQ.data, programFilter]);
 
 	const specialties = useMemo(
 		() => Array.from(new Set(programScoped.map((p) => p.specialty))).sort(),
@@ -124,9 +150,16 @@ export function ProvidersPage() {
 
 	async function handleRefresh() {
 		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 350));
-		setRefreshing(false);
-		toast.success("Provider directory refreshed");
+		try {
+			if (useLive) {
+				await invalidate();
+			} else {
+				await new Promise((r) => setTimeout(r, 350));
+			}
+			toast.success("Provider directory refreshed");
+		} finally {
+			setRefreshing(false);
+		}
 	}
 
 	const hasFilters =
@@ -152,11 +185,15 @@ export function ProvidersPage() {
 						variant="outline"
 						size="sm"
 						className="h-9 border-primary/25 font-semibold"
-						onClick={handleRefresh}
-						disabled={refreshing}
+						onClick={() => void handleRefresh()}
+						disabled={refreshing || (useLive && providersQ.isLoading)}
 					>
 						<RefreshCw
-							className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
+							className={cn(
+								"mr-1.5 size-3.5",
+								(refreshing || (useLive && providersQ.isLoading)) &&
+									"animate-spin"
+							)}
 						/>
 						Refresh
 					</Button>
@@ -170,6 +207,24 @@ export function ProvidersPage() {
 					</Button>
 				</div>
 			</div>
+
+			{useLive && providersQ.error ? (
+				<div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+					Could not load providers: {providersQ.error.message}
+				</div>
+			) : null}
+
+			{useLive &&
+			!providersQ.isLoading &&
+			programScoped.length === 0 ? (
+				<div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+					No providers returned from vendor-core yet. Run{" "}
+					<code className="rounded bg-muted px-1 py-0.5 text-xs">
+						pnpm seed:providers
+					</code>{" "}
+					(after vendor-core provider seed is deployed), then refresh.
+				</div>
+			) : null}
 
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				{[
@@ -432,7 +487,9 @@ export function ProvidersPage() {
 										colSpan={9}
 										className="h-24 text-center text-muted-foreground"
 									>
-										No providers match the current search and filters.
+										{useLive && providersQ.isLoading
+											? "Loading providers from vendor-core…"
+											: "No providers match the current search and filters."}
 									</TableCell>
 								</TableRow>
 							)}

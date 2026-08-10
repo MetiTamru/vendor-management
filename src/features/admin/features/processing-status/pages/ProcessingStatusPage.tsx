@@ -50,6 +50,7 @@ import {
 	FILE_RUNS,
 	displayRunStatus,
 } from "@/features/admin/features/file-management/mock-data";
+import { ProcessingStatusLivePage } from "@/features/admin/features/processing-status/pages/ProcessingStatusLivePage";
 import {
 	PROCESSING_TREND,
 	VENDOR_ALERTS,
@@ -59,6 +60,7 @@ import {
 	vendorIdForRun,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
+import { isVendorCoreLive } from "@/lib/vendor-core";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -71,6 +73,11 @@ const STATUS_COLORS = {
 } as const;
 
 export function ProcessingStatusPage() {
+	if (isVendorCoreLive()) return <ProcessingStatusLivePage />;
+	return <ProcessingStatusMockPage />;
+}
+
+function ProcessingStatusMockPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendorFilter, setVendorFilter] = useState("all");

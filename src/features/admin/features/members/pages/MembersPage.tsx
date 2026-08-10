@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
 	CheckCircle2,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +25,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -32,6 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
 import {
 	MEMBER_SUMMARIES,
 	type MemberStatus,
@@ -42,6 +45,13 @@ import {
 } from "@/features/admin/features/members/mock-data";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { vendorCoreApi } from "@/lib/vendor-core";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreMemberCoverages,
+	useVendorCoreVendors,
+} from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -65,7 +75,22 @@ function StatusPill({ status }: { status: MemberStatus }) {
 }
 
 export function MembersPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Members">
+				<MembersDirectoryPage />
+			</VendorCoreGate>
+		);
+	}
+	return <MembersDirectoryPage />;
+}
+
+function MembersDirectoryPage() {
 	const router = useRouter();
+	const useLive = !isMockEnabled();
+	const invalidate = useInvalidateVendorCore();
+	const coveragesQ = useVendorCoreMemberCoverages();
+	const vendorsQ = useVendorCoreVendors();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
@@ -74,17 +99,28 @@ export function MembersPage() {
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 	const [refreshing, setRefreshing] = useState(false);
+	const [seeding, setSeeding] = useState(false);
+	const autoSeedAttempted = useRef(false);
 
-	const programScoped = useMemo(
-		() => MEMBER_SUMMARIES.filter((m) => m.program === programFilter),
-		[programFilter]
-	);
+	const programScoped = useMemo(() => {
+		if (!useLive) {
+			return MEMBER_SUMMARIES.filter((m) => m.program === programFilter);
+		}
+		return memberCoveragesToSummaries(coveragesQ.data ?? []);
+	}, [useLive, coveragesQ.data, programFilter]);
 
 	const plans = useMemo(
 		() => Array.from(new Set(programScoped.map((m) => m.planName))).sort(),
 		[programScoped]
 	);
-	const vendors = VENDOR_NAMES;
+	const vendors = useMemo(() => {
+		if (!useLive) return VENDOR_NAMES;
+		const fromRows = Array.from(
+			new Set(programScoped.map((m) => m.vendorSource).filter(Boolean))
+		).sort();
+		if (fromRows.length) return fromRows;
+		return (vendorsQ.data ?? []).map((v) => v.name).sort();
+	}, [useLive, programScoped, vendorsQ.data]);
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();
@@ -102,6 +138,7 @@ export function MembersPage() {
 				m.phone,
 				m.planName,
 				m.pcpName,
+				m.vendorSource,
 			]
 				.join(" ")
 				.toLowerCase();
@@ -125,16 +162,71 @@ export function MembersPage() {
 
 	async function handleRefresh() {
 		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 350));
-		setRefreshing(false);
-		toast.success("Member directory refreshed");
+		try {
+			if (useLive) await invalidate();
+			else await new Promise((r) => setTimeout(r, 350));
+			toast.success("Member directory refreshed");
+		} finally {
+			setRefreshing(false);
+		}
 	}
+
+	async function handleSeed(options?: { silent?: boolean }) {
+		setSeeding(true);
+		try {
+			const result = await vendorCoreApi.seedMemberCoverages();
+			if (result.created > 0) {
+				if (!options?.silent) {
+					toast.success(
+						`Seeded ${result.created} member coverages` +
+							(result.eligibility_file_id
+								? " (eligibility file created)"
+								: "")
+					);
+				}
+			} else if (!options?.silent) {
+				toast.info("Member coverages already exist — nothing to seed");
+			}
+			await invalidate();
+			return result;
+		} catch (err) {
+			if (!options?.silent) {
+				toast.error(
+					err instanceof Error
+						? err.message
+						: "Failed to seed member coverages"
+				);
+			}
+			throw err;
+		} finally {
+			setSeeding(false);
+		}
+	}
+
+	useEffect(() => {
+		if (!useLive || autoSeedAttempted.current || coveragesQ.isLoading) return;
+		if (coveragesQ.error || (coveragesQ.data?.length ?? 0) > 0) return;
+		autoSeedAttempted.current = true;
+		void handleSeed({ silent: true }).catch(() => {
+			/* seed endpoint may not be deployed yet; manual button remains */
+		});
+	}, [useLive, coveragesQ.isLoading, coveragesQ.error, coveragesQ.data]);
 
 	const hasFilters =
 		search.trim().length > 0 ||
 		status !== "all" ||
 		plan !== "all" ||
 		vendor !== "all";
+
+	if (useLive && coveragesQ.isLoading && !coveragesQ.data) {
+		return (
+			<div className="space-y-4">
+				<Skeleton className="h-10 w-56" />
+				<Skeleton className="h-28 w-full" />
+				<Skeleton className="h-64 w-full" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-4">
@@ -149,11 +241,21 @@ export function MembersPage() {
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
+					{useLive && programScoped.length === 0 ? (
+						<Button
+							size="sm"
+							className="h-9 font-semibold"
+							onClick={() => void handleSeed()}
+							disabled={seeding}
+						>
+							{seeding ? "Seeding…" : "Seed demo coverages"}
+						</Button>
+					) : null}
 					<Button
 						variant="outline"
 						size="sm"
 						className="h-9 border-primary/25 font-semibold"
-						onClick={handleRefresh}
+						onClick={() => void handleRefresh()}
 						disabled={refreshing}
 					>
 						<RefreshCw
@@ -171,6 +273,12 @@ export function MembersPage() {
 					</Button>
 				</div>
 			</div>
+
+			{useLive && coveragesQ.error ? (
+				<div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+					{coveragesQ.error.message}
+				</div>
+			) : null}
 
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				{[
@@ -235,7 +343,6 @@ export function MembersPage() {
 				})}
 			</div>
 
-			{/* Prominent search */}
 			<div className="rounded-xl border border-border bg-card p-4 shadow-sm">
 				<div className="-mx-4 -mt-4 mb-3 rounded-t-xl border-b border-border bg-muted/40 px-4 py-2.5">
 					<label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-sky-800">
@@ -393,7 +500,7 @@ export function MembersPage() {
 												{displayName(m)}
 											</p>
 											<p className="truncate text-[11px] text-muted-foreground">
-												{m.email}
+												{m.email || m.vendorSource}
 											</p>
 										</div>
 									</TableCell>
@@ -401,7 +508,7 @@ export function MembersPage() {
 										{m.memberId}
 									</TableCell>
 									<TableCell className="text-xs tabular-nums">
-										{formatDate(m.dob)}
+										{m.dob === "—" ? "—" : formatDate(m.dob)}
 									</TableCell>
 									<TableCell className="font-mono text-xs text-muted-foreground">
 										{maskSsn(m.ssnLast4)}
@@ -440,7 +547,11 @@ export function MembersPage() {
 										colSpan={9}
 										className="h-24 text-center text-muted-foreground"
 									>
-										No members match the current search and filters.
+										{useLive && programScoped.length === 0 && seeding
+											? "No members yet. Seeding demo coverages…"
+											: useLive && programScoped.length === 0
+												? "No members yet. Use Seed demo coverages or run pnpm seed:member-coverages."
+												: "No members match the current search and filters."}
 									</TableCell>
 								</TableRow>
 							)}

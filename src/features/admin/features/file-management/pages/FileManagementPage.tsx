@@ -18,7 +18,10 @@ import {
 	XCircle,
 } from "lucide-react";
 
+import { toast } from "sonner";
+
 import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,6 +39,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -44,13 +48,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
 import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { vendorCoreApi } from "@/lib/vendor-core";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreInboundFiles,
+	useVendorCoreVendors,
+} from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
-import { FILE_RUNS } from "../mock-data";
+import { FILE_RUNS, type FileRun } from "../mock-data";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
 
 type VendorHealth = {
@@ -256,8 +268,32 @@ function AlertIcon({ severity }: { severity: ActiveAlert["severity"] }) {
 	return <AlertTriangle className="size-4 text-orange-500" />;
 }
 
+function displayStatusTitle(status: FileRun["status"]) {
+	if (status === "failed") return "Failed";
+	if (status === "missing") return "Missing";
+	if (status === "late") return "Late";
+	if (status === "warning") return "Warning";
+	if (status === "processing") return "Processing";
+	return "Attention";
+}
+
 export function FileManagementPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="File monitoring">
+				<FileManagementDashboard />
+			</VendorCoreGate>
+		);
+	}
+	return <FileManagementDashboard />;
+}
+
+function FileManagementDashboard() {
 	const router = useRouter();
+	const useLive = !isMockEnabled();
+	const invalidate = useInvalidateVendorCore();
+	const filesQ = useVendorCoreInboundFiles();
+	const vendorsQ = useVendorCoreVendors();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [vendor, setVendor] = useState("all");
 	const [ediType, setEdiType] = useState("all");
@@ -266,72 +302,158 @@ export function FileManagementPage() {
 	const [dateFrom, setDateFrom] = useState("2026-07-20");
 	const [dateTo, setDateTo] = useState("2026-07-27");
 	const [refreshing, setRefreshing] = useState(false);
+	const [reprocessingId, setReprocessingId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const pageSize = 8;
 
+	const nameById = useMemo(
+		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
+		[vendorsQ.data]
+	);
+
+	const allRuns: FileRun[] = useMemo(() => {
+		if (!useLive) return FILE_RUNS;
+		return inboundFilesToRuns(filesQ.data ?? [], nameById);
+	}, [useLive, filesQ.data, nameById]);
+
+	const vendorHealthRows: VendorHealth[] = useMemo(() => {
+		if (!useLive) return VENDOR_HEALTH;
+		const byVendor = new Map<string, VendorHealth>();
+		for (const run of allRuns) {
+			const key = run.vendorId || run.vendor;
+			const existing = byVendor.get(key) ?? {
+				vendor: run.vendor,
+				vendorId: run.vendorId || key,
+				expected: 0,
+				onTime: 0,
+				late: 0,
+				missing: 0,
+				errors: 0,
+				alerts: 0,
+				health: 100,
+			};
+			existing.expected += 1;
+			if (run.status === "success") existing.onTime += 1;
+			else if (run.status === "late") existing.late += 1;
+			else if (run.status === "missing") existing.missing += 1;
+			if (run.errorCount > 0 || run.status === "failed") {
+				existing.errors += 1;
+				existing.alerts += 1;
+			} else if (run.status === "warning") {
+				existing.alerts += 1;
+			}
+			byVendor.set(key, existing);
+		}
+		return Array.from(byVendor.values())
+			.map((row) => ({
+				...row,
+				health:
+					row.expected === 0
+						? 100
+						: Math.max(
+								0,
+								Math.round(
+									((row.onTime + row.late * 0.5) / row.expected) * 100
+								)
+							),
+			}))
+			.sort((a, b) => a.vendor.localeCompare(b.vendor));
+	}, [useLive, allRuns]);
+
+	const alerts: ActiveAlert[] = useMemo(() => {
+		if (!useLive) return ALERTS;
+		return allRuns
+			.filter(
+				(r) =>
+					r.status === "failed" ||
+					r.status === "missing" ||
+					r.status === "late" ||
+					r.status === "warning"
+			)
+			.slice(0, 8)
+			.map((r) => ({
+				id: r.id,
+				title: `${r.vendor} – ${displayStatusTitle(r.status)}`,
+				detail: r.fileName
+					? `${r.fileName}${r.notes ? ` · ${r.notes}` : ""}`
+					: (r.notes ?? "Inbound file needs attention"),
+				when: r.receivedAt
+					? new Date(r.receivedAt).toLocaleString()
+					: "—",
+				severity:
+					r.status === "missing"
+						? "missing"
+						: r.status === "late"
+							? "late"
+							: "warning",
+				runId: r.id,
+			}));
+	}, [useLive, allRuns]);
+
 	const kpis = useMemo(() => {
-		const expected = VENDOR_HEALTH.reduce((s, v) => s + v.expected, 0);
-		const onTime = VENDOR_HEALTH.reduce((s, v) => s + v.onTime, 0);
-		const late = VENDOR_HEALTH.reduce((s, v) => s + v.late, 0);
-		const missing = VENDOR_HEALTH.reduce((s, v) => s + v.missing, 0);
-		const errors = VENDOR_HEALTH.reduce((s, v) => s + v.errors, 0);
-		const alerts = ALERTS.length;
+		const expected = vendorHealthRows.reduce((s, v) => s + v.expected, 0);
+		const onTime = vendorHealthRows.reduce((s, v) => s + v.onTime, 0);
+		const late = vendorHealthRows.reduce((s, v) => s + v.late, 0);
+		const missing = vendorHealthRows.reduce((s, v) => s + v.missing, 0);
+		const errors = vendorHealthRows.reduce((s, v) => s + v.errors, 0);
+		const alertCount = alerts.length;
+		const denom = expected || 1;
 		return [
 			{
 				label: "Total expected files",
 				value: String(expected),
-				hint: "Monitored",
+				hint: useLive ? "Inbound files" : "Monitored",
 				icon: Files,
 				tone: "text-primary bg-primary/10",
 			},
 			{
 				label: "Received on time",
 				value: `${onTime}`,
-				hint: `${((onTime / expected) * 100).toFixed(1)}%`,
+				hint: `${((onTime / denom) * 100).toFixed(1)}%`,
 				icon: CheckCircle2,
 				tone: "text-emerald-700 bg-emerald-500/10",
 			},
 			{
 				label: "Received late",
 				value: String(late),
-				hint: `${((late / expected) * 100).toFixed(1)}%`,
+				hint: `${((late / denom) * 100).toFixed(1)}%`,
 				icon: Clock3,
 				tone: "text-amber-700 bg-amber-500/10",
 			},
 			{
 				label: "Missing files",
 				value: String(missing),
-				hint: `${((missing / expected) * 100).toFixed(1)}%`,
+				hint: `${((missing / denom) * 100).toFixed(1)}%`,
 				icon: FileWarning,
 				tone: "text-red-700 bg-red-500/10",
 			},
 			{
 				label: "Processing errors",
 				value: String(errors),
-				hint: `${((errors / expected) * 100).toFixed(1)}%`,
+				hint: `${((errors / denom) * 100).toFixed(1)}%`,
 				icon: AlertTriangle,
 				tone: "text-violet-700 bg-violet-500/10",
 			},
 			{
 				label: "Active alerts",
-				value: String(alerts),
+				value: String(alertCount),
 				hint: "Needs attention",
 				icon: Bell,
 				tone: "text-orange-700 bg-orange-500/10",
 			},
 		];
-	}, []);
+	}, [vendorHealthRows, alerts.length, useLive]);
 
 	const filteredFiles = useMemo(() => {
-		return FILE_RUNS.filter((f) => {
-			if (f.program !== programFilter) return false;
+		return allRuns.filter((f) => {
+			if (!useLive && f.program !== programFilter) return false;
 			if (vendor !== "all" && f.vendor !== vendor) return false;
 			if (ediType !== "all" && f.fileType !== ediType) return false;
 			if (direction !== "all" && f.direction !== direction) return false;
 			if (status !== "all" && f.status !== status) return false;
 			return true;
 		});
-	}, [vendor, ediType, direction, status, programFilter]);
+	}, [allRuns, vendor, ediType, direction, status, programFilter, useLive]);
 
 	const pageCount = Math.max(1, Math.ceil(filteredFiles.length / pageSize));
 	const pageRows = filteredFiles.slice((page - 1) * pageSize, page * pageSize);
@@ -348,22 +470,51 @@ export function FileManagementPage() {
 
 	async function handleRefresh() {
 		setRefreshing(true);
-		await new Promise((r) => setTimeout(r, 500));
-		setRefreshing(false);
+		try {
+			if (useLive) await invalidate();
+			else await new Promise((r) => setTimeout(r, 500));
+		} finally {
+			setRefreshing(false);
+		}
+	}
+
+	async function handleReprocess(id: string) {
+		setReprocessingId(id);
+		try {
+			await vendorCoreApi.reprocessInboundFile(id);
+			toast.success("Reprocess queued");
+			invalidate();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Reprocess failed");
+		} finally {
+			setReprocessingId(null);
+		}
 	}
 
 	const vendors = Array.from(
 		new Set(
-			FILE_RUNS.filter((f) => f.program === programFilter).map((f) => f.vendor)
+			allRuns
+				.filter((f) => useLive || f.program === programFilter)
+				.map((f) => f.vendor)
 		)
 	);
 	const types = Array.from(
 		new Set(
-			FILE_RUNS.filter((f) => f.program === programFilter).map(
-				(f) => f.fileType
-			)
+			allRuns
+				.filter((f) => useLive || f.program === programFilter)
+				.map((f) => f.fileType)
 		)
 	);
+
+	if (useLive && filesQ.isLoading && !filesQ.data) {
+		return (
+			<div className="space-y-4">
+				<Skeleton className="h-10 w-72" />
+				<Skeleton className="h-28 w-full" />
+				<Skeleton className="h-64 w-full" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-4">
@@ -603,7 +754,7 @@ export function FileManagementPage() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{VENDOR_HEALTH.map((row) => {
+									{vendorHealthRows.map((row) => {
 										const avatar = getVendorAvatar({
 											vendorId: row.vendorId,
 											vendorName: row.vendor,
@@ -699,11 +850,16 @@ export function FileManagementPage() {
 				<Card className="min-w-0 gap-1 bg-card/70 py-2 xl:col-span-2">
 					<CardHeader className="px-4 pb-1 pt-0">
 						<CardTitle className="text-sm font-medium">
-							Active alerts ({ALERTS.length})
+							Active alerts ({alerts.length})
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2 px-4">
-						{ALERTS.map((alert) => {
+						{alerts.length === 0 ? (
+							<div className="rounded-lg border border-border/50 bg-background/50 p-3 text-sm text-muted-foreground">
+								No active alerts.
+							</div>
+						) : null}
+						{alerts.map((alert) => {
 							const content = (
 								<div className="flex items-start gap-2">
 									<div className="mt-0.5 shrink-0">
@@ -778,14 +934,17 @@ export function FileManagementPage() {
 							<TableBody>
 								{pageRows.map((row) => {
 									const vendorId = vendorIdForRun(row);
+									const detailHref = `/admin/file-monitoring/${row.id}`;
 									const vendorHref = vendorId
-										? `/admin/file-monitoring/select?vendor=${vendorId}`
+										? useLive
+											? `/admin/vendors/${vendorId}`
+											: `/admin/file-monitoring/select?vendor=${vendorId}`
 										: "/admin/file-monitoring/select";
 									return (
 										<TableRow
 											key={row.id}
 											className="cursor-pointer hover:bg-muted/30"
-											onClick={() => router.push(vendorHref)}
+											onClick={() => router.push(detailHref)}
 										>
 											<TableCell className="pl-4 sm:pl-6">
 												<div className="flex items-center gap-2.5">
@@ -815,10 +974,18 @@ export function FileManagementPage() {
 												{row.frequency}
 											</TableCell>
 											<TableCell className="tabular-nums">
-												{timeOnly(row.expectedAt)}
+												{useLive
+													? row.expectedAt
+														? new Date(row.expectedAt).toLocaleString()
+														: "—"
+													: timeOnly(row.expectedAt)}
 											</TableCell>
 											<TableCell className="tabular-nums text-muted-foreground">
-												{timeOnly(row.receivedAt) ?? "—"}
+												{useLive
+													? row.receivedAt
+														? new Date(row.receivedAt).toLocaleString()
+														: "—"
+													: (timeOnly(row.receivedAt) ?? "—")}
 											</TableCell>
 											<TableCell>
 												<StatusBadge status={row.status} />
@@ -846,17 +1013,30 @@ export function FileManagementPage() {
 													</DropdownMenuTrigger>
 													<DropdownMenuContent align="end">
 														<DropdownMenuItem asChild>
-															<Link href={vendorHref}>
-																<ExternalLink className="mr-2 size-3.5" />
-																View vendor detail
-															</Link>
-														</DropdownMenuItem>
-														<DropdownMenuItem asChild>
-															<Link href={`/admin/file-monitoring/${row.id}`}>
+															<Link href={detailHref}>
 																<ExternalLink className="mr-2 size-3.5" />
 																View run detail
 															</Link>
 														</DropdownMenuItem>
+														{vendorId ? (
+															<DropdownMenuItem asChild>
+																<Link href={vendorHref}>
+																	<ExternalLink className="mr-2 size-3.5" />
+																	View vendor
+																</Link>
+															</DropdownMenuItem>
+														) : null}
+														{useLive ? (
+															<DropdownMenuItem
+																disabled={reprocessingId === row.id}
+																onClick={() => void handleReprocess(row.id)}
+															>
+																<RefreshCw className="mr-2 size-3.5" />
+																{reprocessingId === row.id
+																	? "Reprocessing…"
+																	: "Reprocess"}
+															</DropdownMenuItem>
+														) : null}
 													</DropdownMenuContent>
 												</DropdownMenu>
 											</TableCell>
