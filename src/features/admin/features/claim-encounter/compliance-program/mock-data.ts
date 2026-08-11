@@ -62,7 +62,7 @@ function metricForPage(config: ComplianceProgramPageConfig, index: number) {
 			if (config.slug === "compliance-calendar") {
 				return { label: "Days to due", value: String(3 + (index % 14)) };
 			}
-			if (config.slug === "hedis-quality") {
+			if (config.slug === "hedis-quality" || config.slug === "quality-performance") {
 				return { label: "Rate", value: `${72 + (index % 24)}%` };
 			}
 			if (config.slug === "risk-adjustment") {
@@ -90,6 +90,7 @@ function titleForPage(config: ComplianceProgramPageConfig, index: number) {
 		case "risk-adjustment":
 			return `Member Risk Profile ${440000 + seq}`;
 		case "hedis-quality":
+		case "quality-performance":
 			return `HEDIS Measure Set ${seq}`;
 		case "audit-management":
 			return `Audit Request ${seq}`;

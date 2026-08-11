@@ -18,7 +18,7 @@ import {
 	Minus,
 	SlidersHorizontal,
 } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 
 import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
@@ -58,10 +58,19 @@ import {
 } from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
 import { CmsEdgeDocumentsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeDocumentsTab";
 import { CmsEdgeFinancialTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeFinancialTab";
+import { CmsEdgeOverviewTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeOverviewTab";
+import { CmsEdgeResponsesTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeResponsesTab";
+import { CmsEdgeSubmissionsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeSubmissionsTab";
+import { CmsEdgeValidationsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeValidationsTab";
 import {
 	CMS_EDGE_PAGE_STACK,
 	CMS_EDGE_SECTION_GAP,
+	CMS_EDGE_TABLE_CELL_CLASS,
+	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
+	CMS_EDGE_TABLE_HEAD_CLASS,
+	CMS_EDGE_TABLE_LINK_CLASS,
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TAB_TRIGGER_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
@@ -87,23 +96,13 @@ function StatusPill({
 	className: string;
 }) {
 	return (
-		<span
-			className={cn(
-				"inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-				className
-			)}
-		>
-			{label}
-		</span>
+		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
 }
 
 function LinkText({ children }: { children: ReactNode }) {
 	return (
-		<Button
-			variant="link"
-			className="h-auto p-0 font-mono text-[11px] text-primary"
-		>
+		<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 			{children}
 		</Button>
 	);
@@ -208,35 +207,35 @@ function AuditRequestsTable() {
 			<CmsEdgeTableScroll>
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[1100px] text-xs"
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Audit ID
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Audit Type
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								<SortableHead>Request Date</SortableHead>
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Related Submission
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Audit Period
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Due Date
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Status
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Priority
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 text-right font-semibold text-foreground">
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
 								Requested Records
 							</TableHead>
 						</TableRow>
@@ -247,27 +246,27 @@ function AuditRequestsTable() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.id}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.auditType}</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.auditType}</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.requestDate}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.relatedSubmission}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.auditPeriod}</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.auditPeriod}</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.dueDate}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<StatusPill
 										label={row.status}
 										className={AUDIT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<span className="inline-flex items-center gap-1.5">
 										<span
 											className={cn(
@@ -278,7 +277,7 @@ function AuditRequestsTable() {
 										{row.priority}
 									</span>
 								</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4 text-right tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right tabular-nums")}>
 									{formatCount(row.requestedRecords)}
 								</TableCell>
 							</TableRow>
@@ -304,32 +303,22 @@ function AuditReportsTable() {
 			<CmsEdgeTableScroll>
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[1100px] text-xs"
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Report ID
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Audit ID
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Report Type
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Report ID</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Audit ID</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Report Type</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								<SortableHead>Received Date</SortableHead>
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Related Submission
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 text-right font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Related Submission</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
 								Records Reviewed
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Status
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 text-right font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
 								Actions
 							</TableHead>
 						</TableRow>
@@ -340,45 +329,45 @@ function AuditReportsTable() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.id}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.auditId}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.reportType}</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.reportType}</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.receivedDate}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.relatedSubmission}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5 text-right tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
 									{formatCount(row.recordsReviewed)}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<StatusPill
 										label={row.status}
 										className={REPORT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4 text-right">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
 									<div className="inline-flex items-center gap-0.5">
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 text-primary hover:text-primary"
+											className="size-6 text-primary hover:text-primary"
 											onClick={() => toast.message(`View ${row.id}`)}
 										>
-											<Eye className="size-3.5" />
+											<Eye className="size-3" />
 										</Button>
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 text-primary hover:text-primary"
+											className="size-6 text-primary hover:text-primary"
 											onClick={() => toast.success(`Download ${row.id}`)}
 										>
-											<Download className="size-3.5" />
+											<Download className="size-3" />
 										</Button>
 									</div>
 								</TableCell>
@@ -396,35 +385,34 @@ function AuditStatusOverview() {
 	const total = CMS_EDGE_AUDIT_KPIS.totalRequests;
 
 	return (
-		<CmsEdgeSectionPanel
-			className="flex min-h-0 flex-1 flex-col"
-			title="Audit Status Overview"
-			bodyClassName="flex min-h-0 flex-1 flex-col justify-center"
-		>
-			<div className="flex flex-col items-center gap-3 px-3 py-3">
-				<div className="relative h-28 w-28 shrink-0">
+		<CmsEdgeSectionPanel title="Audit Status Overview">
+			<div className="flex flex-col items-center gap-3 px-4 py-4">
+				<div className="relative h-32 w-32 shrink-0">
 					<ResponsiveContainer width="100%" height="100%">
 						<PieChart>
 							<Pie
 								data={CMS_EDGE_AUDIT_STATUS_MIX}
 								dataKey="value"
 								nameKey="name"
-								innerRadius={34}
-								outerRadius={52}
+								innerRadius="58%"
+								outerRadius="88%"
 								paddingAngle={2}
+								stroke="none"
+								isAnimationActive={false}
 							>
 								{CMS_EDGE_AUDIT_STATUS_MIX.map((entry) => (
 									<Cell key={entry.name} fill={entry.color} />
 								))}
 							</Pie>
-							<Tooltip />
 						</PieChart>
 					</ResponsiveContainer>
-					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-						<p className="text-lg font-bold tabular-nums text-foreground">
+					<div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center text-center">
+						<p className="text-xl font-bold tabular-nums leading-none text-foreground">
 							{total}
 						</p>
-						<p className="text-[10px] text-muted-foreground">Total Requests</p>
+						<p className="mt-1 text-[10px] leading-tight text-muted-foreground">
+							Total Requests
+						</p>
 					</div>
 				</div>
 				<ul className="w-full space-y-1.5 text-xs">
@@ -433,14 +421,14 @@ function AuditStatusOverview() {
 							key={item.name}
 							className="flex items-center justify-between gap-2"
 						>
-							<span className="flex items-center gap-2 font-medium">
+							<span className="flex min-w-0 items-center gap-2 font-medium">
 								<span
-									className="size-2.5 rounded-full"
+									className="size-2.5 shrink-0 rounded-full"
 									style={{ backgroundColor: item.color }}
 								/>
-								{item.name}
+								<span className="truncate">{item.name}</span>
 							</span>
-							<span className="tabular-nums text-muted-foreground">
+							<span className="shrink-0 tabular-nums text-muted-foreground">
 								{item.value}
 							</span>
 						</li>
@@ -455,28 +443,24 @@ function AuditSlaPerformance() {
 	const slaIcons = [CheckCircle2, Clock3, AlertCircle, Minus];
 
 	return (
-		<CmsEdgeSectionPanel
-			className="flex min-h-0 flex-1 flex-col"
-			title="Audit SLA Performance (This Period)"
-			bodyClassName="flex min-h-0 flex-1 flex-col"
-		>
-			<div className="flex min-h-0 flex-1 flex-col gap-2 px-3 py-4">
+		<CmsEdgeSectionPanel title="Audit SLA Performance (This Period)">
+			<div className="flex flex-col gap-1.5 px-3 py-3">
 				{CMS_EDGE_AUDIT_SLA.map((item, index) => {
 					const Icon = slaIcons[index] ?? Minus;
 					return (
 						<div
 							key={item.label}
 							className={cn(
-								"flex flex-1 items-center gap-3 rounded-md border border-border/50 px-3 py-3",
+								"flex items-center gap-2.5 rounded-md border border-border/50 px-3 py-2",
 								item.bg
 							)}
 						>
 							<Icon className={cn("size-4 shrink-0", item.tone)} />
 							<div className="min-w-0 flex-1">
-								<p className={cn("text-lg font-bold tabular-nums leading-none", item.tone)}>
+								<p className={cn("text-base font-bold tabular-nums leading-none", item.tone)}>
 									{item.count}
 								</p>
-								<p className="mt-1 text-[10px] font-medium text-muted-foreground">
+								<p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
 									{item.label}
 								</p>
 							</div>
@@ -486,6 +470,53 @@ function AuditSlaPerformance() {
 						</div>
 					);
 				})}
+			</div>
+		</CmsEdgeSectionPanel>
+	);
+}
+
+function AuditAttentionSummary() {
+	const overdue = CMS_EDGE_AUDIT_KPIS.overdue.count;
+	const inProgress = CMS_EDGE_AUDIT_KPIS.inProgress.count;
+	const nextDue =
+		CMS_EDGE_AUDIT_REQUESTS.find((row) => row.status === "Overdue") ??
+		CMS_EDGE_AUDIT_REQUESTS.find((row) => row.status === "In Progress");
+
+	return (
+		<CmsEdgeSectionPanel title="Audit Alerts">
+			<div className="divide-y divide-border/40 px-4 py-0.5 text-xs">
+				<div className="flex items-center justify-between py-2">
+					<span className="inline-flex items-center gap-1.5 text-muted-foreground">
+						<AlertCircle className="size-3.5 shrink-0 text-red-500" />
+						Overdue
+					</span>
+					<span className="font-semibold tabular-nums text-red-600">{overdue}</span>
+				</div>
+				<div className="flex items-center justify-between py-2">
+					<span className="inline-flex items-center gap-1.5 text-muted-foreground">
+						<Clock3 className="size-3.5 shrink-0 text-amber-500" />
+						In progress
+					</span>
+					<span className="font-semibold tabular-nums text-foreground">
+						{inProgress}
+					</span>
+				</div>
+				{nextDue ? (
+					<div className="py-2.5">
+						<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+							Next due
+						</p>
+						<p className="mt-1 truncate font-medium text-foreground">
+							{nextDue.auditType}
+						</p>
+						<p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
+							{nextDue.dueDate}
+						</p>
+					</div>
+				) : null}
+			</div>
+			<div className="border-t border-border/50 px-4 py-2">
+				<PanelLink>Review open audits</PanelLink>
 			</div>
 		</CmsEdgeSectionPanel>
 	);
@@ -501,28 +532,16 @@ function RecentAuditActivityTable() {
 			<CmsEdgeTableScroll>
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[1100px] text-xs"
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Date / Time
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Activity
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Audit ID
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Related Submission
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								User
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 font-semibold text-foreground">
-								Details
-							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Date / Time</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Activity</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Audit ID</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Related Submission</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>User</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>Details</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -531,18 +550,18 @@ function RecentAuditActivityTable() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.dateTime}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.activity}</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.activity}</TableCell>
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.auditId}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<LinkText>{row.relatedSubmission}</LinkText>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.user}</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4 text-muted-foreground">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.user}</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-muted-foreground")}>
 									{row.details}
 								</TableCell>
 							</TableRow>
@@ -561,6 +580,7 @@ function CmsEdgeAuditTab() {
 			<AuditKpiRow />
 
 			<CmsEdgeSplitRow
+				sideWidth="340px"
 				main={
 					<div className={cn("flex flex-col", CMS_EDGE_SECTION_GAP)}>
 						<AuditRequestsTable />
@@ -571,6 +591,7 @@ function CmsEdgeAuditTab() {
 					<div className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}>
 						<AuditStatusOverview />
 						<AuditSlaPerformance />
+						<AuditAttentionSummary />
 					</div>
 				}
 			/>
@@ -595,7 +616,7 @@ function CmsEdgePlaceholderTab({ title }: { title: string }) {
 
 export function CmsEdgePage() {
 	const [reportingPeriod, setReportingPeriod] = useState("q2-2027");
-	const [activeTab, setActiveTab] = useState<CmsEdgeTabId>("audit");
+	const [activeTab, setActiveTab] = useState<CmsEdgeTabId>("overview");
 	const tabMeta = CMS_EDGE_TAB_META[activeTab];
 
 	return (
@@ -661,6 +682,18 @@ export function CmsEdgePage() {
 				</div>
 
 				<div className="bg-muted/30 py-4">
+					<TabsContent value="overview" className="mt-0 space-y-0">
+						<CmsEdgeOverviewTab />
+					</TabsContent>
+					<TabsContent value="submissions" className="mt-0 space-y-0">
+						<CmsEdgeSubmissionsTab />
+					</TabsContent>
+					<TabsContent value="responses" className="mt-0 space-y-0">
+						<CmsEdgeResponsesTab />
+					</TabsContent>
+					<TabsContent value="validations" className="mt-0 space-y-0">
+						<CmsEdgeValidationsTab />
+					</TabsContent>
 					<TabsContent value="audit" className="mt-0 space-y-0">
 						<CmsEdgeAuditTab />
 					</TabsContent>
@@ -672,6 +705,10 @@ export function CmsEdgePage() {
 					</TabsContent>
 					{CMS_EDGE_TABS.filter(
 						(tab) =>
+							tab.id !== "overview" &&
+							tab.id !== "submissions" &&
+							tab.id !== "validations" &&
+							tab.id !== "responses" &&
 							tab.id !== "audit" &&
 							tab.id !== "documents" &&
 							tab.id !== "financial-management"

@@ -402,6 +402,1106 @@ export const CMS_EDGE_TAB_META: Record<
 	},
 };
 
+// ─── Overview tab ───────────────────────────────────────────────────────────
+
+export type OverviewSubmissionStatus = "Accepted" | "Pending" | "Rejected";
+export type OverviewResponseStatus = "Received" | "Pending" | "Processed";
+
+export const CMS_EDGE_OVERVIEW_KPIS = {
+	reportingPeriod: "Q2 2027",
+	reportingPeriodRange: "Apr 1 – Jun 30, 2027",
+	submissionStatus: "Accepted" as OverviewSubmissionStatus,
+	lastCmsResponse: "Jul 27, 2027 11:44 AM ET",
+	responsesReceived: 5,
+	fmStatus: "In Progress",
+	auditStatus: "2 Open",
+};
+
+export const CMS_EDGE_OVERVIEW_SUBMISSION_HISTORY = [
+	{
+		id: "sub-1",
+		submissionType: "Final Submission",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 21, 2027 09:45 AM",
+		status: "Accepted" as OverviewSubmissionStatus,
+		cmsResponse: "Yes",
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-2",
+		submissionType: "Preliminary Submission",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 14, 2027 02:30 PM",
+		status: "Accepted" as OverviewSubmissionStatus,
+		cmsResponse: "Yes",
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-3",
+		submissionType: "Final Submission",
+		reportingPeriod: "Q1 2027",
+		submittedDate: "Apr 28, 2027 10:15 AM",
+		status: "Accepted" as OverviewSubmissionStatus,
+		cmsResponse: "Yes",
+		submittedBy: "System User",
+	},
+	{
+		id: "sub-4",
+		submissionType: "Preliminary Submission",
+		reportingPeriod: "Q1 2027",
+		submittedDate: "Apr 21, 2027 11:00 AM",
+		status: "Pending" as OverviewSubmissionStatus,
+		cmsResponse: "No",
+		submittedBy: "Admin User",
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_CMS_RESPONSES = [
+	{
+		id: "resp-1",
+		responseFile: "EDGE_Q2_2027_Validation",
+		responseType: "Validation Response",
+		dateReceived: "Jul 21, 2027 10:02 AM",
+		status: "Processed" as OverviewResponseStatus,
+	},
+	{
+		id: "resp-2",
+		responseFile: "EDGE_Q2_2027_Acceptance",
+		responseType: "Acceptance Report",
+		dateReceived: "Jul 27, 2027 11:44 AM",
+		status: "Received" as OverviewResponseStatus,
+	},
+	{
+		id: "resp-3",
+		responseFile: "EDGE_Q2_2027_Payment",
+		responseType: "Payment Report",
+		dateReceived: "Jul 27, 2027 11:44 AM",
+		status: "Received" as OverviewResponseStatus,
+	},
+	{
+		id: "resp-4",
+		responseFile: "EDGE_Q1_2027_Validation",
+		responseType: "Validation Response",
+		dateReceived: "Apr 28, 2027 09:20 AM",
+		status: "Processed" as OverviewResponseStatus,
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_VALIDATION = [
+	{
+		recordType: "Member Enrollment",
+		accepted: 12_450,
+		rejected: 23,
+		warnings: 87,
+	},
+	{
+		recordType: "Risk Adjustment",
+		accepted: 8_920,
+		rejected: 12,
+		warnings: 45,
+	},
+	{
+		recordType: "Payment Data",
+		accepted: 15_680,
+		rejected: 8,
+		warnings: 32,
+	},
+	{
+		recordType: "Provider Data",
+		accepted: 4_210,
+		rejected: 5,
+		warnings: 18,
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_FM_ITEMS = [
+	{
+		label: "FM Requests",
+		count: 2,
+		status: "Pending",
+		statusStyle:
+			"border-amber-200/80 bg-amber-50 text-amber-900",
+		icon: "request" as const,
+	},
+	{
+		label: "FM Responses",
+		count: 5,
+		status: "Open",
+		statusStyle:
+			"border-sky-200/80 bg-sky-50 text-sky-900",
+		icon: "response" as const,
+	},
+	{
+		label: "Payment Reconciliation",
+		count: 1,
+		status: "Pending",
+		statusStyle:
+			"border-amber-200/80 bg-amber-50 text-amber-900",
+		icon: "reconcile" as const,
+	},
+	{
+		label: "Archive Status",
+		count: 0,
+		status: "Not Archived",
+		statusStyle:
+			"border-red-200/80 bg-red-50 text-red-800",
+		icon: "archive" as const,
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_AUDIT_SUMMARY = [
+	{
+		auditType: "EDGE Data Validation",
+		status: "Completed" as AuditRequestStatus,
+		dueDate: "Aug 20, 2027",
+		owner: "CMS EDGE System",
+	},
+	{
+		auditType: "Payment Accuracy",
+		status: "In Progress" as AuditRequestStatus,
+		dueDate: "Aug 20, 2027",
+		owner: "Admin User",
+	},
+	{
+		auditType: "Risk Adjustment",
+		status: "Overdue" as AuditRequestStatus,
+		dueDate: "Aug 20, 2027",
+		owner: "Admin User",
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_REPORTING_CYCLE = [
+	{
+		quarter: "Q2 2027",
+		requiredFiles: 4,
+		submitted: 4,
+		outstanding: 0,
+		lastActivity: "Jul 27, 2027",
+		owner: "Admin User",
+	},
+	{
+		quarter: "Q1 2027",
+		requiredFiles: 4,
+		submitted: 3,
+		outstanding: 1,
+		lastActivity: "Apr 28, 2027",
+		owner: "Admin User",
+	},
+	{
+		quarter: "Q4 2026",
+		requiredFiles: 4,
+		submitted: 4,
+		outstanding: 0,
+		lastActivity: "Jan 28, 2027",
+		owner: "System User",
+	},
+];
+
+export type TimelineStageState = "done" | "current" | "pending" | "future";
+
+export const CMS_EDGE_OVERVIEW_TIMELINE = [
+	{
+		label: "Initial Submission",
+		date: "Jul 21, 2027",
+		state: "done" as TimelineStageState,
+	},
+	{
+		label: "Validation Report",
+		date: "Jul 21, 2027",
+		state: "done" as TimelineStageState,
+	},
+	{
+		label: "Acceptance Report",
+		date: "Jul 27, 2027",
+		state: "current" as TimelineStageState,
+	},
+	{
+		label: "Financial Management",
+		date: "Pending",
+		state: "pending" as TimelineStageState,
+	},
+	{
+		label: "Archive",
+		date: "—",
+		state: "future" as TimelineStageState,
+	},
+];
+
+export const CMS_EDGE_OVERVIEW_DOCUMENT_COUNTS = [
+	{ label: "Submission Reports", count: 12 },
+	{ label: "Validation Responses", count: 8 },
+	{ label: "Payment Reports", count: 5 },
+	{ label: "Audit Reports", count: 6 },
+	{ label: "Supporting Documents", count: 24 },
+];
+
+export const OVERVIEW_SUBMISSION_STATUS_STYLES: Record<
+	OverviewSubmissionStatus,
+	string
+> = {
+	Accepted:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+	Rejected:
+		"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+};
+
+export const OVERVIEW_RESPONSE_STATUS_STYLES: Record<
+	OverviewResponseStatus,
+	string
+> = {
+	Received:
+		"border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+	Processed:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+};
+
+// ─── Responses tab ──────────────────────────────────────────────────────────
+
+export type CmsResponseStatus = "Completed" | "Pending" | "Error";
+
+export type CmsResponseRow = {
+	id: string;
+	responseFile: string;
+	responseType: string;
+	relatedSubmission: string;
+	dateReceived: string;
+	status: CmsResponseStatus;
+	records: number;
+};
+
+export const CMS_EDGE_RESPONSE_KPIS = {
+	total: 8,
+	completed: { count: 6, percent: 75 },
+	pending: { count: 1, percent: 12.5 },
+	errors: { count: 1, percent: 12.5 },
+	lastReceived: "Jul 27, 2027 11:44 AM ET",
+};
+
+export const CMS_EDGE_RESPONSES_LIST: CmsResponseRow[] = [
+	{
+		id: "r-1",
+		responseFile: "EDGE_Q2_2027_Acceptance",
+		responseType: "Acceptance Report",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 27, 2027 11:44 AM",
+		status: "Completed",
+		records: 41_250,
+	},
+	{
+		id: "r-2",
+		responseFile: "EDGE_Q2_2027_Validation",
+		responseType: "Validation Response",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 21, 2027 10:02 AM",
+		status: "Completed",
+		records: 41_260,
+	},
+	{
+		id: "r-3",
+		responseFile: "EDGE_Q2_2027_Payment",
+		responseType: "Payment Report",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 27, 2027 11:44 AM",
+		status: "Completed",
+		records: 18_420,
+	},
+	{
+		id: "r-4",
+		responseFile: "EDGE_Q2_2027_Withhold",
+		responseType: "Withhold Report",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 27, 2027 11:45 AM",
+		status: "Pending",
+		records: 2_180,
+	},
+	{
+		id: "r-5",
+		responseFile: "EDGE_Q1_2027_Acceptance",
+		responseType: "Acceptance Report",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateReceived: "Apr 28, 2027 09:20 AM",
+		status: "Completed",
+		records: 39_870,
+	},
+	{
+		id: "r-6",
+		responseFile: "EDGE_Q1_2027_Validation",
+		responseType: "Validation Response",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateReceived: "Apr 28, 2027 09:18 AM",
+		status: "Completed",
+		records: 39_880,
+	},
+	{
+		id: "r-7",
+		responseFile: "EDGE_Q1_2027_Payment",
+		responseType: "Payment Report",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateReceived: "Apr 28, 2027 09:22 AM",
+		status: "Completed",
+		records: 17_650,
+	},
+	{
+		id: "r-8",
+		responseFile: "EDGE_Q4_2026_Validation_Err",
+		responseType: "Validation Response",
+		relatedSubmission: "EDGE_Q4_2026_Final",
+		dateReceived: "Jan 28, 2027 02:10 PM",
+		status: "Error",
+		records: 0,
+	},
+];
+
+export const CMS_EDGE_RESPONSE_SELECTED = {
+	responseFile: "EDGE_Q2_2027_Acceptance",
+	responseType: "Acceptance Report",
+	relatedSubmission: "EDGE_Q2_2027_Final",
+	dateReceived: "Jul 27, 2027 11:44 AM ET",
+	status: "Completed" as CmsResponseStatus,
+	records: 41_250,
+	fileName: "EDGE_Q2_2027_Acceptance.xml",
+	fileSize: "3.82 MB",
+	fileFormat: "XML",
+	description:
+		"CMS acceptance report for Q2 2027 final submission. All required records validated successfully.",
+};
+
+export const CMS_EDGE_RESPONSE_TYPE_MIX = [
+	{ name: "Validation Response", count: 3, color: "#3b82f6", pct: 37.5 },
+	{ name: "Acceptance Report", count: 2, color: "#22c55e", pct: 25 },
+	{ name: "Payment Report", count: 2, color: "#8b5cf6", pct: 25 },
+	{ name: "Withhold Report", count: 1, color: "#f59e0b", pct: 12.5 },
+];
+
+export const CMS_EDGE_RESPONSE_STATUS_TREND = [
+	{ quarter: "Q3 2026", completed: 5, pending: 1, errors: 0 },
+	{ quarter: "Q4 2026", completed: 4, pending: 0, errors: 1 },
+	{ quarter: "Q1 2027", completed: 6, pending: 0, errors: 0 },
+	{ quarter: "Q2 2027", completed: 6, pending: 1, errors: 0 },
+];
+
+export const CMS_RESPONSE_STATUS_STYLES: Record<CmsResponseStatus, string> = {
+	Completed:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+	Error:
+		"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+};
+
+// ─── Submissions tab ────────────────────────────────────────────────────────
+
+export type SubmissionStatus = "Accepted" | "Pending" | "Rejected";
+
+export type SubmissionHistoryRow = {
+	id: string;
+	submissionType: string;
+	reportingPeriod: string;
+	fileName: string;
+	submittedDateTime: string;
+	status: SubmissionStatus;
+	records: number;
+	submittedBy: string;
+};
+
+export type SubmissionCmsResponseItem = {
+	label: string;
+	status: "Received" | "Pending" | "Not Available";
+};
+
+export type SubmissionNoteRow = {
+	id: string;
+	dateTime: string;
+	source: string;
+	note: string;
+};
+
+export const CMS_EDGE_SUBMISSION_KPIS = {
+	total: 12,
+	accepted: { count: 11, percent: 91.7 },
+	pending: { count: 1, percent: 8.3 },
+	rejected: { count: 0, percent: 0 },
+	lastSubmissionDate: "Jul 25, 2027",
+	lastSubmissionTime: "02:35 PM ET",
+	overallStatus: "On Track",
+};
+
+export const CMS_EDGE_SUBMISSION_HISTORY: SubmissionHistoryRow[] = [
+	{
+		id: "sub-h-1",
+		submissionType: "Final Submission",
+		reportingPeriod: "Q2 2027",
+		fileName: "EDGE_Q2_2027_Final.xml",
+		submittedDateTime: "Jul 21, 2027 09:45 AM",
+		status: "Accepted",
+		records: 41_260,
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-h-2",
+		submissionType: "Correction 2",
+		reportingPeriod: "Q2 2027",
+		fileName: "EDGE_Q2_2027_Correction2.xml",
+		submittedDateTime: "Jul 25, 2027 02:35 PM",
+		status: "Accepted",
+		records: 12_340,
+		submittedBy: "Jane Smith",
+	},
+	{
+		id: "sub-h-3",
+		submissionType: "Correction 1",
+		reportingPeriod: "Q2 2027",
+		fileName: "EDGE_Q2_2027_Correction1.xml",
+		submittedDateTime: "Jul 23, 2027 11:20 AM",
+		status: "Accepted",
+		records: 12_355,
+		submittedBy: "Jane Smith",
+	},
+	{
+		id: "sub-h-4",
+		submissionType: "Preliminary Submission",
+		reportingPeriod: "Q2 2027",
+		fileName: "EDGE_Q2_2027_Prelim.xml",
+		submittedDateTime: "Jul 14, 2027 02:30 PM",
+		status: "Accepted",
+		records: 41_180,
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-h-5",
+		submissionType: "Final Submission",
+		reportingPeriod: "Q1 2027",
+		fileName: "EDGE_Q1_2027_Final.xml",
+		submittedDateTime: "Apr 28, 2027 10:15 AM",
+		status: "Accepted",
+		records: 39_880,
+		submittedBy: "System User",
+	},
+	{
+		id: "sub-h-6",
+		submissionType: "Correction 1",
+		reportingPeriod: "Q1 2027",
+		fileName: "EDGE_Q1_2027_Correction1.xml",
+		submittedDateTime: "Apr 26, 2027 04:10 PM",
+		status: "Pending",
+		records: 11_920,
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-h-7",
+		submissionType: "Preliminary Submission",
+		reportingPeriod: "Q1 2027",
+		fileName: "EDGE_Q1_2027_Prelim.xml",
+		submittedDateTime: "Apr 21, 2027 11:00 AM",
+		status: "Accepted",
+		records: 39_750,
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-h-8",
+		submissionType: "Final Submission",
+		reportingPeriod: "Q4 2026",
+		fileName: "EDGE_Q4_2026_Final.xml",
+		submittedDateTime: "Jan 28, 2027 09:30 AM",
+		status: "Accepted",
+		records: 38_420,
+		submittedBy: "System User",
+	},
+	{
+		id: "sub-h-9",
+		submissionType: "Preliminary Submission",
+		reportingPeriod: "Q4 2026",
+		fileName: "EDGE_Q4_2026_Prelim.xml",
+		submittedDateTime: "Jan 21, 2027 03:45 PM",
+		status: "Accepted",
+		records: 38_390,
+		submittedBy: "Admin User",
+	},
+	{
+		id: "sub-h-10",
+		submissionType: "Correction 1",
+		reportingPeriod: "Q4 2026",
+		fileName: "EDGE_Q4_2026_Correction1.xml",
+		submittedDateTime: "Jan 25, 2027 10:00 AM",
+		status: "Accepted",
+		records: 12_110,
+		submittedBy: "Jane Smith",
+	},
+];
+
+export const CMS_EDGE_SUBMISSION_DETAILS: Record<
+	string,
+	{
+		submissionType: string;
+		reportingPeriod: string;
+		fileName: string;
+		submittedDateTime: string;
+		submittedBy: string;
+		status: SubmissionStatus;
+		totalRecords: number;
+		acceptedRecords: number;
+		acceptedPercent: number;
+		rejectedRecords: number;
+		rejectedPercent: number;
+		warnings: number;
+		cmsResponses: SubmissionCmsResponseItem[];
+	}
+> = {
+	"sub-h-2": {
+		submissionType: "Correction 2",
+		reportingPeriod: "Q2 2027",
+		fileName: "EDGE_Q2_2027_Correction2.xml",
+		submittedDateTime: "Jul 25, 2027 02:35 PM ET",
+		submittedBy: "Jane Smith",
+		status: "Accepted",
+		totalRecords: 12_340,
+		acceptedRecords: 12_298,
+		acceptedPercent: 99.7,
+		rejectedRecords: 42,
+		rejectedPercent: 0.3,
+		warnings: 0,
+		cmsResponses: [
+			{ label: "Acceptance Report", status: "Received" },
+			{ label: "Validation Report", status: "Received" },
+			{ label: "Error Report", status: "Not Available" },
+		],
+	},
+};
+
+export const CMS_EDGE_SUBMISSION_NOTES: SubmissionNoteRow[] = [
+	{
+		id: "note-1",
+		dateTime: "Jul 25, 2027 02:36 PM",
+		source: "System",
+		note: "Correction 2 submission received and queued for validation.",
+	},
+	{
+		id: "note-2",
+		dateTime: "Jul 25, 2027 03:10 PM",
+		source: "System",
+		note: "Validation completed. Acceptance report received from CMS EDGE.",
+	},
+	{
+		id: "note-3",
+		dateTime: "Jul 25, 2027 04:22 PM",
+		source: "Jane Smith",
+		note: "Reviewed validation results — 42 rejected records flagged for follow-up.",
+	},
+	{
+		id: "note-4",
+		dateTime: "Jul 26, 2027 09:15 AM",
+		source: "System",
+		note: "Submission status updated to Accepted.",
+	},
+];
+
+export const SUBMISSION_STATUS_STYLES: Record<SubmissionStatus, string> = {
+	Accepted:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+	Rejected:
+		"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+};
+
+export const SUBMISSION_CMS_RESPONSE_STYLES = {
+	Received:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900",
+	"Not Available":
+		"border-border/70 bg-muted/40 text-muted-foreground",
+};
+
+// ─── Validations tab ────────────────────────────────────────────────────────
+
+export type ValidationRunStatus = "Completed" | "Pending" | "Error";
+
+export type ValidationRecordTypeRow = {
+	recordType: string;
+	accepted: number;
+	rejected: number;
+	warnings: number;
+};
+
+export type ValidationExceptionRow = {
+	id: string;
+	errorCode: string;
+	recordType: string;
+	description: string;
+	relatedSubmission: string;
+	dateTime: string;
+	severity: "Error" | "Warning";
+};
+
+export const CMS_EDGE_VALIDATION_KPIS = {
+	totalRecords: 41_260,
+	accepted: { count: 41_148, percent: 99.73 },
+	rejected: { count: 48, percent: 0.12 },
+	warnings: { count: 182, percent: 0.44 },
+	acceptanceRate: 99.73,
+	lastValidation: "Jul 21, 2027 10:02 AM ET",
+};
+
+export const CMS_EDGE_VALIDATION_RUNS = [
+	{
+		id: "val-1",
+		validationFile: "EDGE_Q2_2027_Validation",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		reportingPeriod: "Q2 2027",
+		dateValidated: "Jul 21, 2027 10:02 AM",
+		status: "Completed" as ValidationRunStatus,
+		totalRecords: 41_260,
+		accepted: 41_148,
+		rejected: 48,
+		warnings: 182,
+	},
+	{
+		id: "val-2",
+		validationFile: "EDGE_Q2_2027_Correction2_Val",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		reportingPeriod: "Q2 2027",
+		dateValidated: "Jul 25, 2027 03:10 PM",
+		status: "Completed" as ValidationRunStatus,
+		totalRecords: 12_340,
+		accepted: 12_298,
+		rejected: 42,
+		warnings: 0,
+	},
+	{
+		id: "val-3",
+		validationFile: "EDGE_Q1_2027_Validation",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		reportingPeriod: "Q1 2027",
+		dateValidated: "Apr 28, 2027 09:18 AM",
+		status: "Completed" as ValidationRunStatus,
+		totalRecords: 39_880,
+		accepted: 39_820,
+		rejected: 35,
+		warnings: 25,
+	},
+	{
+		id: "val-4",
+		validationFile: "EDGE_Q1_2027_Correction1_Val",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		reportingPeriod: "Q1 2027",
+		dateValidated: "Apr 26, 2027 04:15 PM",
+		status: "Pending" as ValidationRunStatus,
+		totalRecords: 11_920,
+		accepted: 11_890,
+		rejected: 18,
+		warnings: 12,
+	},
+	{
+		id: "val-5",
+		validationFile: "EDGE_Q4_2026_Validation",
+		relatedSubmission: "EDGE_Q4_2026_Final",
+		reportingPeriod: "Q4 2026",
+		dateValidated: "Jan 28, 2027 09:30 AM",
+		status: "Completed" as ValidationRunStatus,
+		totalRecords: 38_420,
+		accepted: 38_380,
+		rejected: 22,
+		warnings: 18,
+	},
+	{
+		id: "val-6",
+		validationFile: "EDGE_Q4_2026_Validation_Err",
+		relatedSubmission: "EDGE_Q4_2026_Final",
+		reportingPeriod: "Q4 2026",
+		dateValidated: "Jan 28, 2027 02:10 PM",
+		status: "Error" as ValidationRunStatus,
+		totalRecords: 0,
+		accepted: 0,
+		rejected: 0,
+		warnings: 0,
+	},
+];
+
+export const CMS_EDGE_VALIDATION_RECORD_TYPES: ValidationRecordTypeRow[] = [
+	{ recordType: "Member Enrollment", accepted: 12_450, rejected: 23, warnings: 87 },
+	{ recordType: "Risk Adjustment", accepted: 8_920, rejected: 12, warnings: 45 },
+	{ recordType: "Payment Data", accepted: 15_680, rejected: 8, warnings: 32 },
+	{ recordType: "Provider Data", accepted: 4_210, rejected: 5, warnings: 18 },
+];
+
+export const CMS_EDGE_VALIDATION_SELECTED = {
+	validationFile: "EDGE_Q2_2027_Validation",
+	relatedSubmission: "EDGE_Q2_2027_Final",
+	reportingPeriod: "Q2 2027",
+	dateValidated: "Jul 21, 2027 10:02 AM ET",
+	status: "Completed" as ValidationRunStatus,
+	totalRecords: 41_260,
+	accepted: 41_148,
+	acceptedPercent: 99.73,
+	rejected: 48,
+	rejectedPercent: 0.12,
+	warnings: 182,
+	warningsPercent: 0.44,
+	fileName: "EDGE_Q2_2027_Validation_Response.xlsx",
+	fileSize: "1.82 MB",
+};
+
+export const CMS_EDGE_VALIDATION_RECORD_TYPE_MIX = [
+	{ name: "Payment Data", count: 15_680, color: "#3b82f6", pct: 37.98 },
+	{ name: "Member Enrollment", count: 12_450, color: "#22c55e", pct: 30.17 },
+	{ name: "Risk Adjustment", count: 8_920, color: "#8b5cf6", pct: 21.62 },
+	{ name: "Provider Data", count: 4_210, color: "#f59e0b", pct: 10.23 },
+];
+
+export const CMS_EDGE_VALIDATION_TREND = [
+	{ quarter: "Q3 2026", accepted: 36_200, rejected: 52, warnings: 165 },
+	{ quarter: "Q4 2026", accepted: 38_380, rejected: 22, warnings: 18 },
+	{ quarter: "Q1 2027", accepted: 39_820, rejected: 35, warnings: 25 },
+	{ quarter: "Q2 2027", accepted: 41_148, rejected: 48, warnings: 182 },
+];
+
+export const CMS_EDGE_VALIDATION_EXCEPTIONS: ValidationExceptionRow[] = [
+	{
+		id: "exc-1",
+		errorCode: "VAL-1024",
+		recordType: "Member Enrollment",
+		description: "Invalid member identifier format",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateTime: "Jul 21, 2027 10:02 AM",
+		severity: "Error",
+	},
+	{
+		id: "exc-2",
+		errorCode: "VAL-2048",
+		recordType: "Payment Data",
+		description: "Payment amount exceeds plan threshold",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateTime: "Jul 21, 2027 10:02 AM",
+		severity: "Error",
+	},
+	{
+		id: "exc-3",
+		errorCode: "VAL-3012",
+		recordType: "Risk Adjustment",
+		description: "Missing risk score for enrolled member",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateTime: "Jul 21, 2027 10:02 AM",
+		severity: "Warning",
+	},
+	{
+		id: "exc-4",
+		errorCode: "VAL-1024",
+		recordType: "Member Enrollment",
+		description: "Duplicate enrollment record detected",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateTime: "Jul 25, 2027 03:10 PM",
+		severity: "Error",
+	},
+	{
+		id: "exc-5",
+		errorCode: "VAL-4010",
+		recordType: "Provider Data",
+		description: "NPI not found in provider registry",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateTime: "Apr 28, 2027 09:18 AM",
+		severity: "Warning",
+	},
+];
+
+export const VALIDATION_RUN_STATUS_STYLES: Record<ValidationRunStatus, string> = {
+	Completed:
+		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+	Pending:
+		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+	Error:
+		"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+};
+
+export const VALIDATION_SEVERITY_STYLES = {
+	Error: "border-red-200/80 bg-red-50 text-red-800",
+	Warning: "border-amber-200/80 bg-amber-50 text-amber-900",
+};
+
+// ——— Internal / External validation sub-tabs ———
+
+export type InternalFileValidationStatus = "Passed" | "Failed";
+
+export type RecordValidationSeverity = "High" | "Medium" | "Low";
+
+export type RecordResolutionStatus =
+	| "Open"
+	| "In Review"
+	| "Corrected"
+	| "Resubmitted"
+	| "Closed";
+
+export const INTERNAL_FILE_STATUS_STYLES: Record<InternalFileValidationStatus, string> = {
+	Passed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	Failed: "border-red-200 bg-red-50 text-red-700",
+};
+
+export const RECORD_SEVERITY_STYLES: Record<RecordValidationSeverity, string> = {
+	High: "border-red-200 bg-red-50 text-red-700",
+	Medium: "border-amber-200 bg-amber-50 text-amber-800",
+	Low: "border-sky-200 bg-sky-50 text-sky-800",
+};
+
+export const RESOLUTION_STATUS_DOT: Record<RecordResolutionStatus, string> = {
+	Open: "bg-red-500",
+	"In Review": "bg-amber-500",
+	Corrected: "bg-emerald-500",
+	Resubmitted: "bg-sky-500",
+	Closed: "bg-slate-500",
+};
+
+export const CMS_EDGE_INTERNAL_VALIDATION_SUMMARY = {
+	filesPassed: 10,
+	filesPassedPct: 83.33,
+	filesFailed: 2,
+	filesFailedPct: 16.67,
+	recordsPassed: 2_340_915,
+	recordsPassedPct: 95.52,
+	recordsFailed: 76_512,
+	recordsFailedPct: 3.12,
+	warnings: 33_395,
+	warningsPct: 1.36,
+	totalFiles: 12,
+	totalRecords: 2_450_822,
+	lastValidation: "Jul 27, 2027 11:44 AM ET",
+};
+
+export const CMS_EDGE_INTERNAL_FILE_VALIDATION = [
+	{
+		id: "if-1",
+		fileName: "EDGE_Q2_2027_MemberEnrollment.dat",
+		fileType: "Member Enrollment",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 26, 2027",
+		records: 512_840,
+		status: "Passed" as InternalFileValidationStatus,
+		errors: 0,
+		warnings: 1240,
+		relatedSubmission: "EDGE_Q2_2027_Final",
+	},
+	{
+		id: "if-2",
+		fileName: "EDGE_Q2_2027_PaymentData.dat",
+		fileType: "Payment Data",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 26, 2027",
+		records: 421_560,
+		status: "Passed" as InternalFileValidationStatus,
+		errors: 0,
+		warnings: 892,
+		relatedSubmission: "EDGE_Q2_2027_Final",
+	},
+	{
+		id: "if-3",
+		fileName: "EDGE_Q2_2027_RiskAdjustment.dat",
+		fileType: "Risk Adjustment",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 25, 2027",
+		records: 389_104,
+		status: "Passed" as InternalFileValidationStatus,
+		errors: 0,
+		warnings: 456,
+		relatedSubmission: "EDGE_Q2_2027_Final",
+	},
+	{
+		id: "if-4",
+		fileName: "EDGE_Q2_2027_ProviderData.dat",
+		fileType: "Provider Data",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 25, 2027",
+		records: 628_098,
+		status: "Failed" as InternalFileValidationStatus,
+		errors: 2840,
+		warnings: 1120,
+		relatedSubmission: "EDGE_Q2_2027_Final",
+	},
+	{
+		id: "if-5",
+		fileName: "EDGE_Q2_2027_Correction1.dat",
+		fileType: "Member Enrollment",
+		reportingPeriod: "Q2 2027",
+		submittedDate: "Jul 24, 2027",
+		records: 498_220,
+		status: "Passed" as InternalFileValidationStatus,
+		errors: 0,
+		warnings: 320,
+		relatedSubmission: "EDGE_Q2_2027_Correction1",
+	},
+];
+
+export const CMS_EDGE_INTERNAL_RECORD_VALIDATION = [
+	{
+		id: "ir-1",
+		recordType: "Member Enrollment",
+		errorCode: "E1001",
+		errorDescription: "Missing or invalid member identifier",
+		recordCount: 18_452,
+		severity: "High" as RecordValidationSeverity,
+		relatedFile: "EDGE_Q2_2027_ProviderData.dat",
+		resolutionStatus: "Open" as RecordResolutionStatus,
+	},
+	{
+		id: "ir-2",
+		recordType: "Payment Data",
+		errorCode: "E2048",
+		errorDescription: "Service date outside member eligibility period",
+		recordCount: 12_840,
+		severity: "High" as RecordValidationSeverity,
+		relatedFile: "EDGE_Q2_2027_ProviderData.dat",
+		resolutionStatus: "In Review" as RecordResolutionStatus,
+	},
+	{
+		id: "ir-3",
+		recordType: "Risk Adjustment",
+		errorCode: "E3012",
+		errorDescription: "Missing risk score for enrolled member",
+		recordCount: 8_920,
+		severity: "Medium" as RecordValidationSeverity,
+		relatedFile: "EDGE_Q2_2027_RiskAdjustment.dat",
+		resolutionStatus: "Open" as RecordResolutionStatus,
+	},
+	{
+		id: "ir-4",
+		recordType: "Provider Data",
+		errorCode: "E4010",
+		errorDescription: "Rendering provider NPI not on file",
+		recordCount: 6_240,
+		severity: "Medium" as RecordValidationSeverity,
+		relatedFile: "EDGE_Q2_2027_ProviderData.dat",
+		resolutionStatus: "Corrected" as RecordResolutionStatus,
+	},
+	{
+		id: "ir-5",
+		recordType: "Member Enrollment",
+		errorCode: "E1024",
+		errorDescription: "Duplicate enrollment record detected",
+		recordCount: 4_180,
+		severity: "Low" as RecordValidationSeverity,
+		relatedFile: "EDGE_Q2_2027_MemberEnrollment.dat",
+		resolutionStatus: "In Review" as RecordResolutionStatus,
+	},
+];
+
+export const CMS_EDGE_INTERNAL_VALIDATION_TREND = [
+	{ quarter: "Q3 2026", passed: 2_180_400, failed: 68_200, warnings: 28_400 },
+	{ quarter: "Q4 2026", passed: 2_240_800, failed: 62_100, warnings: 30_200 },
+	{ quarter: "Q1 2027", passed: 2_290_500, failed: 71_800, warnings: 31_600 },
+	{ quarter: "Q2 2027", passed: 2_340_915, failed: 76_512, warnings: 33_395 },
+];
+
+export const CMS_EDGE_TOP_ERROR_CATEGORIES = [
+	{ category: "Missing Member ID (E1001)", errors: 18_452, pct: 24.12 },
+	{ category: "Invalid Service Date (E2048)", errors: 12_840, pct: 16.78 },
+	{ category: "Provider NPI Not Found (E4010)", errors: 9_620, pct: 12.57 },
+	{ category: "Duplicate Record (E1024)", errors: 7_480, pct: 9.78 },
+	{ category: "Missing Risk Score (E3012)", errors: 6_240, pct: 8.16 },
+];
+
+export const CMS_EDGE_EXTERNAL_VALIDATION_SUMMARY = {
+	filesPassed: 10,
+	filesPassedPct: 83.33,
+	filesFailed: 2,
+	filesFailedPct: 16.67,
+	recordsPassed: 2_340_915,
+	recordsPassedPct: 95.52,
+	recordsFailed: 76_512,
+	recordsFailedPct: 3.12,
+	warnings: 33_395,
+	warningsPct: 1.36,
+	totalFilesSubmitted: 12,
+	totalRecordsReturned: 2_450_822,
+	lastResponse: "Jul 27, 2027 11:44 AM ET",
+};
+
+export type ExternalFileValidationStatus = "Completed" | "Pending" | "Error";
+
+export const EXTERNAL_FILE_STATUS_STYLES: Record<ExternalFileValidationStatus, string> = {
+	Completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	Pending: "border-amber-200 bg-amber-50 text-amber-800",
+	Error: "border-red-200 bg-red-50 text-red-700",
+};
+
+export const CMS_EDGE_EXTERNAL_FILE_VALIDATION = [
+	{
+		id: "ef-1",
+		responseType: "Validation Report",
+		fileName: "EDGE_Q2_2027_Validation_Response.xlsx",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 21, 2027 10:02 AM",
+		status: "Completed" as ExternalFileValidationStatus,
+		records: 512_840,
+		errors: 12_480,
+		warnings: 2_240,
+	},
+	{
+		id: "ef-2",
+		responseType: "Acceptance Report",
+		fileName: "EDGE_Q2_2027_Acceptance_Report.pdf",
+		relatedSubmission: "EDGE_Q2_2027_Final",
+		dateReceived: "Jul 22, 2027 02:18 PM",
+		status: "Completed" as ExternalFileValidationStatus,
+		records: 421_560,
+		errors: 0,
+		warnings: 892,
+	},
+	{
+		id: "ef-3",
+		responseType: "Validation Report",
+		fileName: "EDGE_Q2_2027_Correction1_Val.xlsx",
+		relatedSubmission: "EDGE_Q2_2027_Correction1",
+		dateReceived: "Jul 25, 2027 03:10 PM",
+		status: "Completed" as ExternalFileValidationStatus,
+		records: 389_104,
+		errors: 8_284,
+		warnings: 1_760,
+	},
+	{
+		id: "ef-4",
+		responseType: "Validation Report",
+		fileName: "EDGE_Q1_2027_Validation_Response.xlsx",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateReceived: "Apr 28, 2027 09:18 AM",
+		status: "Completed" as ExternalFileValidationStatus,
+		records: 628_098,
+		errors: 12_658,
+		warnings: 3_000,
+	},
+	{
+		id: "ef-5",
+		responseType: "Acceptance Report",
+		fileName: "EDGE_Q1_2027_Acceptance_Report.pdf",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateReceived: "Apr 29, 2027 11:42 AM",
+		status: "Pending" as ExternalFileValidationStatus,
+		records: 498_220,
+		errors: 0,
+		warnings: 0,
+	},
+];
+
+export const CMS_EDGE_EXTERNAL_RECORD_VALIDATION = CMS_EDGE_INTERNAL_RECORD_VALIDATION;
+
+export const CMS_EDGE_EXTERNAL_ERROR_BREAKDOWN = [
+	{ label: "Missing Member ID", count: 18_452, color: "#13446c" },
+	{ label: "Invalid Service Date", count: 12_840, color: "#3b82f6" },
+	{ label: "Provider NPI", count: 9_620, color: "#8b5cf6" },
+	{ label: "Duplicate Record", count: 7_480, color: "#f59e0b" },
+	{ label: "Other", count: 28_120, color: "#94a3b8" },
+];
+
+export const CMS_EDGE_EXTERNAL_QUICK_ACTIONS = [
+	{ id: "eq-1", title: "Download All Reports", description: "Export all CMS validation and acceptance reports" },
+	{ id: "eq-2", title: "Download Error File", description: "Download the latest CMS error detail file" },
+	{ id: "eq-3", title: "Export All Errors", description: "Export record-level errors to spreadsheet" },
+	{ id: "eq-4", title: "Validation Rules", description: "View CMS EDGE validation rule reference" },
+	{ id: "eq-5", title: "Error Code Library", description: "Browse CMS error codes and resolutions" },
+	{ id: "eq-6", title: "Validation Audit Log", description: "Review validation activity and audit trail" },
+];
+
 export type DocumentFileKind = "pdf" | "xlsx" | "csv" | "xml";
 export type DocumentStatus = "Available" | "Pending" | "Expired";
 export type RetentionAlertStatus = "Expires Soon" | "Retention Warning";
@@ -451,10 +1551,10 @@ export const CMS_EDGE_DOCUMENT_KPIS = {
 };
 
 export const CMS_EDGE_STORAGE_MIX = [
-	{ name: "Reports", value: 53.4, color: "#3b82f6" },
-	{ name: "Responses", value: 26.7, color: "#22c55e" },
-	{ name: "Audit", value: 14.1, color: "#f59e0b" },
-	{ name: "Other", value: 5.8, color: "#8b5cf6" },
+	{ name: "Reports", value: 53.4, gb: 24.35, color: "#3b82f6" },
+	{ name: "Responses", value: 26.7, gb: 12.18, color: "#22c55e" },
+	{ name: "Audit", value: 14.1, gb: 6.42, color: "#f59e0b" },
+	{ name: "Other", value: 5.8, gb: 2.67, color: "#8b5cf6" },
 ];
 
 export const CMS_EDGE_DOCUMENT_TYPES = [
@@ -742,6 +1842,7 @@ export type FmCategoryRow = {
 	category: string;
 	paidAmount: number;
 	percent: number;
+	color: string;
 };
 
 export type FmActivityRow = {
@@ -867,10 +1968,10 @@ export const CMS_EDGE_FM_TREND = [
 ];
 
 export const CMS_EDGE_FM_CATEGORIES: FmCategoryRow[] = [
-	{ category: "Capitation", paidAmount: 5_134_092.18, percent: 39.97 },
-	{ category: "Fee-for-Service", paidAmount: 4_876_287.54, percent: 37.96 },
-	{ category: "Incentive", paidAmount: 1_926_784.57, percent: 15.0 },
-	{ category: "Other", paidAmount: 908_066.16, percent: 7.07 },
+	{ category: "Capitation", paidAmount: 5_134_092.18, percent: 39.97, color: "#3b82f6" },
+	{ category: "Fee-for-Service", paidAmount: 4_876_287.54, percent: 37.96, color: "#6366f1" },
+	{ category: "Incentive", paidAmount: 1_926_784.57, percent: 15.0, color: "#8b5cf6" },
+	{ category: "Other", paidAmount: 908_066.16, percent: 7.07, color: "#a78bfa" },
 ];
 
 export const CMS_EDGE_FM_SELECTED_DETAILS = {
@@ -883,13 +1984,14 @@ export const CMS_EDGE_FM_SELECTED_DETAILS = {
 	withholds: 81_892.67,
 	adjustments: 41_152.26,
 	netPayment: 4_162_031.89,
+	status: "Completed" as const,
 };
 
 export const CMS_EDGE_FM_ACTIVITY: FmActivityRow[] = [
 	{
 		id: "fm-act-1",
-		activity: "FM Response Received",
-		description: "Payment response file processed successfully",
+		activity: "Payment Processed",
+		description: "Q2 2027 payment response reconciled and posted",
 		relatedSubmission: "EDGE_Q2_2027_Final",
 		dateTime: "Jul 27, 2027 11:44 AM",
 		status: "Completed",
@@ -898,7 +2000,7 @@ export const CMS_EDGE_FM_ACTIVITY: FmActivityRow[] = [
 	{
 		id: "fm-act-2",
 		activity: "Withhold Applied",
-		description: "Withhold amounts reconciled against payment file",
+		description: "Withhold amounts applied per CMS EDGE payment file",
 		relatedSubmission: "EDGE_Q2_2027_Final",
 		dateTime: "Jul 27, 2027 11:45 AM",
 		status: "Completed",
@@ -906,8 +2008,8 @@ export const CMS_EDGE_FM_ACTIVITY: FmActivityRow[] = [
 	},
 	{
 		id: "fm-act-3",
-		activity: "Adjustment Posted",
-		description: "Adjustment entries applied to FM summary",
+		activity: "FM Report Received",
+		description: "Financial management report received from CMS EDGE",
 		relatedSubmission: "EDGE_Q2_2027_Final",
 		dateTime: "Jul 27, 2027 11:46 AM",
 		status: "Completed",
@@ -915,10 +2017,19 @@ export const CMS_EDGE_FM_ACTIVITY: FmActivityRow[] = [
 	},
 	{
 		id: "fm-act-4",
-		activity: "FM Report Generated",
-		description: "Financial management report available for download",
+		activity: "Discrepancy Identified",
+		description: "Minor adjustment variance flagged for review",
 		relatedSubmission: "EDGE_Q1_2027_Final",
 		dateTime: "Apr 28, 2027 09:20 AM",
+		status: "Completed",
+		user: "CMS EDGE System",
+	},
+	{
+		id: "fm-act-5",
+		activity: "Payment Processed",
+		description: "Q1 2027 net payment confirmed and recorded",
+		relatedSubmission: "EDGE_Q1_2027_Final",
+		dateTime: "Apr 28, 2027 09:18 AM",
 		status: "Completed",
 		user: "CMS EDGE System",
 	},

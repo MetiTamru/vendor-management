@@ -259,15 +259,8 @@ const claimEncounterNav: SidebarNavItem[] = [
 		module: "claim_encounter",
 	},
 	{
-		title: "Medicaid Encounter Reporting",
-		href: "/admin/claim-encounter/regulatory/medicaid-encounter-reporting",
-		permission: "dashboard-view",
-		section: "regulatory_compliance",
-		module: "claim_encounter",
-	},
-	{
-		title: "Medicare Reporting",
-		href: "/admin/claim-encounter/regulatory/medicare-reporting",
+		title: "Medicare & Medicaid Reporting",
+		href: "/admin/claim-encounter/regulatory/program-reporting",
 		permission: "dashboard-view",
 		section: "regulatory_compliance",
 		module: "claim_encounter",
@@ -280,11 +273,45 @@ const claimEncounterNav: SidebarNavItem[] = [
 		module: "claim_encounter",
 	},
 	{
-		title: "HEDIS / Quality",
-		href: "/admin/claim-encounter/regulatory/hedis-quality",
+		title: "Quality Performance",
+		href: "/admin/claim-encounter/regulatory/quality-performance/overview",
 		permission: "dashboard-view",
 		section: "regulatory_compliance",
 		module: "claim_encounter",
+		items: [
+			{
+				title: "Overview",
+				href: "/admin/claim-encounter/regulatory/quality-performance/overview",
+			},
+			{
+				title: "Measure Library",
+				href: "/admin/claim-encounter/regulatory/quality-performance/measure-library",
+			},
+			{
+				title: "Gap Closure",
+				href: "/admin/claim-encounter/regulatory/quality-performance/gap-closure",
+			},
+			{
+				title: "Provider Performance",
+				href: "/admin/claim-encounter/regulatory/quality-performance/provider-performance",
+			},
+			{
+				title: "Performance Trends",
+				href: "/admin/claim-encounter/regulatory/quality-performance/performance-trends",
+			},
+			{
+				title: "NCQA Submission",
+				href: "/admin/claim-encounter/regulatory/quality-performance/ncqa-submission",
+			},
+			{
+				title: "Audit",
+				href: "/admin/claim-encounter/regulatory/quality-performance/audit",
+			},
+			{
+				title: "Documents",
+				href: "/admin/claim-encounter/regulatory/quality-performance/documents",
+			},
+		],
 	},
 	{
 		title: "Audit Management",

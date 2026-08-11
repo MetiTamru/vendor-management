@@ -19,10 +19,30 @@ export const CMS_EDGE_SECTION_GAP = "gap-2";
 /** Disable native overflow on shadcn Table — Radix ScrollArea handles scrolling */
 export const CMS_EDGE_TABLE_CONTAINER = "overflow-visible";
 
+/** Compact table typography used across CMS EDGE tabs */
+export const CMS_EDGE_TABLE_CLASS = "w-full text-xs leading-snug";
+
 export const CMS_EDGE_TABLE_HEAD_CLASS =
-	"h-9 bg-muted/30 px-3 font-semibold text-foreground";
+	"h-8 bg-muted/30 px-3 text-[11px] font-semibold text-foreground";
 
 export const CMS_EDGE_TABLE_CELL_CLASS = "px-3 py-2";
+
+/** Tighter rows for dense split-view tables (e.g. validations) */
+export const CMS_EDGE_TABLE_DENSE_CELL_CLASS = "px-3 py-1";
+
+export const CMS_EDGE_TABLE_LINK_CLASS =
+	"h-auto p-0 font-mono text-[11px] text-primary";
+
+export const CMS_EDGE_STATUS_PILL_CLASS =
+	"inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold";
+
+/** Slightly smaller tables for dense secondary panels (e.g. documents bottom row) */
+export const CMS_EDGE_TABLE_COMPACT_CLASS = "w-full text-[11px] leading-snug";
+
+export const CMS_EDGE_TABLE_COMPACT_HEAD_CLASS =
+	"h-7 bg-muted/30 px-3 text-[10px] font-semibold text-foreground";
+
+export const CMS_EDGE_TABLE_COMPACT_CELL_CLASS = "px-3 py-1.5";
 
 export function CmsEdgeTableScroll({
 	children,
@@ -33,9 +53,12 @@ export function CmsEdgeTableScroll({
 }) {
 	return (
 		<ScrollArea
-			type="always"
-			className={cn("w-full max-w-full overflow-hidden", className)}
-			scrollbarClassName={cn("z-10", SCROLLBAR_TRACK)}
+			type="hover"
+			className={cn("group w-full max-w-full overflow-hidden", className)}
+			scrollbarClassName={cn(
+				"z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 data-[state=visible]:opacity-100",
+				SCROLLBAR_TRACK
+			)}
 			thumbClassName={SCROLLBAR_THUMB}
 			viewportClassName="w-full max-w-full [&>div]:!block [&>div]:w-max [&>div]:min-w-full"
 		>
@@ -65,7 +88,7 @@ export function CmsEdgeSectionPanel({
 	className,
 	bodyClassName,
 }: {
-	title: string;
+	title: ReactNode;
 	subtitle?: string;
 	action?: ReactNode;
 	children: ReactNode;
@@ -97,34 +120,45 @@ export function CmsEdgeSectionPanel({
 	);
 }
 
-/** Main table column + compact sidebar (audit / documents style) */
+/** Main table column + sidebar. Use `wideMain` for ~2:1 table/chart layouts. */
 export function CmsEdgeSplitRow({
 	main,
 	side,
 	className,
-	sideWidth = "300px",
+	sideWidth = "340px",
+	wideMain = false,
+	align = "stretch",
 }: {
 	main: ReactNode;
 	side: ReactNode;
 	className?: string;
 	sideWidth?: string;
+	wideMain?: boolean;
+	/** `start` keeps the main panel content-height (no empty table gap). */
+	align?: "stretch" | "start";
 }) {
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-1 items-stretch xl:grid-cols-[minmax(0,1fr)_var(--cms-edge-side,300px)]",
+				"grid grid-cols-1",
+				align === "stretch" ? "items-stretch" : "items-start",
+				wideMain
+					? "xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]"
+					: "xl:grid-cols-[minmax(0,1fr)_var(--cms-edge-side,340px)]",
 				CMS_EDGE_SECTION_GAP,
 				className
 			)}
-			style={{ "--cms-edge-side": sideWidth } as CSSProperties}
+			style={
+				wideMain ? undefined : ({ "--cms-edge-side": sideWidth } as CSSProperties)
+			}
 		>
-			<div className="min-w-0">{main}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{main}</div>
 			<div className="flex min-h-0 min-w-0 flex-col">{side}</div>
 		</div>
 	);
 }
 
-/** Side-by-side pair — natural height, file-monitoring gap */
+/** Side-by-side pair — equal height stretch */
 export function CmsEdgePairRow({
 	left,
 	right,
@@ -137,18 +171,18 @@ export function CmsEdgePairRow({
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-1 lg:grid-cols-2",
+				"grid grid-cols-1 items-stretch lg:grid-cols-2",
 				CMS_EDGE_SECTION_GAP,
 				className
 			)}
 		>
-			<div className="min-w-0">{left}</div>
-			<div className="min-w-0">{right}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{left}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{right}</div>
 		</div>
 	);
 }
 
-/** Three-column row — natural height, file-monitoring gap */
+/** Three-column row — equal height stretch on xl+ */
 export function CmsEdgeTripleRow({
 	left,
 	center,
@@ -163,14 +197,14 @@ export function CmsEdgeTripleRow({
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-1 lg:grid-cols-3",
+				"grid grid-cols-1 items-stretch lg:grid-cols-3",
 				CMS_EDGE_SECTION_GAP,
 				className
 			)}
 		>
-			<div className="min-w-0">{left}</div>
-			<div className="min-w-0">{center}</div>
-			<div className="min-w-0">{right}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{left}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{center}</div>
+			<div className="flex min-h-0 min-w-0 flex-col">{right}</div>
 		</div>
 	);
 }

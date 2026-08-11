@@ -1,7 +1,10 @@
-import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceProgramRoutePage";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-	return (
-		<ComplianceProgramRoutePage slug="medicare-reporting" section="regulatory_compliance" />
-	);
+type PageProps = {
+	params: Promise<{ locale: string }>;
+};
+
+export default async function Page({ params }: PageProps) {
+	const { locale } = await params;
+	redirect(`/${locale}/admin/claim-encounter/regulatory/program-reporting`);
 }

@@ -71,6 +71,7 @@ export function filterPlaceholder(config: ComplianceProgramPageConfig): string {
 		case "risk-adjustment":
 			return "Search members, HCC profiles, owners…";
 		case "hedis-quality":
+		case "quality-performance":
 			return "Search measures, vendors, attestation…";
 		case "audit-management":
 			return "Search audits, findings, owners…";

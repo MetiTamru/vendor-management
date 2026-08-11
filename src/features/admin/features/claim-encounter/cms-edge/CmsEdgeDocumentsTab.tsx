@@ -15,17 +15,16 @@ import {
 	FileText,
 	FolderOpen,
 	HardDrive,
+	type LucideIcon,
 	MoreVertical,
 	Search,
 } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 
-import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
 	Select,
 	SelectContent,
@@ -59,8 +58,16 @@ import {
 import {
 	CMS_EDGE_PAGE_STACK,
 	CMS_EDGE_SECTION_GAP,
+	CMS_EDGE_STATUS_PILL_CLASS,
+	CMS_EDGE_TABLE_CELL_CLASS,
+	CMS_EDGE_TABLE_CLASS,
+	CMS_EDGE_TABLE_COMPACT_CELL_CLASS,
+	CMS_EDGE_TABLE_COMPACT_CLASS,
+	CMS_EDGE_TABLE_COMPACT_HEAD_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
+	CMS_EDGE_TABLE_HEAD_CLASS,
 	CmsEdgePageFooter,
+	CmsEdgePairRow,
 	CmsEdgeSectionPanel,
 	CmsEdgeSplitRow,
 	CmsEdgeTableScroll,
@@ -83,14 +90,7 @@ function StatusPill({
 	className: string;
 }) {
 	return (
-		<span
-			className={cn(
-				"inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-				className
-			)}
-		>
-			{label}
-		</span>
+		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
 }
 
@@ -105,63 +105,124 @@ function SortableHead({ children }: { children: ReactNode }) {
 
 function FileKindIcon({ kind }: { kind: DocumentFileKind }) {
 	if (kind === "xlsx" || kind === "csv") {
-		return <FileSpreadsheet className="size-4 shrink-0 text-emerald-600" />;
+		return <FileSpreadsheet className="size-3.5 shrink-0 text-emerald-600" />;
 	}
 	if (kind === "xml") {
-		return <FileText className="size-4 shrink-0 text-amber-600" />;
+		return <FileText className="size-3.5 shrink-0 text-amber-600" />;
 	}
-	return <FileText className="size-4 shrink-0 text-red-500" />;
+	return <FileText className="size-3.5 shrink-0 text-red-500" />;
+}
+
+function DocMetricCard({
+	label,
+	value,
+	hint,
+	icon: Icon,
+	tone = "text-primary bg-primary/10",
+}: {
+	label: string;
+	value: ReactNode;
+	hint?: ReactNode;
+	icon: LucideIcon;
+	tone?: string;
+}) {
+	return (
+		<div className="rounded-lg border border-border/70 bg-card p-2.5 shadow-sm">
+			<div className="flex items-center gap-2.5">
+				<div
+					className={cn(
+						"flex size-8 shrink-0 items-center justify-center rounded-md",
+						tone
+					)}
+				>
+					<Icon className="size-4" aria-hidden />
+				</div>
+				<div className="min-w-0 flex-1">
+					<p className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						{label}
+					</p>
+					<p className="mt-0.5 text-sm font-semibold tabular-nums leading-tight text-foreground">
+						{value}
+					</p>
+					{hint != null && hint !== "" ? (
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+					) : null}
+				</div>
+			</div>
+		</div>
+	);
 }
 
 function DocumentsKpiRow() {
 	const k = CMS_EDGE_DOCUMENT_KPIS;
-	const periodHint = "(This Period)";
 
 	return (
-		<SummaryCardsGrid columns={6}>
-			<SummaryCard
+		<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+			<DocMetricCard
 				label="Total Documents"
-				value={`${k.totalDocuments}`}
-				hint={periodHint}
+				value={k.totalDocuments}
 				icon={FolderOpen}
 				tone="text-sky-700 bg-sky-500/10"
 			/>
-			<SummaryCard
+			<DocMetricCard
 				label="Available"
-				value={`${k.available.count} (${k.available.percent.toFixed(2)}%)`}
-				hint={periodHint}
+				value={k.available.count}
+				hint={`${k.available.percent.toFixed(1)}%`}
 				icon={FileText}
 				tone="text-emerald-700 bg-emerald-500/10"
 			/>
-			<SummaryCard
+			<DocMetricCard
 				label="Pending"
-				value={`${k.pending.count} (${k.pending.percent.toFixed(2)}%)`}
-				hint={periodHint}
+				value={k.pending.count}
+				hint={`${k.pending.percent.toFixed(1)}%`}
 				icon={Clock3}
 				tone="text-amber-700 bg-amber-500/10"
 			/>
-			<SummaryCard
-				label="Expired / Retention Warning"
-				value={`${k.expiredWarning.count} (${k.expiredWarning.percent.toFixed(2)}%)`}
-				hint={periodHint}
+			<DocMetricCard
+				label="Retention Warning"
+				value={k.expiredWarning.count}
+				hint={`${k.expiredWarning.percent.toFixed(1)}%`}
 				icon={AlertTriangle}
 				tone="text-red-700 bg-red-500/10"
 			/>
-			<SummaryCard
+			<DocMetricCard
 				label="Downloads"
 				value={k.downloads}
-				hint={periodHint}
 				icon={Download}
 				tone="text-violet-700 bg-violet-500/10"
 			/>
-			<SummaryCard
-				label="Total Storage Used"
+			<DocMetricCard
+				label="Storage Used"
 				value={`${k.storageUsedGb.toFixed(2)} GB`}
-				hint={periodHint}
 				icon={HardDrive}
 				tone="text-teal-700 bg-teal-500/10"
 			/>
-		</SummaryCardsGrid>
+		</div>
+	);
+}
+
+function StorageChartLegend({
+	items,
+}: {
+	items: { name: string; color: string; gb: number; pct: number }[];
+}) {
+	return (
+		<ul className="grid gap-1 text-[11px] leading-snug">
+			{items.map((item) => (
+				<li key={item.name} className="flex items-center justify-between gap-2">
+					<span className="flex min-w-0 items-center gap-1.5 font-medium">
+						<span
+							className="size-2 shrink-0 rounded-full"
+							style={{ backgroundColor: item.color }}
+						/>
+						<span className="truncate">{item.name}</span>
+					</span>
+					<span className="shrink-0 text-right tabular-nums text-muted-foreground">
+						{item.gb.toFixed(2)} GB ({item.pct.toFixed(1)}%)
+					</span>
+				</li>
+			))}
+		</ul>
 	);
 }
 
@@ -174,18 +235,30 @@ function DocumentLibraryPanel() {
 
 	return (
 		<CmsEdgeSectionPanel
+			className="flex h-full min-h-0 flex-col"
 			title="Document Library"
 			subtitle="Browse and access all CMS EDGE documents."
+			bodyClassName="flex min-h-0 flex-1 flex-col"
 			action={
-				<Button
-					variant="outline"
-					size="sm"
-					className="h-8 border-primary/30 text-primary"
-					onClick={() => toast.message("Upload document")}
-				>
-					<CloudUpload className="mr-1.5 size-3.5" />
-					Upload Document
-				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<div className="relative w-full min-w-[180px] sm:w-52">
+						<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder="Search documents..."
+							className="h-8 bg-background pl-8 text-xs"
+						/>
+					</div>
+					<Button
+						size="sm"
+						className="h-8"
+						onClick={() => toast.message("Upload document")}
+					>
+						<CloudUpload className="mr-1.5 size-3.5" />
+						Upload Document
+					</Button>
+				</div>
 			}
 			footer={
 				<div className="border-t border-border/50 px-4 py-3">
@@ -227,49 +300,38 @@ function DocumentLibraryPanel() {
 				</div>
 			}
 		>
-			<div className="shrink-0 border-b border-border/50 px-4 py-3">
-				<div className="relative max-w-md">
-					<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Search documents..."
-						className="h-9 bg-background pl-8"
-					/>
-				</div>
-			</div>
-			<CmsEdgeTableScroll>
+			<CmsEdgeTableScroll className="min-h-[300px] flex-1 border-t border-border/50">
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[1180px] text-xs"
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1180px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Document Name
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Document Type
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Related Submission
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Reporting Period
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								<SortableHead>Date Uploaded</SortableHead>
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								File Size
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Status
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Retention Until
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 text-right font-semibold text-foreground">
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
 								Actions
 							</TableHead>
 						</TableRow>
@@ -280,7 +342,7 @@ function DocumentLibraryPanel() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<span className="flex min-w-0 items-center gap-2">
 										<FileKindIcon kind={row.fileKind} />
 										<Button
@@ -291,8 +353,8 @@ function DocumentLibraryPanel() {
 										</Button>
 									</span>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.documentType}</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.documentType}</TableCell>
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<Button
 										variant="link"
 										className="h-auto p-0 text-[11px] text-primary"
@@ -300,23 +362,23 @@ function DocumentLibraryPanel() {
 										{row.relatedSubmission}
 									</Button>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.reportingPeriod}</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.reportingPeriod}</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.dateUploaded}
 								</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.fileSize}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<StatusPill
 										label={row.status}
 										className={DOCUMENT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
 									{row.retentionUntil}
 								</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4 text-right">
+								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
 									<div className="inline-flex items-center gap-0.5">
 										<Button
 											variant="ghost"
@@ -445,68 +507,59 @@ function DocumentFiltersPanel() {
 
 function StorageOverviewPanel() {
 	const k = CMS_EDGE_DOCUMENT_KPIS;
-	const usedPercent = (k.storageUsedGb / k.storageAllocatedGb) * 100;
+	const legendItems = CMS_EDGE_STORAGE_MIX.map((item) => ({
+		name: item.name,
+		color: item.color,
+		gb: item.gb,
+		pct: item.value,
+	}));
 
 	return (
-		<CmsEdgeSectionPanel title="Storage Overview">
-			<div className="px-4 py-4">
-				<div className="flex items-center gap-4">
-					<div className="relative h-36 w-36 shrink-0">
-						<ResponsiveContainer width="100%" height="100%">
-							<PieChart>
-								<Pie
-									data={CMS_EDGE_STORAGE_MIX}
-									dataKey="value"
-									nameKey="name"
-									innerRadius={44}
-									outerRadius={64}
-									paddingAngle={2}
-								>
-									{CMS_EDGE_STORAGE_MIX.map((entry) => (
-										<Cell key={entry.name} fill={entry.color} />
-									))}
-								</Pie>
-								<Tooltip />
-							</PieChart>
-						</ResponsiveContainer>
-						<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-							<p className="text-sm font-bold tabular-nums text-foreground">
-								{k.storageUsedGb.toFixed(2)} GB
-							</p>
-							<p className="text-[10px] text-muted-foreground">Total Used</p>
-						</div>
-					</div>
-					<ul className="min-w-0 flex-1 space-y-2 text-xs">
-						{CMS_EDGE_STORAGE_MIX.map((item) => (
-							<li
-								key={item.name}
-								className="flex items-center justify-between gap-2"
-							>
-								<span className="flex items-center gap-2 font-medium">
-									<span
-										className="size-2.5 rounded-full"
-										style={{ backgroundColor: item.color }}
-									/>
-									{item.name}
-								</span>
-								<span className="tabular-nums text-muted-foreground">
-									{item.value.toFixed(1)}%
-								</span>
-							</li>
-						))}
-					</ul>
+		<CmsEdgeSectionPanel
+			className="flex min-h-0 flex-1 flex-col"
+			title="Storage Overview"
+			bodyClassName="flex min-h-0 flex-1 flex-col"
+			footer={
+				<div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border/50 px-4 py-2.5 text-[10px]">
+					<span className="text-muted-foreground">
+						Total Storage Allocated: {k.storageAllocatedGb} GB
+					</span>
+					<span className="font-medium tabular-nums text-emerald-700">
+						Available: {k.storageAvailableGb.toFixed(2)} GB (
+						{k.storageAvailablePercent.toFixed(2)}%)
+					</span>
 				</div>
-				<div className="mt-4 space-y-2 border-t border-border/50 pt-4">
-					<div className="flex items-center justify-between text-xs">
-						<span className="text-muted-foreground">
-							Total Storage Allocated: {k.storageAllocatedGb} GB
-						</span>
-						<span className="font-medium tabular-nums">
-							Available: {k.storageAvailableGb.toFixed(2)} GB (
-							{k.storageAvailablePercent.toFixed(2)}%)
-						</span>
+			}
+		>
+			<div className="flex min-h-0 flex-1 flex-col border-t border-border/50 px-4 py-3">
+				<div className="relative mx-auto w-full max-w-[168px] flex-1">
+					<ResponsiveContainer width="100%" height="100%" minHeight={120}>
+						<PieChart>
+							<Pie
+								data={CMS_EDGE_STORAGE_MIX}
+								dataKey="value"
+								nameKey="name"
+								innerRadius="58%"
+								outerRadius="88%"
+								paddingAngle={2}
+								stroke="none"
+								isAnimationActive={false}
+							>
+								{CMS_EDGE_STORAGE_MIX.map((entry) => (
+									<Cell key={entry.name} fill={entry.color} />
+								))}
+							</Pie>
+						</PieChart>
+					</ResponsiveContainer>
+					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+						<p className="text-xs font-bold tabular-nums text-foreground">
+							{k.storageUsedGb.toFixed(2)} GB
+						</p>
+						<p className="text-[10px] text-muted-foreground">Total Used</p>
 					</div>
-					<Progress value={usedPercent} className="h-2 bg-muted" />
+				</div>
+				<div className="shrink-0 pt-2">
+					<StorageChartLegend items={legendItems} />
 				</div>
 			</div>
 		</CmsEdgeSectionPanel>
@@ -518,35 +571,29 @@ function RecentlyUploadedPanel() {
 		<CmsEdgeSectionPanel
 			title="Recently Uploaded Documents"
 			footer={
-				<div className="border-t border-border/50 px-4 py-3">
+				<div className="border-t border-border/50 px-4 py-2.5">
 					<PanelLink>View All Documents</PanelLink>
 				</div>
 			}
 		>
-			<CmsEdgeTableScroll>
+			<CmsEdgeTableScroll className="border-t border-border/50">
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[720px] text-xs"
+					className={cn(CMS_EDGE_TABLE_COMPACT_CLASS, "min-w-[680px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Document Name
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Document Type
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Uploaded By
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Date Uploaded
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
-								Related Submission
-							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 text-right font-semibold text-foreground">
-								Actions
 							</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -556,27 +603,20 @@ function RecentlyUploadedPanel() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5">
-									<span className="flex items-center gap-2">
+								<TableCell className={CMS_EDGE_TABLE_COMPACT_CELL_CLASS}>
+									<span className="flex items-center gap-1.5">
 										<FileKindIcon kind={row.fileKind} />
 										<span className="truncate">{row.name}</span>
 									</span>
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.documentType}</TableCell>
-								<TableCell className="px-3 py-2.5">{row.uploadedBy}</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
-									{row.dateUploaded}
+								<TableCell className={CMS_EDGE_TABLE_COMPACT_CELL_CLASS}>
+									{row.documentType}
 								</TableCell>
-								<TableCell className="px-3 py-2.5">{row.relatedSubmission}</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4 text-right">
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 text-primary"
-										onClick={() => toast.success(`Download ${row.name}`)}
-									>
-										<Download className="size-3.5" />
-									</Button>
+								<TableCell className={CMS_EDGE_TABLE_COMPACT_CELL_CLASS}>
+									{row.uploadedBy}
+								</TableCell>
+								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
+									{row.dateUploaded}
 								</TableCell>
 							</TableRow>
 						))}
@@ -593,28 +633,28 @@ function RetentionAlertsPanel() {
 			title="Retention / Expiration Alerts"
 			subtitle="Documents nearing retention expiration."
 			footer={
-				<div className="border-t border-border/50 px-4 py-3">
+				<div className="border-t border-border/50 px-4 py-2.5">
 					<PanelLink>View All Alerts</PanelLink>
 				</div>
 			}
 		>
-			<CmsEdgeTableScroll>
+			<CmsEdgeTableScroll className="border-t border-border/50">
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className="w-full min-w-[620px] text-xs"
+					className={cn(CMS_EDGE_TABLE_COMPACT_CLASS, "min-w-[560px]")}
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Document Name
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Retention Until
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 font-semibold text-foreground">
+							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Days Remaining
 							</TableHead>
-							<TableHead className="h-9 bg-muted/30 px-3 pr-4 font-semibold text-foreground">
+							<TableHead className={cn(CMS_EDGE_TABLE_COMPACT_HEAD_CLASS, "pr-4")}>
 								Status
 							</TableHead>
 						</TableRow>
@@ -625,19 +665,19 @@ function RetentionAlertsPanel() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className="px-3 py-2.5">
-									<span className="flex items-center gap-2">
+								<TableCell className={CMS_EDGE_TABLE_COMPACT_CELL_CLASS}>
+									<span className="flex items-center gap-1.5">
 										<FileKindIcon kind={row.fileKind} />
 										<span className="truncate">{row.name}</span>
 									</span>
 								</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
 									{row.retentionUntil}
 								</TableCell>
-								<TableCell className="px-3 py-2.5 tabular-nums">
+								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
 									{row.daysRemaining} days
 								</TableCell>
-								<TableCell className="px-3 py-2.5 pr-4">
+								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "pr-4")}>
 									<StatusPill
 										label={row.status}
 										className={RETENTION_ALERT_STYLES[row.status]}
@@ -658,6 +698,7 @@ export function CmsEdgeDocumentsTab() {
 			<DocumentsKpiRow />
 
 			<CmsEdgeSplitRow
+				wideMain
 				main={<DocumentLibraryPanel />}
 				side={
 					<div className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}>

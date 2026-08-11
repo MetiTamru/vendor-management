@@ -144,11 +144,11 @@ export const COMPLIANCE_PROGRAM_PAGES: ComplianceProgramPageConfig[] = [
 		],
 	},
 	{
-		slug: "hedis-quality",
+		slug: "quality-performance",
 		section: "regulatory_compliance",
-		title: "HEDIS / Quality",
+		title: "Quality Performance",
 		description:
-			"Track HEDIS measure performance, supplemental data loads, and vendor attestation status.",
+			"Track HEDIS measure performance, gap closure activity, and NCQA submission readiness.",
 		iconKey: "clipboard-check",
 		kpiLabels: ["Measures", "Met Target", "At Risk", "Data Gaps"],
 		statusOptions: ["On Track", "At Risk", "Gap", "Submitted", "Validated"],
