@@ -4,10 +4,15 @@ import {
 	AlertTriangle,
 	BarChart3,
 	Bell,
+	Brain,
 	Cable,
 	CalendarDays,
 	CheckCircle2,
+	ChevronRight,
+	ClipboardCheck,
 	ClipboardList,
+	Database,
+	FileBarChart2,
 	FileInput,
 	FileOutput,
 	FileSearch,
@@ -15,22 +20,29 @@ import {
 	Files,
 	FolderKanban,
 	GitCompare,
+	HeartPulse,
 	History,
 	Home,
 	LifeBuoy,
 	MessageSquareReply,
 	Radio,
+	Scale,
 	ScrollText,
 	Settings,
+	ShieldCheck,
 	Stethoscope,
 	Timer,
 	UserRound,
 	Users,
+	Accessibility,
 	Workflow,
+	Activity,
+	Hospital,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import Logo from "@/components/shared/logo/Logo";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Sidebar,
@@ -42,13 +54,16 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { getModuleSidebarNav, siteConfig } from "@/constants/siteconfig";
 import { Link, usePathname } from "@/i18n/navigation";
-import { usePermissions } from "@/providers/permission-provider";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
+import type { SidebarNavItem } from "@/types/UI/system.types";
 
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
@@ -77,6 +92,23 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Responses: MessageSquareReply,
 	"Acceptance Analytics": CheckCircle2,
 	"Exceptions / Rejections": FileWarning,
+	"CMS EDGE": ShieldCheck,
+	"Medicaid Encounter Reporting": FileBarChart2,
+	"Medicare Reporting": Stethoscope,
+	"Risk Adjustment": Scale,
+	"Quality Performance": ClipboardCheck,
+	"Audit Management": ShieldCheck,
+	"Compliance Calendar": CalendarDays,
+	"ESRD / Dialysis": Activity,
+	DME: Accessibility,
+	"Home Health": Home,
+	Hospice: HeartPulse,
+	LTSS: Hospital,
+	"Behavioral Health": Brain,
+	"Edge Server Data": FileBarChart2,
+	"File Management": Files,
+	"Master Data Entry": Database,
+	"Error Correction": FileWarning,
 };
 
 const VENDOR_SECTION_ORDER = [
@@ -90,6 +122,8 @@ const VENDOR_SECTION_ORDER = [
 const CLAIM_SECTION_ORDER = [
 	"top",
 	"claim_encounter",
+	"regulatory_compliance",
+	"program_monitoring",
 	"operations",
 	"administration",
 ] as const;
@@ -105,16 +139,98 @@ function navLabelKey(title: string) {
 	return title.toLowerCase().replace(/[\s/]+/g, "");
 }
 
+function navLabel(title: string, t: ReturnType<typeof useTranslations<"Admin">>) {
+	const labelKey = navLabelKey(title);
+	return t.has(`nav.${labelKey}`) ? t(`nav.${labelKey}`) : title;
+}
+
+function isNavItemActive(pathname: string, item: SidebarNavItem) {
+	if (item.href && isActivePath(pathname, item.href)) return true;
+	return item.items?.some((child) => child.href && isActivePath(pathname, child.href)) ?? false;
+}
+
+function SidebarNavEntry({
+	item,
+	pathname,
+	t,
+}: {
+	item: SidebarNavItem;
+	pathname: string;
+	t: ReturnType<typeof useTranslations<"Admin">>;
+}) {
+	const Icon = NAV_ICONS[item.title] ?? Home;
+	const label = navLabel(item.title, t);
+	const hasChildren = (item.items?.length ?? 0) > 0;
+	const active = isNavItemActive(pathname, item);
+
+	if (hasChildren) {
+		return (
+			<Collapsible defaultOpen={active} className="group/collapsible">
+				<SidebarMenuItem>
+					<CollapsibleTrigger asChild>
+						<SidebarMenuButton tooltip={label} isActive={active}>
+							<Icon />
+							<span>{label}</span>
+							<ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+						</SidebarMenuButton>
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<SidebarMenuSub>
+							{item.items?.map((child) => {
+								if (!child.href) return null;
+								const childActive = isActivePath(pathname, child.href);
+								const childLabel = navLabel(child.title, t);
+								return (
+									<SidebarMenuSubItem key={child.href}>
+										<SidebarMenuSubButton asChild isActive={childActive}>
+											<Link href={child.href}>
+												<span>{childLabel}</span>
+											</Link>
+										</SidebarMenuSubButton>
+									</SidebarMenuSubItem>
+								);
+							})}
+						</SidebarMenuSub>
+					</CollapsibleContent>
+				</SidebarMenuItem>
+			</Collapsible>
+		);
+	}
+
+	if (!item.href) return null;
+
+	const isExternal = item.href.startsWith("mailto:");
+
+	return (
+		<SidebarMenuItem>
+			<SidebarMenuButton
+				asChild
+				isActive={!isExternal && active}
+				tooltip={label}
+			>
+				{isExternal ? (
+					<a href={item.href}>
+						<Icon />
+						<span>{label}</span>
+					</a>
+				) : (
+					<Link href={item.href}>
+						<Icon />
+						<span>{label}</span>
+					</Link>
+				)}
+			</SidebarMenuButton>
+		</SidebarMenuItem>
+	);
+}
+
 export function AdminSidebar() {
 	const pathname = usePathname();
-	const { hasComponentAccess } = usePermissions();
 	const t = useTranslations("Admin");
 	const moduleId = useAdminModuleStore((s) => s.moduleId);
 
-	const visibleNav = getModuleSidebarNav(moduleId).filter((item) => {
-		if (!item.permission) return true;
-		return hasComponentAccess(item.permission);
-	});
+	// Static nav from siteConfig — never fetched / never gated on live session
+	const visibleNav = getModuleSidebarNav(moduleId);
 
 	const sections =
 		moduleId === "claim_encounter" ? CLAIM_SECTION_ORDER : VENDOR_SECTION_ORDER;
@@ -153,43 +269,21 @@ export function AdminSidebar() {
 									) : null}
 									<SidebarGroupContent>
 										<SidebarMenu>
-											{items.map((item) => {
-												if (!item.href) return null;
-												const Icon = NAV_ICONS[item.title] ?? Home;
-												const active = isActivePath(pathname, item.href);
-												const labelKey = navLabelKey(item.title);
-												const label = t.has(`nav.${labelKey}`)
-													? t(`nav.${labelKey}`)
-													: item.title;
-												const isExternal = item.href.startsWith("mailto:");
-
-												return (
-													<SidebarMenuItem key={item.href}>
-														<SidebarMenuButton
-															asChild
-															isActive={!isExternal && active}
-															tooltip={label}
-														>
-															{isExternal ? (
-																<a href={item.href}>
-																	<Icon />
-																	<span>{label}</span>
-																</a>
-															) : (
-																<Link href={item.href}>
-																	<Icon />
-																	<span>{label}</span>
-																</Link>
-															)}
-														</SidebarMenuButton>
-													</SidebarMenuItem>
-												);
-											})}
+											{items.map((item) => (
+												<SidebarNavEntry
+													key={item.title}
+													item={item}
+													pathname={pathname}
+													t={t}
+												/>
+											))}
 										</SidebarMenu>
 									</SidebarGroupContent>
 									{section !== "administration" &&
 									section !== "top" &&
-									section !== "claim_encounter" ? (
+									section !== "claim_encounter" &&
+									section !== "regulatory_compliance" &&
+									section !== "program_monitoring" ? (
 										<SidebarSeparator className="mx-2 mt-2" />
 									) : null}
 								</SidebarGroup>

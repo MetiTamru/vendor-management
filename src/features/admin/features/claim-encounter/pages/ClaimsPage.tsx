@@ -45,6 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { usePagedRows } from "@/features/admin/features/claim-encounter/components/ClaimQueueChrome";
 import { EdiViewerDialog } from "@/features/admin/features/claim-encounter/edi";
+import { claimLineDtosToClaimLines } from "@/features/admin/features/claim-encounter/live-claims";
 import {
 	CLAIM_LINES,
 	type ClaimLine,
@@ -55,7 +56,10 @@ import {
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -219,8 +223,20 @@ function ClaimStatusBadge({ status }: { status: string }) {
 }
 
 export function ClaimsPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Claims">
+				<ClaimsBody useLive />
+			</VendorCoreGate>
+		);
+	}
+	return <ClaimsBody useLive={false} />;
+}
+
+function ClaimsBody({ useLive }: { useLive: boolean }) {
 	const router = useRouter();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const claimLinesQ = useVendorCoreClaimLines(useLive);
 
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [quickSearch, setQuickSearch] = useState("");
@@ -253,6 +269,18 @@ export function ClaimsPage() {
 	const [ediOpen, setEdiOpen] = useState(false);
 
 	const allRows = useMemo(() => {
+		if (useLive) {
+			const lines = claimLineDtosToClaimLines(
+				claimLinesQ.data ?? [],
+				programFilter
+			);
+			return lines.map((c, i) => enrichClaim(c, i));
+		}
+
+		const rows = CLAIM_LINES.filter((c) => c.program === programFilter).map(
+			(c, i) => enrichClaim(c, i)
+		);
+
 		const showcase: ClaimWorkbenchRow = {
 			id: SHOWCASE_CLAIM_DETAIL.id,
 			claimId: SHOWCASE_CLAIM_DETAIL.claimId,
@@ -291,15 +319,11 @@ export function ClaimsPage() {
 			displayClaimType: "Medical",
 		};
 
-		const rows = CLAIM_LINES.filter((c) => c.program === programFilter).map(
-			(c, i) => enrichClaim(c, i)
-		);
-
 		if (programFilter === SHOWCASE_CLAIM_DETAIL.program) {
 			return [showcase, ...rows];
 		}
 		return rows;
-	}, [programFilter]);
+	}, [useLive, claimLinesQ.data, programFilter]);
 
 	function openClaimDetail(row: ClaimWorkbenchRow) {
 		router.push(
@@ -547,6 +571,24 @@ export function ClaimsPage() {
 					</div>
 				}
 			/>
+
+			{useLive && claimLinesQ.error ? (
+				<div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+					Could not load claims: {claimLinesQ.error.message}
+				</div>
+			) : null}
+
+			{useLive &&
+			!claimLinesQ.isLoading &&
+			allRows.length === 0 ? (
+				<div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+					No claim lines returned from vendor-core yet. Run{" "}
+					<code className="rounded bg-muted px-1 py-0.5 text-xs">
+						pnpm seed:claim-lines
+					</code>{" "}
+					(after vendor-core claim-line seed is deployed), then refresh.
+				</div>
+			) : null}
 
 			{/* Quick search + collapsible filters */}
 			<Card className="gap-0 bg-card/70 py-0">
@@ -1015,7 +1057,9 @@ export function ClaimsPage() {
 											colSpan={14}
 											className="h-24 text-center text-muted-foreground"
 										>
-											No claims match the current filters.
+											{useLive && claimLinesQ.isLoading
+												? "Loading claims from vendor-core…"
+												: "No claims match the current filters."}
 										</TableCell>
 									</TableRow>
 								)}

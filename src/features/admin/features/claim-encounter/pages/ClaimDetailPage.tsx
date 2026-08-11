@@ -25,14 +25,19 @@ import {
 	EdiViewerLoader,
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
+import { findClaimLineByClaimId } from "@/features/admin/features/claim-encounter/live-claims";
 import {
 	type ClaimDetail,
+	buildClaimDetailFromLine,
 	exportRowsAsCsv,
 	formatCurrency,
 	getClaimDetail,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 
 const MAIN_TABS = ["Overview", "Operations & Audit"] as const;
@@ -874,9 +879,56 @@ function OperationsAuditTab({ claim }: { claim: ClaimDetail }) {
 }
 
 export function ClaimDetailPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Claim Overview">
+				<ClaimDetailBody useLive />
+			</VendorCoreGate>
+		);
+	}
+	return <ClaimDetailBody useLive={false} />;
+}
+
+function ClaimDetailBody({ useLive }: { useLive: boolean }) {
 	const params = useParams<{ claimId: string }>();
-	const claim = useMemo(() => getClaimDetail(params.claimId), [params.claimId]);
+	const claimLinesQ = useVendorCoreClaimLines(useLive);
+	const claim = useMemo(() => {
+		if (useLive) {
+			const line = findClaimLineByClaimId(
+				claimLinesQ.data ?? [],
+				params.claimId
+			);
+			return line ? buildClaimDetailFromLine(line) : undefined;
+		}
+		return getClaimDetail(params.claimId);
+	}, [useLive, claimLinesQ.data, params.claimId]);
 	const [tab, setTab] = useState<MainTab>("Operations & Audit");
+
+	if (useLive && claimLinesQ.isLoading && !claim) {
+		return (
+			<div className="space-y-4">
+				<p className="text-sm text-muted-foreground">
+					Loading claim from vendor-core…
+				</p>
+			</div>
+		);
+	}
+
+	if (useLive && claimLinesQ.error && !claim) {
+		return (
+			<div className="space-y-4">
+				<p className="text-sm text-destructive">
+					Could not load claim: {claimLinesQ.error.message}
+				</p>
+				<Link
+					href="/admin/claim-encounter/claims"
+					className="text-sm text-primary hover:underline"
+				>
+					Back to Claims
+				</Link>
+			</div>
+		);
+	}
 
 	if (!claim) {
 		return (

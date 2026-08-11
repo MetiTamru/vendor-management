@@ -1,4 +1,5 @@
 import { CLAIM_VENDOR_SEED } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { isMockEnabled } from "@/lib/mock-mode";
 import type { ProgramFileType } from "@/types/UI/system.types";
 
 export type ClaimFileStatus =
@@ -245,7 +246,9 @@ function seedFiles(): ClaimVendorFile[] {
 	return rows;
 }
 
-export const CLAIM_VENDOR_FILES: ClaimVendorFile[] = seedFiles();
+export const CLAIM_VENDOR_FILES: ClaimVendorFile[] = isMockEnabled()
+	? seedFiles()
+	: [];
 
 export const CLAIM_RESPONSES: ClaimResponse[] = CLAIM_VENDOR_FILES.filter(
 	(f) => f.direction === "outbound" && f.reviewStatus === "accepted"
@@ -530,7 +533,7 @@ function seedClaimLines(): ClaimLine[] {
 	return lines;
 }
 
-export const CLAIM_LINES: ClaimLine[] = seedClaimLines();
+export const CLAIM_LINES: ClaimLine[] = isMockEnabled() ? seedClaimLines() : [];
 
 export const SUBMISSION_BATCHES: SubmissionBatch[] = CLAIM_RESPONSES.map(
 	(response) => ({
@@ -555,12 +558,14 @@ export const SUBMISSION_BATCHES: SubmissionBatch[] = CLAIM_RESPONSES.map(
 );
 
 export function getClaimResponse(id: string) {
+	if (!isMockEnabled()) return undefined;
 	return CLAIM_RESPONSES.find(
 		(r) => r.id === id || r.responseId === id || r.responseFile === id
 	);
 }
 
 export function getSubmissionBatch(batchId: string) {
+	if (!isMockEnabled()) return undefined;
 	const decoded = decodeURIComponent(batchId);
 	return SUBMISSION_BATCHES.find(
 		(b) => b.id === decoded || b.batchId === decoded
@@ -568,6 +573,7 @@ export function getSubmissionBatch(batchId: string) {
 }
 
 export function getVendorFile(fileId: string) {
+	if (!isMockEnabled()) return undefined;
 	return CLAIM_VENDOR_FILES.find((f) => f.id === fileId || f.fileId === fileId);
 }
 
@@ -801,7 +807,7 @@ function statusFromGainwell(
 	return "Pending";
 }
 
-function buildClaimDetailFromLine(line: ClaimLine, index = 0): ClaimDetail {
+export function buildClaimDetailFromLine(line: ClaimLine, index = 0): ClaimDetail {
 	const file = getVendorFile(line.fileId);
 	const response = getClaimResponse(line.responseId);
 	const seq = Number(line.claimId.replace(/\D/g, "")) || index + 1;
@@ -1229,6 +1235,7 @@ export const SHOWCASE_CLAIM_DETAIL: ClaimDetail = {
 };
 
 export function getClaimDetail(claimId: string): ClaimDetail | undefined {
+	if (!isMockEnabled()) return undefined;
 	const decoded = decodeURIComponent(claimId);
 	if (
 		decoded === SHOWCASE_CLAIM_DETAIL.claimId ||

@@ -51,6 +51,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { Skeleton } from "@/components/ui/skeleton";
+import { liveVendorsToDirectoryRows } from "@/features/admin/features/vendors/live-directory";
+import { VendorActionsMenu } from "@/features/admin/features/vendors/components/VendorActionsMenu";
 import {
 	VENDOR_DIRECTORY,
 	type VendorDirectoryRow,
@@ -59,7 +63,16 @@ import {
 	summarizeVendorDirectory,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreAccounts,
+	useVendorCoreConnections,
+	useVendorCoreInboundFiles,
+	useVendorCoreJobs,
+	useVendorCoreVendors,
+} from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
@@ -88,9 +101,7 @@ function HealthDot({ health }: { health: VendorListHealth }) {
 }
 
 function detailHref(row: VendorDirectoryRow) {
-	const n = Number(row.id.replace("vnd-", ""));
-	if (n >= 1 && n <= 4) return `/admin/vendors/${row.id}`;
-	return `/admin/vendors/vnd-${((n - 1) % 4) + 1}`;
+	return `/admin/vendors/${row.id}`;
 }
 
 type SortKey =
@@ -101,9 +112,62 @@ type SortKey =
 	| "linkedAccounts"
 	| "activeJobs"
 	| "lastFileReceived"
-	| "health";
+	| "health"
+	| "createdAt";
 
 export function VendorsPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Vendors">
+				<VendorsDirectoryPage />
+			</VendorCoreGate>
+		);
+	}
+	return <VendorsDirectoryPage />;
+}
+
+function VendorsDirectoryPage() {
+	const router = useRouter();
+	const useLive = !isMockEnabled();
+	const invalidate = useInvalidateVendorCore();
+	const vendorsQ = useVendorCoreVendors();
+	const connectionsQ = useVendorCoreConnections();
+	const jobsQ = useVendorCoreJobs();
+	const accountsQ = useVendorCoreAccounts();
+	const filesQ = useVendorCoreInboundFiles();
+
+	const directory = useMemo(() => {
+		if (!useLive) return VENDOR_DIRECTORY;
+		return liveVendorsToDirectoryRows(
+			vendorsQ.data ?? [],
+			connectionsQ.data ?? [],
+			jobsQ.data ?? [],
+			accountsQ.data ?? [],
+			filesQ.data ?? []
+		);
+	}, [
+		useLive,
+		vendorsQ.data,
+		connectionsQ.data,
+		jobsQ.data,
+		accountsQ.data,
+		filesQ.data,
+	]);
+
+	const loading =
+		useLive &&
+		(vendorsQ.isLoading ||
+			connectionsQ.isLoading ||
+			jobsQ.isLoading ||
+			accountsQ.isLoading);
+
+	const liveError = useLive
+		? vendorsQ.error?.message ||
+			connectionsQ.error?.message ||
+			jobsQ.error?.message ||
+			accountsQ.error?.message
+		: null;
+
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
 	const [vendorType, setVendorType] = useState("all");
@@ -111,19 +175,23 @@ export function VendorsPage() {
 	const [activity, setActivity] = useState("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-	const [sortKey, setSortKey] = useState<SortKey>("name");
-	const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+	const [sortKey, setSortKey] = useState<SortKey>(
+		useLive ? "createdAt" : "name"
+	);
+	const [sortDir, setSortDir] = useState<"asc" | "desc">(
+		useLive ? "desc" : "asc"
+	);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
 	const vendorTypes = useMemo(
 		() =>
-			Array.from(new Set(VENDOR_DIRECTORY.map((row) => row.vendorType))).sort(),
-		[]
+			Array.from(new Set(directory.map((row) => row.vendorType))).sort(),
+		[directory]
 	);
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();
-		let rows = VENDOR_DIRECTORY.filter((row) => {
+		let rows = directory.filter((row) => {
 			if (status !== "all" && row.status !== status) return false;
 			if (vendorType !== "all" && row.vendorType !== vendorType) return false;
 			if (health !== "all" && row.health !== health) return false;
@@ -155,7 +223,7 @@ export function VendorsPage() {
 			return sortDir === "asc" ? as.localeCompare(bs) : bs.localeCompare(as);
 		});
 		return rows;
-	}, [activity, health, search, sortDir, sortKey, status, vendorType]);
+	}, [activity, directory, health, search, sortDir, sortKey, status, vendorType]);
 
 	const summary = useMemo(() => summarizeVendorDirectory(filtered), [filtered]);
 
@@ -274,8 +342,25 @@ export function VendorsPage() {
 		},
 	];
 
+	if (loading && !directory.length) {
+		return (
+			<div className="space-y-4">
+				<Skeleton className="h-8 w-64" />
+				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className="h-20 rounded-lg" />
+					))}
+				</div>
+				<Skeleton className="h-96 w-full rounded-xl" />
+			</div>
+		);
+	}
+
 	return (
 		<div className="space-y-4">
+			{liveError ? (
+				<p className="text-sm text-destructive">{liveError}</p>
+			) : null}
 			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
 				<div className="min-w-0 space-y-1">
@@ -342,7 +427,7 @@ export function VendorsPage() {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Status</SelectItem>
-						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="active">Active / Prospect</SelectItem>
 						<SelectItem value="at_risk">At Risk</SelectItem>
 						<SelectItem value="inactive">Inactive</SelectItem>
 					</SelectContent>
@@ -400,7 +485,18 @@ export function VendorsPage() {
 						<SelectItem value="older">Older</SelectItem>
 					</SelectContent>
 				</Select>
-				<div className="ml-auto">
+				<div className="ml-auto flex gap-2">
+					{useLive ? (
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-9"
+							onClick={() => void invalidate()}
+						>
+							<RefreshCw className="mr-1.5 size-3.5" />
+							Refresh
+						</Button>
+					) : null}
 					<Button
 						variant="outline"
 						size="sm"
@@ -532,8 +628,15 @@ export function VendorsPage() {
 							</TableHeader>
 							<TableBody>
 								{pageRows.map((row) => (
-									<TableRow key={row.id} className="hover:bg-muted/30">
-										<TableCell className="px-2 py-1.5 pl-3">
+									<TableRow
+										key={row.id}
+										className="cursor-pointer hover:bg-muted/30"
+										onClick={() => router.push(detailHref(row))}
+									>
+										<TableCell
+											className="px-2 py-1.5 pl-3"
+											onClick={(e) => e.stopPropagation()}
+										>
 											<Checkbox
 												checked={selectedIds.has(row.id)}
 												onCheckedChange={() => toggleOne(row.id)}
@@ -579,7 +682,10 @@ export function VendorsPage() {
 										<TableCell className="px-2 py-1.5">
 											<HealthDot health={row.health} />
 										</TableCell>
-										<TableCell className="px-2 py-1.5 pr-3 text-right">
+										<TableCell
+											className="px-2 py-1.5 pr-3 text-right"
+											onClick={(e) => e.stopPropagation()}
+										>
 											<div className="inline-flex items-center gap-0.5">
 												<Button
 													variant="link"
@@ -592,8 +698,20 @@ export function VendorsPage() {
 														<ExternalLink className="ml-1 size-3" />
 													</Link>
 												</Button>
-												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
+												<VendorActionsMenu
+													vendor={{
+														id: row.id,
+														name: row.name,
+														legalName: row.name,
+														status:
+															row.status === "inactive"
+																? "suspended"
+																: row.status === "at_risk"
+																	? "onboarding"
+																	: "active",
+													}}
+													redirectOnDelete={undefined}
+													trigger={
 														<Button
 															variant="ghost"
 															size="icon"
@@ -601,23 +719,22 @@ export function VendorsPage() {
 														>
 															<MoreVertical className="size-3.5" />
 														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end">
-														<DropdownMenuItem asChild>
-															<Link href={detailHref(row)}>Open detail</Link>
-														</DropdownMenuItem>
-														<DropdownMenuItem asChild>
-															<Link href="/admin/file-monitoring">
-																View file activity
-															</Link>
-														</DropdownMenuItem>
-														<DropdownMenuItem asChild>
-															<Link href="/admin/schedules">
-																View schedules
-															</Link>
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
+													}
+													extraItems={
+														<>
+															<DropdownMenuItem asChild>
+																<Link href="/admin/file-monitoring">
+																	View file activity
+																</Link>
+															</DropdownMenuItem>
+															<DropdownMenuItem asChild>
+																<Link href="/admin/schedules">
+																	View schedules
+																</Link>
+															</DropdownMenuItem>
+														</>
+													}
+												/>
 											</div>
 										</TableCell>
 									</TableRow>

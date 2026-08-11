@@ -13,12 +13,14 @@ import {
 	Download,
 	Filter,
 	Info,
+	RefreshCw,
 	ScrollText,
 	Upload,
 	XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -27,6 +29,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -35,8 +38,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	inboundFileToRun,
+	inboundFilesToRuns,
+} from "@/features/admin/features/dashboard/live-file-runs";
+import { enrichLiveFileRun } from "@/features/admin/features/file-management/live-processing";
 import { runBucket } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { vendorCoreApi } from "@/lib/vendor-core";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreInboundFile,
+	useVendorCoreInboundFiles,
+	useVendorCoreValidationResults,
+	useVendorCoreVendors,
+} from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
@@ -141,16 +158,53 @@ function DetailField({ label, value }: { label: string; value: ReactNode }) {
 }
 
 export function FileRunDetailPage() {
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="File run">
+				<FileRunDetailBody />
+			</VendorCoreGate>
+		);
+	}
+	return <FileRunDetailBody />;
+}
+
+function FileRunDetailBody() {
 	const params = useParams<{ runId: string }>();
 	const router = useRouter();
+	const useLive = !isMockEnabled();
+	const invalidate = useInvalidateVendorCore();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
-	const selected = useMemo(() => getFileRun(params.runId), [params.runId]);
+	const fileQ = useVendorCoreInboundFile(useLive ? params.runId : "");
+	const validationQ = useVendorCoreValidationResults(
+		useLive ? { inbound_file_id: params.runId } : undefined
+	);
+	const filesQ = useVendorCoreInboundFiles();
+	const vendorsQ = useVendorCoreVendors();
+	const nameById = useMemo(
+		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
+		[vendorsQ.data]
+	);
+
+	const selected = useMemo(() => {
+		if (!useLive) return getFileRun(params.runId);
+		if (!fileQ.data) return undefined;
+		const base = inboundFileToRun(fileQ.data, nameById);
+		if (!validationQ.data?.length) return base;
+		return enrichLiveFileRun(base, validationQ.data);
+	}, [useLive, params.runId, fileQ.data, validationQ.data, nameById]);
+
+	const liveRuns = useMemo(() => {
+		if (!useLive) return FILE_RUNS;
+		return inboundFilesToRuns(filesQ.data ?? [], nameById);
+	}, [useLive, filesQ.data, nameById]);
+
 	const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 	const [reviewed, setReviewed] = useState(false);
 	const [page, setPage] = useState(1);
 	const [showAllErrors, setShowAllErrors] = useState(false);
 	const [dateRange, setDateRange] = useState("7");
 	const [statusFilter, setStatusFilter] = useState("all");
+	const [reprocessing, setReprocessing] = useState(false);
 	const pageSize = 5;
 
 	useEffect(() => {
@@ -165,19 +219,21 @@ export function FileRunDetailPage() {
 
 	const recentRuns = useMemo(() => {
 		if (!selected) return [];
-		return FILE_RUNS.filter((run) => {
-			if (run.program !== programFilter) return false;
-			if (run.vendor !== selected.vendor) return false;
-			if (statusFilter !== "all" && runBucket(run.status) !== statusFilter) {
-				return false;
-			}
-			return true;
-		}).sort((a, b) => {
-			const aDate = a.startedAt ?? a.expectedAt;
-			const bDate = b.startedAt ?? b.expectedAt;
-			return bDate.localeCompare(aDate);
-		});
-	}, [selected, statusFilter, programFilter]);
+		return liveRuns
+			.filter((run) => {
+				if (!useLive && run.program !== programFilter) return false;
+				if (run.vendor !== selected.vendor) return false;
+				if (statusFilter !== "all" && runBucket(run.status) !== statusFilter) {
+					return false;
+				}
+				return true;
+			})
+			.sort((a, b) => {
+				const aDate = a.startedAt ?? a.expectedAt;
+				const bDate = b.startedAt ?? b.expectedAt;
+				return bDate.localeCompare(aDate);
+			});
+	}, [selected, statusFilter, programFilter, liveRuns, useLive]);
 
 	const selectedIssue = useMemo(
 		() =>
@@ -251,13 +307,42 @@ export function FileRunDetailPage() {
 		toast.success("Errors exported.");
 	}
 
+	async function handleReprocess() {
+		if (!selected || !useLive) return;
+		setReprocessing(true);
+		try {
+			await vendorCoreApi.reprocessInboundFile(selected.id);
+			toast.success("Reprocess queued");
+			invalidate();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Reprocess failed");
+		} finally {
+			setReprocessing(false);
+		}
+	}
+
+	if (useLive && (fileQ.isLoading || validationQ.isLoading) && !fileQ.data) {
+		return (
+			<div className="space-y-4">
+				<Skeleton className="h-8 w-56" />
+				<Skeleton className="h-40 w-full" />
+				<Skeleton className="h-64 w-full" />
+			</div>
+		);
+	}
+
 	if (!selected) {
 		return (
 			<div className="space-y-4">
 				<div className="rounded-lg border border-border/50 p-10 text-center">
 					<p className="text-base font-medium">File run not found</p>
+					{fileQ.error ? (
+						<p className="mt-2 text-sm text-destructive">
+							{fileQ.error.message}
+						</p>
+					) : null}
 					<Button asChild className="mt-4" size="sm">
-						<Link href={selectHref}>Select a file run</Link>
+						<Link href="/admin/file-monitoring">Back to File Monitoring</Link>
 					</Button>
 				</div>
 			</div>
@@ -830,12 +915,29 @@ export function FileRunDetailPage() {
 							<Upload className="mr-1.5 size-3.5" />
 							Export Errors
 						</Button>
+						{useLive ? (
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 text-xs"
+								disabled={reprocessing}
+								onClick={() => void handleReprocess()}
+							>
+								<RefreshCw
+									className={cn(
+										"mr-1.5 size-3.5",
+										reprocessing && "animate-spin"
+									)}
+								/>
+								{reprocessing ? "Reprocessing…" : "Reprocess"}
+							</Button>
+						) : null}
 						<Button
 							size="sm"
 							className="h-8 text-xs"
 							disabled={reviewed}
 							onClick={() => {
-								markFileRunReviewed(selected.id, true);
+								if (!useLive) markFileRunReviewed(selected.id, true);
 								setReviewed(true);
 								toast.success("File run marked as reviewed.");
 							}}

@@ -1,10 +1,10 @@
 # Backend cutover checklist
 
-When your NestJS (and optional Django vendor-core) APIs are ready, switch the frontend from mocks to live data with **one env var**.
+When your NestJS (and optional Django vendor-core) APIs are ready, switch the frontend from mocks to live data with **one env var**. Fixture source files are **not deleted** — they become inactive when the toggle is off.
 
 ## 1. Environment
 
-In staging/production `.env`:
+### NestJS + vendor-core both live
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.your-domain.com
@@ -12,13 +12,40 @@ NEXT_PUBLIC_APP_URL=https://app.your-domain.com
 NEXT_PUBLIC_URL=https://app.your-domain.com
 NEXT_PUBLIC_VENDOR_CORE_API_URL=https://vendor-core.your-domain.com
 
-# Single switch — turns off all mocks (auth, VMS, identity, feature APIs, vendor-core)
+# Single switch — turns off all mocks (auth, VMS, identity, feature APIs)
 NEXT_PUBLIC_USE_MOCK=false
+```
 
-# Optional ABAC overrides — leave unset in production
-# NEXT_PUBLIC_DEV_ADMIN=
-# NEXT_PUBLIC_DEV_MANAGER=
-# NEXT_PUBLIC_DEV_VENDOR=
+### Vendor-core only (current staging)
+
+[`https://api.vm.tillahealth.com`](https://api.vm.tillahealth.com) is **Django vendor-core** (JWT + `/api/v1/*`).  
+Django admin UI: [`/admin/`](https://api.vm.tillahealth.com/admin/) — do **not** put `/admin/` in the API base URL.  
+NestJS (`/api/auth/*`, `/api/admin/*`) is **not** on this host.
+
+```env
+NEXT_PUBLIC_USE_MOCK=true
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
+```
+
+A remote `NEXT_PUBLIC_VENDOR_CORE_API_URL` enables Integration Intake **and** the
+integration nav screens (Vendors, File monitoring/history, Processing status,
+Schedules, Errors, Audit) against Django while Nest/VMS stay mocked.
+
+Live screens prompt for a Django JWT user (same credentials as Django admin).
+Browser calls go through the same-origin proxy at `/api/vendor-core/*` (avoids CORS).
+
+Smoke test:
+
+```bash
+pnpm test:vendor-core
+VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm test:vendor-core
+```
+
+Seed Phase‑1 demo data from frontend mocks (vendors/accounts/connections/jobs/sample files) into the API DB — **no backend deploy**:
+
+```bash
+VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:vendor-core
 ```
 
 ## 2. Verify contracts

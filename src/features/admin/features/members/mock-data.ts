@@ -1,4 +1,5 @@
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
+import { fixtureRecord, isMockEnabled } from "@/lib/mock-mode";
 
 export type MemberStatus = "active" | "inactive" | "pending" | "termed";
 export type EligibilityStatus =
@@ -293,7 +294,9 @@ function buildSummaries(): MemberSummary[] {
 	return rows;
 }
 
-export const MEMBER_SUMMARIES: MemberSummary[] = buildSummaries();
+export const MEMBER_SUMMARIES: MemberSummary[] = isMockEnabled()
+	? buildSummaries()
+	: [];
 
 function detailFor(summary: MemberSummary): MemberDetail {
 	const isJohn = summary.id === "mem-1";
@@ -850,8 +853,8 @@ function buildExceptions(summary: MemberSummary): EligibilityExceptionRow[] {
 	return catalog.slice(start, start + count);
 }
 
-export const MEMBER_DETAILS: Record<string, MemberDetail> = Object.fromEntries(
-	MEMBER_SUMMARIES.map((s) => [s.id, detailFor(s)])
+export const MEMBER_DETAILS: Record<string, MemberDetail> = fixtureRecord(
+	Object.fromEntries(MEMBER_SUMMARIES.map((s) => [s.id, detailFor(s)]))
 );
 
 export function displayName(
@@ -861,6 +864,7 @@ export function displayName(
 }
 
 export function getMember(idOrMemberId: string): MemberDetail | undefined {
+	if (!isMockEnabled()) return undefined;
 	const decoded = decodeURIComponent(idOrMemberId);
 	const byId = MEMBER_DETAILS[decoded];
 	if (byId) return byId;

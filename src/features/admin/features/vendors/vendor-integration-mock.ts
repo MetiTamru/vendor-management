@@ -3,6 +3,7 @@ import {
 	type FileRun,
 	displayRunStatus,
 } from "@/features/admin/features/file-management/mock-data";
+import { fixtureList, fixtureRecord, isMockEnabled } from "@/lib/mock-mode";
 
 export type VendorHealth = "healthy" | "warning" | "failed" | "in_progress";
 
@@ -26,7 +27,8 @@ export type VendorIntegrationProfile = {
 	notes: string;
 };
 
-export const VENDOR_INTEGRATION: Record<string, VendorIntegrationProfile> = {
+export const VENDOR_INTEGRATION: Record<string, VendorIntegrationProfile> =
+	fixtureRecord({
 	"vnd-1": {
 		vendorId: "vnd-1",
 		vendorType: "Clearinghouse",
@@ -107,7 +109,7 @@ export const VENDOR_INTEGRATION: Record<string, VendorIntegrationProfile> = {
 		notes:
 			"Dental / vision claims partner. Schema drift warnings on recent 837D files under tolerant mode.",
 	},
-};
+});
 
 export type VendorListStatus = "active" | "at_risk" | "inactive";
 export type VendorListHealth = "healthy" | "warning" | "critical";
@@ -125,10 +127,12 @@ export type VendorDirectoryRow = {
 	health: VendorListHealth;
 	mark: string;
 	avatarBg: string;
+	/** ISO timestamp for live sorting (optional for mock rows) */
+	createdAt?: string;
 };
 
 /** Directory used by the Vendors list page (matches ops console mock). */
-export const VENDOR_DIRECTORY: VendorDirectoryRow[] = [
+export const VENDOR_DIRECTORY: VendorDirectoryRow[] = fixtureList([
 	{
 		id: "vnd-1",
 		name: "UST Healthcare",
@@ -243,7 +247,7 @@ export const VENDOR_DIRECTORY: VendorDirectoryRow[] = [
 	},
 	{
 		id: "vnd-9",
-		name: "Cotviiti",
+		name: "Cotviti",
 		vendorCode: "VND-0020",
 		vendorType: "Clearinghouse",
 		status: "active",
@@ -269,7 +273,7 @@ export const VENDOR_DIRECTORY: VendorDirectoryRow[] = [
 		mark: "D",
 		avatarBg: "bg-[#0f766e]",
 	},
-];
+]);
 
 /** Canonical vendor display names — use this everywhere mock UIs list vendors. */
 export const VENDOR_NAMES = VENDOR_DIRECTORY.map((v) => v.name);
@@ -351,6 +355,7 @@ const VENDOR_NAME_MAP: Record<string, string> = {
 };
 
 export function vendorIdForRun(run: FileRun): string | null {
+	if (run.vendorId) return run.vendorId;
 	for (const [name, id] of Object.entries(VENDOR_NAME_MAP)) {
 		if (run.vendor.startsWith(name) || name.startsWith(run.vendor)) return id;
 	}
@@ -361,6 +366,7 @@ export function runsForVendor(
 	vendorId: string,
 	program?: FileRun["program"]
 ): FileRun[] {
+	if (!isMockEnabled()) return [];
 	return FILE_RUNS.filter(
 		(run) =>
 			vendorIdForRun(run) === vendorId &&
@@ -423,14 +429,14 @@ export function summarizeRuns(runs: FileRun[]) {
 		warnings,
 		failed,
 		inProgress,
-		pending: Math.max(pending, total === 0 ? 2 : 0),
+		pending,
 		successPct: total ? ((successful / total) * 100).toFixed(1) : "0.0",
 		warningPct: total ? ((warnings / total) * 100).toFixed(1) : "0.0",
 		failedPct: total ? ((failed / total) * 100).toFixed(1) : "0.0",
 	};
 }
 
-export const PROCESSING_TREND = [
+export const PROCESSING_TREND = fixtureList([
 	{ day: "Jul 18", successful: 18, warnings: 2, failed: 1 },
 	{ day: "Jul 19", successful: 20, warnings: 1, failed: 0 },
 	{ day: "Jul 20", successful: 17, warnings: 3, failed: 2 },
@@ -438,12 +444,12 @@ export const PROCESSING_TREND = [
 	{ day: "Jul 22", successful: 19, warnings: 4, failed: 1 },
 	{ day: "Jul 23", successful: 21, warnings: 2, failed: 0 },
 	{ day: "Jul 24", successful: 23, warnings: 3, failed: 2 },
-];
+]);
 
 export const VENDOR_TREND_BY_ID: Record<
 	string,
 	{ day: string; successful: number; warnings: number; failed: number }[]
-> = {
+> = fixtureRecord({
 	"vnd-1": [
 		{ day: "Jul 18", successful: 6, warnings: 0, failed: 0 },
 		{ day: "Jul 19", successful: 7, warnings: 1, failed: 0 },
@@ -480,7 +486,7 @@ export const VENDOR_TREND_BY_ID: Record<
 		{ day: "Jul 23", successful: 2, warnings: 2, failed: 0 },
 		{ day: "Jul 24", successful: 2, warnings: 1, failed: 0 },
 	],
-};
+});
 
 export type VendorAlert = {
 	id: string;
@@ -493,7 +499,7 @@ export type VendorAlert = {
 	runId?: string;
 };
 
-export const VENDOR_ALERTS: VendorAlert[] = [
+export const VENDOR_ALERTS: VendorAlert[] = fixtureList([
 	{
 		id: "va1",
 		vendorId: "vnd-2",
@@ -544,7 +550,7 @@ export const VENDOR_ALERTS: VendorAlert[] = [
 		severity: "error",
 		runId: "f7",
 	},
-];
+]);
 
 export type AccountFileStatus = "success" | "none" | "warning" | "error";
 
@@ -601,6 +607,7 @@ function fileStatusFor(
 }
 
 export function getVendorAccounts(vendorId: string): VendorAccountRow[] {
+	if (!isMockEnabled()) return [];
 	const profile = getVendorIntegration(vendorId);
 	const directory = VENDOR_DIRECTORY.find((row) => row.id === vendorId);
 	const count = Math.max(
@@ -729,6 +736,7 @@ export function getVendorConfigJobs(
 	vendorId: string,
 	vendorName?: string
 ): VendorConfigJob[] {
+	if (!isMockEnabled()) return [];
 	const profile = getVendorIntegration(vendorId);
 	const short =
 		(vendorName ?? profile.tradingPartnerId)

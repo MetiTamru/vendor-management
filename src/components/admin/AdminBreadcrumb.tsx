@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { siteConfig } from "@/constants/siteconfig";
 import {
+	getMeasureDetail,
+} from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
+import {
 	getClaimResponse,
 	getSubmissionBatch,
 	getVendorFile,
@@ -90,6 +93,33 @@ const STATIC_LABELS: Record<string, string> = {
 	responses: "Responses",
 	"acceptance-analytics": "Acceptance Analytics",
 	exceptions: "Exceptions / Rejections",
+	regulatory: "Regulatory & Compliance",
+	"program-monitoring": "Program Monitoring",
+	"cms-edge": "CMS EDGE",
+	"program-reporting": "Medicare & Medicaid Reporting",
+	"medicaid-encounter-reporting": "Medicare & Medicaid Reporting",
+	"medicare-reporting": "Medicare & Medicaid Reporting",
+	"risk-adjustment": "Risk Adjustment",
+	"quality-performance": "Quality Performance",
+	"hedis-quality": "Quality Performance",
+	overview: "Overview",
+	"measure-library": "Measure Library",
+	"gap-closure": "Gap Closure",
+	"provider-performance": "Provider Performance",
+	"performance-trends": "Performance Trends",
+	"ncqa-submission": "NCQA Submission",
+	"audit-management": "Audit Management",
+	"compliance-calendar": "Compliance Calendar",
+	"esrd-dialysis": "ESRD / Dialysis",
+	dme: "DME",
+	"home-health": "Home Health",
+	hospice: "Hospice",
+	ltss: "LTSS",
+	"behavioral-health": "Behavioral Health",
+	"file-management": "File Management",
+	"edge-server-data": "Edge Server Data",
+	"master-data-entry": "Master Data Entry",
+	"error-correction": "Error Correction",
 	batches: "Submission Batches",
 	files: "Files",
 	review: "Review",
@@ -106,8 +136,13 @@ function formatSegment(segment: string) {
 }
 
 function navLabelForHref(href: string) {
-	const item = siteConfig.sidebarNav.find((nav) => nav.href === href);
-	return item?.title;
+	for (const nav of siteConfig.sidebarNav) {
+		if (nav.href === href) return nav.title;
+		for (const child of nav.items ?? []) {
+			if (child.href === href) return child.title;
+		}
+	}
+	return undefined;
 }
 
 const COLLAPSE_THRESHOLD = 4;
@@ -229,6 +264,15 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 			if (segment === "claim-encounter") {
 				items.push({
 					label: "Claims & Encounters",
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (prev === "measure-library") {
+				const measure = getMeasureDetail(segment.toUpperCase());
+				items.push({
+					label: measure ? `${measure.id} — ${measure.name}` : formatSegment(segment),
 					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;

@@ -75,10 +75,16 @@ import {
 import type { VendorStatus } from "@/features/shared/vms/types";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import { VendorAccountsTab } from "../components/VendorAccountsTab";
+import {
+	VendorActionsMenu,
+	vendorModelToActionsTarget,
+} from "../components/VendorActionsMenu";
 import { VendorConfigurationTab } from "../components/VendorConfigurationTab";
 import { VendorNotesTab } from "../components/VendorNotesTab";
 import { VendorOperationsTab } from "../components/VendorOperationsTab";
@@ -112,9 +118,14 @@ const STATUSES: VendorStatus[] = [
 	"offboarded",
 ];
 
-function formatVendorCode(id: string) {
-	const digits = id.replace(/\D/g, "") || "0";
-	return `VND-${digits.padStart(4, "0")}`;
+function formatVendorCode(id: string, code?: string | null) {
+	if (code?.trim()) return code.trim();
+	if (/^VND-/i.test(id)) return id;
+	const digits = id.replace(/\D/g, "");
+	if (digits && digits.length <= 6) {
+		return `VND-${digits.padStart(4, "0")}`;
+	}
+	return id.slice(0, 8).toUpperCase();
 }
 
 function initials(name: string) {
@@ -263,11 +274,24 @@ function MetaItem({
 }
 
 export function VendorDetailPage() {
+	// Keep original detail UI; live data comes from useVendor → vendor-core.
+	if (!isMockEnabled()) {
+		return (
+			<VendorCoreGate title="Vendor">
+				<VendorDetailView />
+			</VendorCoreGate>
+		);
+	}
+	return <VendorDetailView />;
+}
+
+function VendorDetailView() {
 	const params = useParams<{ id?: string; vendorId?: string }>();
 	const vendorId = params.vendorId ?? params.id;
 	const { vendor, isLoading, error } = useVendor(vendorId);
 	const { contracts } = useContractsList(vendorId);
 	const updateVendor = useUpdateVendorMutation();
+	const [editOpen, setEditOpen] = useState(false);
 	const [tab, setTab] = useState<Tab>("Overview");
 	const [status, setStatus] = useState<VendorStatus>("prospect");
 	const [trendRange, setTrendRange] = useState("7");
@@ -276,10 +300,20 @@ export function VendorDetailPage() {
 		if (vendor) setStatus(vendor.status);
 	}, [vendor]);
 
-	const integration = useMemo(
-		() => (vendor ? getVendorIntegration(vendor.id) : null),
+	const accounts = useMemo(
+		() => (vendor ? getVendorAccounts(vendor.id) : []),
 		[vendor]
 	);
+
+	const integration = useMemo(() => {
+		if (!vendor) return null;
+		const base = getVendorIntegration(vendor.id);
+		return {
+			...base,
+			vendorType: vendor.categories[0] ?? base.vendorType,
+			accountsCount: Math.max(base.accountsCount, accounts.length),
+		};
+	}, [vendor, accounts]);
 
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const runs = useMemo(
@@ -306,13 +340,8 @@ export function VendorDetailPage() {
 	const totalFiles30 = fileTypePie.reduce((sum, item) => sum + item.value, 0);
 
 	const trend = vendor
-		? (VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"])
+		? (VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"] ?? [])
 		: [];
-
-	const accounts = useMemo(
-		() => (vendor ? getVendorAccounts(vendor.id) : []),
-		[vendor]
-	);
 
 	const primary =
 		vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
@@ -381,7 +410,8 @@ export function VendorDetailPage() {
 								<ActiveStatusPill status={vendor.status} />
 							</div>
 							<p className="font-mono text-xs font-medium text-primary">
-								{formatVendorCode(vendor.id)} · {integration.vendorType}
+								{formatVendorCode(vendor.id, vendor.tags[0])} ·{" "}
+								{integration.vendorType}
 							</p>
 						</div>
 					</div>
@@ -390,15 +420,18 @@ export function VendorDetailPage() {
 							variant="outline"
 							size="sm"
 							className="h-9 border-primary/25 text-xs font-semibold"
-							onClick={() =>
-								toast.message("Vendor editor opens here in production")
-							}
+							onClick={() => setEditOpen(true)}
 						>
 							<Pencil className="mr-1.5 size-3.5" />
 							Edit Vendor
 						</Button>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
+						<VendorActionsMenu
+							vendor={vendorModelToActionsTarget(vendor)}
+							redirectOnDelete="/admin/vendors"
+							menuClassName="w-56"
+							editOpen={editOpen}
+							onEditOpenChange={setEditOpen}
+							trigger={
 								<Button
 									variant="outline"
 									size="sm"
@@ -407,53 +440,55 @@ export function VendorDetailPage() {
 									More Actions
 									<ChevronDown className="ml-1.5 size-3.5" />
 								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-52">
-								<div className="px-2 py-1.5">
-									<p className="mb-1 text-xs font-medium text-muted-foreground">
-										Set status
-									</p>
-									<Select
-										value={status}
-										onValueChange={(v) => setStatus(v as VendorStatus)}
-									>
-										<SelectTrigger className="h-8 w-full">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{STATUSES.map((s) => (
-												<SelectItem key={s} value={s}>
-													{s.replace(/_/g, " ")}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<Button
-										size="sm"
-										className="mt-2 h-8 w-full"
-										onClick={saveStatus}
-										disabled={
-											updateVendor.isPending || status === vendor.status
-										}
-									>
-										Save status
-									</Button>
-								</div>
-								<DropdownMenuItem asChild>
-									<Link href="/admin/file-monitoring">
-										View file monitoring
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<Link href="/admin/processing-logs">
-										View processing logs
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<Link href="/admin/vendors/invite">Invite contact</Link>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+							}
+							extraItems={
+								<>
+									<div className="px-2 py-1.5">
+										<p className="mb-1 text-xs font-medium text-muted-foreground">
+											Set status
+										</p>
+										<Select
+											value={status}
+											onValueChange={(v) => setStatus(v as VendorStatus)}
+										>
+											<SelectTrigger className="h-8 w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{STATUSES.map((s) => (
+													<SelectItem key={s} value={s}>
+														{s.replace(/_/g, " ")}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<Button
+											size="sm"
+											className="mt-2 h-8 w-full"
+											onClick={saveStatus}
+											disabled={
+												updateVendor.isPending || status === vendor.status
+											}
+										>
+											Save status
+										</Button>
+									</div>
+									<DropdownMenuItem asChild>
+										<Link href="/admin/file-monitoring">
+											View file monitoring
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link href="/admin/processing-logs">
+											View processing logs
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link href="/admin/vendors/invite">Invite contact</Link>
+									</DropdownMenuItem>
+								</>
+							}
+						/>
 					</div>
 				</div>
 

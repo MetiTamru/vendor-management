@@ -1,6 +1,13 @@
 import { apiClient } from "@/lib/api/client";
-import { isMockEnabled, withMockOrRemote } from "@/lib/mock-mode";
+import { isMockEnabled, isNestApiEnabled, withMockOrRemote } from "@/lib/mock-mode";
+import {
+	VendorCoreApiError,
+	getStoredAccessToken,
+	isVendorCoreLive,
+} from "@/lib/vendor-core/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
 
+import { vendorDtoToModel } from "./map-vendor-core";
 import { CURRENT_VENDOR_ID, vmsStore } from "./mock-store";
 import type {
 	ActivityEventModel,
@@ -62,82 +69,216 @@ async function unwrapList<T>(
 	return Array.isArray(res) ? res : (res.results ?? []);
 }
 
+async function listVendorsFromVendorCore(): Promise<VendorModel[]> {
+	if (!getStoredAccessToken()) return [];
+	try {
+		const page = await vendorCoreApi.listVendors();
+		return (page.results ?? []).map(vendorDtoToModel);
+	} catch (err) {
+		if (
+			err instanceof VendorCoreApiError &&
+			(err.status === 401 || err.status === 403)
+		) {
+			return [];
+		}
+		throw err;
+	}
+}
+
+async function getVendorFromVendorCore(id: string): Promise<VendorModel> {
+	const dto = await vendorCoreApi.getVendor(id);
+	return vendorDtoToModel(dto);
+}
+
 export const vmsApi = {
 	async listVendors() {
-		return withMockOrRemote(
-			() => mockDelay(vmsStore.listVendors()),
-			() =>
-				apiClient<VendorModel[] | { results?: VendorModel[] }>(
-					vmsPaths.vendors
-				).then(unwrapList)
-		);
+		if (isMockEnabled()) return mockDelay(vmsStore.listVendors());
+		if (isVendorCoreLive()) return listVendorsFromVendorCore();
+		if (isNestApiEnabled()) {
+			return apiClient<VendorModel[] | { results?: VendorModel[] }>(
+				vmsPaths.vendors
+			).then(unwrapList);
+		}
+		return [];
 	},
 	async getVendor(id: string) {
-		return withMockOrRemote(
-			() => mockDelay(vmsStore.getVendor(id)),
-			() => apiClient<VendorModel>(vmsPaths.vendor(id))
-		);
+		if (isMockEnabled()) return mockDelay(vmsStore.getVendor(id));
+		if (isVendorCoreLive()) return getVendorFromVendorCore(id);
+		if (isNestApiEnabled()) {
+			return apiClient<VendorModel>(vmsPaths.vendor(id));
+		}
+		throw new Error("Vendor API unavailable");
 	},
 	async createVendor(
 		input: Parameters<typeof vmsStore.createVendor>[0]
 	): Promise<VendorModel> {
-		return withMockOrRemote(
-			() => mockDelay(vmsStore.createVendor(input)),
-			() =>
-				apiClient<VendorModel>(vmsPaths.vendors, {
-					method: "POST",
-					body: JSON.stringify(input),
-				})
-		);
+		if (isMockEnabled()) return mockDelay(vmsStore.createVendor(input));
+		if (isVendorCoreLive()) {
+			const code =
+				input.tags?.[0]?.trim() ||
+				`VND-${Date.now().toString().slice(-8)}`;
+			const dto = await vendorCoreApi.createVendor({
+				vendor_code: code,
+				legal_name: input.legalName,
+				trade_name: input.tradeName ?? undefined,
+				country: input.country || "US",
+				city: input.city || "Unknown",
+				status:
+					input.status === "offboarded"
+						? "terminated"
+						: input.status === "invited" || input.status === "under_review"
+							? "prospect"
+							: input.status === "active" ||
+								  input.status === "onboarding" ||
+								  input.status === "prospect" ||
+								  input.status === "suspended"
+								? input.status
+								: "active",
+				metadata: {
+					...(input.categories?.length
+						? { vendor_type: input.categories[0] }
+						: {}),
+					...(input.description ? { description: input.description } : {}),
+				},
+			});
+			return vendorDtoToModel(dto);
+		}
+		if (isNestApiEnabled()) {
+			return apiClient<VendorModel>(vmsPaths.vendors, {
+				method: "POST",
+				body: JSON.stringify(input),
+			});
+		}
+		throw new Error("Vendor create unavailable");
 	},
 	async updateVendor(id: string, patch: Partial<VendorModel>) {
-		return withMockOrRemote(
-			() => mockDelay(vmsStore.updateVendor(id, patch)),
-			() =>
-				apiClient<VendorModel>(vmsPaths.vendor(id), {
-					method: "PATCH",
-					body: JSON.stringify(patch),
-				})
-		);
+		if (isMockEnabled()) return mockDelay(vmsStore.updateVendor(id, patch));
+		if (isVendorCoreLive()) {
+			const body: Record<string, unknown> = {};
+			if (patch.legalName !== undefined) body.legal_name = patch.legalName;
+			if (patch.tradeName !== undefined) body.trade_name = patch.tradeName;
+			if (patch.country !== undefined) body.country = patch.country;
+			if (patch.city !== undefined) body.city = patch.city;
+			if (patch.status !== undefined) {
+				body.status =
+					patch.status === "offboarded"
+						? "terminated"
+						: patch.status === "invited" || patch.status === "under_review"
+							? "prospect"
+							: patch.status === "active" ||
+								  patch.status === "onboarding" ||
+								  patch.status === "prospect" ||
+								  patch.status === "suspended"
+								? patch.status
+								: "prospect";
+			}
+			const dto = await vendorCoreApi.updateVendor(id, body);
+			return vendorDtoToModel(dto);
+		}
+		if (isNestApiEnabled()) {
+			return apiClient<VendorModel>(vmsPaths.vendor(id), {
+				method: "PATCH",
+				body: JSON.stringify(patch),
+			});
+		}
+		throw new Error("Vendor update unavailable");
+	},
+	async deleteVendor(id: string) {
+		if (isMockEnabled()) {
+			await mockDelay(undefined);
+			return;
+		}
+		if (isVendorCoreLive()) {
+			await vendorCoreApi.deleteVendor(id);
+			return;
+		}
+		throw new Error("Vendor delete unavailable");
+	},
+	async hardDeleteVendor(id: string) {
+		if (isMockEnabled()) {
+			await mockDelay(undefined);
+			return;
+		}
+		if (isVendorCoreLive()) {
+			await vendorCoreApi.hardDeleteVendor(id);
+			return;
+		}
+		throw new Error("Vendor hard delete unavailable");
+	},
+	async restoreVendor(id: string) {
+		if (isMockEnabled()) {
+			return mockDelay(vmsStore.getVendor(id));
+		}
+		if (isVendorCoreLive()) {
+			const dto = await vendorCoreApi.restoreVendor(id);
+			return vendorDtoToModel(dto);
+		}
+		throw new Error("Vendor restore unavailable");
 	},
 	async inviteVendor(data: {
 		legalName: string;
 		email: string;
 		categories: string[];
 	}) {
-		return withMockOrRemote(
-			() =>
-				mockDelay(
-					vmsStore.createVendor({
-						legalName: data.legalName,
-						tradeName: null,
-						status: "invited",
-						categories: data.categories,
-						tags: [],
-						country: "",
-						city: "",
-						taxId: null,
-						website: null,
-						description: null,
-						riskLevel: "medium",
-						contacts: [
-							{
-								id: `c-${Date.now()}`,
-								name: data.email.split("@")[0] ?? data.email,
-								email: data.email,
-								phone: null,
-								role: "Primary",
-								isPrimary: true,
-							},
-						],
-					})
-				),
-			() =>
-				apiClient<VendorModel>(vmsPaths.invite, {
-					method: "POST",
-					body: JSON.stringify(data),
+		if (isMockEnabled()) {
+			return mockDelay(
+				vmsStore.createVendor({
+					legalName: data.legalName,
+					tradeName: null,
+					status: "invited",
+					categories: data.categories,
+					tags: [],
+					country: "",
+					city: "",
+					taxId: null,
+					website: null,
+					description: null,
+					riskLevel: "medium",
+					contacts: [
+						{
+							id: `c-${Date.now()}`,
+							name: data.email.split("@")[0] ?? data.email,
+							email: data.email,
+							phone: null,
+							role: "Primary",
+							isPrimary: true,
+						},
+					],
 				})
-		);
+			);
+		}
+		if (isVendorCoreLive()) {
+			return vmsApi.createVendor({
+				legalName: data.legalName,
+				tradeName: null,
+				status: "prospect",
+				categories: data.categories,
+				tags: [],
+				country: "US",
+				city: "Unknown",
+				taxId: null,
+				website: null,
+				description: null,
+				riskLevel: "medium",
+				contacts: [
+					{
+						id: `c-${Date.now()}`,
+						name: data.email.split("@")[0] ?? data.email,
+						email: data.email,
+						phone: null,
+						role: "Primary",
+						isPrimary: true,
+					},
+				],
+			});
+		}
+		if (isNestApiEnabled()) {
+			return apiClient<VendorModel>(vmsPaths.invite, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		}
+		throw new Error("Vendor invite unavailable");
 	},
 	async listCategories() {
 		return withMockOrRemote(
