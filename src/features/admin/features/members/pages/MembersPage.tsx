@@ -178,8 +178,9 @@ function MembersDirectoryPage() {
 			if (result.created > 0) {
 				if (!options?.silent) {
 					toast.success(
-						`Seeded ${result.created} member coverages` +
-							(result.eligibility_file_id ? " (eligibility file created)" : "")
+						`Seeded ${result.created} member coverages${
+							result.eligibility_file_id ? " (eligibility file created)" : ""
+						}`
 					);
 				}
 			} else if (!options?.silent) {

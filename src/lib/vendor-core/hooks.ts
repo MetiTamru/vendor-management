@@ -45,6 +45,8 @@ function useAuthAwareQuery<T>(
 ) {
 	const session = useVendorCoreSession();
 
+	/* Callers own the cache key; auth only gates fetching. */
+	/* eslint-disable @tanstack/query/exhaustive-deps -- wrapper: stable keys from callers */
 	return useQuery({
 		queryKey,
 		enabled: session.live && session.authed && enabled,
@@ -64,6 +66,7 @@ function useAuthAwareQuery<T>(
 		staleTime: 15_000,
 		refetchOnMount: "always",
 	});
+	/* eslint-enable @tanstack/query/exhaustive-deps */
 }
 
 export function useVendorCoreVendors() {

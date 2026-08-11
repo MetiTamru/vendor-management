@@ -46,15 +46,13 @@ import {
 } from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
-type ErrorRow = ErrorQueueRow;
-
 function severityTone(severity: ValidationIssue["severity"]) {
 	if (severity === "error") return "bg-red-600 text-white border-red-600";
 	if (severity === "warning") return "bg-amber-500 text-white border-amber-500";
 	return "bg-sky-600 text-white border-sky-600";
 }
 
-function rowTone(severity: ValidationIssue["severity"]) {
+function rowTone(_severity: ValidationIssue["severity"]) {
 	return "hover:bg-muted/30";
 }
 
