@@ -4,6 +4,8 @@ import { Ban, MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureBulletList,
 	MeasureDataTable,
@@ -14,13 +16,19 @@ import {
 	MeasureStatTile,
 	MeasureSubsection,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PdfLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasureExclusionsDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 
-const REASON_COLORS = ["#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#64748b", "#06b6d4", "#ec4899"];
+const REASON_COLORS = [
+	"#3b82f6",
+	"#8b5cf6",
+	"#f59e0b",
+	"#ef4444",
+	"#64748b",
+	"#06b6d4",
+	"#ec4899",
+];
 
 export function MeasureDetailExclusionsTab({
 	data,
@@ -69,7 +77,9 @@ export function MeasureDetailExclusionsTab({
 						<p className="text-xs font-medium uppercase tracking-wide text-amber-800/80">
 							Overview
 						</p>
-						<p className="mt-2 text-sm leading-relaxed text-foreground">{data.intro}</p>
+						<p className="mt-2 text-sm leading-relaxed text-foreground">
+							{data.intro}
+						</p>
 					</div>
 
 					<MeasureSubsection
@@ -99,9 +109,18 @@ export function MeasureDetailExclusionsTab({
 							value={summary.totalExclusions.toLocaleString()}
 							accent="amber"
 						/>
-						<MeasureStatTile label="Commercial" value={summary.commercial.toLocaleString()} />
-						<MeasureStatTile label="Medicaid" value={summary.medicaid.toLocaleString()} />
-						<MeasureStatTile label="Medicare" value={summary.medicare.toLocaleString()} />
+						<MeasureStatTile
+							label="Commercial"
+							value={summary.commercial.toLocaleString()}
+						/>
+						<MeasureStatTile
+							label="Medicaid"
+							value={summary.medicaid.toLocaleString()}
+						/>
+						<MeasureStatTile
+							label="Medicare"
+							value={summary.medicare.toLocaleString()}
+						/>
 						<MeasureStatTile label="Total Plans" value={summary.totalPlans} />
 						<MeasureStatTile label="Total Groups" value={summary.totalGroups} />
 					</div>
@@ -121,7 +140,7 @@ export function MeasureDetailExclusionsTab({
 							value={row.total}
 							max={maxReasonTotal}
 							pct={row.pctOfTotal}
-							color={REASON_COLORS[index % REASON_COLORS.length]}
+							color={REASON_COLORS[index % REASON_COLORS.length] ?? "#64748b"}
 						/>
 					))}
 				</MeasureSectionPanel>
@@ -137,8 +156,18 @@ export function MeasureDetailExclusionsTab({
 							{ key: "commercial", header: "Commercial", align: "right" },
 							{ key: "medicaid", header: "Medicaid", align: "right" },
 							{ key: "medicare", header: "Medicare", align: "right" },
-							{ key: "total", header: "Total", align: "right", className: "font-semibold" },
-							{ key: "pct", header: "% of Total", align: "right", className: MEASURE_TABLE_MUTED },
+							{
+								key: "total",
+								header: "Total",
+								align: "right",
+								className: "font-semibold",
+							},
+							{
+								key: "pct",
+								header: "% of Total",
+								align: "right",
+								className: MEASURE_TABLE_MUTED,
+							},
 						]}
 						rows={[
 							...data.byReason.map((row) => ({
@@ -174,13 +203,31 @@ export function MeasureDetailExclusionsTab({
 					columns={[
 						{ key: "id", header: "Plan ID", className: "font-mono text-xs" },
 						{ key: "name", header: "Plan Name" },
-						{ key: "lob", header: "Line of Business", className: MEASURE_TABLE_MUTED },
-						{ key: "total", header: "Total Exclusions", align: "right", className: "font-semibold" },
+						{
+							key: "lob",
+							header: "Line of Business",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "total",
+							header: "Total Exclusions",
+							align: "right",
+							className: "font-semibold",
+						},
 						{ key: "commercial", header: "Commercial", align: "right" },
 						{ key: "medicaid", header: "Medicaid", align: "right" },
 						{ key: "medicare", header: "Medicare", align: "right" },
-						{ key: "pct", header: "% of Denominator", align: "right", className: MEASURE_TABLE_MUTED },
-						{ key: "refresh", header: "Last Refresh", className: MEASURE_TABLE_MUTED },
+						{
+							key: "pct",
+							header: "% of Denominator",
+							align: "right",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "refresh",
+							header: "Last Refresh",
+							className: MEASURE_TABLE_MUTED,
+						},
 						{ key: "actions", header: "Actions", align: "right" },
 					]}
 					rows={data.plans.map((plan) => ({
@@ -188,7 +235,8 @@ export function MeasureDetailExclusionsTab({
 						name: plan.name,
 						lob: plan.lineOfBusiness,
 						total: plan.totalExclusions.toLocaleString(),
-						commercial: plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
+						commercial:
+							plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
 						medicaid: plan.medicaid > 0 ? plan.medicaid.toLocaleString() : "—",
 						medicare: plan.medicare > 0 ? plan.medicare.toLocaleString() : "—",
 						pct: `${plan.pctOfDenominator.toFixed(2)}%`,
@@ -201,7 +249,10 @@ export function MeasureDetailExclusionsTab({
 					}))}
 					getRowKey={(row) => String(row.id)}
 				/>
-				<MeasureTablePagination shown={data.plans.length} total={data.totalPlanEntries} />
+				<MeasureTablePagination
+					shown={data.plans.length}
+					total={data.totalPlanEntries}
+				/>
 			</MeasureSectionPanel>
 		</div>
 	);

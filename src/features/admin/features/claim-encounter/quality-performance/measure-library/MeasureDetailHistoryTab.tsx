@@ -22,18 +22,22 @@ import {
 } from "@/components/ui/select";
 import { CMS_EDGE_STATUS_PILL_CLASS } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureDataTable,
 	MeasureKpiCard,
 	MeasureSectionPanel,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasureHistoryDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 import { cn } from "@/lib/utils";
 
-export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }) {
+export function MeasureDetailHistoryTab({
+	data,
+}: {
+	data: MeasureHistoryDetail;
+}) {
 	const summary = data.summary;
 
 	return (
@@ -50,7 +54,9 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 						</SelectTrigger>
 						<SelectContent>
 							{data.filterOptions.historyViews.map((o) => (
-								<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+								<SelectItem key={o} value={o} className="text-sm">
+									{o}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -60,7 +66,9 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 						</SelectTrigger>
 						<SelectContent>
 							{data.filterOptions.comparedTo.map((o) => (
-								<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+								<SelectItem key={o} value={o} className="text-sm">
+									{o}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -70,7 +78,9 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 						</SelectTrigger>
 						<SelectContent>
 							{data.filterOptions.years.map((o) => (
-								<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+								<SelectItem key={o} value={o} className="text-sm">
+									{o}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -80,7 +90,9 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 						</SelectTrigger>
 						<SelectContent>
 							{data.filterOptions.years.map((o) => (
-								<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+								<SelectItem key={o} value={o} className="text-sm">
+									{o}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -130,10 +142,21 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 				>
 					<div className="min-h-[280px] rounded-lg border border-border/50 bg-muted/10 p-2">
 						<ResponsiveContainer width="100%" height={280}>
-							<LineChart data={data.performanceTrend} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+							<LineChart
+								data={data.performanceTrend}
+								margin={{ top: 12, right: 16, left: 0, bottom: 0 }}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
 								<XAxis dataKey="year" tick={{ fontSize: 11 }} />
-								<YAxis tick={{ fontSize: 11 }} width={40} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+								<YAxis
+									tick={{ fontSize: 11 }}
+									width={40}
+									domain={[0, 100]}
+									tickFormatter={(v) => `${v}%`}
+								/>
 								<Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
 								<ReferenceLine
 									y={summary.goal}
@@ -152,7 +175,12 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 									name="Performance Rate"
 									stroke="#13446c"
 									strokeWidth={2.5}
-									dot={{ r: 5, fill: "#13446c", strokeWidth: 2, stroke: "#fff" }}
+									dot={{
+										r: 5,
+										fill: "#13446c",
+										strokeWidth: 2,
+										stroke: "#fff",
+									}}
 								/>
 							</LineChart>
 						</ResponsiveContainer>
@@ -166,17 +194,34 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 				>
 					<MeasureDataTable
 						columns={[
-							{ key: "date", header: "Date/Time", className: "whitespace-nowrap" },
+							{
+								key: "date",
+								header: "Date/Time",
+								className: "whitespace-nowrap",
+							},
 							{ key: "type", header: "Change Type" },
-							{ key: "section", header: "Section", className: MEASURE_TABLE_MUTED },
-							{ key: "by", header: "Changed By", className: MEASURE_TABLE_MUTED },
+							{
+								key: "section",
+								header: "Section",
+								className: MEASURE_TABLE_MUTED,
+							},
+							{
+								key: "by",
+								header: "Changed By",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "desc", header: "Description" },
 							{ key: "impact", header: "Impact", align: "right" },
 						]}
 						rows={data.changeHistory.map((row) => ({
 							date: row.dateTime,
 							type: (
-								<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, row.changeTypeStyle)}>
+								<span
+									className={cn(
+										CMS_EDGE_STATUS_PILL_CLASS,
+										row.changeTypeStyle
+									)}
+								>
 									{row.changeType}
 								</span>
 							),
@@ -184,12 +229,16 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 							by: row.changedBy,
 							desc: row.description,
 							impact: (
-								<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, row.impactStyle)}>
+								<span
+									className={cn(CMS_EDGE_STATUS_PILL_CLASS, row.impactStyle)}
+								>
 									{row.impact}
 								</span>
 							),
 						}))}
-						getRowKey={(row, index) => data.changeHistory[index]?.id ?? String(index)}
+						getRowKey={(row, index) =>
+							data.changeHistory[index]?.id ?? String(index)
+						}
 					/>
 					<MeasureTablePagination
 						shown={data.changeHistory.length}
@@ -215,9 +264,24 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 						{ key: "eligible", header: "Eligible Pop.", align: "right" },
 						{ key: "den", header: "Denominator", align: "right" },
 						{ key: "num", header: "Numerator", align: "right" },
-						{ key: "excl", header: "Exclusions", align: "right", className: MEASURE_TABLE_MUTED },
-						{ key: "rate", header: "Rate", align: "right", className: "font-semibold text-primary" },
-						{ key: "goal", header: "Goal", align: "right", className: MEASURE_TABLE_MUTED },
+						{
+							key: "excl",
+							header: "Exclusions",
+							align: "right",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "rate",
+							header: "Rate",
+							align: "right",
+							className: "font-semibold text-primary",
+						},
+						{
+							key: "goal",
+							header: "Goal",
+							align: "right",
+							className: MEASURE_TABLE_MUTED,
+						},
 						{ key: "variance", header: "Variance", align: "right" },
 						{ key: "status", header: "Status" },
 						{ key: "change", header: "vs Prior Year", align: "right" },
@@ -234,7 +298,12 @@ export function MeasureDetailHistoryTab({ data }: { data: MeasureHistoryDetail }
 							<span className="text-red-600">{row.variance.toFixed(2)}%</span>
 						),
 						status: (
-							<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "border-red-200 bg-red-50 text-red-800")}>
+							<span
+								className={cn(
+									CMS_EDGE_STATUS_PILL_CLASS,
+									"border-red-200 bg-red-50 text-red-800"
+								)}
+							>
 								{row.status}
 							</span>
 						),

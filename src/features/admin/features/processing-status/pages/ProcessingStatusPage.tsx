@@ -60,8 +60,8 @@ import {
 	vendorIdForRun,
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
-import { isVendorCoreLive } from "@/lib/vendor-core";
 import { cn } from "@/lib/utils";
+import { isVendorCoreLive } from "@/lib/vendor-core";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const STATUS_COLORS = {

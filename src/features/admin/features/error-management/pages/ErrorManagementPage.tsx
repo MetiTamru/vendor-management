@@ -5,7 +5,6 @@ import { type ReactNode, useMemo, useState } from "react";
 import { Download, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,18 +22,20 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	FILE_RUNS,
-	type FileRun,
-	type ValidationIssue,
-} from "@/features/admin/features/file-management/mock-data";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import {
 	type ErrorQueueRow,
 	errorRecordsToRows,
 	validationResultsToErrorRows,
 } from "@/features/admin/features/error-management/live-errors";
+import {
+	FILE_RUNS,
+	type FileRun,
+	type ValidationIssue,
+} from "@/features/admin/features/file-management/mock-data";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import { vendorCoreApi } from "@/lib/vendor-core";
 import {
 	useInvalidateVendorCore,
@@ -43,7 +44,6 @@ import {
 	useVendorCoreValidationResults,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type ErrorRow = ErrorQueueRow;
@@ -86,7 +86,7 @@ function MetaItem({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
-function buildErrors(runs: FileRun[]) {
+function buildErrors(runs: FileRun[]): ErrorQueueRow[] {
 	return runs.flatMap((run) =>
 		run.issues.map((issue) => ({
 			...issue,
@@ -266,8 +266,7 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 
 			{useLive && (errorsQ.error ?? validationQ.error) ? (
 				<div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-					Could not load errors:{" "}
-					{(errorsQ.error ?? validationQ.error)?.message}
+					Could not load errors: {(errorsQ.error ?? validationQ.error)?.message}
 				</div>
 			) : null}
 
@@ -415,7 +414,10 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 						size="sm"
 						className="h-9"
 						onClick={() => void handleRefresh()}
-						disabled={refreshing || (useLive && errorsQ.isLoading && validationQ.isLoading)}
+						disabled={
+							refreshing ||
+							(useLive && errorsQ.isLoading && validationQ.isLoading)
+						}
 					>
 						<span className="inline-flex items-center gap-1.5">
 							<RefreshCw

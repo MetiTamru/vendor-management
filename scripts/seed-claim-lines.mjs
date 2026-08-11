@@ -9,8 +9,8 @@
  *   VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:claim-lines
  *   … pnpm seed:claim-lines --force
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -104,7 +104,9 @@ async function main() {
 	}
 	console.log("✓ authenticated");
 
-	const vendors = await request("GET", "/api/v1/vendors/list/?limit=1", { token });
+	const vendors = await request("GET", "/api/v1/vendors/list/?limit=1", {
+		token,
+	});
 	const vendorCount = vendors?.count ?? vendors?.results?.length ?? 0;
 	if (!vendorCount) {
 		console.error(
@@ -137,9 +139,7 @@ async function main() {
 	const lineCount = lines?.count ?? lines?.results?.length ?? 0;
 	console.log(`Claim lines now: ${lineCount}`);
 
-	console.log(
-		"\nDone. Refresh Claims in the UI (vendor-core JWT required)."
-	);
+	console.log("\nDone. Refresh Claims in the UI (vendor-core JWT required).");
 }
 
 main().catch((err) => {

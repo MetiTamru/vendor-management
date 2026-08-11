@@ -5,12 +5,6 @@ import { useMemo, useState } from "react";
 import { ExternalLink, RefreshCw, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,8 +22,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 import { vendorCoreApi } from "@/lib/vendor-core";
 import {
 	useInvalidateVendorCore,
@@ -38,7 +39,6 @@ import {
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
 import { vendorLabel } from "@/lib/vendor-core/types";
-import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
 	if (!n) return "0 B";

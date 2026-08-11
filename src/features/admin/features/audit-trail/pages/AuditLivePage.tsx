@@ -4,12 +4,6 @@ import { useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Input } from "@/components/ui/input";
 import {
 	Table,
@@ -19,6 +13,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useInvalidateVendorCore,

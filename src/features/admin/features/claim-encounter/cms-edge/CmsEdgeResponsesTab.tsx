@@ -24,8 +24,8 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -41,27 +41,27 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	CMS_EDGE_RESPONSE_KPIS,
-	CMS_EDGE_RESPONSE_SELECTED,
-	CMS_EDGE_RESPONSE_STATUS_TREND,
-	CMS_EDGE_RESPONSE_TYPE_MIX,
-	CMS_EDGE_RESPONSES_LIST,
-	CMS_RESPONSE_STATUS_STYLES,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import {
 	CMS_EDGE_PAGE_STACK,
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CELL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_HEAD_CLASS,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgePairRow,
 	CmsEdgeSectionPanel,
 	CmsEdgeSplitRow,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import {
+	CMS_EDGE_RESPONSES_LIST,
+	CMS_EDGE_RESPONSE_KPIS,
+	CMS_EDGE_RESPONSE_SELECTED,
+	CMS_EDGE_RESPONSE_STATUS_TREND,
+	CMS_EDGE_RESPONSE_TYPE_MIX,
+	CMS_RESPONSE_STATUS_STYLES,
+} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +73,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -127,7 +133,9 @@ function ResponseMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -223,17 +231,29 @@ function CmsResponsesTable() {
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Response File</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Response Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Related Submission</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Response File
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Response Type
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Related Submission
+							</TableHead>
 							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								<SortableHead>Date Received</SortableHead>
 							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Status
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Records
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+							>
 								Action
 							</TableHead>
 						</TableRow>
@@ -257,7 +277,9 @@ function CmsResponsesTable() {
 										{row.relatedSubmission}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+								>
 									{row.dateReceived}
 								</TableCell>
 								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
@@ -266,10 +288,17 @@ function CmsResponsesTable() {
 										className={CMS_RESPONSE_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(row.records)}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}
+								>
 									<div className="inline-flex items-center gap-0.5">
 										<Button
 											variant="ghost"
@@ -283,7 +312,9 @@ function CmsResponsesTable() {
 											variant="ghost"
 											size="icon"
 											className="size-7 text-primary"
-											onClick={() => toast.success(`Download ${row.responseFile}`)}
+											onClick={() =>
+												toast.success(`Download ${row.responseFile}`)
+											}
 										>
 											<Download className="size-3.5" />
 										</Button>
@@ -334,7 +365,9 @@ function ResponseDetailsPanel() {
 		{
 			label: "Records",
 			value: (
-				<span className="font-semibold tabular-nums">{formatCount(d.records)}</span>
+				<span className="font-semibold tabular-nums">
+					{formatCount(d.records)}
+				</span>
 			),
 		},
 	];
@@ -359,7 +392,11 @@ function ResponseDetailsPanel() {
 						<Download className="mr-1.5 size-3.5" />
 						Download File
 					</Button>
-					<Button variant="outline" size="sm" className="h-9 flex-1 border-primary/30 text-primary">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9 flex-1 border-primary/30 text-primary"
+					>
 						View File Details
 					</Button>
 				</div>
@@ -376,7 +413,9 @@ function ResponseDetailsPanel() {
 					</div>
 				))}
 				<div className="py-2.5">
-					<p className="mb-2 text-[11px] font-semibold text-foreground">File Information</p>
+					<p className="mb-2 text-[11px] font-semibold text-foreground">
+						File Information
+					</p>
 					<div className="space-y-2 text-xs">
 						<div className="flex justify-between gap-3">
 							<span className="text-muted-foreground">File Name</span>
@@ -396,7 +435,9 @@ function ResponseDetailsPanel() {
 					<p className="mb-1.5 text-[11px] font-semibold text-foreground">
 						Description / Notes
 					</p>
-					<p className="text-xs leading-relaxed text-muted-foreground">{d.description}</p>
+					<p className="text-xs leading-relaxed text-muted-foreground">
+						{d.description}
+					</p>
 				</div>
 			</dl>
 		</CmsEdgeSectionPanel>
@@ -464,7 +505,9 @@ function ResponseTypeSummaryPanel() {
 						</PieChart>
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pt-4 text-center">
-						<p className="text-sm font-bold tabular-nums text-foreground">{total}</p>
+						<p className="text-sm font-bold tabular-nums text-foreground">
+							{total}
+						</p>
 						<p className="text-[10px] text-muted-foreground">Total</p>
 					</div>
 				</div>
@@ -485,7 +528,10 @@ function ResponseStatusTrendPanel() {
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-3">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={CMS_EDGE_RESPONSE_STATUS_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={CMS_EDGE_RESPONSE_STATUS_TREND}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
 						<XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
 						<YAxis tick={{ fontSize: 11 }} width={28} allowDecimals={false} />

@@ -1,6 +1,6 @@
 import type {
-	ProviderSummary,
 	ProviderStatus,
+	ProviderSummary,
 } from "@/features/admin/features/providers/mock-data";
 import type { ProviderDto } from "@/lib/vendor-core/types";
 
@@ -25,14 +25,19 @@ function parseStatus(raw?: string | null): ProviderStatus {
 	return "active";
 }
 
-function parseProviderType(entityType?: string | null): ProviderSummary["providerType"] {
+function parseProviderType(
+	entityType?: string | null
+): ProviderSummary["providerType"] {
 	const value = (entityType ?? "1").toLowerCase();
 	if (value === "2" || value.includes("group")) return "Group";
 	if (value === "3" || value.includes("facil")) return "Facility";
 	return "Individual";
 }
 
-function parseNameParts(name: string): { displayName: string; credentials: string } {
+function parseNameParts(name: string): {
+	displayName: string;
+	credentials: string;
+} {
 	const comma = name.lastIndexOf(",");
 	if (comma < 0) return { displayName: name, credentials: "" };
 	return {
@@ -74,7 +79,11 @@ export function providersToSummaries(
 			TAXONOMY_LABELS[provider.taxonomy ?? ""] ||
 			"General Practice";
 		const claims12m = hashNumber(provider.npi, 4200, 10200);
-		const billed12m = hashNumber(`${provider.npi}-billed`, 1_800_000, 4_800_000);
+		const billed12m = hashNumber(
+			`${provider.npi}-billed`,
+			1_800_000,
+			4_800_000
+		);
 		const paid12m = Math.round(billed12m * 0.755);
 		const status = parseStatus(provider.status);
 
@@ -84,7 +93,8 @@ export function providersToSummaries(
 			name: displayName,
 			credentials,
 			specialty,
-			subspecialty: specialty === "Internal Medicine" ? "Primary Care" : "General",
+			subspecialty:
+				specialty === "Internal Medicine" ? "Primary Care" : "General",
 			taxId: `${12 + (index % 80)}-${hashNumber(provider.npi, 1_000_000, 9_999_999)}`,
 			upin: `A${hashNumber(provider.npi, 10_000, 99_999)}`,
 			medicaidId: `DC-MD-${String(240000 + index).padStart(6, "0")}`,

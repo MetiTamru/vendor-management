@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	Accessibility,
+	Activity,
 	AlertTriangle,
 	BarChart3,
 	Bell,
@@ -23,6 +25,7 @@ import {
 	HeartPulse,
 	History,
 	Home,
+	Hospital,
 	LifeBuoy,
 	MessageSquareReply,
 	Radio,
@@ -34,15 +37,16 @@ import {
 	Timer,
 	UserRound,
 	Users,
-	Accessibility,
 	Workflow,
-	Activity,
-	Hospital,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import Logo from "@/components/shared/logo/Logo";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Sidebar,
@@ -139,14 +143,21 @@ function navLabelKey(title: string) {
 	return title.toLowerCase().replace(/[\s/]+/g, "");
 }
 
-function navLabel(title: string, t: ReturnType<typeof useTranslations<"Admin">>) {
+function navLabel(
+	title: string,
+	t: ReturnType<typeof useTranslations<"Admin">>
+) {
 	const labelKey = navLabelKey(title);
 	return t.has(`nav.${labelKey}`) ? t(`nav.${labelKey}`) : title;
 }
 
 function isNavItemActive(pathname: string, item: SidebarNavItem) {
 	if (item.href && isActivePath(pathname, item.href)) return true;
-	return item.items?.some((child) => child.href && isActivePath(pathname, child.href)) ?? false;
+	return (
+		item.items?.some(
+			(child) => child.href && isActivePath(pathname, child.href)
+		) ?? false
+	);
 }
 
 function SidebarNavEntry({

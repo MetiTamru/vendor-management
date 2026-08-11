@@ -17,11 +17,9 @@ import {
 	RefreshCw,
 	XCircle,
 } from "lucide-react";
-
 import { toast } from "sonner";
 
 import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -48,18 +46,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
 import { vendorIdForRun } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import { vendorCoreApi } from "@/lib/vendor-core";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreInboundFiles,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import { FILE_RUNS, type FileRun } from "../mock-data";
@@ -352,9 +351,7 @@ function FileManagementDashboard() {
 						? 100
 						: Math.max(
 								0,
-								Math.round(
-									((row.onTime + row.late * 0.5) / row.expected) * 100
-								)
+								Math.round(((row.onTime + row.late * 0.5) / row.expected) * 100)
 							),
 			}))
 			.sort((a, b) => a.vendor.localeCompare(b.vendor));
@@ -377,9 +374,7 @@ function FileManagementDashboard() {
 				detail: r.fileName
 					? `${r.fileName}${r.notes ? ` · ${r.notes}` : ""}`
 					: (r.notes ?? "Inbound file needs attention"),
-				when: r.receivedAt
-					? new Date(r.receivedAt).toLocaleString()
-					: "—",
+				when: r.receivedAt ? new Date(r.receivedAt).toLocaleString() : "—",
 				severity:
 					r.status === "missing"
 						? "missing"

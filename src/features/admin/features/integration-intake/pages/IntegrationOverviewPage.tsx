@@ -115,7 +115,9 @@ export function IntegrationOverviewPage() {
 				setJobs(jobPage.value.results ?? []);
 			} else {
 				setJobs([]);
-				failures.push(`intake-jobs: ${jobPage.reason?.message ?? jobPage.reason}`);
+				failures.push(
+					`intake-jobs: ${jobPage.reason?.message ?? jobPage.reason}`
+				);
 			}
 			if (runsPage.status === "fulfilled") {
 				setJobRuns(runsPage.value.results ?? []);

@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +32,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { providersToSummaries } from "@/features/admin/features/providers/live-providers";
 import {
 	PROVIDER_SUMMARIES,
@@ -44,11 +44,11 @@ import {
 } from "@/features/admin/features/providers/mock-data";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreProviders,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: ProviderStatus }) {
@@ -214,9 +214,7 @@ function ProvidersBody({ useLive }: { useLive: boolean }) {
 				</div>
 			) : null}
 
-			{useLive &&
-			!providersQ.isLoading &&
-			programScoped.length === 0 ? (
+			{useLive && !providersQ.isLoading && programScoped.length === 0 ? (
 				<div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
 					No providers returned from vendor-core yet. Run{" "}
 					<code className="rounded bg-muted px-1 py-0.5 text-xs">

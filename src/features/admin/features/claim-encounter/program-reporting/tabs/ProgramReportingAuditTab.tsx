@@ -16,9 +16,9 @@ import {
 	FileSearch,
 	History,
 	ListChecks,
+	type LucideIcon,
 	Search,
 	Shield,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	CartesianGrid,
@@ -28,8 +28,8 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -45,26 +45,27 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
-import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import {
 	AUDIT_STATUS_STYLES,
 	FINDING_SEVERITY_STYLES,
-	getAuditData,
 	type ProgramAuditData,
+	getAuditData,
 } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 const AUDIT_PAGE_STACK = "space-y-5";
 const AUDIT_SECTION_GAP = "gap-4";
-const AUDIT_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const AUDIT_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const AUDIT_TABLE_CELL = "px-4 py-2.5";
 
 const AUDIT_QUICK_ACTION_ICONS: Record<string, LucideIcon> = {
@@ -84,7 +85,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -129,7 +136,9 @@ function AuditMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -137,7 +146,13 @@ function AuditMetricCard({
 	);
 }
 
-function TrendHint({ delta, invert = false }: { delta: number; invert?: boolean }) {
+function TrendHint({
+	delta,
+	invert = false,
+}: {
+	delta: number;
+	invert?: boolean;
+}) {
 	const positive = invert ? delta < 0 : delta > 0;
 	const Icon = positive ? ArrowUpRight : ArrowDownRight;
 	const tone = positive ? "text-emerald-700" : "text-red-600";
@@ -214,9 +229,7 @@ function RecentAuditActivitiesPanel({ data }: { data: ProgramAuditData }) {
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
 				<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-2.5 text-xs text-muted-foreground">
-					<span>
-						Showing 1 to 5 of {data.totalAuditEntries} entries
-					</span>
+					<span>Showing 1 to 5 of {data.totalAuditEntries} entries</span>
 					<div className="flex items-center gap-2">
 						<div className="flex items-center gap-1">
 							<Button variant="outline" size="icon" className="size-7" disabled>
@@ -241,35 +254,57 @@ function RecentAuditActivitiesPanel({ data }: { data: ProgramAuditData }) {
 			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={AUDIT_TABLE_HEAD}>Audit ID</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Audit Type</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Report Type</TableHead>
-							<TableHead className={AUDIT_TABLE_HEAD}>{data.planColumnLabel}</TableHead>
+							<TableHead className={AUDIT_TABLE_HEAD}>
+								{data.planColumnLabel}
+							</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Audit Period</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Audit Date</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Auditor</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(AUDIT_TABLE_HEAD, "text-right")}>Findings</TableHead>
-							<TableHead className={cn(AUDIT_TABLE_HEAD, "pr-4 text-right")}>Critical</TableHead>
+							<TableHead className={cn(AUDIT_TABLE_HEAD, "text-right")}>
+								Findings
+							</TableHead>
+							<TableHead className={cn(AUDIT_TABLE_HEAD, "pr-4 text-right")}>
+								Critical
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{data.recentActivities.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={AUDIT_TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.id}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "font-medium")}>{row.auditType}</TableCell>
-								<TableCell className={AUDIT_TABLE_CELL}>{row.reportType}</TableCell>
+								<TableCell className={cn(AUDIT_TABLE_CELL, "font-medium")}>
+									{row.auditType}
+								</TableCell>
+								<TableCell className={AUDIT_TABLE_CELL}>
+									{row.reportType}
+								</TableCell>
 								<TableCell className={AUDIT_TABLE_CELL}>{row.plan}</TableCell>
-								<TableCell className={AUDIT_TABLE_CELL}>{row.auditPeriod}</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "tabular-nums")}>{row.auditDate}</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "text-muted-foreground")}>
+								<TableCell className={AUDIT_TABLE_CELL}>
+									{row.auditPeriod}
+								</TableCell>
+								<TableCell className={cn(AUDIT_TABLE_CELL, "tabular-nums")}>
+									{row.auditDate}
+								</TableCell>
+								<TableCell
+									className={cn(AUDIT_TABLE_CELL, "text-muted-foreground")}
+								>
 									{row.auditor}
 								</TableCell>
 								<TableCell className={AUDIT_TABLE_CELL}>
@@ -278,14 +313,18 @@ function RecentAuditActivitiesPanel({ data }: { data: ProgramAuditData }) {
 										className={AUDIT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(AUDIT_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.findings}
 								</TableCell>
 								<TableCell
 									className={cn(
 										AUDIT_TABLE_CELL,
 										"pr-4 text-right tabular-nums",
-										row.criticalFindings > 0 ? "font-semibold text-red-600" : "text-muted-foreground"
+										row.criticalFindings > 0
+											? "font-semibold text-red-600"
+											: "text-muted-foreground"
 									)}
 								>
 									{row.criticalFindings}
@@ -300,7 +339,10 @@ function RecentAuditActivitiesPanel({ data }: { data: ProgramAuditData }) {
 }
 
 function FindingsBySeverityPanel({ data }: { data: ProgramAuditData }) {
-	const total = data.findingsBySeverity.reduce((sum, item) => sum + item.value, 0);
+	const total = data.findingsBySeverity.reduce(
+		(sum, item) => sum + item.value,
+		0
+	);
 
 	return (
 		<CmsEdgeSectionPanel
@@ -335,9 +377,15 @@ function FindingsBySeverityPanel({ data }: { data: ProgramAuditData }) {
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-2 text-xs">
 					{data.findingsBySeverity.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
 								<span className="truncate">{item.name}</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
@@ -361,15 +409,49 @@ function FindingsTrendPanel({ data }: { data: ProgramAuditData }) {
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={data.findingsTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={data.findingsTrend}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-						<XAxis dataKey="month" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={44} />
+						<XAxis
+							dataKey="month"
+							tick={{ fontSize: 10 }}
+							interval={0}
+							angle={-15}
+							textAnchor="end"
+							height={44}
+						/>
 						<YAxis tick={{ fontSize: 11 }} width={32} />
 						<RechartsTooltip />
-						<Legend iconSize={8} wrapperStyle={{ fontSize: 10, paddingBottom: 4 }} />
-						<Line type="monotone" dataKey="total" name="Total Findings" stroke="#13446c" strokeWidth={2} dot={{ r: 3 }} />
-						<Line type="monotone" dataKey="critical" name="Critical" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="high" name="High" stroke="#f97316" strokeWidth={2} dot={{ r: 2 }} />
+						<Legend
+							iconSize={8}
+							wrapperStyle={{ fontSize: 10, paddingBottom: 4 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="total"
+							name="Total Findings"
+							stroke="#13446c"
+							strokeWidth={2}
+							dot={{ r: 3 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="critical"
+							name="Critical"
+							stroke="#ef4444"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="high"
+							name="High"
+							stroke="#f97316"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
@@ -390,26 +472,53 @@ function TopAuditFindingsPanel({ data }: { data: ProgramAuditData }) {
 			}
 		>
 			<div className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={AUDIT_TABLE_HEAD}>Finding Category</TableHead>
+							<TableHead className={AUDIT_TABLE_HEAD}>
+								Finding Category
+							</TableHead>
 							<TableHead className={AUDIT_TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(AUDIT_TABLE_HEAD, "text-right")}>Occurrences</TableHead>
-							<TableHead className={cn(AUDIT_TABLE_HEAD, "pr-4")}>Severity</TableHead>
+							<TableHead className={cn(AUDIT_TABLE_HEAD, "text-right")}>
+								Occurrences
+							</TableHead>
+							<TableHead className={cn(AUDIT_TABLE_HEAD, "pr-4")}>
+								Severity
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{data.topFindings.map((row) => (
-							<TableRow key={row.category} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(AUDIT_TABLE_CELL, "font-medium")}>{row.category}</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "text-muted-foreground leading-relaxed")}>
+							<TableRow
+								key={row.category}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(AUDIT_TABLE_CELL, "font-medium")}>
+									{row.category}
+								</TableCell>
+								<TableCell
+									className={cn(
+										AUDIT_TABLE_CELL,
+										"text-muted-foreground leading-relaxed"
+									)}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(AUDIT_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.occurrences}
 								</TableCell>
-								<TableCell className={cn(AUDIT_TABLE_CELL, "pr-4", FINDING_SEVERITY_STYLES[row.severity])}>
+								<TableCell
+									className={cn(
+										AUDIT_TABLE_CELL,
+										"pr-4",
+										FINDING_SEVERITY_STYLES[row.severity]
+									)}
+								>
 									{row.severity}
 								</TableCell>
 							</TableRow>
@@ -422,7 +531,9 @@ function TopAuditFindingsPanel({ data }: { data: ProgramAuditData }) {
 }
 
 function CorrectiveActionsSummaryPanel({ data }: { data: ProgramAuditData }) {
-	const maxCount = Math.max(...data.correctiveActions.map((item) => item.count));
+	const maxCount = Math.max(
+		...data.correctiveActions.map((item) => item.count)
+	);
 
 	return (
 		<CmsEdgeSectionPanel
@@ -478,7 +589,9 @@ function AuditQuickActionsPanel({ data }: { data: ProgramAuditData }) {
 								<Icon className="size-4" aria-hidden />
 							</div>
 							<div className="min-w-0">
-								<p className="text-xs font-semibold text-foreground">{action.title}</p>
+								<p className="text-xs font-semibold text-foreground">
+									{action.title}
+								</p>
 								<p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
 									{action.description}
 								</p>
@@ -495,7 +608,9 @@ type ProgramReportingAuditTabProps = {
 	programType: ProgramType;
 };
 
-export function ProgramReportingAuditTab({ programType }: ProgramReportingAuditTabProps) {
+export function ProgramReportingAuditTab({
+	programType,
+}: ProgramReportingAuditTabProps) {
 	const data = getAuditData(programType);
 
 	return (
@@ -513,7 +628,12 @@ export function ProgramReportingAuditTab({ programType }: ProgramReportingAuditT
 				<FindingsTrendPanel data={data} />
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", AUDIT_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-3",
+					AUDIT_SECTION_GAP
+				)}
+			>
 				<TopAuditFindingsPanel data={data} />
 				<CorrectiveActionsSummaryPanel data={data} />
 				<AuditQuickActionsPanel data={data} />

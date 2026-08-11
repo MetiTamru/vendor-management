@@ -5,16 +5,16 @@ import { useEffect } from "react";
 import { GeneralShell } from "@/components/shared/Wrappers/GeneralShell";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+	VendorCoreAuthBanner,
+	VendorCoreSessionProvider,
+} from "@/components/vendor-core/VendorCoreGate";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 
 import { AdminHeader } from "./AdminHeader";
 import { AdminSidebar } from "./AdminSidebar";
 import { CommandPalette } from "./CommandPalette";
 import { OfflineBanner } from "./OfflineBanner";
-import {
-	VendorCoreAuthBanner,
-	VendorCoreSessionProvider,
-} from "@/components/vendor-core/VendorCoreGate";
 
 type AdminShellProps = {
 	children: React.ReactNode;

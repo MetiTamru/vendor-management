@@ -80,7 +80,10 @@ export function CompliancePageSection({
 					<div className="h-56 w-full">
 						<ResponsiveContainer width="100%" height="100%">
 							<AreaChart data={analytics.trend}>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/60"
+								/>
 								<XAxis dataKey="label" tick={{ fontSize: 11 }} />
 								<YAxis tick={{ fontSize: 11 }} />
 								<Tooltip />
@@ -211,8 +214,15 @@ export function CompliancePageSection({
 					<div className="h-56 w-full">
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={analytics.vendorBars} layout="vertical">
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
-								<XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/60"
+								/>
+								<XAxis
+									type="number"
+									domain={[0, 100]}
+									tick={{ fontSize: 11 }}
+								/>
 								<YAxis
 									type="category"
 									dataKey="name"
@@ -236,10 +246,7 @@ export function CompliancePageSection({
 						return (
 							<div
 								key={item.title}
-								className={cn(
-									"rounded-xl border p-4 shadow-sm",
-									item.tone
-								)}
+								className={cn("rounded-xl border p-4 shadow-sm", item.tone)}
 							>
 								<div className="mb-2 flex items-center gap-2">
 									<Icon className="size-4 shrink-0" />
@@ -320,7 +327,9 @@ export function CompliancePageSection({
 											{item.when}
 										</span>
 									</div>
-									<p className="text-xs text-muted-foreground">{item.subtitle}</p>
+									<p className="text-xs text-muted-foreground">
+										{item.subtitle}
+									</p>
 									<p className="mt-1 text-xs font-semibold text-primary">
 										{item.status}
 									</p>

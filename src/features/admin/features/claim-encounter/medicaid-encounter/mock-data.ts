@@ -31,7 +31,10 @@ export type MedicaidSubmissionStatus =
 
 export type MedicaidExceptionStatus = "Open" | "In Review" | "Resolved";
 
-export const MEDICAID_SUBMISSION_STATUS_STYLES: Record<MedicaidSubmissionStatus, string> = {
+export const MEDICAID_SUBMISSION_STATUS_STYLES: Record<
+	MedicaidSubmissionStatus,
+	string
+> = {
 	Submitted: "border-sky-200 bg-sky-50 text-sky-800",
 	Acknowledged: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	Accepted: "border-emerald-300 bg-emerald-100 text-emerald-800",
@@ -39,7 +42,10 @@ export const MEDICAID_SUBMISSION_STATUS_STYLES: Record<MedicaidSubmissionStatus,
 	Pending: "border-amber-200 bg-amber-50 text-amber-800",
 };
 
-export const MEDICAID_EXCEPTION_STATUS_STYLES: Record<MedicaidExceptionStatus, string> = {
+export const MEDICAID_EXCEPTION_STATUS_STYLES: Record<
+	MedicaidExceptionStatus,
+	string
+> = {
 	Open: "border-red-200 bg-red-50 text-red-700",
 	"In Review": "border-amber-200 bg-amber-50 text-amber-800",
 	Resolved: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -103,8 +109,18 @@ export const MEDICAID_OVERVIEW_ACCEPTANCE_TREND = [
 ];
 
 export const MEDICAID_OVERVIEW_REJECTION_DONUT = [
-	{ name: "Missing/Invalid Member ID", count: 22_840, color: "#13446c", pct: 29.8 },
-	{ name: "Invalid Diagnosis Code", count: 18_920, color: "#3b82f6", pct: 24.7 },
+	{
+		name: "Missing/Invalid Member ID",
+		count: 22_840,
+		color: "#13446c",
+		pct: 29.8,
+	},
+	{
+		name: "Invalid Diagnosis Code",
+		count: 18_920,
+		color: "#3b82f6",
+		pct: 24.7,
+	},
 	{ name: "Provider Not Enrolled", count: 12_640, color: "#8b5cf6", pct: 16.5 },
 	{ name: "Duplicate Encounter", count: 10_208, color: "#f59e0b", pct: 13.3 },
 	{ name: "Other", count: 11_904, color: "#94a3b8", pct: 15.7 },
@@ -237,11 +253,36 @@ export const MEDICAID_REPORTS_BY_TYPE = [
 ];
 
 export const MEDICAID_TOP_REJECTIONS = [
-	{ code: "ME-001", description: "Invalid member identifier", count: 12, pct: 28.6 },
-	{ code: "ME-014", description: "Service date outside eligibility", count: 9, pct: 21.4 },
-	{ code: "PR-008", description: "Provider NPI not on file", count: 7, pct: 16.7 },
-	{ code: "EN-022", description: "Duplicate encounter record", count: 6, pct: 14.3 },
-	{ code: "ME-031", description: "Missing procedure modifier", count: 4, pct: 9.5 },
+	{
+		code: "ME-001",
+		description: "Invalid member identifier",
+		count: 12,
+		pct: 28.6,
+	},
+	{
+		code: "ME-014",
+		description: "Service date outside eligibility",
+		count: 9,
+		pct: 21.4,
+	},
+	{
+		code: "PR-008",
+		description: "Provider NPI not on file",
+		count: 7,
+		pct: 16.7,
+	},
+	{
+		code: "EN-022",
+		description: "Duplicate encounter record",
+		count: 6,
+		pct: 14.3,
+	},
+	{
+		code: "ME-031",
+		description: "Missing procedure modifier",
+		count: 4,
+		pct: 9.5,
+	},
 ];
 
 export const MEDICAID_RATE_BY_MONTH = [
@@ -254,11 +295,35 @@ export const MEDICAID_RATE_BY_MONTH = [
 ];
 
 export const MEDICAID_SUMMARY_BY_TYPE = [
-	{ type: "Encounter File", submitted: 18, accepted: 17, rejected: 1, rate: 94.4 },
-	{ type: "Member Eligibility", submitted: 10, accepted: 9, rejected: 1, rate: 90.0 },
+	{
+		type: "Encounter File",
+		submitted: 18,
+		accepted: 17,
+		rejected: 1,
+		rate: 94.4,
+	},
+	{
+		type: "Member Eligibility",
+		submitted: 10,
+		accepted: 9,
+		rejected: 1,
+		rate: 90.0,
+	},
 	{ type: "Provider Data", submitted: 8, accepted: 7, rejected: 1, rate: 87.5 },
-	{ type: "Capitation Adj.", submitted: 4, accepted: 4, rejected: 0, rate: 100.0 },
-	{ type: "Pharmacy Recon.", submitted: 2, accepted: 2, rejected: 0, rate: 100.0 },
+	{
+		type: "Capitation Adj.",
+		submitted: 4,
+		accepted: 4,
+		rejected: 0,
+		rate: 100.0,
+	},
+	{
+		type: "Pharmacy Recon.",
+		submitted: 2,
+		accepted: 2,
+		rejected: 0,
+		rate: 100.0,
+	},
 ];
 
 export const MEDICAID_ENCOUNTER_TABS = [
@@ -278,13 +343,19 @@ export type MedicaidResponseFileStatus = "Processed" | "Pending" | "Failed";
 
 export type MedicaidWarningStatus = "Open" | "In Review" | "Resolved";
 
-export const MEDICAID_RESPONSE_STATUS_STYLES: Record<MedicaidResponseFileStatus, string> = {
+export const MEDICAID_RESPONSE_STATUS_STYLES: Record<
+	MedicaidResponseFileStatus,
+	string
+> = {
 	Processed: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	Pending: "border-amber-200 bg-amber-50 text-amber-800",
 	Failed: "border-red-200 bg-red-50 text-red-700",
 };
 
-export const MEDICAID_WARNING_STATUS_STYLES: Record<MedicaidWarningStatus, string> = {
+export const MEDICAID_WARNING_STATUS_STYLES: Record<
+	MedicaidWarningStatus,
+	string
+> = {
 	Open: "border-red-200 bg-red-50 text-red-700",
 	"In Review": "border-amber-200 bg-amber-50 text-amber-800",
 	Resolved: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -388,11 +459,36 @@ export const MEDICAID_RESPONSES_BY_STATUS = [
 ];
 
 export const MEDICAID_TOP_ERROR_REASONS = [
-	{ code: "ME-1024", description: "Member ID not found in eligibility", count: 2840, pct: 32.4 },
-	{ code: "ME-2048", description: "Service date outside eligibility period", count: 1920, pct: 21.9 },
-	{ code: "PR-008", description: "Rendering provider NPI not on file", count: 1480, pct: 16.9 },
-	{ code: "EN-022", description: "Duplicate encounter record", count: 1120, pct: 12.8 },
-	{ code: "DX-014", description: "Invalid diagnosis code for age", count: 840, pct: 9.6 },
+	{
+		code: "ME-1024",
+		description: "Member ID not found in eligibility",
+		count: 2840,
+		pct: 32.4,
+	},
+	{
+		code: "ME-2048",
+		description: "Service date outside eligibility period",
+		count: 1920,
+		pct: 21.9,
+	},
+	{
+		code: "PR-008",
+		description: "Rendering provider NPI not on file",
+		count: 1480,
+		pct: 16.9,
+	},
+	{
+		code: "EN-022",
+		description: "Duplicate encounter record",
+		count: 1120,
+		pct: 12.8,
+	},
+	{
+		code: "DX-014",
+		description: "Invalid diagnosis code for age",
+		count: 840,
+		pct: 9.6,
+	},
 ];
 
 export const MEDICAID_RECENT_WARNINGS = [
@@ -445,11 +541,12 @@ export const MEDICAID_AUDIT_KPIS = {
 
 export type MedicaidAuditStatus = "Completed" | "In Progress" | "Scheduled";
 
-export const MEDICAID_AUDIT_STATUS_STYLES: Record<MedicaidAuditStatus, string> = {
-	Completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
-	"In Progress": "border-violet-200 bg-violet-50 text-violet-800",
-	Scheduled: "border-sky-200 bg-sky-50 text-sky-800",
-};
+export const MEDICAID_AUDIT_STATUS_STYLES: Record<MedicaidAuditStatus, string> =
+	{
+		Completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+		"In Progress": "border-violet-200 bg-violet-50 text-violet-800",
+		Scheduled: "border-sky-200 bg-sky-50 text-sky-800",
+	};
 
 export const MEDICAID_RECENT_AUDIT_ACTIVITIES = [
 	{
@@ -532,7 +629,10 @@ export const MEDICAID_FINDINGS_TREND = [
 
 export type MedicaidFindingSeverity = "Critical" | "High" | "Medium" | "Low";
 
-export const MEDICAID_FINDING_SEVERITY_STYLES: Record<MedicaidFindingSeverity, string> = {
+export const MEDICAID_FINDING_SEVERITY_STYLES: Record<
+	MedicaidFindingSeverity,
+	string
+> = {
 	Critical: "text-red-600 font-semibold",
 	High: "text-orange-600 font-semibold",
 	Medium: "text-violet-600 font-medium",
@@ -638,11 +738,18 @@ export type MedicaidDocumentType =
 	| "Audit Document"
 	| "Other Document";
 
-export type MedicaidDocumentStatus = "Submitted" | "Received" | "Complete" | "Reference";
+export type MedicaidDocumentStatus =
+	| "Submitted"
+	| "Received"
+	| "Complete"
+	| "Reference";
 
 export type MedicaidDocumentFileKind = "dat" | "rsp" | "pdf" | "xlsx" | "txt";
 
-export const MEDICAID_DOCUMENT_TYPE_STYLES: Record<MedicaidDocumentType, string> = {
+export const MEDICAID_DOCUMENT_TYPE_STYLES: Record<
+	MedicaidDocumentType,
+	string
+> = {
 	"Submitted File": "border-sky-200 bg-sky-50 text-sky-800",
 	"Response File": "border-emerald-200 bg-emerald-50 text-emerald-700",
 	"Validation Report": "border-violet-200 bg-violet-50 text-violet-800",
@@ -651,7 +758,10 @@ export const MEDICAID_DOCUMENT_TYPE_STYLES: Record<MedicaidDocumentType, string>
 	"Other Document": "border-border bg-muted/50 text-muted-foreground",
 };
 
-export const MEDICAID_DOCUMENT_STATUS_STYLES: Record<MedicaidDocumentStatus, string> = {
+export const MEDICAID_DOCUMENT_STATUS_STYLES: Record<
+	MedicaidDocumentStatus,
+	string
+> = {
 	Submitted: "border-sky-200 bg-sky-50 text-sky-800",
 	Received: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	Complete: "border-violet-200 bg-violet-50 text-violet-800",
@@ -668,7 +778,12 @@ export const MEDICAID_DOCUMENT_TYPES_FILTER = [
 	"Other Document",
 ] as const;
 
-export const MEDICAID_DOCUMENT_STATES_FILTER = ["All States", "DC", "MD", "VA"] as const;
+export const MEDICAID_DOCUMENT_STATES_FILTER = [
+	"All States",
+	"DC",
+	"MD",
+	"VA",
+] as const;
 
 export const MEDICAID_DOCUMENT_VENDORS_FILTER = [
 	"All Vendors",
@@ -719,7 +834,8 @@ export const MEDICAID_DOCUMENT_LIBRARY: MedicaidDocumentRow[] = [
 		uploadedBy: "System",
 		status: "Submitted",
 		fileSize: "18.4 MB",
-		description: "Final encounter submission file for Q2 2027 reporting period.",
+		description:
+			"Final encounter submission file for Q2 2027 reporting period.",
 	},
 	{
 		id: "doc-2",
@@ -913,10 +1029,26 @@ export const MEDICAID_DOCUMENT_CATEGORIES = [
 ];
 
 export const MEDICAID_DOCUMENT_QUICK_ACTIONS = [
-	{ id: "dq-1", title: "Upload Document", description: "Upload new file or document" },
-	{ id: "dq-2", title: "Download Selected", description: "Download selected document(s)" },
-	{ id: "dq-3", title: "Share Document", description: "Share with team or vendor" },
-	{ id: "dq-4", title: "Move to Category", description: "Organize document library" },
+	{
+		id: "dq-1",
+		title: "Upload Document",
+		description: "Upload new file or document",
+	},
+	{
+		id: "dq-2",
+		title: "Download Selected",
+		description: "Download selected document(s)",
+	},
+	{
+		id: "dq-3",
+		title: "Share Document",
+		description: "Share with team or vendor",
+	},
+	{
+		id: "dq-4",
+		title: "Move to Category",
+		description: "Organize document library",
+	},
 ];
 
 export function filterMedicaidDocuments(
@@ -931,7 +1063,10 @@ export function filterMedicaidDocuments(
 ): MedicaidDocumentRow[] {
 	const q = query.trim().toLowerCase();
 	return rows.filter((row) => {
-		if (filters.documentType !== "All Types" && row.documentType !== filters.documentType) {
+		if (
+			filters.documentType !== "All Types" &&
+			row.documentType !== filters.documentType
+		) {
 			return false;
 		}
 		if (filters.state !== "All States" && row.state !== filters.state) {
@@ -972,7 +1107,10 @@ export const MEDICAID_EXCEPTION_KPIS = {
 
 export type MedicaidExceptionSeverity = "Critical" | "Warning" | "Info";
 
-export const MEDICAID_EXCEPTION_SEVERITY_STYLES: Record<MedicaidExceptionSeverity, string> = {
+export const MEDICAID_EXCEPTION_SEVERITY_STYLES: Record<
+	MedicaidExceptionSeverity,
+	string
+> = {
 	Critical: "border-red-200 bg-red-50 text-red-700",
 	Warning: "border-amber-200 bg-amber-50 text-amber-800",
 	Info: "border-sky-200 bg-sky-50 text-sky-800",
@@ -1125,7 +1263,10 @@ export function filterMedicaidExceptions(
 ): MedicaidExceptionDetailRow[] {
 	const q = query.trim().toLowerCase();
 	return rows.filter((row) => {
-		if (filters.severity !== "All Severities" && row.severity !== filters.severity) {
+		if (
+			filters.severity !== "All Severities" &&
+			row.severity !== filters.severity
+		) {
 			return false;
 		}
 		if (filters.status !== "All Statuses" && row.status !== filters.status) {
@@ -1291,11 +1432,31 @@ export const MEDICAID_EXTERNAL_VALIDATION_DETAILS = [
 ];
 
 export const MEDICAID_VALIDATION_TOP_ERROR_CODES = [
-	{ code: "E1001", description: "Missing / Invalid Member ID", count: 1_545, pct: 33.75 },
-	{ code: "E1004", description: "Missing / Invalid Provider ID", count: 982, pct: 21.45 },
+	{
+		code: "E1001",
+		description: "Missing / Invalid Member ID",
+		count: 1_545,
+		pct: 33.75,
+	},
+	{
+		code: "E1004",
+		description: "Missing / Invalid Provider ID",
+		count: 982,
+		pct: 21.45,
+	},
 	{ code: "E1024", description: "Duplicate Claim", count: 748, pct: 16.33 },
-	{ code: "E2048", description: "Invalid Service Date", count: 624, pct: 13.62 },
-	{ code: "E3012", description: "Missing Diagnosis Code", count: 518, pct: 11.31 },
+	{
+		code: "E2048",
+		description: "Invalid Service Date",
+		count: 624,
+		pct: 13.62,
+	},
+	{
+		code: "E3012",
+		description: "Missing Diagnosis Code",
+		count: 518,
+		pct: 11.31,
+	},
 ];
 
 export const MEDICAID_VALIDATION_TREND = [
@@ -1317,11 +1478,36 @@ export const MEDICAID_EXTERNAL_VALIDATION_TREND = [
 ];
 
 export const MEDICAID_EXTERNAL_TOP_REJECTION_CODES = [
-	{ code: "R2001", description: "Member Not Eligible on Date of Service", count: 1_284, pct: 28.42 },
-	{ code: "R2015", description: "Provider Not Enrolled with State", count: 892, pct: 19.74 },
-	{ code: "R3042", description: "Duplicate Encounter Record", count: 648, pct: 14.34 },
-	{ code: "R4108", description: "Invalid Procedure / Revenue Code", count: 524, pct: 11.6 },
-	{ code: "R5021", description: "Missing Required Diagnosis", count: 412, pct: 9.12 },
+	{
+		code: "R2001",
+		description: "Member Not Eligible on Date of Service",
+		count: 1_284,
+		pct: 28.42,
+	},
+	{
+		code: "R2015",
+		description: "Provider Not Enrolled with State",
+		count: 892,
+		pct: 19.74,
+	},
+	{
+		code: "R3042",
+		description: "Duplicate Encounter Record",
+		count: 648,
+		pct: 14.34,
+	},
+	{
+		code: "R4108",
+		description: "Invalid Procedure / Revenue Code",
+		count: 524,
+		pct: 11.6,
+	},
+	{
+		code: "R5021",
+		description: "Missing Required Diagnosis",
+		count: 412,
+		pct: 9.12,
+	},
 ];
 
 export const MEDICAID_VALIDATION_TYPE_BREAKDOWN = [
@@ -1334,7 +1520,11 @@ export const MEDICAID_VALIDATION_TYPE_BREAKDOWN = [
 ];
 
 export const MEDICAID_VALIDATION_QUICK_ACTIONS = [
-	{ id: "vq-1", title: "View Validation Rules", description: "Review internal and state edit rules" },
+	{
+		id: "vq-1",
+		title: "View Validation Rules",
+		description: "Review internal and state edit rules",
+	},
 	{
 		id: "vq-2",
 		title: "Download Internal Validation Report",
@@ -1345,5 +1535,9 @@ export const MEDICAID_VALIDATION_QUICK_ACTIONS = [
 		title: "Download State Validation Report",
 		description: "Export state MMIS validation response",
 	},
-	{ id: "vq-4", title: "Revalidate File", description: "Re-run validation on selected submission file" },
+	{
+		id: "vq-4",
+		title: "Revalidate File",
+		description: "Re-run validation on selected submission file",
+	},
 ];

@@ -11,12 +11,12 @@ import {
 	Download,
 	FileText,
 	FolderOpen,
+	type LucideIcon,
 	Percent,
 	RefreshCw,
 	Send,
 	Upload,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	CartesianGrid,
@@ -42,10 +42,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
@@ -65,7 +65,8 @@ import { formatCount } from "@/features/admin/features/claim-encounter/mock-data
 import { cn } from "@/lib/utils";
 
 /** Comfortable spacing for overview tables and panels (less cluttered than dense CMS EDGE tables) */
-const OVERVIEW_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const OVERVIEW_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const OVERVIEW_TABLE_CELL = "px-4 py-2.5";
 const OVERVIEW_PAGE_STACK = "space-y-5";
 const OVERVIEW_SECTION_GAP = "gap-4";
@@ -78,7 +79,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -123,7 +130,9 @@ function OverviewMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -240,10 +249,16 @@ function RecentSubmissionsPanel() {
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "min-w-[140px]")}>Submission Batch</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "min-w-[200px]")}>File Name</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "min-w-[140px]")}>
+								Submission Batch
+							</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "min-w-[200px]")}>
+								File Name
+							</TableHead>
 							<TableHead className={OVERVIEW_TABLE_HEAD}>State</TableHead>
-							<TableHead className={OVERVIEW_TABLE_HEAD}>Submitted Date</TableHead>
+							<TableHead className={OVERVIEW_TABLE_HEAD}>
+								Submitted Date
+							</TableHead>
 							<TableHead className={OVERVIEW_TABLE_HEAD}>Status</TableHead>
 							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "pr-5 text-right")}>
 								Encounters
@@ -252,16 +267,32 @@ function RecentSubmissionsPanel() {
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_OVERVIEW_RECENT_SUBMISSIONS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={OVERVIEW_TABLE_CELL}>
-									<Button variant="link" className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}>
+									<Button
+										variant="link"
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
+									>
 										{row.batch}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "font-mono text-[11px] leading-relaxed")}>
+								<TableCell
+									className={cn(
+										OVERVIEW_TABLE_CELL,
+										"font-mono text-[11px] leading-relaxed"
+									)}
+								>
 									{row.fileName}
 								</TableCell>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.state}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.state}
+								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "tabular-nums")}>
 									{row.submittedDate}
 								</TableCell>
@@ -271,7 +302,12 @@ function RecentSubmissionsPanel() {
 										className={MEDICAID_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-5 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										OVERVIEW_TABLE_CELL,
+										"pr-5 text-right tabular-nums"
+									)}
+								>
 									{formatCount(row.encounters)}
 								</TableCell>
 							</TableRow>
@@ -297,8 +333,20 @@ function AcceptanceTrendPanel() {
 						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
 					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-						<XAxis dataKey="month" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={40} />
-						<YAxis tick={{ fontSize: 11 }} width={36} domain={[90, 100]} tickFormatter={(v) => `${v}%`} />
+						<XAxis
+							dataKey="month"
+							tick={{ fontSize: 10 }}
+							interval={0}
+							angle={-15}
+							textAnchor="end"
+							height={40}
+						/>
+						<YAxis
+							tick={{ fontSize: 11 }}
+							width={36}
+							domain={[90, 100]}
+							tickFormatter={(v) => `${v}%`}
+						/>
 						<Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
 						<Line
 							type="monotone"
@@ -358,7 +406,10 @@ function TopRejectionDonutPanel() {
 				</div>
 				<ul className="flex min-w-0 flex-1 flex-col justify-center gap-3 py-1 text-xs leading-relaxed">
 					{MEDICAID_OVERVIEW_REJECTION_DONUT.map((item) => (
-						<li key={item.name} className="flex items-start justify-between gap-4">
+						<li
+							key={item.name}
+							className="flex items-start justify-between gap-4"
+						>
 							<span className="flex min-w-0 items-start gap-2 font-medium">
 								<span
 									className="mt-1.5 size-2 shrink-0 rounded-full"
@@ -382,33 +433,61 @@ function RecentResponseFilesPanel() {
 	return (
 		<CmsEdgeSectionPanel title="Recent Response Files">
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={OVERVIEW_TABLE_HEAD}>Response File</TableHead>
+							<TableHead className={OVERVIEW_TABLE_HEAD}>
+								Response File
+							</TableHead>
 							<TableHead className={OVERVIEW_TABLE_HEAD}>State</TableHead>
-							<TableHead className={OVERVIEW_TABLE_HEAD}>Received Date</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "text-right")}>Accepted</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "text-right")}>Rejected</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "pr-5")}>Status</TableHead>
+							<TableHead className={OVERVIEW_TABLE_HEAD}>
+								Received Date
+							</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "text-right")}>
+								Accepted
+							</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "text-right")}>
+								Rejected
+							</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "pr-5")}>
+								Status
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_OVERVIEW_RECENT_RESPONSES.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={OVERVIEW_TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.file}
 									</Button>
 								</TableCell>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.state}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.state}
+								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "tabular-nums")}>
 									{row.receivedDate}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums text-emerald-700")}>
+								<TableCell
+									className={cn(
+										OVERVIEW_TABLE_CELL,
+										"text-right tabular-nums text-emerald-700"
+									)}
+								>
 									{formatCount(row.accepted)}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										OVERVIEW_TABLE_CELL,
+										"text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(row.rejected)}
 								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-5")}>
@@ -433,25 +512,48 @@ function ExceptionsSummaryPanel() {
 			action={<PanelLink>View All</PanelLink>}
 		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "w-[100px]")}>Error Code</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "w-[100px]")}>
+								Error Code
+							</TableHead>
 							<TableHead className={OVERVIEW_TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "w-[72px] text-right")}>Count</TableHead>
-							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "w-[100px] pr-5")}>Status</TableHead>
+							<TableHead
+								className={cn(OVERVIEW_TABLE_HEAD, "w-[72px] text-right")}
+							>
+								Count
+							</TableHead>
+							<TableHead className={cn(OVERVIEW_TABLE_HEAD, "w-[100px] pr-5")}>
+								Status
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_OVERVIEW_EXCEPTIONS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "font-mono font-medium")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(OVERVIEW_TABLE_CELL, "font-mono font-medium")}
+								>
 									{row.code}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-6 text-muted-foreground leading-relaxed")}>
+								<TableCell
+									className={cn(
+										OVERVIEW_TABLE_CELL,
+										"pr-6 text-muted-foreground leading-relaxed"
+									)}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.count)}
 								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-5")}>
@@ -493,7 +595,9 @@ function QuickActionsPanel() {
 								<Icon className="size-4" />
 							</div>
 							<div className="min-w-0 flex-1">
-								<p className="text-xs font-semibold text-foreground">{action.title}</p>
+								<p className="text-xs font-semibold text-foreground">
+									{action.title}
+								</p>
 								<p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
 									{action.description}
 								</p>
@@ -511,7 +615,12 @@ export function MedicaidEncounterOverviewTab() {
 		<div className={OVERVIEW_PAGE_STACK}>
 			<OverviewKpiRow />
 
-			<div className={cn("grid grid-cols-1 items-start lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]", OVERVIEW_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-start lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]",
+					OVERVIEW_SECTION_GAP
+				)}
+			>
 				{/* Left column — tables */}
 				<div className={cn("flex min-w-0 flex-col", OVERVIEW_SECTION_GAP)}>
 					<RecentSubmissionsPanel />

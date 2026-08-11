@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	ArrowDownRight,
@@ -11,13 +11,13 @@ import {
 	Clock3,
 	Download,
 	FileText,
-	Info,
 	Inbox,
+	Info,
+	type LucideIcon,
 	Minus,
 	RotateCcw,
 	Search,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,15 +39,14 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
-import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import {
 	MEDICARE_PART_D_COMPLIANCE,
 	MEDICARE_PART_D_COMPLIANCE_STATUS_STYLES,
@@ -65,11 +64,13 @@ import {
 	MEDICARE_PART_D_VALIDATION_ERRORS,
 	type MedicarePartDErrorSeverity,
 } from "@/features/admin/features/claim-encounter/medicare-reporting/mock-data";
+import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";
 const SECTION_GAP = "gap-4";
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -80,7 +81,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -150,7 +157,9 @@ function PartDMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 					{footer ? <div className="mt-1.5">{footer}</div> : null}
 				</div>
@@ -197,9 +206,14 @@ function PartDKpiRow() {
 			/>
 			<PartDMetricCard
 				label="Last CMS Response"
-				value={<span className="text-xs font-semibold">{k.lastCmsResponseAt}</span>}
+				value={
+					<span className="text-xs font-semibold">{k.lastCmsResponseAt}</span>
+				}
 				hint={
-					<Button variant="link" className={cn(CMS_EDGE_TABLE_LINK_CLASS, "h-auto p-0")}>
+					<Button
+						variant="link"
+						className={cn(CMS_EDGE_TABLE_LINK_CLASS, "h-auto p-0")}
+					>
 						{k.lastCmsResponseFile}
 					</Button>
 				}
@@ -208,7 +222,9 @@ function PartDKpiRow() {
 				footer={
 					<StatusPill
 						label={k.lastCmsResponseStatus}
-						className={MEDICARE_PART_D_RESPONSE_STATUS_STYLES[k.lastCmsResponseStatus]}
+						className={
+							MEDICARE_PART_D_RESPONSE_STATUS_STYLES[k.lastCmsResponseStatus]
+						}
 					/>
 				}
 			/>
@@ -304,14 +320,21 @@ function PdeSubmissionHistoryPanel() {
 							<TableHead className={TABLE_HEAD}>Submission Type</TableHead>
 							<TableHead className={TABLE_HEAD}>PBP</TableHead>
 							<TableHead className={TABLE_HEAD}>Submitted On</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Record Count</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Record Count
+							</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_PART_D_SUBMISSIONS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.id}
@@ -320,21 +343,34 @@ function PdeSubmissionHistoryPanel() {
 								<TableCell className={TABLE_CELL}>
 									<Button
 										variant="link"
-										className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
 									>
 										{row.fileName}
 									</Button>
 								</TableCell>
-								<TableCell className={TABLE_CELL}>{row.submissionType}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.pbp}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.submittedOn}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell className={TABLE_CELL}>
+									{row.submissionType}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.pbp}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.submittedOn}
+								</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.recordCount)}
 								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICARE_PART_D_SUBMISSION_STATUS_STYLES[row.status]}
+										className={
+											MEDICARE_PART_D_SUBMISSION_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-4 text-right")}>
@@ -356,32 +392,49 @@ function CmsResponseFilesPanel() {
 			title="CMS Response Files"
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
-				<TablePaginationFooter viewAllLabel="View All Responses" showing={5} total={18} />
+				<TablePaginationFooter
+					viewAllLabel="View All Responses"
+					showing={5}
+					total={18}
+				/>
 			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Response File</TableHead>
 							<TableHead className={TABLE_HEAD}>Received On</TableHead>
 							<TableHead className={TABLE_HEAD}>PDE Submission ID</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_PART_D_RESPONSES.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button
 										variant="link"
-										className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
 									>
 										{row.responseFile}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.receivedOn}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.receivedOn}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.pdeSubmission}
@@ -390,7 +443,9 @@ function CmsResponseFilesPanel() {
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICARE_PART_D_RESPONSE_STATUS_STYLES[row.status]}
+										className={
+											MEDICARE_PART_D_RESPONSE_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-4 text-right")}>
@@ -414,7 +469,11 @@ function ValidationErrorDetailsPanel() {
 		return MEDICARE_PART_D_VALIDATION_ERRORS.filter((row) => {
 			if (severity !== "All" && row.severity !== severity) return false;
 			if (errorType !== "All" && row.errorType !== errorType) return false;
-			if (codeSearch && !row.code.toLowerCase().includes(codeSearch.toLowerCase())) return false;
+			if (
+				codeSearch &&
+				!row.code.toLowerCase().includes(codeSearch.toLowerCase())
+			)
+				return false;
 			return true;
 		});
 	}, [severity, errorType, codeSearch]);
@@ -425,7 +484,11 @@ function ValidationErrorDetailsPanel() {
 			title="Validation / Error Details"
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
-				<TablePaginationFooter viewAllLabel="View All Errors" showing={filtered.length} total={42} />
+				<TablePaginationFooter
+					viewAllLabel="View All Errors"
+					showing={filtered.length}
+					total={42}
+				/>
 			}
 		>
 			<div className="flex flex-wrap items-end gap-2 border-t border-border/50 px-4 py-3">
@@ -503,14 +566,23 @@ function ValidationErrorDetailsPanel() {
 							<TableHead className={TABLE_HEAD}>Error Type</TableHead>
 							<TableHead className={TABLE_HEAD}>Severity</TableHead>
 							<TableHead className={TABLE_HEAD}>PDE Submission</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Records Impacted</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Records Impacted
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{filtered.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>{row.code}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>
+									{row.code}
+								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "text-muted-foreground")}>
 									{row.description}
 								</TableCell>
@@ -518,7 +590,9 @@ function ValidationErrorDetailsPanel() {
 								<TableCell
 									className={cn(
 										TABLE_CELL,
-										MEDICARE_PART_D_ERROR_SEVERITY_STYLES[row.severity as MedicarePartDErrorSeverity]
+										MEDICARE_PART_D_ERROR_SEVERITY_STYLES[
+											row.severity as MedicarePartDErrorSeverity
+										]
 									)}
 								>
 									{row.severity}
@@ -528,7 +602,9 @@ function ValidationErrorDetailsPanel() {
 										{row.pdeSubmission}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.recordsImpacted)}
 								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-4 text-right")}>
@@ -566,29 +642,53 @@ function ReconciliationStatusPanel() {
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Reconciliation Type</TableHead>
 							<TableHead className={TABLE_HEAD}>PBP</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Records Submitted</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>CMS Accepted</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Variance</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Records Submitted
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								CMS Accepted
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Variance
+							</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4")}>Last Reconciled</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4")}>
+								Last Reconciled
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_PART_D_RECONCILIATION.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.type}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.pbp}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.type}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.pbp}
+								</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.recordsSubmitted)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums text-emerald-700")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"text-right tabular-nums text-emerald-700"
+									)}
+								>
 									{formatCount(row.cmsAccepted)}
 								</TableCell>
 								<TableCell
 									className={cn(
 										TABLE_CELL,
 										"text-right tabular-nums",
-										row.variance > 0 ? "text-amber-600" : "text-muted-foreground"
+										row.variance > 0
+											? "text-amber-600"
+											: "text-muted-foreground"
 									)}
 								>
 									{formatCount(row.variance)}
@@ -596,10 +696,17 @@ function ReconciliationStatusPanel() {
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICARE_PART_D_RECONCILIATION_STATUS_STYLES[row.status]}
+										className={
+											MEDICARE_PART_D_RECONCILIATION_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-4 tabular-nums text-muted-foreground")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"pr-4 tabular-nums text-muted-foreground"
+									)}
+								>
 									{row.lastReconciled}
 								</TableCell>
 							</TableRow>
@@ -618,7 +725,11 @@ function ComplianceRequirementsPanel() {
 			title="Compliance & Requirements"
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
-				<TablePaginationFooter viewAllLabel="View All Requirements" showing={5} total={14} />
+				<TablePaginationFooter
+					viewAllLabel="View All Requirements"
+					showing={5}
+					total={14}
+				/>
 			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
@@ -633,22 +744,33 @@ function ComplianceRequirementsPanel() {
 							<TableHead className={TABLE_HEAD}>Frequency</TableHead>
 							<TableHead className={TABLE_HEAD}>Due Date</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_PART_D_COMPLIANCE.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.requirement}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.requirement}
+								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "text-muted-foreground")}>
 									{row.description}
 								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.frequency}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.dueDate}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.dueDate}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICARE_PART_D_COMPLIANCE_STATUS_STYLES[row.status]}
+										className={
+											MEDICARE_PART_D_COMPLIANCE_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-4 text-right")}>
@@ -669,10 +791,19 @@ function DocumentsPanel() {
 			className="flex h-full min-h-0 flex-col"
 			title="Documents"
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
-			footer={<TablePaginationFooter viewAllLabel="View All Documents" showing={5} total={28} />}
+			footer={
+				<TablePaginationFooter
+					viewAllLabel="View All Documents"
+					showing={5}
+					total={28}
+				/>
+			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Document Name</TableHead>
@@ -680,24 +811,41 @@ function DocumentsPanel() {
 							<TableHead className={TABLE_HEAD}>Reporting Period</TableHead>
 							<TableHead className={TABLE_HEAD}>Uploaded On</TableHead>
 							<TableHead className={TABLE_HEAD}>Size</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_PART_D_DOCUMENTS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button
 										variant="link"
-										className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
 									>
 										{row.name}
 									</Button>
 								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.documentType}</TableCell>
-								<TableCell className={TABLE_CELL}>{row.reportingPeriod}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.uploadedOn}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums text-muted-foreground")}>
+								<TableCell className={TABLE_CELL}>
+									{row.reportingPeriod}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.uploadedOn}
+								</TableCell>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"tabular-nums text-muted-foreground"
+									)}
+								>
 									{row.size}
 								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-4 text-right")}>
@@ -724,17 +872,32 @@ export function MedicarePartDTab() {
 		<div className={PAGE_STACK}>
 			<PartDKpiRow />
 
-			<div className={cn("grid grid-cols-1 items-stretch xl:grid-cols-2", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch xl:grid-cols-2",
+					SECTION_GAP
+				)}
+			>
 				<PdeSubmissionHistoryPanel />
 				<CmsResponseFilesPanel />
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch xl:grid-cols-2", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch xl:grid-cols-2",
+					SECTION_GAP
+				)}
+			>
 				<ValidationErrorDetailsPanel />
 				<ReconciliationStatusPanel />
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch xl:grid-cols-2", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch xl:grid-cols-2",
+					SECTION_GAP
+				)}
+			>
 				<ComplianceRequirementsPanel />
 				<DocumentsPanel />
 			</div>

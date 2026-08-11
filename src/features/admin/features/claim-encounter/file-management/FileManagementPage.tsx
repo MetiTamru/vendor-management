@@ -27,12 +27,12 @@ import { NoFileSelectedIllustration } from "@/features/admin/features/claim-enco
 import { TrackIssuerHhsPanel } from "@/features/admin/features/claim-encounter/file-management/TrackIssuerHhsPanel";
 import {
 	SOURCE_FILE_TYPES,
+	type TrackedFileRow,
 	filterTrackedFiles,
 	hasSourceSearch,
 	mockHhsFiles,
 	mockIssuerFiles,
 	mockSourceFiles,
-	type TrackedFileRow,
 } from "@/features/admin/features/claim-encounter/file-management/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
@@ -132,7 +132,9 @@ function SourceFileTable({ rows }: { rows: TrackedFileRow[] }) {
 								<TableHead className="h-8 px-2 pl-3 font-normal">
 									Inbound File Name
 								</TableHead>
-								<TableHead className="h-8 px-2 font-normal">File Type</TableHead>
+								<TableHead className="h-8 px-2 font-normal">
+									File Type
+								</TableHead>
 								<TableHead className="h-8 px-2 font-normal">Issuer</TableHead>
 								<TableHead className="h-8 px-2 font-normal">
 									Submitted Date
@@ -140,7 +142,9 @@ function SourceFileTable({ rows }: { rows: TrackedFileRow[] }) {
 								<TableHead className="h-8 px-2 text-right font-normal">
 									Records
 								</TableHead>
-								<TableHead className="h-8 px-2 pr-3 font-normal">Status</TableHead>
+								<TableHead className="h-8 px-2 pr-3 font-normal">
+									Status
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>

@@ -355,14 +355,12 @@ export const REPORT_STATUS_STYLES: Record<AuditReportStatus, string> = {
 		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
 };
 
-export const FINDING_STATUS_STYLES: Record<
-	AuditFindingRow["status"],
-	string
-> = {
-	Open: "border-red-200/80 bg-red-50 text-red-800",
-	"In Progress": "border-amber-200/80 bg-amber-50 text-amber-900",
-	Closed: "border-emerald-200/80 bg-emerald-50 text-emerald-800",
-};
+export const FINDING_STATUS_STYLES: Record<AuditFindingRow["status"], string> =
+	{
+		Open: "border-red-200/80 bg-red-50 text-red-800",
+		"In Progress": "border-amber-200/80 bg-amber-50 text-amber-900",
+		Closed: "border-emerald-200/80 bg-emerald-50 text-emerald-800",
+	};
 
 export const CMS_EDGE_TAB_META: Record<
 	CmsEdgeTabId,
@@ -519,32 +517,28 @@ export const CMS_EDGE_OVERVIEW_FM_ITEMS = [
 		label: "FM Requests",
 		count: 2,
 		status: "Pending",
-		statusStyle:
-			"border-amber-200/80 bg-amber-50 text-amber-900",
+		statusStyle: "border-amber-200/80 bg-amber-50 text-amber-900",
 		icon: "request" as const,
 	},
 	{
 		label: "FM Responses",
 		count: 5,
 		status: "Open",
-		statusStyle:
-			"border-sky-200/80 bg-sky-50 text-sky-900",
+		statusStyle: "border-sky-200/80 bg-sky-50 text-sky-900",
 		icon: "response" as const,
 	},
 	{
 		label: "Payment Reconciliation",
 		count: 1,
 		status: "Pending",
-		statusStyle:
-			"border-amber-200/80 bg-amber-50 text-amber-900",
+		statusStyle: "border-amber-200/80 bg-amber-50 text-amber-900",
 		icon: "reconcile" as const,
 	},
 	{
 		label: "Archive Status",
 		count: 0,
 		status: "Not Archived",
-		statusStyle:
-			"border-red-200/80 bg-red-50 text-red-800",
+		statusStyle: "border-red-200/80 bg-red-50 text-red-800",
 		icon: "archive" as const,
 	},
 ];
@@ -1009,12 +1003,9 @@ export const SUBMISSION_STATUS_STYLES: Record<SubmissionStatus, string> = {
 };
 
 export const SUBMISSION_CMS_RESPONSE_STYLES = {
-	Received:
-		"border-emerald-200/80 bg-emerald-50 text-emerald-800",
-	Pending:
-		"border-amber-200/80 bg-amber-50 text-amber-900",
-	"Not Available":
-		"border-border/70 bg-muted/40 text-muted-foreground",
+	Received: "border-emerald-200/80 bg-emerald-50 text-emerald-800",
+	Pending: "border-amber-200/80 bg-amber-50 text-amber-900",
+	"Not Available": "border-border/70 bg-muted/40 text-muted-foreground",
 };
 
 // ─── Validations tab ────────────────────────────────────────────────────────
@@ -1123,8 +1114,18 @@ export const CMS_EDGE_VALIDATION_RUNS = [
 ];
 
 export const CMS_EDGE_VALIDATION_RECORD_TYPES: ValidationRecordTypeRow[] = [
-	{ recordType: "Member Enrollment", accepted: 12_450, rejected: 23, warnings: 87 },
-	{ recordType: "Risk Adjustment", accepted: 8_920, rejected: 12, warnings: 45 },
+	{
+		recordType: "Member Enrollment",
+		accepted: 12_450,
+		rejected: 23,
+		warnings: 87,
+	},
+	{
+		recordType: "Risk Adjustment",
+		accepted: 8_920,
+		rejected: 12,
+		warnings: 45,
+	},
 	{ recordType: "Payment Data", accepted: 15_680, rejected: 8, warnings: 32 },
 	{ recordType: "Provider Data", accepted: 4_210, rejected: 5, warnings: 18 },
 ];
@@ -1208,14 +1209,15 @@ export const CMS_EDGE_VALIDATION_EXCEPTIONS: ValidationExceptionRow[] = [
 	},
 ];
 
-export const VALIDATION_RUN_STATUS_STYLES: Record<ValidationRunStatus, string> = {
-	Completed:
-		"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
-	Pending:
-		"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
-	Error:
-		"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
-};
+export const VALIDATION_RUN_STATUS_STYLES: Record<ValidationRunStatus, string> =
+	{
+		Completed:
+			"border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+		Pending:
+			"border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+		Error:
+			"border-red-200/80 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200",
+	};
 
 export const VALIDATION_SEVERITY_STYLES = {
 	Error: "border-red-200/80 bg-red-50 text-red-800",
@@ -1235,16 +1237,20 @@ export type RecordResolutionStatus =
 	| "Resubmitted"
 	| "Closed";
 
-export const INTERNAL_FILE_STATUS_STYLES: Record<InternalFileValidationStatus, string> = {
+export const INTERNAL_FILE_STATUS_STYLES: Record<
+	InternalFileValidationStatus,
+	string
+> = {
 	Passed: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	Failed: "border-red-200 bg-red-50 text-red-700",
 };
 
-export const RECORD_SEVERITY_STYLES: Record<RecordValidationSeverity, string> = {
-	High: "border-red-200 bg-red-50 text-red-700",
-	Medium: "border-amber-200 bg-amber-50 text-amber-800",
-	Low: "border-sky-200 bg-sky-50 text-sky-800",
-};
+export const RECORD_SEVERITY_STYLES: Record<RecordValidationSeverity, string> =
+	{
+		High: "border-red-200 bg-red-50 text-red-700",
+		Medium: "border-amber-200 bg-amber-50 text-amber-800",
+		Low: "border-sky-200 bg-sky-50 text-sky-800",
+	};
 
 export const RESOLUTION_STATUS_DOT: Record<RecordResolutionStatus, string> = {
 	Open: "bg-red-500",
@@ -1419,7 +1425,10 @@ export const CMS_EDGE_EXTERNAL_VALIDATION_SUMMARY = {
 
 export type ExternalFileValidationStatus = "Completed" | "Pending" | "Error";
 
-export const EXTERNAL_FILE_STATUS_STYLES: Record<ExternalFileValidationStatus, string> = {
+export const EXTERNAL_FILE_STATUS_STYLES: Record<
+	ExternalFileValidationStatus,
+	string
+> = {
 	Completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	Pending: "border-amber-200 bg-amber-50 text-amber-800",
 	Error: "border-red-200 bg-red-50 text-red-700",
@@ -1483,7 +1492,8 @@ export const CMS_EDGE_EXTERNAL_FILE_VALIDATION = [
 	},
 ];
 
-export const CMS_EDGE_EXTERNAL_RECORD_VALIDATION = CMS_EDGE_INTERNAL_RECORD_VALIDATION;
+export const CMS_EDGE_EXTERNAL_RECORD_VALIDATION =
+	CMS_EDGE_INTERNAL_RECORD_VALIDATION;
 
 export const CMS_EDGE_EXTERNAL_ERROR_BREAKDOWN = [
 	{ label: "Missing Member ID", count: 18_452, color: "#13446c" },
@@ -1494,12 +1504,36 @@ export const CMS_EDGE_EXTERNAL_ERROR_BREAKDOWN = [
 ];
 
 export const CMS_EDGE_EXTERNAL_QUICK_ACTIONS = [
-	{ id: "eq-1", title: "Download All Reports", description: "Export all CMS validation and acceptance reports" },
-	{ id: "eq-2", title: "Download Error File", description: "Download the latest CMS error detail file" },
-	{ id: "eq-3", title: "Export All Errors", description: "Export record-level errors to spreadsheet" },
-	{ id: "eq-4", title: "Validation Rules", description: "View CMS EDGE validation rule reference" },
-	{ id: "eq-5", title: "Error Code Library", description: "Browse CMS error codes and resolutions" },
-	{ id: "eq-6", title: "Validation Audit Log", description: "Review validation activity and audit trail" },
+	{
+		id: "eq-1",
+		title: "Download All Reports",
+		description: "Export all CMS validation and acceptance reports",
+	},
+	{
+		id: "eq-2",
+		title: "Download Error File",
+		description: "Download the latest CMS error detail file",
+	},
+	{
+		id: "eq-3",
+		title: "Export All Errors",
+		description: "Export record-level errors to spreadsheet",
+	},
+	{
+		id: "eq-4",
+		title: "Validation Rules",
+		description: "View CMS EDGE validation rule reference",
+	},
+	{
+		id: "eq-5",
+		title: "Error Code Library",
+		description: "Browse CMS error codes and resolutions",
+	},
+	{
+		id: "eq-6",
+		title: "Validation Audit Log",
+		description: "Review validation activity and audit trail",
+	},
 ];
 
 export type DocumentFileKind = "pdf" | "xlsx" | "csv" | "xml";
@@ -1968,10 +2002,30 @@ export const CMS_EDGE_FM_TREND = [
 ];
 
 export const CMS_EDGE_FM_CATEGORIES: FmCategoryRow[] = [
-	{ category: "Capitation", paidAmount: 5_134_092.18, percent: 39.97, color: "#3b82f6" },
-	{ category: "Fee-for-Service", paidAmount: 4_876_287.54, percent: 37.96, color: "#6366f1" },
-	{ category: "Incentive", paidAmount: 1_926_784.57, percent: 15.0, color: "#8b5cf6" },
-	{ category: "Other", paidAmount: 908_066.16, percent: 7.07, color: "#a78bfa" },
+	{
+		category: "Capitation",
+		paidAmount: 5_134_092.18,
+		percent: 39.97,
+		color: "#3b82f6",
+	},
+	{
+		category: "Fee-for-Service",
+		paidAmount: 4_876_287.54,
+		percent: 37.96,
+		color: "#6366f1",
+	},
+	{
+		category: "Incentive",
+		paidAmount: 1_926_784.57,
+		percent: 15.0,
+		color: "#8b5cf6",
+	},
+	{
+		category: "Other",
+		paidAmount: 908_066.16,
+		percent: 7.07,
+		color: "#a78bfa",
+	},
 ];
 
 export const CMS_EDGE_FM_SELECTED_DETAILS = {

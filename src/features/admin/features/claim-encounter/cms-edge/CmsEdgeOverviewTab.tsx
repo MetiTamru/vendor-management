@@ -31,6 +31,18 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
+	CMS_EDGE_TABLE_CLASS,
+	CMS_EDGE_TABLE_CONTAINER,
+	CMS_EDGE_TABLE_HEAD_CLASS,
+	CMS_EDGE_TABLE_LINK_CLASS,
+	CmsEdgePageFooter,
+	CmsEdgePairRow,
+	CmsEdgeSectionPanel,
+	CmsEdgeTableScroll,
+	CmsEdgeTripleRow,
+} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import {
 	AUDIT_STATUS_STYLES,
 	CMS_EDGE_OVERVIEW_AUDIT_SUMMARY,
 	CMS_EDGE_OVERVIEW_CMS_RESPONSES,
@@ -45,18 +57,6 @@ import {
 	OVERVIEW_SUBMISSION_STATUS_STYLES,
 	type TimelineStageState,
 } from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import {
-	CMS_EDGE_TABLE_CLASS,
-	CMS_EDGE_TABLE_CONTAINER,
-	CMS_EDGE_TABLE_HEAD_CLASS,
-	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
-	CmsEdgePageFooter,
-	CmsEdgePairRow,
-	CmsEdgeSectionPanel,
-	CmsEdgeTableScroll,
-	CmsEdgeTripleRow,
-} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import { cn } from "@/lib/utils";
 
 const OVERVIEW_PAGE_STACK = "space-y-7";
@@ -72,7 +72,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -117,7 +123,9 @@ function OverviewMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -146,7 +154,9 @@ function OverviewKpiRow() {
 			/>
 			<OverviewMetricCard
 				label="Last CMS Response"
-				value={<span className="text-xs font-semibold">{k.lastCmsResponse}</span>}
+				value={
+					<span className="text-xs font-semibold">{k.lastCmsResponse}</span>
+				}
 				icon={RefreshCw}
 				tone="text-violet-700 bg-violet-500/10"
 			/>
@@ -180,14 +190,27 @@ function SubmissionHistoryPanel() {
 			bodyClassName={OVERVIEW_PANEL_BODY}
 		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Submission Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Reporting Period</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Submitted Date</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>CMS Response</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Submission Type
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Reporting Period
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Submitted Date
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Status
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								CMS Response
+							</TableHead>
 							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
 								Submitted By
 							</TableHead>
@@ -199,8 +222,12 @@ function SubmissionHistoryPanel() {
 								key={row.id}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.submissionType}</TableCell>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.reportingPeriod}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.submissionType}
+								</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.reportingPeriod}
+								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "tabular-nums")}>
 									{row.submittedDate}
 								</TableCell>
@@ -210,7 +237,9 @@ function SubmissionHistoryPanel() {
 										className={OVERVIEW_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.cmsResponse}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.cmsResponse}
+								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-4")}>
 									{row.submittedBy}
 								</TableCell>
@@ -231,14 +260,27 @@ function CmsResponsesPanel() {
 			bodyClassName={OVERVIEW_PANEL_BODY}
 		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Response File</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Response Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Date Received</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Response File
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Response Type
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Date Received
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Status
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+							>
 								Action
 							</TableHead>
 						</TableRow>
@@ -254,7 +296,9 @@ function CmsResponsesPanel() {
 										{row.responseFile}
 									</Button>
 								</TableCell>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.responseType}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.responseType}
+								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "tabular-nums")}>
 									{row.dateReceived}
 								</TableCell>
@@ -264,12 +308,16 @@ function CmsResponsesPanel() {
 										className={OVERVIEW_RESPONSE_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "pr-4 text-right")}>
+								<TableCell
+									className={cn(OVERVIEW_TABLE_CELL, "pr-4 text-right")}
+								>
 									<Button
 										variant="ghost"
 										size="icon"
 										className="size-6 text-primary"
-										onClick={() => toast.success(`Download ${row.responseFile}`)}
+										onClick={() =>
+											toast.success(`Download ${row.responseFile}`)
+										}
 									>
 										<Download className="size-3" />
 									</Button>
@@ -290,17 +338,28 @@ function ValidationResultsPanel() {
 			bodyClassName={OVERVIEW_PANEL_BODY}
 		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Record Type</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Record Type
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Accepted
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Rejected
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+							>
 								Warnings
 							</TableHead>
 						</TableRow>
@@ -356,7 +415,10 @@ const FM_ICONS = {
 
 function FinancialManagementPanel() {
 	return (
-		<CmsEdgeSectionPanel title="4. Financial Management (FM)" bodyClassName={OVERVIEW_PANEL_BODY}>
+		<CmsEdgeSectionPanel
+			title="4. Financial Management (FM)"
+			bodyClassName={OVERVIEW_PANEL_BODY}
+		>
 			<ul className="divide-y divide-border/40 border-t border-border/50 px-3 pt-1">
 				{CMS_EDGE_OVERVIEW_FM_ITEMS.map((item) => {
 					const Icon = FM_ICONS[item.icon];
@@ -383,13 +445,24 @@ function AuditSummaryPanel() {
 	return (
 		<CmsEdgeSectionPanel title="5. Audit" bodyClassName={OVERVIEW_PANEL_BODY}>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Audit Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Due Date</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>Owner</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Audit Type
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Status
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Due Date
+							</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
+								Owner
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -398,7 +471,9 @@ function AuditSummaryPanel() {
 								key={row.auditType}
 								className="border-b border-border/40 hover:bg-muted/20"
 							>
-								<TableCell className={OVERVIEW_TABLE_CELL}>{row.auditType}</TableCell>
+								<TableCell className={OVERVIEW_TABLE_CELL}>
+									{row.auditType}
+								</TableCell>
 								<TableCell className={OVERVIEW_TABLE_CELL}>
 									<StatusPill
 										label={row.status}
@@ -422,7 +497,10 @@ function AuditSummaryPanel() {
 
 function ReportingCyclePanel() {
 	return (
-		<CmsEdgeSectionPanel title="6. Reporting Cycle Status" bodyClassName={OVERVIEW_PANEL_BODY}>
+		<CmsEdgeSectionPanel
+			title="6. Reporting Cycle Status"
+			bodyClassName={OVERVIEW_PANEL_BODY}
+		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
 				<Table
 					containerClassName={CMS_EDGE_TABLE_CONTAINER}
@@ -430,18 +508,30 @@ function ReportingCyclePanel() {
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Quarter</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Quarter
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Required Files
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Submitted
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Outstanding
 							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Last Activity</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>Owner</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Last Activity
+							</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
+								Owner
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -453,10 +543,14 @@ function ReportingCyclePanel() {
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "font-medium")}>
 									{row.quarter}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.requiredFiles}
 								</TableCell>
-								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(OVERVIEW_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.submitted}
 								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "text-right")}>
@@ -465,7 +559,9 @@ function ReportingCyclePanel() {
 											{row.outstanding}
 										</span>
 									) : (
-										<span className="tabular-nums text-muted-foreground">0</span>
+										<span className="tabular-nums text-muted-foreground">
+											0
+										</span>
 									)}
 								</TableCell>
 								<TableCell className={cn(OVERVIEW_TABLE_CELL, "tabular-nums")}>
@@ -521,7 +617,10 @@ function SubmissionTimelinePanel() {
 			<div className="border-t border-border/50 px-4 py-5">
 				<div className="flex items-start justify-between gap-1">
 					{CMS_EDGE_OVERVIEW_TIMELINE.map((stage, index) => (
-						<div key={stage.label} className="relative flex min-w-0 flex-1 flex-col items-center">
+						<div
+							key={stage.label}
+							className="relative flex min-w-0 flex-1 flex-col items-center"
+						>
 							{index > 0 ? (
 								<div
 									className="absolute top-4 right-1/2 h-px w-full -translate-y-1/2 border-t border-dashed border-border"
@@ -547,7 +646,10 @@ function SubmissionTimelinePanel() {
 
 function DocumentsSummaryPanel() {
 	return (
-		<CmsEdgeSectionPanel title="8. Documents" bodyClassName={OVERVIEW_PANEL_BODY}>
+		<CmsEdgeSectionPanel
+			title="8. Documents"
+			bodyClassName={OVERVIEW_PANEL_BODY}
+		>
 			<ul className="divide-y divide-border/40 border-t border-border/50 px-3 pt-1">
 				{CMS_EDGE_OVERVIEW_DOCUMENT_COUNTS.map((item) => (
 					<li
@@ -571,7 +673,10 @@ export function CmsEdgeOverviewTab() {
 		<div className={OVERVIEW_PAGE_STACK}>
 			<OverviewKpiRow />
 
-			<CmsEdgePairRow left={<SubmissionHistoryPanel />} right={<CmsResponsesPanel />} />
+			<CmsEdgePairRow
+				left={<SubmissionHistoryPanel />}
+				right={<CmsResponsesPanel />}
+			/>
 
 			<CmsEdgeTripleRow
 				left={<ValidationResultsPanel />}

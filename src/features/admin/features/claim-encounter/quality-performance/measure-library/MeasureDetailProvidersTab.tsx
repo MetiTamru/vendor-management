@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 
-import { Bookmark, Download, MoreVertical, Search, Stethoscope, Target } from "lucide-react";
+import {
+	Bookmark,
+	Download,
+	MoreVertical,
+	Search,
+	Stethoscope,
+	Target,
+} from "lucide-react";
 import {
 	CartesianGrid,
 	Legend,
@@ -26,6 +33,8 @@ import {
 } from "@/components/ui/select";
 import { CMS_EDGE_STATUS_PILL_CLASS } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureDataTable,
 	MeasureDonutBreakdown,
@@ -34,16 +43,18 @@ import {
 	MeasureKpiCard,
 	MeasureSectionPanel,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import {
-	getProviderLevelStyle,
 	type MeasureProvidersDetail,
+	getProviderLevelStyle,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 import { cn } from "@/lib/utils";
 
-export function MeasureDetailProvidersTab({ data }: { data: MeasureProvidersDetail }) {
+export function MeasureDetailProvidersTab({
+	data,
+}: {
+	data: MeasureProvidersDetail;
+}) {
 	const [search, setSearch] = useState("");
 	const summary = data.summary;
 
@@ -140,8 +151,14 @@ export function MeasureDetailProvidersTab({ data }: { data: MeasureProvidersDeta
 				>
 					<div className="min-h-[240px] rounded-lg border border-border/50 bg-muted/10 p-2">
 						<ResponsiveContainer width="100%" height={240}>
-							<LineChart data={data.trend} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+							<LineChart
+								data={data.trend}
+								margin={{ top: 12, right: 16, left: 0, bottom: 0 }}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
 								<XAxis dataKey="month" tick={{ fontSize: 11 }} />
 								<YAxis
 									tick={{ fontSize: 11 }}
@@ -177,18 +194,31 @@ export function MeasureDetailProvidersTab({ data }: { data: MeasureProvidersDeta
 					subtitle="Narrow the provider list"
 					bodyClassName="space-y-2 p-0"
 					action={
-						<Button variant="link" size="sm" className="h-8 px-0 text-sm text-primary">
+						<Button
+							variant="link"
+							size="sm"
+							className="h-8 px-0 text-sm text-primary"
+						>
 							Clear All
 						</Button>
 					}
 				>
 					{[
 						{ label: "Plan", options: data.filterOptions.plans },
-						{ label: "Line of Business", options: data.filterOptions.linesOfBusiness },
-						{ label: "Provider Type", options: data.filterOptions.providerTypes },
+						{
+							label: "Line of Business",
+							options: data.filterOptions.linesOfBusiness,
+						},
+						{
+							label: "Provider Type",
+							options: data.filterOptions.providerTypes,
+						},
 						{ label: "Specialty", options: data.filterOptions.specialties },
 						{ label: "Risk Group", options: data.filterOptions.riskGroups },
-						{ label: "Performance Level", options: data.filterOptions.performanceLevels },
+						{
+							label: "Performance Level",
+							options: data.filterOptions.performanceLevels,
+						},
 					].map((filter) => (
 						<MeasureFilterField key={filter.label} label={filter.label}>
 							<Select defaultValue="All">
@@ -247,15 +277,27 @@ export function MeasureDetailProvidersTab({ data }: { data: MeasureProvidersDeta
 							{ key: "specialty", header: "Specialty" },
 							{ key: "eligible", header: "Eligible", align: "right" },
 							{ key: "num", header: "Numerator", align: "right" },
-							{ key: "rate", header: "Rate", align: "right", className: "font-semibold text-primary" },
+							{
+								key: "rate",
+								header: "Rate",
+								align: "right",
+								className: "font-semibold text-primary",
+							},
 							{ key: "level", header: "Level" },
 							{ key: "risk", header: "Risk", className: MEASURE_TABLE_MUTED },
-							{ key: "outreach", header: "Outreach", className: MEASURE_TABLE_MUTED },
+							{
+								key: "outreach",
+								header: "Outreach",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "actions", header: "Actions", align: "right" },
 						]}
 						rows={filteredProviders.map((provider) => ({
 							name: (
-								<Button variant="link" className="h-auto p-0 text-sm text-primary">
+								<Button
+									variant="link"
+									className="h-auto p-0 text-sm text-primary"
+								>
 									{provider.name}
 								</Button>
 							),
@@ -283,7 +325,9 @@ export function MeasureDetailProvidersTab({ data }: { data: MeasureProvidersDeta
 								</Button>
 							),
 						}))}
-						getRowKey={(_, index) => filteredProviders[index]?.npi ?? String(index)}
+						getRowKey={(_, index) =>
+							filteredProviders[index]?.npi ?? String(index)
+						}
 					/>
 					<MeasureTablePagination
 						shown={filteredProviders.length}

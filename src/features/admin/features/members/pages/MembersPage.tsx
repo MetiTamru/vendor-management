@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +33,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
 import {
 	MEMBER_SUMMARIES,
@@ -46,13 +46,13 @@ import {
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import { vendorCoreApi } from "@/lib/vendor-core";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreMemberCoverages,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: MemberStatus }) {
@@ -179,9 +179,7 @@ function MembersDirectoryPage() {
 				if (!options?.silent) {
 					toast.success(
 						`Seeded ${result.created} member coverages` +
-							(result.eligibility_file_id
-								? " (eligibility file created)"
-								: "")
+							(result.eligibility_file_id ? " (eligibility file created)" : "")
 					);
 				}
 			} else if (!options?.silent) {
@@ -192,9 +190,7 @@ function MembersDirectoryPage() {
 		} catch (err) {
 			if (!options?.silent) {
 				toast.error(
-					err instanceof Error
-						? err.message
-						: "Failed to seed member coverages"
+					err instanceof Error ? err.message : "Failed to seed member coverages"
 				);
 			}
 			throw err;

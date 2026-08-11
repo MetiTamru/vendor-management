@@ -4,12 +4,6 @@ import { useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Input } from "@/components/ui/input";
 import {
 	Table,
@@ -19,6 +13,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreMemberCoverages,
@@ -38,11 +38,7 @@ function eligibilityLabel(row: MemberCoverageDto): string {
 	const ef = row.eligibility_file;
 	if (!ef) return "—";
 	if (typeof ef === "object") {
-		return (
-			ef.original_filename ||
-			ef.reference_id ||
-			ef.id.slice(0, 8)
-		);
+		return ef.original_filename || ef.reference_id || ef.id.slice(0, 8);
 	}
 	return ef.slice(0, 8);
 }

@@ -4,14 +4,8 @@ import { useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -20,6 +14,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import {
@@ -117,8 +117,9 @@ function ProcessingStatusLiveBody() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{(monitoringQ.data?.recent_runs ?? []).slice(0, 12).map(
-										(run) => (
+									{(monitoringQ.data?.recent_runs ?? [])
+										.slice(0, 12)
+										.map((run) => (
 											<TableRow key={run.id}>
 												<TableCell className="font-medium">
 													{run.job__name}
@@ -130,14 +131,10 @@ function ProcessingStatusLiveBody() {
 													{run.files_processed}/{run.files_found}
 												</TableCell>
 											</TableRow>
-										)
-									)}
+										))}
 									{!(monitoringQ.data?.recent_runs ?? []).length ? (
 										<TableRow>
-											<TableCell
-												colSpan={3}
-												className="text-muted-foreground"
-											>
+											<TableCell colSpan={3} className="text-muted-foreground">
 												No recent runs.
 											</TableCell>
 										</TableRow>
@@ -175,10 +172,7 @@ function ProcessingStatusLiveBody() {
 									))}
 									{!(monitoringQ.data?.connections ?? []).length ? (
 										<TableRow>
-											<TableCell
-												colSpan={4}
-												className="text-muted-foreground"
-											>
+											<TableCell colSpan={4} className="text-muted-foreground">
 												No connections in monitoring payload.
 											</TableCell>
 										</TableRow>
@@ -255,10 +249,7 @@ function ProcessingStatusLiveBody() {
 									})}
 									{!validationRows.length ? (
 										<TableRow>
-											<TableCell
-												colSpan={6}
-												className="text-muted-foreground"
-											>
+											<TableCell colSpan={6} className="text-muted-foreground">
 												No validation results yet.
 											</TableCell>
 										</TableRow>

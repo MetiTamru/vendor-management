@@ -1,4 +1,7 @@
-import type { MemberStatus, MemberSummary } from "@/features/admin/features/members/mock-data";
+import type {
+	MemberStatus,
+	MemberSummary,
+} from "@/features/admin/features/members/mock-data";
 import type { MemberCoverageDto } from "@/lib/vendor-core/types";
 import { vendorLabel } from "@/lib/vendor-core/types";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import {
 	AlertCircle,
@@ -40,7 +40,27 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
+import { CmsEdgeDocumentsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeDocumentsTab";
+import { CmsEdgeFinancialTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeFinancialTab";
+import { CmsEdgeOverviewTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeOverviewTab";
+import { CmsEdgeResponsesTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeResponsesTab";
+import {
+	CMS_EDGE_PAGE_STACK,
+	CMS_EDGE_SECTION_GAP,
+	CMS_EDGE_STATUS_PILL_CLASS,
+	CMS_EDGE_TABLE_CELL_CLASS,
+	CMS_EDGE_TABLE_CLASS,
+	CMS_EDGE_TABLE_CONTAINER,
+	CMS_EDGE_TABLE_HEAD_CLASS,
+	CMS_EDGE_TABLE_LINK_CLASS,
+	CMS_EDGE_TAB_TRIGGER_CLASS,
+	CmsEdgePageFooter,
+	CmsEdgeSectionPanel,
+	CmsEdgeSplitRow,
+	CmsEdgeTableScroll,
+} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import { CmsEdgeSubmissionsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeSubmissionsTab";
+import { CmsEdgeValidationsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeValidationsTab";
 import {
 	AUDIT_STATUS_STYLES,
 	CMS_EDGE_AUDIT_ACTIVITY,
@@ -52,31 +72,11 @@ import {
 	CMS_EDGE_REPORTING_PERIODS,
 	CMS_EDGE_TABS,
 	CMS_EDGE_TAB_META,
+	type CmsEdgeTabId,
 	PRIORITY_DOT,
 	REPORT_STATUS_STYLES,
-	type CmsEdgeTabId,
 } from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import { CmsEdgeDocumentsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeDocumentsTab";
-import { CmsEdgeFinancialTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeFinancialTab";
-import { CmsEdgeOverviewTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeOverviewTab";
-import { CmsEdgeResponsesTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeResponsesTab";
-import { CmsEdgeSubmissionsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeSubmissionsTab";
-import { CmsEdgeValidationsTab } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeValidationsTab";
-import {
-	CMS_EDGE_PAGE_STACK,
-	CMS_EDGE_SECTION_GAP,
-	CMS_EDGE_TABLE_CELL_CLASS,
-	CMS_EDGE_TABLE_CLASS,
-	CMS_EDGE_TABLE_CONTAINER,
-	CMS_EDGE_TABLE_HEAD_CLASS,
-	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
-	CMS_EDGE_TAB_TRIGGER_CLASS,
-	CmsEdgePageFooter,
-	CmsEdgeSectionPanel,
-	CmsEdgeSplitRow,
-	CmsEdgeTableScroll,
-} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -200,91 +200,110 @@ function AuditRequestsTable() {
 			title="Audit Requests"
 			action={<PanelLink>View All</PanelLink>}
 			footer={
-				<TableFooter left="Showing 1 to 8 of 8 entries" page={1} pageCount={1} />
+				<TableFooter
+					left="Showing 1 to 8 of 8 entries"
+					page={1}
+					pageCount={1}
+				/>
 			}
 		>
 			<div className="border-t border-border/50">
-			<CmsEdgeTableScroll>
-				<Table
-					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
-				>
-					<TableHeader>
-						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Audit ID
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Audit Type
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								<SortableHead>Request Date</SortableHead>
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Related Submission
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Audit Period
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Due Date
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Status
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								Priority
-							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
-								Requested Records
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{CMS_EDGE_AUDIT_REQUESTS.map((row) => (
-							<TableRow
-								key={row.id}
-								className="border-b border-border/40 hover:bg-muted/20"
-							>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.id}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.auditType}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
-									{row.requestDate}
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.relatedSubmission}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.auditPeriod}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
-									{row.dueDate}
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<StatusPill
-										label={row.status}
-										className={AUDIT_STATUS_STYLES[row.status]}
-									/>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<span className="inline-flex items-center gap-1.5">
-										<span
-											className={cn(
-												"size-2 rounded-full",
-												PRIORITY_DOT[row.priority]
-											)}
-										/>
-										{row.priority}
-									</span>
-								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right tabular-nums")}>
-									{formatCount(row.requestedRecords)}
-								</TableCell>
+				<CmsEdgeTableScroll>
+					<Table
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
+					>
+						<TableHeader>
+							<TableRow className="border-b border-border/50 hover:bg-transparent">
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Audit ID
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Audit Type
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									<SortableHead>Request Date</SortableHead>
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Related Submission
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Audit Period
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Due Date
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Status
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Priority
+								</TableHead>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+								>
+									Requested Records
+								</TableHead>
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</CmsEdgeTableScroll>
+						</TableHeader>
+						<TableBody>
+							{CMS_EDGE_AUDIT_REQUESTS.map((row) => (
+								<TableRow
+									key={row.id}
+									className="border-b border-border/40 hover:bg-muted/20"
+								>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.id}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.auditType}
+									</TableCell>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+									>
+										{row.requestDate}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.relatedSubmission}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.auditPeriod}
+									</TableCell>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+									>
+										{row.dueDate}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<StatusPill
+											label={row.status}
+											className={AUDIT_STATUS_STYLES[row.status]}
+										/>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<span className="inline-flex items-center gap-1.5">
+											<span
+												className={cn(
+													"size-2 rounded-full",
+													PRIORITY_DOT[row.priority]
+												)}
+											/>
+											{row.priority}
+										</span>
+									</TableCell>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"pr-4 text-right tabular-nums"
+										)}
+									>
+										{formatCount(row.requestedRecords)}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</CmsEdgeTableScroll>
 			</div>
 		</CmsEdgeSectionPanel>
 	);
@@ -296,86 +315,115 @@ function AuditReportsTable() {
 			title="Audit Reports Received"
 			action={<PanelLink>View All Reports</PanelLink>}
 			footer={
-				<TableFooter left="Showing 1 to 6 of 8 entries" page={1} pageCount={1} />
+				<TableFooter
+					left="Showing 1 to 6 of 8 entries"
+					page={1}
+					pageCount={1}
+				/>
 			}
 		>
 			<div className="border-t border-border/50">
-			<CmsEdgeTableScroll>
-				<Table
-					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
-				>
-					<TableHeader>
-						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Report ID</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Audit ID</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Report Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
-								<SortableHead>Received Date</SortableHead>
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Related Submission</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
-								Records Reviewed
-							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
-								Actions
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{CMS_EDGE_AUDIT_REPORTS.map((row) => (
-							<TableRow
-								key={row.id}
-								className="border-b border-border/40 hover:bg-muted/20"
-							>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.id}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.auditId}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.reportType}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
-									{row.receivedDate}
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.relatedSubmission}</LinkText>
-								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
-									{formatCount(row.recordsReviewed)}
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<StatusPill
-										label={row.status}
-										className={REPORT_STATUS_STYLES[row.status]}
-									/>
-								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
-									<div className="inline-flex items-center gap-0.5">
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-6 text-primary hover:text-primary"
-											onClick={() => toast.message(`View ${row.id}`)}
-										>
-											<Eye className="size-3" />
-										</Button>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-6 text-primary hover:text-primary"
-											onClick={() => toast.success(`Download ${row.id}`)}
-										>
-											<Download className="size-3" />
-										</Button>
-									</div>
-								</TableCell>
+				<CmsEdgeTableScroll>
+					<Table
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
+					>
+						<TableHeader>
+							<TableRow className="border-b border-border/50 hover:bg-transparent">
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Report ID
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Audit ID
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Report Type
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									<SortableHead>Received Date</SortableHead>
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Related Submission
+								</TableHead>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+								>
+									Records Reviewed
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Status
+								</TableHead>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+								>
+									Actions
+								</TableHead>
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</CmsEdgeTableScroll>
+						</TableHeader>
+						<TableBody>
+							{CMS_EDGE_AUDIT_REPORTS.map((row) => (
+								<TableRow
+									key={row.id}
+									className="border-b border-border/40 hover:bg-muted/20"
+								>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.id}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.auditId}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.reportType}
+									</TableCell>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+									>
+										{row.receivedDate}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.relatedSubmission}</LinkText>
+									</TableCell>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"text-right tabular-nums"
+										)}
+									>
+										{formatCount(row.recordsReviewed)}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<StatusPill
+											label={row.status}
+											className={REPORT_STATUS_STYLES[row.status]}
+										/>
+									</TableCell>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}
+									>
+										<div className="inline-flex items-center gap-0.5">
+											<Button
+												variant="ghost"
+												size="icon"
+												className="size-6 text-primary hover:text-primary"
+												onClick={() => toast.message(`View ${row.id}`)}
+											>
+												<Eye className="size-3" />
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="size-6 text-primary hover:text-primary"
+												onClick={() => toast.success(`Download ${row.id}`)}
+											>
+												<Download className="size-3" />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</CmsEdgeTableScroll>
 			</div>
 		</CmsEdgeSectionPanel>
 	);
@@ -457,7 +505,12 @@ function AuditSlaPerformance() {
 						>
 							<Icon className={cn("size-4 shrink-0", item.tone)} />
 							<div className="min-w-0 flex-1">
-								<p className={cn("text-base font-bold tabular-nums leading-none", item.tone)}>
+								<p
+									className={cn(
+										"text-base font-bold tabular-nums leading-none",
+										item.tone
+									)}
+								>
 									{item.count}
 								</p>
 								<p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
@@ -490,7 +543,9 @@ function AuditAttentionSummary() {
 						<AlertCircle className="size-3.5 shrink-0 text-red-500" />
 						Overdue
 					</span>
-					<span className="font-semibold tabular-nums text-red-600">{overdue}</span>
+					<span className="font-semibold tabular-nums text-red-600">
+						{overdue}
+					</span>
 				</div>
 				<div className="flex items-center justify-between py-2">
 					<span className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -529,46 +584,69 @@ function RecentAuditActivityTable() {
 			action={<PanelLink>View All Activity</PanelLink>}
 		>
 			<div className="border-t border-border/50">
-			<CmsEdgeTableScroll>
-				<Table
-					containerClassName={CMS_EDGE_TABLE_CONTAINER}
-					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
-				>
-					<TableHeader>
-						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Date / Time</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Activity</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Audit ID</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Related Submission</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>User</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>Details</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{CMS_EDGE_AUDIT_ACTIVITY.map((row) => (
-							<TableRow
-								key={row.id}
-								className="border-b border-border/40 hover:bg-muted/20"
-							>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
-									{row.dateTime}
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.activity}</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.auditId}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
-									<LinkText>{row.relatedSubmission}</LinkText>
-								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.user}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-muted-foreground")}>
-									{row.details}
-								</TableCell>
+				<CmsEdgeTableScroll>
+					<Table
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
+					>
+						<TableHeader>
+							<TableRow className="border-b border-border/50 hover:bg-transparent">
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Date / Time
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Activity
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Audit ID
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Related Submission
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									User
+								</TableHead>
+								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
+									Details
+								</TableHead>
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</CmsEdgeTableScroll>
+						</TableHeader>
+						<TableBody>
+							{CMS_EDGE_AUDIT_ACTIVITY.map((row) => (
+								<TableRow
+									key={row.id}
+									className="border-b border-border/40 hover:bg-muted/20"
+								>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+									>
+										{row.dateTime}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.activity}
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.auditId}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										<LinkText>{row.relatedSubmission}</LinkText>
+									</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.user}
+									</TableCell>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"pr-4 text-muted-foreground"
+										)}
+									>
+										{row.details}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</CmsEdgeTableScroll>
 			</div>
 		</CmsEdgeSectionPanel>
 	);
@@ -588,7 +666,9 @@ function CmsEdgeAuditTab() {
 					</div>
 				}
 				side={
-					<div className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}>
+					<div
+						className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}
+					>
 						<AuditStatusOverview />
 						<AuditSlaPerformance />
 						<AuditAttentionSummary />
@@ -666,7 +746,11 @@ export function CmsEdgePage() {
 				onValueChange={(value) => setActiveTab(value as CmsEdgeTabId)}
 			>
 				<div className="border-b border-border/70 bg-card">
-					<ScrollArea type="always" className="w-full" scrollbarClassName="h-2.5">
+					<ScrollArea
+						type="always"
+						className="w-full"
+						scrollbarClassName="h-2.5"
+					>
 						<TabsList className="inline-flex h-auto w-max min-w-full justify-start gap-0 rounded-none bg-transparent p-0">
 							{CMS_EDGE_TABS.map((tab) => (
 								<TabsTrigger

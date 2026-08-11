@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
-
 import Image from "next/image";
+import type { ReactNode } from "react";
 
 import { siteConfig } from "@/constants/siteconfig";
 import { cn } from "@/lib/utils";

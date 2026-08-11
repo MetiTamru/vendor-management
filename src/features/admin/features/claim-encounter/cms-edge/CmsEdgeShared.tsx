@@ -5,8 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-const SCROLLBAR_THUMB =
-	"rounded-full bg-foreground/25 hover:bg-foreground/40";
+const SCROLLBAR_THUMB = "rounded-full bg-foreground/25 hover:bg-foreground/40";
 
 const SCROLLBAR_TRACK = "z-10 bg-transparent";
 
@@ -75,7 +74,9 @@ export function CmsEdgeScrollRegion({
 	children: ReactNode;
 	className?: string;
 }) {
-	return <CmsEdgeTableScroll className={className}>{children}</CmsEdgeTableScroll>;
+	return (
+		<CmsEdgeTableScroll className={className}>{children}</CmsEdgeTableScroll>
+	);
 }
 
 export function CmsEdgeSectionPanel({
@@ -149,7 +150,9 @@ export function CmsEdgeSplitRow({
 				className
 			)}
 			style={
-				wideMain ? undefined : ({ "--cms-edge-side": sideWidth } as CSSProperties)
+				wideMain
+					? undefined
+					: ({ "--cms-edge-side": sideWidth } as CSSProperties)
 			}
 		>
 			<div className="flex min-h-0 min-w-0 flex-col">{main}</div>

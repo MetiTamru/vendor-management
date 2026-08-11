@@ -6,5 +6,7 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
 	const { locale } = await params;
-	redirect(`/${locale}/admin/claim-encounter/regulatory/quality-performance/overview`);
+	redirect(
+		`/${locale}/admin/claim-encounter/regulatory/quality-performance/overview`
+	);
 }

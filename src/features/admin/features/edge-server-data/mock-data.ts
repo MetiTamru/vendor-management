@@ -106,7 +106,9 @@ const THRESHOLD_REPORT_STATIC: Omit<EdgeServerRow, "id" | "publishedDate">[] = [
 	},
 ];
 
-export function mockThresholdReportRows(publishedDate: string): EdgeServerRow[] {
+export function mockThresholdReportRows(
+	publishedDate: string
+): EdgeServerRow[] {
 	if (publishedDate === "2025-03-14") {
 		return THRESHOLD_REPORT_STATIC.map((row, index) => ({
 			...row,
@@ -125,8 +127,8 @@ export function mockEdgeServerRows(
 	return Array.from({ length: 12 }, (_, index) => {
 		const issuerId = ISSUER_IDS[(index + seed) % ISSUER_IDS.length]!;
 		const dataType = DATA_TYPES[(index + seed) % DATA_TYPES.length]!;
-		const baseline = 80000 + ((index + seed) * 1379) % 40000;
-		const edgeActual = Math.round(baseline * (0.88 + ((index % 5) * 0.025)));
+		const baseline = 80000 + (((index + seed) * 1379) % 40000);
+		const edgeActual = Math.round(baseline * (0.88 + (index % 5) * 0.025));
 		const pct = Number(((edgeActual / baseline) * 100).toFixed(2));
 		return {
 			id: `${tabId}-${publishedDate}-${index + 1}`,
@@ -227,16 +229,20 @@ export type QuarterlyBaselineFilters = {
 };
 
 export function mockQuarterlyBaselineRows(filters: QuarterlyBaselineFilters) {
-	return mockEdgeServerRows("quarterly-baseline-report", filters.baselineDate).map(
-		(row, index) => ({
-			...row,
-			id: `qbr-${filters.benefitYear}-${filters.hiosId}-${index + 1}`,
-			issuerHiosId: filters.hiosId,
-		})
-	);
+	return mockEdgeServerRows(
+		"quarterly-baseline-report",
+		filters.baselineDate
+	).map((row, index) => ({
+		...row,
+		id: `qbr-${filters.benefitYear}-${filters.hiosId}-${index + 1}`,
+		issuerHiosId: filters.hiosId,
+	}));
 }
 
-export function filterHhsMasterDataRows(rows: HhsMasterDataRow[], query: string) {
+export function filterHhsMasterDataRows(
+	rows: HhsMasterDataRow[],
+	query: string
+) {
 	const q = query.trim().toLowerCase();
 	if (!q) return rows;
 	return rows.filter(

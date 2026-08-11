@@ -13,6 +13,7 @@ import {
 	Eye,
 	FileText,
 	FolderOpen,
+	type LucideIcon,
 	Minus,
 	Percent,
 	Send,
@@ -20,7 +21,6 @@ import {
 	Target,
 	TrendingUp,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	Bar,
@@ -48,7 +48,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import {
 	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
@@ -58,8 +57,10 @@ import {
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import {
+	type GapTrend,
 	QUALITY_COMPLIANCE_GOAL,
 	QUALITY_COMPLIANCE_TREND,
 	QUALITY_DOCUMENTS,
@@ -70,13 +71,13 @@ import {
 	QUALITY_PERFORMANCE_KPIS,
 	QUALITY_QUICK_ACTIONS,
 	QUALITY_TOP_MEASURES,
-	type GapTrend,
 } from "@/features/admin/features/claim-encounter/quality-performance/mock-data";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";
 const SECTION_GAP = "gap-4";
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -87,7 +88,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function TrendHint({ delta, suffix = "MY 2024" }: { delta: number; suffix?: string }) {
+function TrendHint({
+	delta,
+	suffix = "MY 2024",
+}: {
+	delta: number;
+	suffix?: string;
+}) {
 	if (delta === 0) {
 		return (
 			<span className="inline-flex items-center gap-0.5 text-muted-foreground">
@@ -128,7 +135,12 @@ function MetricCard({
 	return (
 		<div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-sm">
 			<div className="flex items-center gap-3">
-				<div className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", tone)}>
+				<div
+					className={cn(
+						"flex size-8 shrink-0 items-center justify-center rounded-md",
+						tone
+					)}
+				>
 					<Icon className="size-4" aria-hidden />
 				</div>
 				<div className="min-w-0 flex-1">
@@ -144,7 +156,9 @@ function MetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -162,7 +176,8 @@ function KpiRow() {
 				value={k.totalMeasures}
 				hint={
 					<span className="inline-flex items-center gap-0.5 text-emerald-700">
-						<ArrowUpRight className="size-3" />+ {k.totalMeasuresDelta} vs MY 2024
+						<ArrowUpRight className="size-3" />+ {k.totalMeasuresDelta} vs MY
+						2024
 					</span>
 				}
 				icon={ClipboardList}
@@ -219,16 +234,29 @@ function ComplianceTrendPanel() {
 		>
 			<div className="min-h-[240px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={200}>
-					<LineChart data={QUALITY_COMPLIANCE_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={QUALITY_COMPLIANCE_TREND}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
 						<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-						<YAxis tick={{ fontSize: 11 }} width={36} domain={[60, 95]} tickFormatter={(v) => `${v}%`} />
+						<YAxis
+							tick={{ fontSize: 11 }}
+							width={36}
+							domain={[60, 95]}
+							tickFormatter={(v) => `${v}%`}
+						/>
 						<Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
 						<ReferenceLine
 							y={QUALITY_COMPLIANCE_GOAL}
 							stroke="#94a3b8"
 							strokeDasharray="4 4"
-							label={{ value: "Goal 90%", position: "insideTopRight", fontSize: 10, fill: "#64748b" }}
+							label={{
+								value: "Goal 90%",
+								position: "insideTopRight",
+								fontSize: 10,
+								fill: "#64748b",
+							}}
 						/>
 						<Line
 							type="monotone"
@@ -259,9 +287,23 @@ function TopMeasuresPanel() {
 						layout="vertical"
 						margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
 					>
-						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" horizontal={false} />
-						<XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
-						<YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={120} />
+						<CartesianGrid
+							strokeDasharray="3 3"
+							className="stroke-border/50"
+							horizontal={false}
+						/>
+						<XAxis
+							type="number"
+							domain={[0, 100]}
+							tick={{ fontSize: 10 }}
+							tickFormatter={(v) => `${v}%`}
+						/>
+						<YAxis
+							type="category"
+							dataKey="name"
+							tick={{ fontSize: 9 }}
+							width={120}
+						/>
 						<Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
 						<Bar dataKey="rate" radius={[0, 4, 4, 0]} barSize={14}>
 							{QUALITY_TOP_MEASURES.map((entry) => (
@@ -305,15 +347,23 @@ function GapStatusPanel() {
 						</PieChart>
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-						<p className="text-sm font-bold tabular-nums">{formatCount(total)}</p>
+						<p className="text-sm font-bold tabular-nums">
+							{formatCount(total)}
+						</p>
 						<p className="text-[10px] text-muted-foreground">Total Open Gaps</p>
 					</div>
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-2 text-xs">
 					{QUALITY_GAP_STATUS.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
 								<span className="truncate">{item.name}</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
@@ -330,7 +380,8 @@ function GapStatusPanel() {
 
 function GapTrendIcon({ trend }: { trend: GapTrend }) {
 	if (trend === "Up") return <ArrowUpRight className="size-3.5 text-red-600" />;
-	if (trend === "Down") return <ArrowDownRight className="size-3.5 text-emerald-700" />;
+	if (trend === "Down")
+		return <ArrowDownRight className="size-3.5 text-emerald-700" />;
 	return <Minus className="size-3.5 text-muted-foreground" />;
 }
 
@@ -343,34 +394,68 @@ function OpenGapsByMeasurePanel() {
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[880px]")}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[880px]")}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Measure</TableHead>
 							<TableHead className={TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Open Gaps</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Gap Rate</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Due Soon</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Overdue</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Open Gaps
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Gap Rate
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Due Soon
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Overdue
+							</TableHead>
 							<TableHead className={TABLE_HEAD}>Trend</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{QUALITY_OPEN_GAPS_BY_MEASURE.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>{row.code}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-muted-foreground")}>{row.description}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>
+									{row.code}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "text-muted-foreground")}>
+									{row.description}
+								</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.openGaps)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.gapRate.toFixed(1)}%
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums text-amber-600")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"text-right tabular-nums text-amber-600"
+									)}
+								>
 									{formatCount(row.dueSoon)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(row.overdue)}
 								</TableCell>
 								<TableCell className={TABLE_CELL}>
@@ -404,28 +489,44 @@ function GapClosureActivityPanel() {
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Member ID</TableHead>
 							<TableHead className={TABLE_HEAD}>Measure</TableHead>
 							<TableHead className={TABLE_HEAD}>Action Taken</TableHead>
 							<TableHead className={TABLE_HEAD}>Closed On</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-4")}>Closed By</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-4")}>
+								Closed By
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{QUALITY_GAP_CLOSURE_ACTIVITY.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.memberId}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>{row.measure}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "font-mono font-medium")}>
+									{row.measure}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.action}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.closedOn}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-4 text-muted-foreground")}>{row.closedBy}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.closedOn}
+								</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-4 text-muted-foreground")}
+								>
+									{row.closedBy}
+								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
@@ -451,17 +552,26 @@ function NcqaSubmissionPanel() {
 							<div
 								className={cn(
 									"flex size-7 items-center justify-center rounded-full border text-[10px] font-semibold",
-									step.state === "complete" && "border-emerald-300 bg-emerald-50 text-emerald-700",
-									step.state === "active" && "border-violet-300 bg-violet-50 text-violet-800",
-									step.state === "pending" && "border-border bg-muted/30 text-muted-foreground"
+									step.state === "complete" &&
+										"border-emerald-300 bg-emerald-50 text-emerald-700",
+									step.state === "active" &&
+										"border-violet-300 bg-violet-50 text-violet-800",
+									step.state === "pending" &&
+										"border-border bg-muted/30 text-muted-foreground"
 								)}
 							>
-								{step.state === "complete" ? <Check className="size-3.5" /> : index + 1}
+								{step.state === "complete" ? (
+									<Check className="size-3.5" />
+								) : (
+									index + 1
+								)}
 							</div>
 							<span
 								className={cn(
 									"text-[11px] font-medium",
-									step.state === "active" ? "text-violet-800" : "text-muted-foreground"
+									step.state === "active"
+										? "text-violet-800"
+										: "text-muted-foreground"
 								)}
 							>
 								{step.label}
@@ -474,11 +584,19 @@ function NcqaSubmissionPanel() {
 				</div>
 
 				<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
-					<p className="text-sm font-semibold text-foreground">{submission.title}</p>
+					<p className="text-sm font-semibold text-foreground">
+						{submission.title}
+					</p>
 					<p className="mt-1 text-xs text-muted-foreground">
 						Submission Window: {submission.window}
 					</p>
-					<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "mt-2 inline-flex", submission.statusStyle)}>
+					<span
+						className={cn(
+							CMS_EDGE_STATUS_PILL_CLASS,
+							"mt-2 inline-flex",
+							submission.statusStyle
+						)}
+					>
 						{submission.status}
 					</span>
 				</div>
@@ -494,8 +612,12 @@ function NcqaSubmissionPanel() {
 								className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-card px-3 py-2"
 							>
 								<div className="min-w-0">
-									<p className="truncate text-xs font-medium text-primary">{doc.name}</p>
-									<p className="text-[10px] text-muted-foreground">{doc.size}</p>
+									<p className="truncate text-xs font-medium text-primary">
+										{doc.name}
+									</p>
+									<p className="text-[10px] text-muted-foreground">
+										{doc.size}
+									</p>
 								</div>
 								<Button
 									variant="ghost"
@@ -540,7 +662,9 @@ function QuickActionsPanel() {
 								<Icon className="size-4" />
 							</div>
 							<div>
-								<p className="text-xs font-semibold text-foreground">{action.title}</p>
+								<p className="text-xs font-semibold text-foreground">
+									{action.title}
+								</p>
 								<p className="mt-1 text-[10px] leading-snug text-muted-foreground">
 									{action.description}
 								</p>
@@ -560,7 +684,11 @@ export function QualityPerformancePage() {
 				title="Quality Performance"
 				description="Track HEDIS measure performance, gap closure, and NCQA submission readiness."
 				actions={
-					<Button size="sm" className="h-9" onClick={() => toast.success("Export queued")}>
+					<Button
+						size="sm"
+						className="h-9"
+						onClick={() => toast.success("Export queued")}
+					>
 						<Download className="mr-1.5 size-3.5" />
 						Export
 					</Button>
@@ -570,13 +698,23 @@ export function QualityPerformancePage() {
 			<div className={PAGE_STACK}>
 				<KpiRow />
 
-				<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+				<div
+					className={cn(
+						"grid grid-cols-1 items-stretch lg:grid-cols-3",
+						SECTION_GAP
+					)}
+				>
 					<ComplianceTrendPanel />
 					<TopMeasuresPanel />
 					<GapStatusPanel />
 				</div>
 
-				<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+				<div
+					className={cn(
+						"grid grid-cols-1 items-stretch lg:grid-cols-3",
+						SECTION_GAP
+					)}
+				>
 					<OpenGapsByMeasurePanel />
 					<GapClosureActivityPanel />
 					<NcqaSubmissionPanel />

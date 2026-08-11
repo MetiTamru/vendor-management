@@ -138,7 +138,8 @@ export const COMPLIANCE_PROGRAM_PAGES: ComplianceProgramPageConfig[] = [
 			{
 				kind: "measure-grid",
 				title: "HCC capture by category",
-				description: "Documented vs suspected gaps across major condition groups",
+				description:
+					"Documented vs suspected gaps across major condition groups",
 			},
 			{ kind: "queue-table", title: "Member review queue" },
 		],
@@ -292,7 +293,13 @@ export const COMPLIANCE_PROGRAM_PAGES: ComplianceProgramPageConfig[] = [
 			"Monitor hospice election periods, benefit caps, and encounter reporting by vendor.",
 		iconKey: "heart-pulse",
 		kpiLabels: ["Elections", "Active", "Cap Alerts", "Exceptions"],
-		statusOptions: ["Active", "Cap Alert", "Pending", "Exception", "Discharged"],
+		statusOptions: [
+			"Active",
+			"Cap Alert",
+			"Pending",
+			"Exception",
+			"Discharged",
+		],
 		rowNoun: "election",
 		sections: [
 			{

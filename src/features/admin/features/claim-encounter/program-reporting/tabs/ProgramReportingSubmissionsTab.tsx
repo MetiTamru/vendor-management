@@ -16,6 +16,7 @@ import {
 	FileText,
 	FolderOpen,
 	Inbox,
+	type LucideIcon,
 	Percent,
 	Pill,
 	RefreshCw,
@@ -23,7 +24,6 @@ import {
 	Shield,
 	Upload,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	CartesianGrid,
@@ -50,27 +50,28 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import {
-	getSubmissionsData,
 	MEDICAID_SUBMISSION_STATUS_STYLES,
 	MEDICARE_SUBMISSION_STATUS_STYLES,
 	type ProgramSubmissionsData,
+	getSubmissionsData,
 } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
 import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";
 const SECTION_GAP = "gap-4";
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -81,7 +82,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -105,7 +112,12 @@ function MetricCard({
 	return (
 		<div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-sm">
 			<div className="flex items-center gap-3">
-				<div className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", tone)}>
+				<div
+					className={cn(
+						"flex size-8 shrink-0 items-center justify-center rounded-md",
+						tone
+					)}
+				>
 					<Icon className="size-4" aria-hidden />
 				</div>
 				<div className="min-w-0 flex-1">
@@ -121,7 +133,9 @@ function MetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -159,7 +173,11 @@ function TablePagination({ total, shown }: { total: number; shown: number }) {
 	);
 }
 
-function MedicareKpiRow({ data }: { data: Extract<ProgramSubmissionsData, { kind: "medicare" }> }) {
+function MedicareKpiRow({
+	data,
+}: {
+	data: Extract<ProgramSubmissionsData, { kind: "medicare" }>;
+}) {
 	const k = data.kpis;
 
 	return (
@@ -169,7 +187,8 @@ function MedicareKpiRow({ data }: { data: Extract<ProgramSubmissionsData, { kind
 				value={k.reportsSubmitted}
 				hint={
 					<span className="inline-flex items-center gap-0.5 text-emerald-700">
-						<ArrowUpRight className="size-3" />+ {k.reportsSubmittedDelta.toFixed(2)}% vs Prior Period
+						<ArrowUpRight className="size-3" />+{" "}
+						{k.reportsSubmittedDelta.toFixed(2)}% vs Prior Period
 					</span>
 				}
 				icon={FileText}
@@ -222,7 +241,11 @@ function MedicareKpiRow({ data }: { data: Extract<ProgramSubmissionsData, { kind
 	);
 }
 
-function MedicaidKpiRow({ data }: { data: Extract<ProgramSubmissionsData, { kind: "medicaid" }> }) {
+function MedicaidKpiRow({
+	data,
+}: {
+	data: Extract<ProgramSubmissionsData, { kind: "medicaid" }>;
+}) {
 	const k = data.kpis;
 
 	return (
@@ -280,7 +303,8 @@ function MedicaidKpiRow({ data }: { data: Extract<ProgramSubmissionsData, { kind
 				value={`${k.acceptanceRate.toFixed(2)}%`}
 				hint={
 					<span className="inline-flex items-center gap-0.5 text-emerald-700">
-						<ArrowUpRight className="size-3" />+ {k.acceptanceRateDelta}% vs Prior Period
+						<ArrowUpRight className="size-3" />+ {k.acceptanceRateDelta}% vs
+						Prior Period
 					</span>
 				}
 				icon={Percent}
@@ -302,10 +326,18 @@ function MedicareSubmissionsTable({
 			title="Submissions List"
 			action={<PanelLink>View All</PanelLink>}
 			bodyClassName="flex min-h-0 flex-1 flex-col"
-			footer={<TablePagination total={data.totalEntries} shown={data.submissions.length} />}
+			footer={
+				<TablePagination
+					total={data.totalEntries}
+					shown={data.submissions.length}
+				/>
+			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Submission ID</TableHead>
@@ -313,31 +345,48 @@ function MedicareSubmissionsTable({
 							<TableHead className={TABLE_HEAD}>Submitted Date/Time</TableHead>
 							<TableHead className={TABLE_HEAD}>Reporting Period</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Records</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-5")}>Submitted By</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Records
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-5")}>
+								Submitted By
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{data.submissions.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.id}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.reportType}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.submittedAt}</TableCell>
-								<TableCell className={TABLE_CELL}>{row.reportingPeriod}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.reportType}
+								</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.submittedAt}
+								</TableCell>
+								<TableCell className={TABLE_CELL}>
+									{row.reportingPeriod}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
 										className={MEDICARE_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.records)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}
+								>
 									{row.submittedBy}
 								</TableCell>
 							</TableRow>
@@ -360,42 +409,67 @@ function MedicaidSubmissionsTable({
 			title="Submissions List"
 			action={<PanelLink>View All</PanelLink>}
 			bodyClassName="flex min-h-0 flex-1 flex-col"
-			footer={<TablePagination total={data.totalEntries} shown={data.submissions.length} />}
+			footer={
+				<TablePagination
+					total={data.totalEntries}
+					shown={data.submissions.length}
+				/>
+			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Submission Batch</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "min-w-[180px]")}>File Name</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "min-w-[180px]")}>
+								File Name
+							</TableHead>
 							<TableHead className={TABLE_HEAD}>State</TableHead>
 							<TableHead className={TABLE_HEAD}>Submitted Date/Time</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Encounters</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-5")}>Submitted By</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Encounters
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-5")}>
+								Submitted By
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{data.submissions.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.batch}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "font-mono text-[11px]")}>{row.fileName}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "font-mono text-[11px]")}>
+									{row.fileName}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.state}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.submittedAt}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.submittedAt}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
 										className={MEDICAID_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.encounters)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}
+								>
 									{row.submittedBy}
 								</TableCell>
 							</TableRow>
@@ -427,7 +501,13 @@ function DonutPanel({
 			className="flex h-full min-h-0 flex-col"
 			title={title}
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
-			footer={footer ? <div className="border-t border-border/50 px-4 py-2 text-center">{footer}</div> : undefined}
+			footer={
+				footer ? (
+					<div className="border-t border-border/50 px-4 py-2 text-center">
+						{footer}
+					</div>
+				) : undefined
+			}
 		>
 			<div className="flex min-h-[220px] flex-1 flex-col gap-2 border-t border-border/50 px-3 py-3 sm:flex-row">
 				<div className="relative mx-auto w-full max-w-[140px] flex-1">
@@ -450,20 +530,30 @@ function DonutPanel({
 						</PieChart>
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-						<p className="text-sm font-bold tabular-nums leading-tight">{centerValue}</p>
+						<p className="text-sm font-bold tabular-nums leading-tight">
+							{centerValue}
+						</p>
 						<p className="text-[10px] text-muted-foreground">{centerLabel}</p>
 					</div>
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-2 text-xs">
 					{data.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
 								<span className="truncate">{item.name}</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
 								{formatCount(item.value)}
-								<span className="ml-1">({((item.value / total) * 100).toFixed(0)}%)</span>
+								<span className="ml-1">
+									({((item.value / total) * 100).toFixed(0)}%)
+								</span>
 							</span>
 						</li>
 					))}
@@ -517,7 +607,11 @@ function SummaryByStatusPanel({
 	);
 }
 
-function MedicareTrendPanel({ data }: { data: Extract<ProgramSubmissionsData, { kind: "medicare" }> }) {
+function MedicareTrendPanel({
+	data,
+}: {
+	data: Extract<ProgramSubmissionsData, { kind: "medicare" }>;
+}) {
 	return (
 		<CmsEdgeSectionPanel
 			className="flex h-full min-h-0 flex-col"
@@ -526,16 +620,54 @@ function MedicareTrendPanel({ data }: { data: Extract<ProgramSubmissionsData, { 
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={data.trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={data.trendByMonth}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-						<XAxis dataKey="month" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={44} />
+						<XAxis
+							dataKey="month"
+							tick={{ fontSize: 10 }}
+							interval={0}
+							angle={-15}
+							textAnchor="end"
+							height={44}
+						/>
 						<YAxis tick={{ fontSize: 11 }} width={32} />
 						<Tooltip />
 						<Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
-						<Line type="monotone" dataKey="accepted" name="Accepted" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} />
-						<Line type="monotone" dataKey="acknowledged" name="Acknowledged" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="completed" name="Completed" stroke="#6366f1" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="failed" name="Failed" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
+						<Line
+							type="monotone"
+							dataKey="accepted"
+							name="Accepted"
+							stroke="#22c55e"
+							strokeWidth={2}
+							dot={{ r: 3 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="acknowledged"
+							name="Acknowledged"
+							stroke="#3b82f6"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="completed"
+							name="Completed"
+							stroke="#6366f1"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="failed"
+							name="Failed"
+							stroke="#ef4444"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
@@ -543,7 +675,11 @@ function MedicareTrendPanel({ data }: { data: Extract<ProgramSubmissionsData, { 
 	);
 }
 
-function MedicaidTrendPanel({ data }: { data: Extract<ProgramSubmissionsData, { kind: "medicaid" }> }) {
+function MedicaidTrendPanel({
+	data,
+}: {
+	data: Extract<ProgramSubmissionsData, { kind: "medicaid" }>;
+}) {
 	return (
 		<CmsEdgeSectionPanel
 			className="flex h-full min-h-0 flex-col"
@@ -552,15 +688,43 @@ function MedicaidTrendPanel({ data }: { data: Extract<ProgramSubmissionsData, { 
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={data.trendWeekly} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={data.trendWeekly}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
 						<XAxis dataKey="week" tick={{ fontSize: 10 }} />
-						<YAxis tick={{ fontSize: 11 }} width={48} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+						<YAxis
+							tick={{ fontSize: 11 }}
+							width={48}
+							tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`}
+						/>
 						<Tooltip formatter={(v: number) => formatCount(v)} />
 						<Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
-						<Line type="monotone" dataKey="accepted" name="Accepted" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} />
-						<Line type="monotone" dataKey="rejected" name="Rejected" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="pending" name="Pending" stroke="#f59e0b" strokeWidth={2} dot={{ r: 2 }} />
+						<Line
+							type="monotone"
+							dataKey="accepted"
+							name="Accepted"
+							stroke="#22c55e"
+							strokeWidth={2}
+							dot={{ r: 3 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="rejected"
+							name="Rejected"
+							stroke="#ef4444"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="pending"
+							name="Pending"
+							stroke="#f59e0b"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
@@ -574,9 +738,15 @@ function MedicareRecentActivityPanel({
 	data: Extract<ProgramSubmissionsData, { kind: "medicare" }>;
 }) {
 	return (
-		<CmsEdgeSectionPanel title="Recent Submission Activity" bodyClassName="pb-4">
+		<CmsEdgeSectionPanel
+			title="Recent Submission Activity"
+			bodyClassName="pb-4"
+		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Date/Time</TableHead>
@@ -588,8 +758,13 @@ function MedicareRecentActivityPanel({
 					</TableHeader>
 					<TableBody>
 						{data.recentActivity.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.at}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.at}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.submissionId}
@@ -602,7 +777,11 @@ function MedicareRecentActivityPanel({
 										className={MEDICARE_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}>{row.details}</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}
+								>
+									{row.details}
+								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
@@ -618,39 +797,60 @@ function MedicaidRecentActivityPanel({
 	data: Extract<ProgramSubmissionsData, { kind: "medicaid" }>;
 }) {
 	return (
-		<CmsEdgeSectionPanel title="Recent Submission Activity" bodyClassName="pb-4">
+		<CmsEdgeSectionPanel
+			title="Recent Submission Activity"
+			bodyClassName="pb-4"
+		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Date/Time</TableHead>
 							<TableHead className={TABLE_HEAD}>Batch</TableHead>
 							<TableHead className={TABLE_HEAD}>File Name</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Encounters</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Encounters
+							</TableHead>
 							<TableHead className={cn(TABLE_HEAD, "pr-5")}>Details</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{data.recentActivity.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.at}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.at}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.batch}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "font-mono text-[11px]")}>{row.fileName}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "font-mono text-[11px]")}>
+									{row.fileName}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
 									<StatusPill
 										label={row.status}
 										className={MEDICAID_SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.encounters)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}>{row.details}</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-5 text-muted-foreground")}
+								>
+									{row.details}
+								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
@@ -669,7 +869,11 @@ const QUICK_ACTION_ICONS: Record<string, LucideIcon> = {
 	"sq-6": AlertTriangle,
 };
 
-function QuickActionsPanel({ actions }: { actions: { id: string; title: string; description: string }[] }) {
+function QuickActionsPanel({
+	actions,
+}: {
+	actions: { id: string; title: string; description: string }[];
+}) {
 	return (
 		<CmsEdgeSectionPanel title="Quick Actions" bodyClassName="pb-4">
 			<div className="grid grid-cols-1 gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
@@ -686,7 +890,9 @@ function QuickActionsPanel({ actions }: { actions: { id: string; title: string; 
 								<Icon className="size-4" />
 							</div>
 							<div className="min-w-0 flex-1">
-								<p className="text-xs font-semibold text-foreground">{action.title}</p>
+								<p className="text-xs font-semibold text-foreground">
+									{action.title}
+								</p>
 								<p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
 									{action.description}
 								</p>
@@ -703,7 +909,9 @@ type ProgramReportingSubmissionsTabProps = {
 	programType: ProgramType;
 };
 
-export function ProgramReportingSubmissionsTab({ programType }: ProgramReportingSubmissionsTabProps) {
+export function ProgramReportingSubmissionsTab({
+	programType,
+}: ProgramReportingSubmissionsTabProps) {
 	const data = getSubmissionsData(programType);
 
 	if (data.kind === "medicare") {
@@ -725,10 +933,18 @@ export function ProgramReportingSubmissionsTab({ programType }: ProgramReporting
 						centerLabel="Total"
 						footer={<PanelLink>View Full Report</PanelLink>}
 					/>
-					<SummaryByStatusPanel title="Submissions Summary" items={data.summaryByStatus} />
+					<SummaryByStatusPanel
+						title="Submissions Summary"
+						items={data.summaryByStatus}
+					/>
 				</div>
 
-				<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+				<div
+					className={cn(
+						"grid grid-cols-1 items-stretch lg:grid-cols-3",
+						SECTION_GAP
+					)}
+				>
 					<MedicareTrendPanel data={data} />
 					<MedicareRecentActivityPanel data={data} />
 					<QuickActionsPanel actions={data.quickActions} />
@@ -760,7 +976,12 @@ export function ProgramReportingSubmissionsTab({ programType }: ProgramReporting
 				/>
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-3",
+					SECTION_GAP
+				)}
+			>
 				<SummaryByStatusPanel
 					title="Submission Summary by Status"
 					items={data.summaryByStatus}

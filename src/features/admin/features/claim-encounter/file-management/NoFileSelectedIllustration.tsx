@@ -27,7 +27,14 @@ export function NoFileSelectedIllustration({
 				className="mb-5"
 				aria-hidden
 			>
-				<ellipse cx="84" cy="118" rx="52" ry="8" fill="currentColor" className="text-primary/10" />
+				<ellipse
+					cx="84"
+					cy="118"
+					rx="52"
+					ry="8"
+					fill="currentColor"
+					className="text-primary/10"
+				/>
 				<path
 					d="M36 34h72l14 16v58a6 6 0 0 1-6 6H36a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6Z"
 					fill="currentColor"
@@ -38,21 +45,89 @@ export function NoFileSelectedIllustration({
 					fill="currentColor"
 					className="text-primary/25"
 				/>
-				<rect x="44" y="58" width="56" height="6" rx="3" fill="currentColor" className="text-primary/20" />
-				<rect x="44" y="72" width="40" height="6" rx="3" fill="currentColor" className="text-primary/15" />
-				<rect x="44" y="86" width="48" height="6" rx="3" fill="currentColor" className="text-primary/15" />
-				<circle cx="118" cy="46" r="22" fill="white" stroke="currentColor" strokeWidth="2" className="text-primary/30" />
+				<rect
+					x="44"
+					y="58"
+					width="56"
+					height="6"
+					rx="3"
+					fill="currentColor"
+					className="text-primary/20"
+				/>
+				<rect
+					x="44"
+					y="72"
+					width="40"
+					height="6"
+					rx="3"
+					fill="currentColor"
+					className="text-primary/15"
+				/>
+				<rect
+					x="44"
+					y="86"
+					width="48"
+					height="6"
+					rx="3"
+					fill="currentColor"
+					className="text-primary/15"
+				/>
+				<circle
+					cx="118"
+					cy="46"
+					r="22"
+					fill="white"
+					stroke="currentColor"
+					strokeWidth="2"
+					className="text-primary/30"
+				/>
 				{isEmpty ? (
 					<>
-						<circle cx="118" cy="46" r="10" fill="currentColor" className="text-red-500/15" />
-						<circle cx="115" cy="43" r="1.2" fill="currentColor" className="text-red-500/70" />
-						<circle cx="121" cy="43" r="1.2" fill="currentColor" className="text-red-500/70" />
-						<path d="M113 51c2-3 4-3 6 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-red-500/70" />
+						<circle
+							cx="118"
+							cy="46"
+							r="10"
+							fill="currentColor"
+							className="text-red-500/15"
+						/>
+						<circle
+							cx="115"
+							cy="43"
+							r="1.2"
+							fill="currentColor"
+							className="text-red-500/70"
+						/>
+						<circle
+							cx="121"
+							cy="43"
+							r="1.2"
+							fill="currentColor"
+							className="text-red-500/70"
+						/>
+						<path
+							d="M113 51c2-3 4-3 6 0"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							className="text-red-500/70"
+						/>
 					</>
 				) : (
 					<>
-						<path d="M110 46h16M118 38v16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-primary" />
-						<path d="M128 58l10 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-primary/60" />
+						<path
+							d="M110 46h16M118 38v16"
+							stroke="currentColor"
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							className="text-primary"
+						/>
+						<path
+							d="M128 58l10 10"
+							stroke="currentColor"
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							className="text-primary/60"
+						/>
 					</>
 				)}
 			</svg>

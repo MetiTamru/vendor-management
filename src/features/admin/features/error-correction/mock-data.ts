@@ -127,7 +127,10 @@ export function filterErrorSummaryRows(
 	filters: ErrorSummaryFilters
 ) {
 	return rows.filter((row) => {
-		if (filters.processType !== "all" && row.processType !== filters.processType) {
+		if (
+			filters.processType !== "all" &&
+			row.processType !== filters.processType
+		) {
 			return false;
 		}
 		if (filters.issuerName !== "ALL") {

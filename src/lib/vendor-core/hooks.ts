@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
-import { VendorCoreApiError } from "@/lib/vendor-core/client";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
+import { VendorCoreApiError } from "@/lib/vendor-core/client";
 
 export const vendorCoreKeys = {
 	all: ["vendor-core"] as const,
@@ -210,10 +210,13 @@ export function useVendorCoreValidationResults(params?: {
 	inbound_file_id?: string;
 	search?: string;
 }) {
-	return useAuthAwareQuery(vendorCoreKeys.validationResults(params), async () => {
-		const page = await vendorCoreApi.listValidationResults(params);
-		return page.results ?? [];
-	});
+	return useAuthAwareQuery(
+		vendorCoreKeys.validationResults(params),
+		async () => {
+			const page = await vendorCoreApi.listValidationResults(params);
+			return page.results ?? [];
+		}
+	);
 }
 
 export function useVendorCoreProviders(enabled = true) {

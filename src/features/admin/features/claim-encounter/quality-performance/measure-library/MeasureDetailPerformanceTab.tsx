@@ -14,6 +14,8 @@ import {
 } from "recharts";
 
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureChangeCell,
 	MeasureDataTable,
@@ -22,8 +24,6 @@ import {
 	MeasurePipeline,
 	MeasureSectionPanel,
 	MeasureSubsection,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasurePerformanceDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
@@ -100,14 +100,22 @@ export function MeasureDetailPerformanceTab({
 					title="Performance Trend"
 					subtitle="Monthly performance rate for the measurement year"
 					action={
-						<PanelLink icon={<ExternalLink className="size-3.5" />}>View Trend Data</PanelLink>
+						<PanelLink icon={<ExternalLink className="size-3.5" />}>
+							View Trend Data
+						</PanelLink>
 					}
 					bodyClassName="p-0"
 				>
 					<div className="min-h-[280px] rounded-lg border border-border/50 bg-muted/10 p-2">
 						<ResponsiveContainer width="100%" height={280}>
-							<LineChart data={data.trend} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+							<LineChart
+								data={data.trend}
+								margin={{ top: 12, right: 16, left: 0, bottom: 0 }}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									className="stroke-border/50"
+								/>
 								<XAxis dataKey="month" tick={{ fontSize: 11 }} />
 								<YAxis
 									tick={{ fontSize: 11 }}
@@ -134,7 +142,12 @@ export function MeasureDetailPerformanceTab({
 									name="Performance Rate"
 									stroke="#13446c"
 									strokeWidth={2.5}
-									dot={{ r: 4, fill: "#13446c", strokeWidth: 2, stroke: "#fff" }}
+									dot={{
+										r: 4,
+										fill: "#13446c",
+										strokeWidth: 2,
+										stroke: "#fff",
+									}}
 									activeDot={{ r: 6 }}
 								/>
 							</LineChart>
@@ -148,7 +161,9 @@ export function MeasureDetailPerformanceTab({
 					title="Performance by Plan"
 					subtitle="Plan-level rates compared to prior year"
 					action={
-						<PanelLink icon={<ExternalLink className="size-3.5" />}>View All Plans</PanelLink>
+						<PanelLink icon={<ExternalLink className="size-3.5" />}>
+							View All Plans
+						</PanelLink>
 					}
 					bodyClassName="p-0"
 				>
@@ -158,8 +173,18 @@ export function MeasureDetailPerformanceTab({
 							{ key: "lob", header: "LOB", className: MEASURE_TABLE_MUTED },
 							{ key: "num", header: "Numerator", align: "right" },
 							{ key: "den", header: "Denominator", align: "right" },
-							{ key: "rate", header: "Rate", align: "right", className: "font-semibold text-primary" },
-							{ key: "prior", header: "MY 2024", align: "right", className: MEASURE_TABLE_MUTED },
+							{
+								key: "rate",
+								header: "Rate",
+								align: "right",
+								className: "font-semibold text-primary",
+							},
+							{
+								key: "prior",
+								header: "MY 2024",
+								align: "right",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "change", header: "Change", align: "right" },
 						]}
 						rows={data.byPlan.map((row) => ({
@@ -168,7 +193,10 @@ export function MeasureDetailPerformanceTab({
 							num: row.numerator > 0 ? row.numerator.toLocaleString() : "—",
 							den: row.denominator > 0 ? row.denominator.toLocaleString() : "—",
 							rate: row.rate != null ? `${row.rate.toFixed(2)}%` : "N/A",
-							prior: row.priorYearRate != null ? `${row.priorYearRate.toFixed(2)}%` : "N/A",
+							prior:
+								row.priorYearRate != null
+									? `${row.priorYearRate.toFixed(2)}%`
+									: "N/A",
 							change: <MeasureChangeCell value={row.change} />,
 						}))}
 						getRowKey={(row) => String(row.plan)}
@@ -186,8 +214,18 @@ export function MeasureDetailPerformanceTab({
 							{ key: "group", header: "Population Group" },
 							{ key: "num", header: "Numerator", align: "right" },
 							{ key: "den", header: "Denominator", align: "right" },
-							{ key: "rate", header: "Rate", align: "right", className: "font-semibold text-primary" },
-							{ key: "prior", header: "MY 2024", align: "right", className: MEASURE_TABLE_MUTED },
+							{
+								key: "rate",
+								header: "Rate",
+								align: "right",
+								className: "font-semibold text-primary",
+							},
+							{
+								key: "prior",
+								header: "MY 2024",
+								align: "right",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "change", header: "Change", align: "right" },
 						]}
 						rows={data.byPopulationGroup.map((row) => ({
@@ -223,19 +261,28 @@ export function MeasureDetailPerformanceTab({
 							{
 								metric: "Numerator",
 								...Object.fromEntries(
-									data.historicalTrend.map((col) => [col.year, col.numerator.toLocaleString()])
+									data.historicalTrend.map((col) => [
+										col.year,
+										col.numerator.toLocaleString(),
+									])
 								),
 							},
 							{
 								metric: "Denominator",
 								...Object.fromEntries(
-									data.historicalTrend.map((col) => [col.year, col.denominator.toLocaleString()])
+									data.historicalTrend.map((col) => [
+										col.year,
+										col.denominator.toLocaleString(),
+									])
 								),
 							},
 							{
 								metric: "Exclusions",
 								...Object.fromEntries(
-									data.historicalTrend.map((col) => [col.year, col.exclusions.toLocaleString()])
+									data.historicalTrend.map((col) => [
+										col.year,
+										col.exclusions.toLocaleString(),
+									])
 								),
 							},
 							{

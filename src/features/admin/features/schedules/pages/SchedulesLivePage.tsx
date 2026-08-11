@@ -5,12 +5,6 @@ import { useMemo, useState } from "react";
 import { Play, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +22,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { vendorCoreApi } from "@/lib/vendor-core";
 import {
@@ -47,9 +47,7 @@ function SchedulesLiveBody() {
 	const [search, setSearch] = useState("");
 	const [busyId, setBusyId] = useState<string | null>(null);
 
-	const runsQ = useVendorCoreJobRuns(
-		stage === "all" ? undefined : { stage }
-	);
+	const runsQ = useVendorCoreJobRuns(stage === "all" ? undefined : { stage });
 
 	const nameById = useMemo(
 		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
@@ -86,8 +84,7 @@ function SchedulesLiveBody() {
 	}, [runsQ.data, search, jobNameById]);
 
 	const loading = tab === "jobs" ? jobsQ.isLoading : runsQ.isLoading;
-	const error =
-		tab === "jobs" ? jobsQ.error?.message : runsQ.error?.message;
+	const error = tab === "jobs" ? jobsQ.error?.message : runsQ.error?.message;
 
 	async function onRun(id: string) {
 		setBusyId(id);
@@ -116,9 +113,7 @@ function SchedulesLiveBody() {
 					<button
 						type="button"
 						className={`rounded px-3 py-1.5 text-sm ${
-							tab === "jobs"
-								? "bg-muted font-medium"
-								: "text-muted-foreground"
+							tab === "jobs" ? "bg-muted font-medium" : "text-muted-foreground"
 						}`}
 						onClick={() => setTab("jobs")}
 					>
@@ -127,9 +122,7 @@ function SchedulesLiveBody() {
 					<button
 						type="button"
 						className={`rounded px-3 py-1.5 text-sm ${
-							tab === "runs"
-								? "bg-muted font-medium"
-								: "text-muted-foreground"
+							tab === "runs" ? "bg-muted font-medium" : "text-muted-foreground"
 						}`}
 						onClick={() => setTab("runs")}
 					>
@@ -140,9 +133,7 @@ function SchedulesLiveBody() {
 					<Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
 					<Input
 						className="pl-9"
-						placeholder={
-							tab === "jobs" ? "Search jobs…" : "Search runs…"
-						}
+						placeholder={tab === "jobs" ? "Search jobs…" : "Search runs…"}
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 					/>
@@ -193,9 +184,7 @@ function SchedulesLiveBody() {
 							{jobs.map((job) => (
 								<TableRow key={job.id}>
 									<TableCell className="font-medium">{job.name}</TableCell>
-									<TableCell>
-										{vendorLabel(job.vendor, nameById)}
-									</TableCell>
+									<TableCell>{vendorLabel(job.vendor, nameById)}</TableCell>
 									<TableCell>{job.file_type}</TableCell>
 									<TableCell className="max-w-[160px] truncate font-mono text-xs">
 										{job.filename_pattern || "—"}

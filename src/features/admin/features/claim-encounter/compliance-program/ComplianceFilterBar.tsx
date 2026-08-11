@@ -72,10 +72,7 @@ export function ComplianceFilterBar({
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2 rounded-xl border border-sky-200/70 bg-sky-50/50 p-3">
-				<Select
-					value={vendor}
-					onValueChange={onVendorChange}
-				>
+				<Select value={vendor} onValueChange={onVendorChange}>
 					<SelectTrigger className="h-9 w-[140px] border-sky-200 bg-card">
 						<SelectValue placeholder="All vendors" />
 					</SelectTrigger>

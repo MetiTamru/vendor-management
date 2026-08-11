@@ -2,15 +2,29 @@ export { MEDICARE_REPORTING_TABS } from "@/features/admin/features/claim-encount
 
 export type MedicarePartDSubmissionStatus = "Accepted" | "Rejected" | "Pending";
 
-export type MedicarePartDSubmissionType = "Regular" | "Backfill" | "Original" | "Replacement" | "Delete";
+export type MedicarePartDSubmissionType =
+	| "Regular"
+	| "Backfill"
+	| "Original"
+	| "Replacement"
+	| "Delete";
 
-export type MedicarePartDResponseStatus = "Processed" | "Processed with Errors" | "Pending";
+export type MedicarePartDResponseStatus =
+	| "Processed"
+	| "Processed with Errors"
+	| "Pending";
 
 export type MedicarePartDErrorSeverity = "Critical" | "High" | "Medium" | "Low";
 
-export type MedicarePartDReconciliationStatus = "In Review" | "Reconciled" | "Pending";
+export type MedicarePartDReconciliationStatus =
+	| "In Review"
+	| "Reconciled"
+	| "Pending";
 
-export type MedicarePartDComplianceStatus = "Compliant" | "At Risk" | "In Progress";
+export type MedicarePartDComplianceStatus =
+	| "Compliant"
+	| "At Risk"
+	| "In Progress";
 
 export const MEDICARE_PART_D_KPIS = {
 	submitted: 24,
@@ -44,7 +58,10 @@ export const MEDICARE_PART_D_RESPONSE_STATUS_STYLES: Record<
 	Pending: "border-amber-200 bg-amber-50 text-amber-800",
 };
 
-export const MEDICARE_PART_D_ERROR_SEVERITY_STYLES: Record<MedicarePartDErrorSeverity, string> = {
+export const MEDICARE_PART_D_ERROR_SEVERITY_STYLES: Record<
+	MedicarePartDErrorSeverity,
+	string
+> = {
 	Critical: "text-red-600 font-semibold",
 	High: "text-orange-600 font-semibold",
 	Medium: "text-violet-600 font-medium",
@@ -60,13 +77,22 @@ export const MEDICARE_PART_D_RECONCILIATION_STATUS_STYLES: Record<
 	Pending: "border-sky-200 bg-sky-50 text-sky-800",
 };
 
-export const MEDICARE_PART_D_COMPLIANCE_STATUS_STYLES: Record<MedicarePartDComplianceStatus, string> = {
+export const MEDICARE_PART_D_COMPLIANCE_STATUS_STYLES: Record<
+	MedicarePartDComplianceStatus,
+	string
+> = {
 	Compliant: "border-emerald-200 bg-emerald-50 text-emerald-700",
 	"At Risk": "border-amber-200 bg-amber-50 text-amber-800",
 	"In Progress": "border-sky-200 bg-sky-50 text-sky-800",
 };
 
-export const MEDICARE_PART_D_ERROR_SEVERITY_FILTER = ["All", "Critical", "High", "Medium", "Low"] as const;
+export const MEDICARE_PART_D_ERROR_SEVERITY_FILTER = [
+	"All",
+	"Critical",
+	"High",
+	"Medium",
+	"Low",
+] as const;
 
 export const MEDICARE_PART_D_ERROR_TYPE_FILTER = [
 	"All",

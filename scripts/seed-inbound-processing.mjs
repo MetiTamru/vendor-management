@@ -9,10 +9,10 @@
  *   VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:inbound-processing
  *   … pnpm seed:inbound-processing --force
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Blob } from "node:buffer";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { SAMPLE_FILES } from "./seed-data/mock-vendors.mjs";
 
@@ -136,7 +136,10 @@ async function uploadFallback(token) {
 		);
 		form.append("connection_id", connId);
 		try {
-			await request("POST", "/api/v1/intake/uploads/", { token, formData: form });
+			await request("POST", "/api/v1/intake/uploads/", {
+				token,
+				formData: form,
+			});
 			uploads += 1;
 			console.log(`✓ upload ${file.name}`);
 		} catch (err) {
@@ -204,7 +207,9 @@ async function main() {
 		}
 	}
 
-	const files = await request("GET", "/api/v1/inbound-files/?limit=5", { token });
+	const files = await request("GET", "/api/v1/inbound-files/?limit=5", {
+		token,
+	});
 	const fileCount = files?.count ?? files?.results?.length ?? 0;
 	console.log(`Inbound files now: ${fileCount}`);
 
@@ -241,7 +246,9 @@ async function main() {
 		}
 	}
 
-	const errors = await request("GET", "/api/v1/errors/list/?limit=5", { token });
+	const errors = await request("GET", "/api/v1/errors/list/?limit=5", {
+		token,
+	});
 	const errorCount = errors?.count ?? errors?.results?.length ?? 0;
 	console.log(`Error records: ${errorCount}`);
 

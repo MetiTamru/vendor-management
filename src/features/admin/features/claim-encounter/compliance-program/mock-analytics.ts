@@ -62,7 +62,11 @@ export type PageAnalytics = {
 	findings: NamedValue[];
 	codes: NamedValue[];
 	scorecards: ScorecardItem[];
-	calendarDays: { day: number; count: number; tone: "due" | "done" | "upcoming" }[];
+	calendarDays: {
+		day: number;
+		count: number;
+		tone: "due" | "done" | "upcoming";
+	}[];
 	splitCompare: SplitCompareItem[];
 	capUsedPct: number;
 	capAlertCount: number;
@@ -95,7 +99,10 @@ export function analyticsForPage(
 	const statusMix = (config.statusOptions ?? [])
 		.map((name, i) => ({
 			name,
-			value: Math.max(1, rows.filter((r) => r.status === name).length + (i % 3)),
+			value: Math.max(
+				1,
+				rows.filter((r) => r.status === name).length + (i % 3)
+			),
 		}))
 		.filter((d) => d.value > 0);
 
@@ -108,7 +115,9 @@ export function analyticsForPage(
 	const measures: MeasureTile[] = [
 		{
 			id: "m1",
-			label: config.slug.includes("hedis") ? "CBP — Blood Pressure" : "Cardiovascular",
+			label: config.slug.includes("hedis")
+				? "CBP — Blood Pressure"
+				: "Cardiovascular",
 			actual: 74 + (seed % 12),
 			target: 80,
 			unit: "%",
@@ -124,7 +133,9 @@ export function analyticsForPage(
 		},
 		{
 			id: "m3",
-			label: config.slug.includes("hedis") ? "WCC — Weight Counseling" : "Respiratory",
+			label: config.slug.includes("hedis")
+				? "WCC — Weight Counseling"
+				: "Respiratory",
 			actual: 66 + (seed % 10),
 			target: 75,
 			unit: "%",
@@ -132,7 +143,9 @@ export function analyticsForPage(
 		},
 		{
 			id: "m4",
-			label: config.slug.includes("hedis") ? "PPC — Prenatal Care" : "Behavioral",
+			label: config.slug.includes("hedis")
+				? "PPC — Prenatal Care"
+				: "Behavioral",
 			actual: 88 + (seed % 6),
 			target: 85,
 			unit: "%",
@@ -169,13 +182,16 @@ export function analyticsForPage(
 		volume: 40 + ((seed + i * 9) % 80),
 	}));
 
-	const calendarDays = Array.from({ length: 31 }, (_, i) => {
-		const day = i + 1;
-		const count = (seed + day) % 5;
-		const tone =
-			count === 0 ? "upcoming" : count > 2 ? "due" : ("done" as const);
-		return { day, count, tone };
-	});
+	const calendarDays: PageAnalytics["calendarDays"] = Array.from(
+		{ length: 31 },
+		(_, i) => {
+			const day = i + 1;
+			const count = (seed + day) % 5;
+			const tone: "due" | "done" | "upcoming" =
+				count === 0 ? "upcoming" : count > 2 ? "due" : "done";
+			return { day, count, tone };
+		}
+	);
 
 	const splitCompare: SplitCompareItem[] = [
 		{
@@ -196,7 +212,9 @@ export function analyticsForPage(
 
 	const topVendor = vendorBars.sort((a, b) => b.value - a.value)[0];
 	const riskRows = rows.filter((r) =>
-		/reject|exception|overdue|denied|finding|late|cap alert|gap|at risk/i.test(r.status)
+		/reject|exception|overdue|denied|finding|late|cap alert|gap|at risk/i.test(
+			r.status
+		)
 	).length;
 
 	const insights = [

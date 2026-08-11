@@ -35,9 +35,9 @@ import {
 	ISSUER_FILE_TYPES,
 	ISSUER_NAME_OPTIONS,
 	ISSUER_STATUS_OPTIONS,
-	filterIssuerHhsFiles,
 	type TrackFileFilters,
 	type TrackedFileRow,
+	filterIssuerHhsFiles,
 } from "@/features/admin/features/claim-encounter/file-management/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
@@ -126,7 +126,9 @@ function IssuerHhsFilterPanel({
 					</div>
 
 					<div className="space-y-1">
-						<label className="text-xs font-semibold text-foreground">Status</label>
+						<label className="text-xs font-semibold text-foreground">
+							Status
+						</label>
 						<Select
 							value={filters.status}
 							onValueChange={(value) => onChange({ ...filters, status: value })}

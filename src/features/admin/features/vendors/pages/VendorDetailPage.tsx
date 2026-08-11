@@ -65,6 +65,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { AuditTrailView } from "@/features/admin/features/audit-trail/components/AuditTrailView";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
@@ -75,7 +76,6 @@ import {
 import type { VendorStatus } from "@/features/shared/vms/types";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";

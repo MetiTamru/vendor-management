@@ -4,12 +4,6 @@ import { useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +21,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useInvalidateVendorCore,
@@ -83,14 +83,9 @@ function UsersLiveBody() {
 		});
 	}, [eventsQ.data, search]);
 
-	const loading =
-		tab === "users"
-			? usersQ.isLoading
-			: eventsQ.isLoading;
+	const loading = tab === "users" ? usersQ.isLoading : eventsQ.isLoading;
 	const error =
-		tab === "users"
-			? usersQ.error?.message
-			: eventsQ.error?.message;
+		tab === "users" ? usersQ.error?.message : eventsQ.error?.message;
 
 	return (
 		<VendorCoreLiveChrome
@@ -106,9 +101,7 @@ function UsersLiveBody() {
 					<button
 						type="button"
 						className={`rounded px-3 py-1.5 text-sm ${
-							tab === "users"
-								? "bg-muted font-medium"
-								: "text-muted-foreground"
+							tab === "users" ? "bg-muted font-medium" : "text-muted-foreground"
 						}`}
 						onClick={() => setTab("users")}
 					>
@@ -173,7 +166,9 @@ function UsersLiveBody() {
 									<TableCell className="font-medium">
 										{u.full_name || `${u.first_name} ${u.last_name}`.trim()}
 									</TableCell>
-									<TableCell className="font-mono text-xs">{u.username}</TableCell>
+									<TableCell className="font-mono text-xs">
+										{u.username}
+									</TableCell>
 									<TableCell>{u.email}</TableCell>
 									<TableCell>
 										<div className="flex flex-wrap gap-1">
@@ -185,9 +180,7 @@ function UsersLiveBody() {
 										</div>
 									</TableCell>
 									<TableCell>
-										<StatusBadge
-											status={u.is_active ? "active" : "inactive"}
-										/>
+										<StatusBadge status={u.is_active ? "active" : "inactive"} />
 									</TableCell>
 								</TableRow>
 							))}
@@ -216,9 +209,7 @@ function UsersLiveBody() {
 							{events.map((ev) => (
 								<TableRow key={String(ev.id)}>
 									<TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-										{ev.datetime
-											? new Date(ev.datetime).toLocaleString()
-											: "—"}
+										{ev.datetime ? new Date(ev.datetime).toLocaleString() : "—"}
 									</TableCell>
 									<TableCell className="font-medium">
 										{eventUserLabel(ev)}

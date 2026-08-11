@@ -30,7 +30,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import {
 	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
@@ -38,6 +37,7 @@ import {
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import {
 	MEASURE_LIBRARY_FILTERS,
 	MEASURE_LIBRARY_ROWS,
@@ -46,7 +46,8 @@ import {
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
 function StatusPill({ status }: { status: MeasureListItem["status"] }) {
@@ -71,7 +72,11 @@ function TrendCell({ value }: { value: number }) {
 				up ? "text-emerald-700" : "text-red-600"
 			)}
 		>
-			{up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
+			{up ? (
+				<ArrowUpRight className="size-3.5" />
+			) : (
+				<ArrowDownRight className="size-3.5" />
+			)}
 			{Math.abs(value).toFixed(1)}%
 		</span>
 	);
@@ -89,8 +94,7 @@ export function MeasureLibraryPage() {
 			if (statusFilter !== "All" && row.status !== statusFilter) return false;
 			if (!q) return true;
 			return (
-				row.id.toLowerCase().includes(q) ||
-				row.name.toLowerCase().includes(q)
+				row.id.toLowerCase().includes(q) || row.name.toLowerCase().includes(q)
 			);
 		});
 	}, [search, measureSet, statusFilter]);
@@ -102,13 +106,12 @@ export function MeasureLibraryPage() {
 				description="Browse HEDIS and quality measures, review compliance rates, and open measure specifications."
 			/>
 
-			<CmsEdgeSectionPanel
-				title="1. Measure Selection"
-				bodyClassName="p-4"
-			>
+			<CmsEdgeSectionPanel title="1. Measure Selection" bodyClassName="p-4">
 				<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
 					<div className="space-y-1.5">
-						<p className="text-[11px] font-medium text-muted-foreground">Measurement Year</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Measurement Year
+						</p>
 						<Select defaultValue={MEASURE_LIBRARY_FILTERS.measurementYears[0]}>
 							<SelectTrigger className="h-9 text-xs">
 								<SelectValue />
@@ -123,7 +126,9 @@ export function MeasureLibraryPage() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="text-[11px] font-medium text-muted-foreground">Plan</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Plan
+						</p>
 						<Select defaultValue="All Plans">
 							<SelectTrigger className="h-9 text-xs">
 								<SelectValue />
@@ -138,7 +143,9 @@ export function MeasureLibraryPage() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="text-[11px] font-medium text-muted-foreground">Line of Business</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Line of Business
+						</p>
 						<Select defaultValue="All">
 							<SelectTrigger className="h-9 text-xs">
 								<SelectValue />
@@ -153,7 +160,9 @@ export function MeasureLibraryPage() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="text-[11px] font-medium text-muted-foreground">Measure Set</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Measure Set
+						</p>
 						<Select value={measureSet} onValueChange={setMeasureSet}>
 							<SelectTrigger className="h-9 text-xs">
 								<SelectValue />
@@ -168,7 +177,9 @@ export function MeasureLibraryPage() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="text-[11px] font-medium text-muted-foreground">Measure Status</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Measure Status
+						</p>
 						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="h-9 text-xs">
 								<SelectValue />
@@ -183,7 +194,9 @@ export function MeasureLibraryPage() {
 						</Select>
 					</div>
 					<div className="space-y-1.5 xl:col-span-1">
-						<p className="text-[11px] font-medium text-muted-foreground">Search Measure</p>
+						<p className="text-[11px] font-medium text-muted-foreground">
+							Search Measure
+						</p>
 						<div className="relative">
 							<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
 							<Input
@@ -199,41 +212,59 @@ export function MeasureLibraryPage() {
 
 			<CmsEdgeSectionPanel title="2. Measures List" bodyClassName="p-0">
 				<CmsEdgeTableScroll>
-					<Table className={CMS_EDGE_TABLE_CLASS} containerClassName={CMS_EDGE_TABLE_CONTAINER}>
+					<Table
+						className={CMS_EDGE_TABLE_CLASS}
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					>
 						<TableHeader>
 							<TableRow>
 								<TableHead className={TABLE_HEAD}>Measure ID</TableHead>
 								<TableHead className={TABLE_HEAD}>Measure Name</TableHead>
 								<TableHead className={TABLE_HEAD}>Measure Set</TableHead>
 								<TableHead className={TABLE_HEAD}>Domain</TableHead>
-								<TableHead className={TABLE_HEAD}>Eligible Population</TableHead>
+								<TableHead className={TABLE_HEAD}>
+									Eligible Population
+								</TableHead>
 								<TableHead className={TABLE_HEAD}>Status</TableHead>
 								<TableHead className={TABLE_HEAD}>Compliance Rate</TableHead>
 								<TableHead className={TABLE_HEAD}>vs MY 2024</TableHead>
 								<TableHead className={TABLE_HEAD}>Last Calculated</TableHead>
-								<TableHead className={cn(TABLE_HEAD, "text-right")}>Actions</TableHead>
+								<TableHead className={cn(TABLE_HEAD, "text-right")}>
+									Actions
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{filteredRows.map((row) => (
 								<TableRow key={row.id} className="hover:bg-muted/20">
-									<TableCell className={cn(TABLE_CELL, "font-mono text-[11px] font-semibold")}>
+									<TableCell
+										className={cn(
+											TABLE_CELL,
+											"font-mono text-[11px] font-semibold"
+										)}
+									>
 										{row.id}
 									</TableCell>
 									<TableCell className={TABLE_CELL}>{row.name}</TableCell>
 									<TableCell className={TABLE_CELL}>{row.measureSet}</TableCell>
 									<TableCell className={TABLE_CELL}>{row.domain}</TableCell>
-									<TableCell className={TABLE_CELL}>{row.eligiblePopulation}</TableCell>
+									<TableCell className={TABLE_CELL}>
+										{row.eligiblePopulation}
+									</TableCell>
 									<TableCell className={TABLE_CELL}>
 										<StatusPill status={row.status} />
 									</TableCell>
-									<TableCell className={cn(TABLE_CELL, "font-semibold tabular-nums")}>
+									<TableCell
+										className={cn(TABLE_CELL, "font-semibold tabular-nums")}
+									>
 										{row.complianceRate.toFixed(1)}%
 									</TableCell>
 									<TableCell className={TABLE_CELL}>
 										<TrendCell value={row.vsPriorYear} />
 									</TableCell>
-									<TableCell className={TABLE_CELL}>{row.lastCalculated}</TableCell>
+									<TableCell className={TABLE_CELL}>
+										{row.lastCalculated}
+									</TableCell>
 									<TableCell className={cn(TABLE_CELL, "text-right")}>
 										<div className="flex items-center justify-end gap-1">
 											<Button
@@ -292,8 +323,8 @@ export function MeasureLibraryPage() {
 						Select a measure from the list above to view details.
 					</p>
 					<p className="max-w-lg text-xs leading-relaxed text-muted-foreground">
-						Measure details include specifications, performance, gap summary, provider
-						performance, and associated activities.
+						Measure details include specifications, performance, gap summary,
+						provider performance, and associated activities.
 					</p>
 				</div>
 			</CmsEdgeSectionPanel>

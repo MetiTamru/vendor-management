@@ -45,7 +45,8 @@ async function proxy(req: NextRequest, pathParts: string[]) {
 	try {
 		upstream = await fetch(url.toString(), init);
 	} catch (err) {
-		const message = err instanceof Error ? err.message : "Upstream fetch failed";
+		const message =
+			err instanceof Error ? err.message : "Upstream fetch failed";
 		return NextResponse.json(
 			{
 				status: "error",

@@ -6,7 +6,7 @@
  *   node scripts/smoke-vendor-core.mjs
  *   VENDOR_CORE_USER=admin VENDOR_CORE_PASSWORD=secret node scripts/smoke-vendor-core.mjs
  */
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 function loadEnvFile(filePath) {

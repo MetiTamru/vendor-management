@@ -2,8 +2,8 @@
 
 import { Construction } from "lucide-react";
 
-import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { CmsEdgeSectionPanel } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 
 export function QualityPerformancePlaceholderPage({
 	title,
@@ -20,7 +20,9 @@ export function QualityPerformancePlaceholderPage({
 					<div className="flex size-12 items-center justify-center rounded-full bg-muted">
 						<Construction className="size-5 text-muted-foreground" />
 					</div>
-					<p className="text-sm font-medium text-foreground">This section is coming soon</p>
+					<p className="text-sm font-medium text-foreground">
+						This section is coming soon
+					</p>
 					<p className="max-w-md text-xs text-muted-foreground">
 						{description}
 					</p>
