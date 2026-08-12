@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
 	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgeTableScroll,
@@ -7,15 +8,14 @@ import {
 import {
 	COMPLIANCE_PROGRAM_COLORS,
 	COMPLIANCE_PROGRAM_LABELS,
+	type CalendarScheduleItem,
 	complianceProgramPillClass,
 	complianceStatusPillClass,
 	getScheduleForWeek,
 	getScheduleListGroups,
-	type CalendarScheduleItem,
 } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 function ScheduleChip({ item }: { item: CalendarScheduleItem }) {
 	const href = item.obligationId
@@ -31,7 +31,9 @@ function ScheduleChip({ item }: { item: CalendarScheduleItem }) {
 			<p className="line-clamp-2 text-[10px] font-semibold leading-snug text-foreground">
 				{item.title}
 			</p>
-			<p className="mt-0.5 text-[9px] text-muted-foreground">{item.obligationType}</p>
+			<p className="mt-0.5 text-[9px] text-muted-foreground">
+				{item.obligationType}
+			</p>
 		</div>
 	);
 
@@ -88,7 +90,9 @@ export function ComplianceCalendarWeekView() {
 								<span className="text-[10px] text-muted-foreground/50">—</span>
 							</div>
 						) : (
-							day.items.map((item) => <ScheduleChip key={item.id} item={item} />)
+							day.items.map((item) => (
+								<ScheduleChip key={item.id} item={item} />
+							))
 						)}
 					</div>
 				))}
@@ -110,14 +114,18 @@ function ListRow({ item }: { item: CalendarScheduleItem }) {
 			/>
 			<div className="min-w-0 flex-1">
 				{href ? (
-					<Link href={href} className="text-xs font-semibold text-primary hover:underline">
+					<Link
+						href={href}
+						className="text-xs font-semibold text-primary hover:underline"
+					>
 						{item.title}
 					</Link>
 				) : (
 					<p className="text-xs font-semibold text-foreground">{item.title}</p>
 				)}
 				<p className="text-[10px] text-muted-foreground">
-					{COMPLIANCE_PROGRAM_LABELS[item.program]} • {item.obligationType} • {item.owner}
+					{COMPLIANCE_PROGRAM_LABELS[item.program]} • {item.obligationType} •{" "}
+					{item.owner}
 				</p>
 			</div>
 			<span
@@ -138,9 +146,16 @@ function ListRow({ item }: { item: CalendarScheduleItem }) {
 			>
 				{item.status}
 			</span>
-			<span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{item.dueDate}</span>
+			<span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+				{item.dueDate}
+			</span>
 			{href ? (
-				<Button variant="link" size="sm" className="h-auto shrink-0 px-0 text-[11px]" asChild>
+				<Button
+					variant="link"
+					size="sm"
+					className="h-auto shrink-0 px-0 text-[11px]"
+					asChild
+				>
 					<Link href={href}>View</Link>
 				</Button>
 			) : null}
@@ -157,9 +172,12 @@ export function ComplianceCalendarListView() {
 				{groups.map((group) => (
 					<section key={group.key}>
 						<div className="sticky top-0 z-10 border-b border-border/40 bg-muted/40 px-4 py-2">
-							<p className="text-xs font-semibold text-foreground">{group.label}</p>
+							<p className="text-xs font-semibold text-foreground">
+								{group.label}
+							</p>
 							<p className="text-[10px] text-muted-foreground">
-								{group.items.length} obligation{group.items.length === 1 ? "" : "s"}
+								{group.items.length} obligation
+								{group.items.length === 1 ? "" : "s"}
 							</p>
 						</div>
 						{group.items.map((item) => (

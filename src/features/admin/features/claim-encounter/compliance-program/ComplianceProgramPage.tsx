@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	Accessibility,
@@ -19,10 +19,6 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-	ClaimKpiGrid,
-	ClaimPageHeader,
-} from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { ComplianceFilterBar } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceFilterBar";
 import { CompliancePageSection } from "@/features/admin/features/claim-encounter/compliance-program/CompliancePageSections";
 import { ComplianceQueueTable } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceQueueTable";
@@ -42,6 +38,10 @@ import {
 	rowsForComplianceProgramPage,
 	statsForRows,
 } from "@/features/admin/features/claim-encounter/compliance-program/mock-data";
+import {
+	ClaimKpiGrid,
+	ClaimPageHeader,
+} from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -169,9 +169,7 @@ function SectionLayout({
 							: "grid-cols-1"
 					)}
 				>
-					<div className="min-w-0">
-						{renderSectionBlock(tableSection, ctx)}
-					</div>
+					<div className="min-w-0">{renderSectionBlock(tableSection, ctx)}</div>
 					{pieSection ? (
 						<div className="min-w-0 xl:sticky xl:top-4">
 							{renderSectionBlock(pieSection, ctx, "sidebar")}
@@ -210,7 +208,10 @@ export function ComplianceProgramPage({ slug }: { slug: string }) {
 		[config, baseRows]
 	);
 
-	const stats = useMemo(() => statsForRows(baseRows, config), [baseRows, config]);
+	const stats = useMemo(
+		() => statsForRows(baseRows, config),
+		[baseRows, config]
+	);
 
 	const analytics = useMemo(
 		() => analyticsForPage(config, programFilter, baseRows),
@@ -234,10 +235,7 @@ export function ComplianceProgramPage({ slug }: { slug: string }) {
 
 	return (
 		<div className="space-y-4">
-			<ClaimPageHeader
-				title={config.title}
-				description={config.description}
-			/>
+			<ClaimPageHeader title={config.title} description={config.description} />
 
 			<ClaimKpiGrid
 				items={stats.map((item) => ({

@@ -106,9 +106,7 @@ export function VendorActionsMenu({
 	const editOpen = editOpenProp ?? editOpenUncontrolled;
 	const setEditOpen = onEditOpenChange ?? setEditOpenUncontrolled;
 	const [busy, setBusy] = useState(false);
-	const [confirmMode, setConfirmMode] = useState<"soft" | "hard" | null>(
-		null
-	);
+	const [confirmMode, setConfirmMode] = useState<"soft" | "hard" | null>(null);
 	const [form, setForm] = useState({
 		legalName: vendor.legalName || vendor.name,
 		tradeName: vendor.tradeName ?? "",

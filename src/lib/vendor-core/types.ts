@@ -370,9 +370,7 @@ export function refId(
 	return value.id;
 }
 
-export function normalizeVendor(
-	raw: Record<string, unknown>
-): VendorDto {
+export function normalizeVendor(raw: Record<string, unknown>): VendorDto {
 	const vendor_code = String(raw.vendor_code ?? raw.code ?? "");
 	const legal_name = String(raw.legal_name ?? raw.name ?? "");
 	return {
@@ -476,7 +474,9 @@ export function normalizeAccount(raw: Record<string, unknown>): AccountDto {
 		account_code,
 		code: account_code,
 		name: String(raw.name ?? account_code),
-		status: String(raw.status ?? (raw.active === false ? "inactive" : "active")),
+		status: String(
+			raw.status ?? (raw.active === false ? "inactive" : "active")
+		),
 	};
 }
 
@@ -493,8 +493,7 @@ export function normalizeInboundFile(
 		stage: String(raw.stage ?? "unknown"),
 		vendor,
 		vendor_id: refId(vendor),
-		error_count:
-			raw.error_count != null ? Number(raw.error_count) : undefined,
+		error_count: raw.error_count != null ? Number(raw.error_count) : undefined,
 		source: raw.source != null ? String(raw.source) : undefined,
 		detected_type:
 			raw.detected_type != null ? String(raw.detected_type) : undefined,
@@ -637,7 +636,9 @@ export function normalizeValidationResult(
 	const inbound_file = raw.inbound_file as string | { id: string } | null;
 	return {
 		...(raw as unknown as ValidationResultDto),
-		id: String(raw.id ?? `${raw.code ?? "val"}-${raw.line_number ?? raw.line ?? 0}`),
+		id: String(
+			raw.id ?? `${raw.code ?? "val"}-${raw.line_number ?? raw.line ?? 0}`
+		),
 		inbound_file_id:
 			refId(inbound_file) ??
 			(raw.inbound_file_id != null ? String(raw.inbound_file_id) : null),
@@ -653,19 +654,21 @@ export function normalizeValidationResult(
 		code: pickString(raw, "code", "error_code") || undefined,
 		error_code: pickString(raw, "error_code", "code") || undefined,
 		message:
-			pickString(raw, "message", "description", "detail", "business_explanation") ||
-			undefined,
-		description: pickString(raw, "description", "message", "detail") || undefined,
+			pickString(
+				raw,
+				"message",
+				"description",
+				"detail",
+				"business_explanation"
+			) || undefined,
+		description:
+			pickString(raw, "description", "message", "detail") || undefined,
 		field: pickString(raw, "field", "field_name") || null,
 		field_name: pickString(raw, "field_name", "field") || null,
 		line: pickNumber(raw, "line", "line_number"),
 		line_number: pickNumber(raw, "line_number", "line"),
-		member_id:
-			pickString(raw, "member_id", "subscriber_id") ||
-			null,
-		subscriber_id:
-			pickString(raw, "subscriber_id", "member_id") ||
-			null,
+		member_id: pickString(raw, "member_id", "subscriber_id") || null,
+		subscriber_id: pickString(raw, "subscriber_id", "member_id") || null,
 		received_value:
 			raw.received_value != null ? String(raw.received_value) : null,
 		expected_value:
@@ -695,11 +698,11 @@ export function normalizeErrorRecord(
 			undefined,
 		detail: pickString(raw, "detail") || undefined,
 		business_explanation: pickString(raw, "business_explanation") || undefined,
-		technical_message: pickString(raw, "technical_message", "message") || undefined,
+		technical_message:
+			pickString(raw, "technical_message", "message") || undefined,
 		recommended_action: pickString(raw, "recommended_action") || undefined,
 		retry_eligible: raw.retry_eligible === true,
-		retry_count:
-			raw.retry_count != null ? Number(raw.retry_count) : undefined,
+		retry_count: raw.retry_count != null ? Number(raw.retry_count) : undefined,
 		inbound_file_id:
 			refId(raw.inbound_file as string | { id: string } | null) ??
 			(raw.inbound_file_id != null ? String(raw.inbound_file_id) : null),
@@ -806,8 +809,7 @@ export function normalizeClaimLine(raw: Record<string, unknown>): ClaimLineDto {
 		claim_reference_id: String(
 			raw.claim_reference_id ?? raw.claim_id ?? raw.id ?? ""
 		),
-		line_number:
-			raw.line_number != null ? Number(raw.line_number) : undefined,
+		line_number: raw.line_number != null ? Number(raw.line_number) : undefined,
 		procedure_code: pickString(raw, "procedure_code") || null,
 		revenue_code: pickString(raw, "revenue_code") || null,
 		service_date: pickString(raw, "service_date") || null,

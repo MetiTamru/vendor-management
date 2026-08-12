@@ -7,8 +7,8 @@ import {
 	BarChart3,
 	CheckCircle2,
 	ClipboardList,
-	Users,
 	type LucideIcon,
+	Users,
 } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
@@ -36,14 +36,31 @@ import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";
 const SECTION_GAP = "gap-4";
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
 const MEMBER_SEGMENTS = [
-	{ name: "HCC Captured", pct: MEDICARE_RISK_ADJUSTMENT_KPIS.hccCapturedPct, color: "#22c55e" },
-	{ name: "Suspect Conditions", pct: MEDICARE_RISK_ADJUSTMENT_KPIS.suspectPct, color: "#94a3b8" },
-	{ name: "Potential Gaps", pct: MEDICARE_RISK_ADJUSTMENT_KPIS.gapsPct, color: "#ef4444" },
-	{ name: "No HCC", pct: MEDICARE_RISK_ADJUSTMENT_KPIS.noHccPct, color: "#f59e0b" },
+	{
+		name: "HCC Captured",
+		pct: MEDICARE_RISK_ADJUSTMENT_KPIS.hccCapturedPct,
+		color: "#22c55e",
+	},
+	{
+		name: "Suspect Conditions",
+		pct: MEDICARE_RISK_ADJUSTMENT_KPIS.suspectPct,
+		color: "#94a3b8",
+	},
+	{
+		name: "Potential Gaps",
+		pct: MEDICARE_RISK_ADJUSTMENT_KPIS.gapsPct,
+		color: "#ef4444",
+	},
+	{
+		name: "No HCC",
+		pct: MEDICARE_RISK_ADJUSTMENT_KPIS.noHccPct,
+		color: "#f59e0b",
+	},
 ];
 
 function MetricCard({
@@ -64,7 +81,12 @@ function MetricCard({
 	return (
 		<div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-sm">
 			<div className="flex items-center gap-3">
-				<div className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", tone)}>
+				<div
+					className={cn(
+						"flex size-8 shrink-0 items-center justify-center rounded-md",
+						tone
+					)}
+				>
 					<Icon className="size-4" aria-hidden />
 				</div>
 				<div className="min-w-0 flex-1">
@@ -80,7 +102,9 @@ function MetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -146,37 +170,73 @@ function HccCaptureTablePanel() {
 	return (
 		<CmsEdgeSectionPanel title="HCC Capture by Category">
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Category</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Captured</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Suspected</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Gaps</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Target</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-5 text-right")}>Capture Rate</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Captured
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Suspected
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Gaps
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Target
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-5 text-right")}>
+								Capture Rate
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_RISK_ADJUSTMENT_HCC_CATEGORIES.map((row) => (
-							<TableRow key={row.category} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.category}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+							<TableRow
+								key={row.category}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.category}
+								</TableCell>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(row.captured)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums text-muted-foreground")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"text-right tabular-nums text-muted-foreground"
+									)}
+								>
 									{formatCount(row.suspected)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(row.gaps)}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.target.toFixed(1)}%
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-5 text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-5 text-right tabular-nums")}
+								>
 									<span
 										className={cn(
-											row.rate >= row.target ? "text-emerald-700" : "text-amber-600"
+											row.rate >= row.target
+												? "text-emerald-700"
+												: "text-amber-600"
 										)}
 									>
 										{row.rate.toFixed(1)}%
@@ -233,7 +293,10 @@ function MemberSegmentsDonutPanel() {
 				</div>
 				<ul className="flex min-w-0 flex-1 flex-col justify-center gap-3 py-1 text-xs leading-relaxed">
 					{MEMBER_SEGMENTS.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-4">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-4"
+						>
 							<span className="flex min-w-0 items-center gap-2 font-medium">
 								<span
 									className="size-2 shrink-0 rounded-full"
@@ -241,7 +304,9 @@ function MemberSegmentsDonutPanel() {
 								/>
 								{item.name}
 							</span>
-							<span className="shrink-0 tabular-nums text-muted-foreground">{item.pct}%</span>
+							<span className="shrink-0 tabular-nums text-muted-foreground">
+								{item.pct}%
+							</span>
 						</li>
 					))}
 				</ul>
@@ -254,7 +319,12 @@ export function MedicareRiskAdjustmentTab() {
 	return (
 		<div className={PAGE_STACK}>
 			<RiskAdjustmentKpiRow />
-			<div className={cn("grid grid-cols-1 items-start lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-start lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]",
+					SECTION_GAP
+				)}
+			>
 				<HccCaptureTablePanel />
 				<MemberSegmentsDonutPanel />
 			</div>

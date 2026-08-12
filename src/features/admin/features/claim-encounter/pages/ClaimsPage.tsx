@@ -42,6 +42,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { usePagedRows } from "@/features/admin/features/claim-encounter/components/ClaimQueueChrome";
 import { EdiViewerDialog } from "@/features/admin/features/claim-encounter/edi";
@@ -56,11 +57,10 @@ import {
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
-import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
+import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const MEMBER_NAMES = [
@@ -578,9 +578,7 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 				</div>
 			) : null}
 
-			{useLive &&
-			!claimLinesQ.isLoading &&
-			allRows.length === 0 ? (
+			{useLive && !claimLinesQ.isLoading && allRows.length === 0 ? (
 				<div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
 					No claim lines returned from vendor-core yet. Run{" "}
 					<code className="rounded bg-muted px-1 py-0.5 text-xs">

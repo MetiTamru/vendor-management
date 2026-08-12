@@ -11,11 +11,11 @@ import {
 	FileCheck,
 	Filter,
 	HeartPulse,
+	type LucideIcon,
 	RefreshCw,
 	Scale,
 	ShieldCheck,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	Area,
@@ -23,9 +23,9 @@ import {
 	CartesianGrid,
 	Legend,
 	Line,
-	LineChart as RechartsLineChart,
 	Pie,
 	PieChart,
+	LineChart as RechartsLineChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -69,9 +69,9 @@ import {
 	EXECUTIVE_OPERATIONAL_HEALTH,
 	EXECUTIVE_REPORTING_PERIODS,
 	EXECUTIVE_TOP_VENDORS,
-	executiveStatusPillClass,
 	type ExecutiveAlertSeverity,
 	type ExecutiveDomain,
+	executiveStatusPillClass,
 } from "@/features/admin/features/claim-encounter/executive-analytics/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -93,7 +93,11 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 
 function PanelLink({ children }: { children: ReactNode }) {
 	return (
-		<Button variant="link" size="sm" className="h-7 px-0 text-xs font-medium text-primary">
+		<Button
+			variant="link"
+			size="sm"
+			className="h-7 px-0 text-xs font-medium text-primary"
+		>
 			{children}
 		</Button>
 	);
@@ -118,7 +122,12 @@ function DeltaHint({
 		: "text-red-600";
 
 	return (
-		<span className={cn("inline-flex items-center gap-0.5 text-[11px] font-medium", tone)}>
+		<span
+			className={cn(
+				"inline-flex items-center gap-0.5 text-[11px] font-medium",
+				tone
+			)}
+		>
 			<Icon className="size-3" />
 			{delta} {suffix}
 		</span>
@@ -135,7 +144,8 @@ function KpiAreaChart({
 	variant?: "primary" | "danger";
 }) {
 	const chartData = data.map((value, index) => ({ index, value }));
-	const color = variant === "danger" ? "hsl(var(--destructive))" : "hsl(var(--primary))";
+	const color =
+		variant === "danger" ? "hsl(var(--destructive))" : "hsl(var(--primary))";
 	const config = {
 		value: { label: "Value", color },
 	} satisfies ChartConfig;
@@ -145,11 +155,22 @@ function KpiAreaChart({
 			config={config}
 			className="pointer-events-none absolute inset-x-0 bottom-5 aspect-auto h-[52px] w-full"
 		>
-			<AreaChart data={chartData} margin={{ top: 6, right: 0, left: 0, bottom: 0 }}>
+			<AreaChart
+				data={chartData}
+				margin={{ top: 6, right: 0, left: 0, bottom: 0 }}
+			>
 				<defs>
 					<linearGradient id={`kpi-fill-${id}`} x1="0" y1="0" x2="0" y2="1">
-						<stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.35} />
-						<stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.05} />
+						<stop
+							offset="5%"
+							stopColor="var(--color-value)"
+							stopOpacity={0.35}
+						/>
+						<stop
+							offset="95%"
+							stopColor="var(--color-value)"
+							stopOpacity={0.05}
+						/>
 					</linearGradient>
 				</defs>
 				<Area
@@ -209,7 +230,9 @@ function OperationalHealthGauge() {
 					<p className="text-lg font-bold tabular-nums leading-none text-foreground">
 						{score}/{maxScore}
 					</p>
-					<p className="mt-0.5 text-[11px] font-semibold text-emerald-700">{label}</p>
+					<p className="mt-0.5 text-[11px] font-semibold text-emerald-700">
+						{label}
+					</p>
 				</div>
 			</div>
 			<div className="relative z-10 mt-auto">
@@ -250,7 +273,11 @@ function KpiSparkCard({
 				</p>
 			</div>
 			<div className="relative z-10 mt-auto pt-1">
-				<DeltaHint delta={delta} positive={deltaPositive} useBlue={deltaPositive} />
+				<DeltaHint
+					delta={delta}
+					positive={deltaPositive}
+					useBlue={deltaPositive}
+				/>
 			</div>
 		</div>
 	);
@@ -310,13 +337,17 @@ function AlertIcon({ severity }: { severity: ExecutiveAlertSeverity }) {
 	if (severity === "critical") {
 		return (
 			<div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-red-100">
-				<span className="text-[11px] font-bold leading-none text-red-600">!</span>
+				<span className="text-[11px] font-bold leading-none text-red-600">
+					!
+				</span>
 			</div>
 		);
 	}
 	return (
 		<div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100">
-			<span className="text-[11px] font-bold leading-none text-amber-700">!</span>
+			<span className="text-[11px] font-bold leading-none text-amber-700">
+				!
+			</span>
 		</div>
 	);
 }
@@ -334,7 +365,9 @@ function TopVendorRow({
 }) {
 	return (
 		<div className="flex items-center gap-3 border-b border-border/40 px-4 py-2.5 last:border-b-0">
-			<span className="w-[72px] shrink-0 text-xs font-semibold text-foreground">{name}</span>
+			<span className="w-[72px] shrink-0 text-xs font-semibold text-foreground">
+				{name}
+			</span>
 			<span className="w-12 shrink-0 text-xs font-semibold tabular-nums text-foreground">
 				{rate.toFixed(1)}%
 			</span>
@@ -353,7 +386,11 @@ function TopVendorRow({
 					positive ? "text-emerald-700" : "text-red-600"
 				)}
 			>
-				{positive ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+				{positive ? (
+					<ArrowUpRight className="size-3" />
+				) : (
+					<ArrowDownRight className="size-3" />
+				)}
 				{positive ? "+" : ""}
 				{Math.abs(change).toFixed(1)}%
 			</span>
@@ -373,14 +410,18 @@ export function ExecutiveOverviewPage() {
 			{/* Page header — no bottom border, matches reference */}
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="min-w-0 space-y-1">
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Executive Overview</h1>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">
+						Executive Overview
+					</h1>
 					<p className="text-sm text-muted-foreground">
 						Enterprise-wide operational health and performance summary
 					</p>
 				</div>
 				<div className="flex flex-wrap items-end gap-2">
 					<div className="flex flex-col gap-1">
-						<span className="text-[11px] font-medium text-muted-foreground">Reporting Period</span>
+						<span className="text-[11px] font-medium text-muted-foreground">
+							Reporting Period
+						</span>
 						<Select defaultValue="may-2025">
 							<SelectTrigger className="h-9 w-[188px] bg-card text-xs shadow-sm">
 								<SelectValue />
@@ -395,7 +436,9 @@ export function ExecutiveOverviewPage() {
 						</Select>
 					</div>
 					<div className="flex flex-col gap-1">
-						<span className="text-[11px] font-medium text-muted-foreground">Compare To</span>
+						<span className="text-[11px] font-medium text-muted-foreground">
+							Compare To
+						</span>
 						<Select defaultValue="apr-2025">
 							<SelectTrigger className="h-9 w-[188px] bg-card text-xs shadow-sm">
 								<SelectValue />
@@ -409,11 +452,20 @@ export function ExecutiveOverviewPage() {
 							</SelectContent>
 						</Select>
 					</div>
-					<Button variant="outline" size="sm" className="h-9 gap-1.5 bg-card text-xs shadow-sm">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9 gap-1.5 bg-card text-xs shadow-sm"
+					>
 						<Filter className="size-3.5" />
 						Filters
 					</Button>
-					<Button variant="outline" size="icon" className="size-9 bg-card shadow-sm" aria-label="More actions">
+					<Button
+						variant="outline"
+						size="icon"
+						className="size-9 bg-card shadow-sm"
+						aria-label="More actions"
+					>
 						<Ellipsis className="size-4" />
 					</Button>
 				</div>
@@ -457,13 +509,20 @@ export function ExecutiveOverviewPage() {
 					bodyClassName="p-0"
 					footer={
 						<div className="flex items-center justify-between border-t border-border/50 px-4 py-2.5 text-xs">
-							<span className="text-muted-foreground">Total Upcoming / Overdue</span>
-							<span className="font-bold text-primary">{upcomingCount} obligations</span>
+							<span className="text-muted-foreground">
+								Total Upcoming / Overdue
+							</span>
+							<span className="font-bold text-primary">
+								{upcomingCount} obligations
+							</span>
 						</div>
 					}
 				>
 					<CmsEdgeTableScroll>
-						<Table className={CMS_EDGE_TABLE_CLASS} containerClassName={CMS_EDGE_TABLE_CONTAINER}>
+						<Table
+							className={CMS_EDGE_TABLE_CLASS}
+							containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						>
 							<TableHeader>
 								<TableRow>
 									<TableHead className={TABLE_HEAD}>Obligation</TableHead>
@@ -476,16 +535,22 @@ export function ExecutiveOverviewPage() {
 							<TableBody>
 								{EXECUTIVE_COMPLIANCE_OBLIGATIONS.map((row) => (
 									<TableRow key={row.id}>
-										<TableCell className={cn(TABLE_CELL, "font-medium text-foreground")}>
+										<TableCell
+											className={cn(TABLE_CELL, "font-medium text-foreground")}
+										>
 											{row.obligation}
 										</TableCell>
 										<TableCell className={TABLE_CELL}>{row.program}</TableCell>
-										<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.dueDate}</TableCell>
+										<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+											{row.dueDate}
+										</TableCell>
 										<TableCell
 											className={cn(
 												TABLE_CELL,
 												"tabular-nums",
-												row.daysLeft < 0 ? "font-bold text-red-600" : "text-foreground"
+												row.daysLeft < 0
+													? "font-bold text-red-600"
+													: "text-foreground"
 											)}
 										>
 											{row.daysLeft}
@@ -526,8 +591,17 @@ export function ExecutiveOverviewPage() {
 									data={targetTrend}
 									margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
 								>
-									<CartesianGrid strokeDasharray="3 3" className="stroke-border/40" vertical={false} />
-									<XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+									<CartesianGrid
+										strokeDasharray="3 3"
+										className="stroke-border/40"
+										vertical={false}
+									/>
+									<XAxis
+										dataKey="month"
+										tick={{ fontSize: 10 }}
+										axisLine={false}
+										tickLine={false}
+									/>
 									<YAxis
 										domain={[80, 100]}
 										tick={{ fontSize: 10 }}
@@ -598,16 +672,30 @@ export function ExecutiveOverviewPage() {
 					</CmsEdgeSectionPanel>
 				}
 				right={
-					<CmsEdgeSectionPanel title="Executive Attention Required" bodyClassName="p-0">
+					<CmsEdgeSectionPanel
+						title="Executive Attention Required"
+						bodyClassName="p-0"
+					>
 						<ul className="divide-y divide-border/40">
 							{EXECUTIVE_ALERTS.map((alert) => (
-								<li key={alert.id} className="flex items-start gap-2.5 px-4 py-3">
+								<li
+									key={alert.id}
+									className="flex items-start gap-2.5 px-4 py-3"
+								>
 									<AlertIcon severity={alert.severity} />
 									<div className="min-w-0 flex-1">
-										<p className="text-xs font-semibold leading-snug text-foreground">{alert.title}</p>
-										<p className="mt-0.5 text-[11px] text-muted-foreground">{alert.detail}</p>
+										<p className="text-xs font-semibold leading-snug text-foreground">
+											{alert.title}
+										</p>
+										<p className="mt-0.5 text-[11px] text-muted-foreground">
+											{alert.detail}
+										</p>
 									</div>
-									<Button variant="link" size="sm" className="h-auto shrink-0 px-0 text-[11px] font-medium">
+									<Button
+										variant="link"
+										size="sm"
+										className="h-auto shrink-0 px-0 text-[11px] font-medium"
+									>
 										View
 									</Button>
 								</li>
@@ -621,7 +709,9 @@ export function ExecutiveOverviewPage() {
 			<div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
 				<div className="flex items-center gap-1.5 text-primary">
 					<RefreshCw className="size-3" aria-hidden />
-					<span className="text-muted-foreground">Last Updated: {EXECUTIVE_DATA_AS_OF}</span>
+					<span className="text-muted-foreground">
+						Last Updated: {EXECUTIVE_DATA_AS_OF}
+					</span>
 				</div>
 				<span>Data refreshed daily</span>
 			</div>

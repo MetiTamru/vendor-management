@@ -16,8 +16,8 @@ import {
 	Info,
 	type LucideIcon,
 	RefreshCw,
-	TriangleAlert,
 	TrendingUp,
+	TriangleAlert,
 } from "lucide-react";
 import {
 	CartesianGrid,
@@ -27,8 +27,8 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -44,17 +44,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	CMS_EDGE_FM_ACTIVITY,
-	CMS_EDGE_FM_CATEGORIES,
-	CMS_EDGE_FM_KPIS,
-	CMS_EDGE_FM_OVERVIEW_MIX,
-	CMS_EDGE_FM_SELECTED_DETAILS,
-	CMS_EDGE_FM_SUMMARY,
-	CMS_EDGE_FM_TREND,
-	FM_COMPLETED_STYLE,
-	formatCurrencyPrecise,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import {
 	CMS_EDGE_PAGE_STACK,
 	CMS_EDGE_TABLE_CELL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
@@ -67,6 +56,17 @@ import {
 	CmsEdgeTableScroll,
 	CmsEdgeTripleRow,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import {
+	CMS_EDGE_FM_ACTIVITY,
+	CMS_EDGE_FM_CATEGORIES,
+	CMS_EDGE_FM_KPIS,
+	CMS_EDGE_FM_OVERVIEW_MIX,
+	CMS_EDGE_FM_SELECTED_DETAILS,
+	CMS_EDGE_FM_SUMMARY,
+	CMS_EDGE_FM_TREND,
+	FM_COMPLETED_STYLE,
+	formatCurrencyPrecise,
+} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
 import { cn } from "@/lib/utils";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -131,7 +131,9 @@ function FmMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -171,7 +173,9 @@ function FmKpiRow() {
 			/>
 			<FmMetricCard
 				label="Last FM Response"
-				value={<span className="text-xs font-semibold">{k.lastFmResponse}</span>}
+				value={
+					<span className="text-xs font-semibold">{k.lastFmResponse}</span>
+				}
 				hint={<PanelLink>View Latest FM Report</PanelLink>}
 				icon={CalendarDays}
 				tone="text-sky-700 bg-sky-500/10"
@@ -244,16 +248,24 @@ function FmSummaryTable() {
 								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 									<SortableHead>Data Received</SortableHead>
 								</TableHead>
-								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+								>
 									Paid Amount
 								</TableHead>
-								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+								>
 									Withholds
 								</TableHead>
-								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+								>
 									Adjustments
 								</TableHead>
-								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+								<TableHead
+									className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+								>
 									Net Payment
 								</TableHead>
 								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
@@ -275,7 +287,9 @@ function FmSummaryTable() {
 											{row.responseFile}
 										</Button>
 									</TableCell>
-									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.responseType}</TableCell>
+									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+										{row.responseType}
+									</TableCell>
 									<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 										<Button
 											variant="link"
@@ -284,19 +298,41 @@ function FmSummaryTable() {
 											{row.relatedSubmission}
 										</Button>
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+									<TableCell
+										className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+									>
 										{row.dataReceived}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"text-right tabular-nums"
+										)}
+									>
 										{formatCurrencyPrecise(row.paidAmount)}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"text-right tabular-nums"
+										)}
+									>
 										{formatCurrencyPrecise(row.withholds)}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"text-right tabular-nums"
+										)}
+									>
 										{formatCurrencyPrecise(row.adjustments)}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"text-right tabular-nums"
+										)}
+									>
 										{formatCurrencyPrecise(row.netPayment)}
 									</TableCell>
 									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4")}>
@@ -415,7 +451,10 @@ function PaymentTrendPanel() {
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-3">
 				<ResponsiveContainer width="100%" height="100%" minHeight={200}>
-					<LineChart data={CMS_EDGE_FM_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={CMS_EDGE_FM_TREND}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
 						<XAxis dataKey="quarter" tick={{ fontSize: 10 }} />
 						<YAxis
@@ -630,7 +669,11 @@ function FinancialDetailsPanel() {
 
 function ActivityIcon({ activity }: { activity: string }) {
 	const key = activity.toLowerCase();
-	if (key.includes("discrepancy") || key.includes("error") || key.includes("failed")) {
+	if (
+		key.includes("discrepancy") ||
+		key.includes("error") ||
+		key.includes("failed")
+	) {
 		return <TriangleAlert className="size-3.5 shrink-0 text-red-500" />;
 	}
 	if (key.includes("withhold")) {
@@ -725,7 +768,11 @@ export function CmsEdgeFinancialTab() {
 		<div className={CMS_EDGE_PAGE_STACK}>
 			<FmKpiRow />
 
-			<CmsEdgeSplitRow wideMain main={<FmSummaryTable />} side={<FmOverviewPanel />} />
+			<CmsEdgeSplitRow
+				wideMain
+				main={<FmSummaryTable />}
+				side={<FmOverviewPanel />}
+			/>
 
 			<CmsEdgeTripleRow
 				left={<PaymentTrendPanel />}

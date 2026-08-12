@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	ChevronLeft,
@@ -32,8 +32,17 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { NoFileSelectedIllustration } from "@/features/admin/features/claim-encounter/file-management/NoFileSelectedIllustration";
+import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import {
+	type ClaimSearchFilters,
+	type ClaimSearchRow,
 	DEFAULT_ENROLLMENT_FILTERS,
+	type EnrolleeSearchFilters,
+	type EnrolleeSearchRow,
+	type EnrollmentReportFilters,
+	type EnrollmentReportRow,
+	type ErrorSummaryFilters,
+	type ErrorSummaryRow,
 	REPORT_CLAIM_TYPES,
 	REPORT_ENROLLEE_STATUS_OPTIONS,
 	REPORT_ERROR_FILE_TYPES,
@@ -42,26 +51,17 @@ import {
 	REPORT_ISSUER_ID_OPTIONS,
 	REPORT_ISSUER_OPTIONS,
 	REPORT_PROCESS_OPTIONS,
+	type ReportTabId,
 	filterClaimSearchRows,
-	filterEnrollmentReportRows,
 	filterEnrolleeSearchRows,
+	filterEnrollmentReportRows,
 	filterErrorSummaryRows,
 	getReportTabLayout,
 	mockClaimSearchRows,
-	mockEnrollmentReportRows,
 	mockEnrolleeSearchRows,
+	mockEnrollmentReportRows,
 	mockErrorSummaryRows,
-	type ClaimSearchFilters,
-	type ClaimSearchRow,
-	type EnrollmentReportFilters,
-	type EnrollmentReportRow,
-	type EnrolleeSearchFilters,
-	type EnrolleeSearchRow,
-	type ErrorSummaryFilters,
-	type ErrorSummaryRow,
-	type ReportTabId,
 } from "@/features/admin/features/reports/mock-data";
-import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
 function RequiredLabel({ children }: { children: ReactNode }) {
@@ -139,7 +139,9 @@ function EnrollmentFilterPanel({
 						<RequiredLabel>Process</RequiredLabel>
 						<Select
 							value={filters.process}
-							onValueChange={(value) => onChange({ ...filters, process: value })}
+							onValueChange={(value) =>
+								onChange({ ...filters, process: value })
+							}
 						>
 							<SelectTrigger className="h-9 bg-card">
 								<SelectValue placeholder="Select" />
@@ -282,11 +284,13 @@ function EnrolleeSearchFilterPanel({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">Select</SelectItem>
-								{REPORT_ISSUER_OPTIONS.filter((n) => n !== "All").map((name) => (
-									<SelectItem key={name} value={name}>
-										{name}
-									</SelectItem>
-								))}
+								{REPORT_ISSUER_OPTIONS.filter((n) => n !== "All").map(
+									(name) => (
+										<SelectItem key={name} value={name}>
+											{name}
+										</SelectItem>
+									)
+								)}
 							</SelectContent>
 						</Select>
 					</div>
@@ -376,7 +380,10 @@ function ClaimSearchFilterPanel({
 							</div>
 							<div className="flex items-center gap-2">
 								<RadioGroupItem value="enrollee-id" id="field-enrollee-id" />
-								<Label htmlFor="field-enrollee-id" className="text-sm font-normal">
+								<Label
+									htmlFor="field-enrollee-id"
+									className="text-sm font-normal"
+								>
 									EnrolleeID
 								</Label>
 							</div>
@@ -436,7 +443,9 @@ function ErrorSummaryFilterPanel({
 						<RequiredLabel>Process</RequiredLabel>
 						<Select
 							value={filters.process}
-							onValueChange={(value) => onChange({ ...filters, process: value })}
+							onValueChange={(value) =>
+								onChange({ ...filters, process: value })
+							}
 						>
 							<SelectTrigger className="h-9 bg-card">
 								<SelectValue placeholder="Select" />
@@ -593,15 +602,23 @@ function EnrollmentResultsTable({ rows }: { rows: EnrollmentReportRow[] }) {
 					<Table className="w-full min-w-[1180px] text-xs">
 						<TableHeader>
 							<TableRow className="bg-muted/70 hover:bg-muted/70">
-								<TableHead className="h-8 px-2 pl-3 font-semibold">File Name</TableHead>
+								<TableHead className="h-8 px-2 pl-3 font-semibold">
+									File Name
+								</TableHead>
 								<TableHead className="h-8 px-2 font-semibold">Payer</TableHead>
-								<TableHead className="h-8 px-2 font-semibold">Received Date</TableHead>
-								<TableHead className="h-8 px-2 font-semibold">Executed Date</TableHead>
+								<TableHead className="h-8 px-2 font-semibold">
+									Received Date
+								</TableHead>
+								<TableHead className="h-8 px-2 font-semibold">
+									Executed Date
+								</TableHead>
 								<TableHead className="h-8 px-2 font-semibold">Status</TableHead>
 								<TableHead className="h-8 px-2 font-semibold">
 									Accepted Report File name
 								</TableHead>
-								<TableHead className="h-8 px-2 font-semibold">Accepted Count</TableHead>
+								<TableHead className="h-8 px-2 font-semibold">
+									Accepted Count
+								</TableHead>
 								<TableHead className="h-8 px-2 pr-3 font-semibold">
 									Rejected Report File Count
 								</TableHead>
@@ -611,7 +628,10 @@ function EnrollmentResultsTable({ rows }: { rows: EnrollmentReportRow[] }) {
 							{pageRows.map((row, index) => (
 								<TableRow
 									key={row.id}
-									className={cn(index % 2 === 1 && "bg-muted/20", "hover:bg-muted/30")}
+									className={cn(
+										index % 2 === 1 && "bg-muted/20",
+										"hover:bg-muted/30"
+									)}
 								>
 									<TableCell className="px-2 py-2 pl-3 font-mono text-[10px]">
 										{row.fileName}
@@ -649,27 +669,40 @@ function EnrolleeResultsTable({ rows }: { rows: EnrolleeSearchRow[] }) {
 	return (
 		<Card className="min-w-0 bg-card">
 			<CardHeader className="px-3 pb-1 pt-3">
-				<CardTitle className="text-sm font-medium">Enrollee Analysis Results</CardTitle>
+				<CardTitle className="text-sm font-medium">
+					Enrollee Analysis Results
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="px-0 pb-0">
 				<div className="overflow-x-auto border-t border-border/50">
 					<Table className="min-w-[760px] text-xs">
 						<TableHeader>
 							<TableRow className="bg-muted/70 hover:bg-muted/70">
-								<TableHead className="h-8 pl-3 font-semibold">Enrollee ID</TableHead>
+								<TableHead className="h-8 pl-3 font-semibold">
+									Enrollee ID
+								</TableHead>
 								<TableHead className="h-8 font-semibold">Issuer Name</TableHead>
 								<TableHead className="h-8 font-semibold">Status</TableHead>
-								<TableHead className="h-8 font-semibold">Effective Date</TableHead>
-								<TableHead className="h-8 pr-3 font-semibold">Term Date</TableHead>
+								<TableHead className="h-8 font-semibold">
+									Effective Date
+								</TableHead>
+								<TableHead className="h-8 pr-3 font-semibold">
+									Term Date
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{rows.map((row, index) => (
 								<TableRow
 									key={row.id}
-									className={cn(index % 2 === 1 && "bg-muted/20", "hover:bg-muted/30")}
+									className={cn(
+										index % 2 === 1 && "bg-muted/20",
+										"hover:bg-muted/30"
+									)}
 								>
-									<TableCell className="pl-3 font-mono">{row.enrolleeId}</TableCell>
+									<TableCell className="pl-3 font-mono">
+										{row.enrolleeId}
+									</TableCell>
 									<TableCell>{row.issuerName}</TableCell>
 									<TableCell>{row.status}</TableCell>
 									<TableCell>{row.effectiveDate}</TableCell>
@@ -688,28 +721,39 @@ function ClaimResultsTable({ rows }: { rows: ClaimSearchRow[] }) {
 	return (
 		<Card className="min-w-0 bg-card">
 			<CardHeader className="px-3 pb-1 pt-3">
-				<CardTitle className="text-sm font-medium">Claim Search Results</CardTitle>
+				<CardTitle className="text-sm font-medium">
+					Claim Search Results
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="px-0 pb-0">
 				<div className="overflow-x-auto border-t border-border/50">
 					<Table className="min-w-[860px] text-xs">
 						<TableHeader>
 							<TableRow className="bg-muted/70 hover:bg-muted/70">
-								<TableHead className="h-8 pl-3 font-semibold">Claim ID</TableHead>
+								<TableHead className="h-8 pl-3 font-semibold">
+									Claim ID
+								</TableHead>
 								<TableHead className="h-8 font-semibold">Enrollee ID</TableHead>
 								<TableHead className="h-8 font-semibold">Claim Type</TableHead>
 								<TableHead className="h-8 font-semibold">IssuerID</TableHead>
 								<TableHead className="h-8 font-semibold">Status</TableHead>
-								<TableHead className="h-8 pr-3 font-semibold">Service Date</TableHead>
+								<TableHead className="h-8 pr-3 font-semibold">
+									Service Date
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{rows.map((row, index) => (
 								<TableRow
 									key={row.id}
-									className={cn(index % 2 === 1 && "bg-muted/20", "hover:bg-muted/30")}
+									className={cn(
+										index % 2 === 1 && "bg-muted/20",
+										"hover:bg-muted/30"
+									)}
 								>
-									<TableCell className="pl-3 font-mono">{row.claimId}</TableCell>
+									<TableCell className="pl-3 font-mono">
+										{row.claimId}
+									</TableCell>
 									<TableCell className="font-mono">{row.enrolleeId}</TableCell>
 									<TableCell>{row.claimType}</TableCell>
 									<TableCell>{row.issuerId}</TableCell>
@@ -731,14 +775,18 @@ function ErrorSummaryResultsTable({ rows }: { rows: ErrorSummaryRow[] }) {
 	return (
 		<Card className="min-w-0 bg-card">
 			<CardHeader className="px-3 pb-1 pt-3">
-				<CardTitle className="text-sm font-medium">Error Summary Results</CardTitle>
+				<CardTitle className="text-sm font-medium">
+					Error Summary Results
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="px-0 pb-0">
 				<div className="overflow-x-auto border-t border-border/50">
 					<Table className="min-w-[920px] text-xs">
 						<TableHeader>
 							<TableRow className="bg-muted/70 hover:bg-muted/70">
-								<TableHead className="h-8 pl-3 font-semibold">File Name</TableHead>
+								<TableHead className="h-8 pl-3 font-semibold">
+									File Name
+								</TableHead>
 								<TableHead className="h-8 font-semibold">Issuer ID</TableHead>
 								<TableHead className="h-8 font-semibold">File Type</TableHead>
 								<TableHead className="h-8 font-semibold">Process</TableHead>
@@ -750,7 +798,10 @@ function ErrorSummaryResultsTable({ rows }: { rows: ErrorSummaryRow[] }) {
 							{rows.map((row, index) => (
 								<TableRow
 									key={row.id}
-									className={cn(index % 2 === 1 && "bg-muted/20", "hover:bg-muted/30")}
+									className={cn(
+										index % 2 === 1 && "bg-muted/20",
+										"hover:bg-muted/30"
+									)}
 								>
 									<TableCell className="pl-3 font-mono text-[10px]">
 										{row.fileName}
@@ -772,11 +823,7 @@ function ErrorSummaryResultsTable({ rows }: { rows: ErrorSummaryRow[] }) {
 	);
 }
 
-function EmptyResults({
-	searched,
-}: {
-	searched: boolean;
-}) {
+function EmptyResults({ searched }: { searched: boolean }) {
 	return (
 		<div className="rounded-xl border border-border/60 bg-card">
 			<NoFileSelectedIllustration
@@ -794,7 +841,9 @@ function EmptyResults({
 
 function EnrollmentReportPanel({ tabId }: { tabId: ReportTabId }) {
 	const rows = useMemo(() => mockEnrollmentReportRows(tabId), [tabId]);
-	const [draft, setDraft] = useState<EnrollmentReportFilters>(DEFAULT_ENROLLMENT_FILTERS);
+	const [draft, setDraft] = useState<EnrollmentReportFilters>(
+		DEFAULT_ENROLLMENT_FILTERS
+	);
 	const [applied, setApplied] = useState<EnrollmentReportFilters | null>(null);
 	const [searched, setSearched] = useState(false);
 

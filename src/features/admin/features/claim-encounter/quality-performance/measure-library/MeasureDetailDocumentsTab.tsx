@@ -23,14 +23,14 @@ import {
 } from "@/components/ui/select";
 import { CMS_EDGE_STATUS_PILL_CLASS } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureDataTable,
 	MeasureFilterField,
 	MeasureKpiCard,
 	MeasureSectionPanel,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasureDocumentsDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
@@ -50,7 +50,11 @@ function FileTypeIcon({ type }: { type: string }) {
 	return <FileText className="size-4 shrink-0 text-red-500" />;
 }
 
-export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDetail }) {
+export function MeasureDetailDocumentsTab({
+	data,
+}: {
+	data: MeasureDocumentsDetail;
+}) {
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("All");
 	const [type, setType] = useState("All");
@@ -76,9 +80,18 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 					icon={FolderOpen}
 					tone="primary"
 				/>
-				<MeasureKpiCard label="Specifications" value={data.summary.specifications} />
-				<MeasureKpiCard label="Technical Notes" value={data.summary.technicalNotes} />
-				<MeasureKpiCard label="Submission Files" value={data.summary.submissionFiles} />
+				<MeasureKpiCard
+					label="Specifications"
+					value={data.summary.specifications}
+				/>
+				<MeasureKpiCard
+					label="Technical Notes"
+					value={data.summary.technicalNotes}
+				/>
+				<MeasureKpiCard
+					label="Submission Files"
+					value={data.summary.submissionFiles}
+				/>
 				<MeasureKpiCard
 					label="Last Updated"
 					value={data.summary.lastUpdated}
@@ -96,7 +109,11 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 					subtitle="Search and narrow the library"
 					bodyClassName="space-y-2 p-0"
 					action={
-						<Button variant="link" size="sm" className="h-8 px-0 text-sm text-primary">
+						<Button
+							variant="link"
+							size="sm"
+							className="h-8 px-0 text-sm text-primary"
+						>
 							Clear All
 						</Button>
 					}
@@ -114,30 +131,42 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 					</MeasureFilterField>
 					<MeasureFilterField label="Category">
 						<Select value={category} onValueChange={setCategory}>
-							<SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+							<SelectTrigger className="h-9 text-sm">
+								<SelectValue />
+							</SelectTrigger>
 							<SelectContent>
 								{data.filterOptions.categories.map((o) => (
-									<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+									<SelectItem key={o} value={o} className="text-sm">
+										{o}
+									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
 					</MeasureFilterField>
 					<MeasureFilterField label="Type">
 						<Select value={type} onValueChange={setType}>
-							<SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+							<SelectTrigger className="h-9 text-sm">
+								<SelectValue />
+							</SelectTrigger>
 							<SelectContent>
 								{data.filterOptions.types.map((o) => (
-									<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+									<SelectItem key={o} value={o} className="text-sm">
+										{o}
+									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
 					</MeasureFilterField>
 					<MeasureFilterField label="Status">
 						<Select value={status} onValueChange={setStatus}>
-							<SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+							<SelectTrigger className="h-9 text-sm">
+								<SelectValue />
+							</SelectTrigger>
 							<SelectContent>
 								{data.filterOptions.statuses.map((o) => (
-									<SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>
+									<SelectItem key={o} value={o} className="text-sm">
+										{o}
+									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
@@ -150,7 +179,11 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 					subtitle="Specifications, reports, and supporting files"
 					action={
 						<div className="flex items-center gap-2">
-							<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm">
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 gap-1.5 text-sm"
+							>
 								<Upload className="size-4" />
 								Upload
 							</Button>
@@ -164,10 +197,22 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 							{ key: "name", header: "Document Name" },
 							{ key: "type", header: "Type", className: MEASURE_TABLE_MUTED },
 							{ key: "category", header: "Category" },
-							{ key: "version", header: "Version", className: MEASURE_TABLE_MUTED },
+							{
+								key: "version",
+								header: "Version",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "size", header: "Size", align: "right" },
-							{ key: "updated", header: "Updated", className: MEASURE_TABLE_MUTED },
-							{ key: "by", header: "Updated By", className: MEASURE_TABLE_MUTED },
+							{
+								key: "updated",
+								header: "Updated",
+								className: MEASURE_TABLE_MUTED,
+							},
+							{
+								key: "by",
+								header: "Updated By",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "status", header: "Status" },
 							{ key: "actions", header: "Actions", align: "right" },
 						]}
@@ -175,7 +220,10 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 							name: (
 								<span className="inline-flex items-center gap-2">
 									<FileTypeIcon type={doc.type} />
-									<Button variant="link" className="h-auto p-0 text-sm text-primary">
+									<Button
+										variant="link"
+										className="h-auto p-0 text-sm text-primary"
+									>
 										{doc.name}
 									</Button>
 								</span>
@@ -190,7 +238,8 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 								<span
 									className={cn(
 										CMS_EDGE_STATUS_PILL_CLASS,
-										DOC_STATUS_STYLES[doc.status] ?? "border-border bg-muted text-muted-foreground"
+										DOC_STATUS_STYLES[doc.status] ??
+											"border-border bg-muted text-muted-foreground"
 									)}
 								>
 									{doc.status}
@@ -207,7 +256,9 @@ export function MeasureDetailDocumentsTab({ data }: { data: MeasureDocumentsDeta
 								</div>
 							),
 						}))}
-						getRowKey={(_, index) => filteredDocuments[index]?.id ?? String(index)}
+						getRowKey={(_, index) =>
+							filteredDocuments[index]?.id ?? String(index)
+						}
 					/>
 					<MeasureTablePagination
 						shown={filteredDocuments.length}

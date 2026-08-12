@@ -237,7 +237,9 @@ export const EXECUTIVE_ALERTS = [
 	},
 ];
 
-export function executiveStatusPillClass(status: ExecutiveHealthStatus | ExecutiveObligationStatus) {
+export function executiveStatusPillClass(
+	status: ExecutiveHealthStatus | ExecutiveObligationStatus
+) {
 	switch (status) {
 		case "Good":
 			return "border-emerald-200 bg-emerald-50 text-emerald-800";

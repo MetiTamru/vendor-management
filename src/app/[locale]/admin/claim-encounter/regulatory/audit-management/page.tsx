@@ -2,6 +2,9 @@ import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-enco
 
 export default function Page() {
 	return (
-		<ComplianceProgramRoutePage slug="audit-management" section="regulatory_compliance" />
+		<ComplianceProgramRoutePage
+			slug="audit-management"
+			section="regulatory_compliance"
+		/>
 	);
 }

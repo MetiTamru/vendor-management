@@ -46,7 +46,10 @@ function mapEventSource(
 	return "Processor";
 }
 
-function formatEventTime(iso?: string | null): { display: string; sort: number } {
+function formatEventTime(iso?: string | null): {
+	display: string;
+	sort: number;
+} {
 	if (!iso) return { display: "—", sort: 0 };
 	const date = new Date(iso);
 	if (Number.isNaN(date.getTime())) return { display: iso, sort: 0 };
@@ -115,8 +118,7 @@ export function processingEventsToLogs(
 				message: event.detail
 					? `${event.message} — ${event.detail}`
 					: event.message,
-				relatedRecord:
-					event.related_record ?? event.member_id ?? null,
+				relatedRecord: event.related_record ?? event.member_id ?? null,
 				errorCode: event.error_code ?? undefined,
 				memberId: event.member_id ?? undefined,
 				lineNumber: event.line_number ?? undefined,

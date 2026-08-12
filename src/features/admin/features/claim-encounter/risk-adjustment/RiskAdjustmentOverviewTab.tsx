@@ -8,18 +8,18 @@ import {
 	DollarSign,
 	FileText,
 	LineChart,
+	type LucideIcon,
 	Stethoscope,
 	Target,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	CartesianGrid,
 	Cell,
 	Line,
-	LineChart as RechartsLineChart,
 	Pie,
 	PieChart,
+	LineChart as RechartsLineChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -64,7 +64,8 @@ import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-3";
 const SECTION_GAP = "gap-3";
-const TABLE_HEAD = "h-9 bg-muted/30 px-3 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-3 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-3 py-2";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -88,10 +89,11 @@ function TrendLine({
 		<span className="inline-flex flex-wrap items-center gap-0.5 text-[11px] text-emerald-700">
 			<ArrowUpRight className="size-3" />
 			{prefix}
-			{typeof delta === "number" ? delta.toLocaleString(undefined, { maximumFractionDigits: 3 }) : delta}
+			{typeof delta === "number"
+				? delta.toLocaleString(undefined, { maximumFractionDigits: 3 })
+				: delta}
 			<span className="text-muted-foreground">
-				({" "}
-				{deltaPct.toFixed(2)}%) vs prior year
+				( {deltaPct.toFixed(2)}%) vs prior year
 			</span>
 		</span>
 	);
@@ -118,7 +120,9 @@ function OverviewKpiCard({
 		<div className="rounded-lg border border-border/70 bg-card p-3 shadow-sm">
 			<div className="flex items-start justify-between gap-2">
 				<div className="min-w-0 flex-1">
-					<p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+					<p className="text-[11px] font-medium text-muted-foreground">
+						{label}
+					</p>
 					<p className="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-foreground">
 						{value}
 					</p>
@@ -251,7 +255,10 @@ function RafTrendPanel() {
 }
 
 function HccDistributionPanel() {
-	const total = RISK_ADJUSTMENT_HCC_CATEGORIES.reduce((sum, item) => sum + item.value, 0);
+	const total = RISK_ADJUSTMENT_HCC_CATEGORIES.reduce(
+		(sum, item) => sum + item.value,
+		0
+	);
 
 	return (
 		<CmsEdgeSectionPanel
@@ -280,13 +287,18 @@ function HccDistributionPanel() {
 						</PieChart>
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-						<p className="text-sm font-bold tabular-nums">{formatCount(total)}</p>
+						<p className="text-sm font-bold tabular-nums">
+							{formatCount(total)}
+						</p>
 						<p className="text-[10px] text-muted-foreground">Total HCCs</p>
 					</div>
 				</div>
 				<ul className="flex min-w-0 flex-1 flex-col justify-center gap-2 text-xs">
 					{RISK_ADJUSTMENT_HCC_CATEGORIES.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
 								<span
 									className="size-2 shrink-0 rounded-full"
@@ -334,20 +346,27 @@ function OpportunitySummaryPanel() {
 								</div>
 								<div className="min-w-0 flex-1">
 									<div className="flex items-start justify-between gap-2">
-										<p className="text-xs font-medium text-foreground">{item.title}</p>
+										<p className="text-xs font-medium text-foreground">
+											{item.title}
+										</p>
 										<span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
 											{formatCount(item.count)}
 										</span>
 									</div>
 									<p className="mt-0.5 text-[11px] text-muted-foreground">
 										Potential RAF Impact:{" "}
-										<span className="font-medium text-foreground">{item.rafImpact.toFixed(3)}</span>
+										<span className="font-medium text-foreground">
+											{item.rafImpact.toFixed(3)}
+										</span>
 									</p>
 									<div className="mt-1.5 flex items-center gap-2">
 										<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
 											<div
 												className="h-full rounded-full"
-												style={{ width: `${item.pct}%`, backgroundColor: item.color }}
+												style={{
+													width: `${item.pct}%`,
+													backgroundColor: item.color,
+												}}
 											/>
 										</div>
 										<span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
@@ -375,34 +394,63 @@ function SubmissionsStatusPanel() {
 			bodyClassName="flex min-h-0 flex-1 flex-col"
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Submission Type</TableHead>
 							<TableHead className={TABLE_HEAD}>Status</TableHead>
 							<TableHead className={TABLE_HEAD}>Last Submission</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "text-right")}>Records</TableHead>
-							<TableHead className={cn(TABLE_HEAD, "pr-3 text-right")}>Acceptance Rate</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "text-right")}>
+								Records
+							</TableHead>
+							<TableHead className={cn(TABLE_HEAD, "pr-3 text-right")}>
+								Acceptance Rate
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{RISK_ADJUSTMENT_SUBMISSIONS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.type}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.type}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>
-									<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-[10px]", row.statusStyle)}>
+									<span
+										className={cn(
+											CMS_EDGE_STATUS_PILL_CLASS,
+											"text-[10px]",
+											row.statusStyle
+										)}
+									>
 										{row.status}
 									</span>
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums text-muted-foreground")}>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"tabular-nums text-muted-foreground"
+									)}
+								>
 									{row.lastSubmission}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.records != null ? formatCount(row.records) : "—"}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "pr-3 text-right tabular-nums")}>
+								<TableCell
+									className={cn(TABLE_CELL, "pr-3 text-right tabular-nums")}
+								>
 									{row.acceptanceRate != null ? (
-										<span className="font-medium text-emerald-700">{row.acceptanceRate}%</span>
+										<span className="font-medium text-emerald-700">
+											{row.acceptanceRate}%
+										</span>
 									) : (
 										"—"
 									)}
@@ -421,7 +469,10 @@ function SubmissionsStatusPanel() {
 
 function AuditReconciliationPanel() {
 	return (
-		<CmsEdgeSectionPanel title="Audit & Reconciliation" bodyClassName="flex min-h-0 flex-1 flex-col">
+		<CmsEdgeSectionPanel
+			title="Audit & Reconciliation"
+			bodyClassName="flex min-h-0 flex-1 flex-col"
+		>
 			<ul className="divide-y divide-border/50 border-t border-border/50">
 				{RISK_ADJUSTMENT_AUDIT_ITEMS.map((item) => (
 					<li
@@ -429,7 +480,9 @@ function AuditReconciliationPanel() {
 						className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm"
 					>
 						<span className="text-foreground">{item.label}</span>
-						<span className="font-semibold tabular-nums text-foreground">{item.count}</span>
+						<span className="font-semibold tabular-nums text-foreground">
+							{item.count}
+						</span>
 					</li>
 				))}
 			</ul>
@@ -444,7 +497,10 @@ function ProgramInformationPanel() {
 	const info = RISK_ADJUSTMENT_PROGRAM_INFO;
 
 	return (
-		<CmsEdgeSectionPanel title="Program Information" bodyClassName="flex min-h-0 flex-1 flex-col">
+		<CmsEdgeSectionPanel
+			title="Program Information"
+			bodyClassName="flex min-h-0 flex-1 flex-col"
+		>
 			<dl className="divide-y divide-border/50 border-t border-border/50">
 				{[
 					{ label: "Program", value: info.program },
@@ -453,7 +509,10 @@ function ProgramInformationPanel() {
 					{ label: "LOB", value: info.lob },
 					{ label: "Data Last Refreshed", value: info.dataLastRefreshed },
 				].map((row) => (
-					<div key={row.label} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
+					<div
+						key={row.label}
+						className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm"
+					>
 						<dt className="text-muted-foreground">{row.label}</dt>
 						<dd className="font-medium text-foreground">{row.value}</dd>
 					</div>
@@ -469,8 +528,13 @@ function ProgramInformationPanel() {
 function OverviewFooter() {
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
-			<p>All data shown is based on the most recent refresh and may not reflect real-time updates.</p>
-			<p className="shrink-0 tabular-nums">Data as of {RISK_ADJUSTMENT_DATA_AS_OF}</p>
+			<p>
+				All data shown is based on the most recent refresh and may not reflect
+				real-time updates.
+			</p>
+			<p className="shrink-0 tabular-nums">
+				Data as of {RISK_ADJUSTMENT_DATA_AS_OF}
+			</p>
 		</div>
 	);
 }
@@ -480,13 +544,23 @@ export function RiskAdjustmentOverviewTab() {
 		<div className={PAGE_STACK}>
 			<KpiRow />
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-3",
+					SECTION_GAP
+				)}
+			>
 				<RafTrendPanel />
 				<HccDistributionPanel />
 				<OpportunitySummaryPanel />
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-3", SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-3",
+					SECTION_GAP
+				)}
+			>
 				<SubmissionsStatusPanel />
 				<AuditReconciliationPanel />
 				<ProgramInformationPanel />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	ArrowDownRight,
@@ -43,17 +43,16 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeSplitRow,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	filterMedicaidDocuments,
 	MEDICAID_DOCUMENT_CATEGORIES,
 	MEDICAID_DOCUMENT_KPIS,
 	MEDICAID_DOCUMENT_LIBRARY,
@@ -62,14 +61,15 @@ import {
 	MEDICAID_DOCUMENT_STATES_FILTER,
 	MEDICAID_DOCUMENT_STATUSES_FILTER,
 	MEDICAID_DOCUMENT_STATUS_STYLES,
-	MEDICAID_DOCUMENT_TYPE_STYLES,
 	MEDICAID_DOCUMENT_TYPES_FILTER,
+	MEDICAID_DOCUMENT_TYPE_STYLES,
 	MEDICAID_DOCUMENT_VENDORS_FILTER,
 	type MedicaidDocumentFileKind,
 	type MedicaidDocumentRow,
+	filterMedicaidDocuments,
 } from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
-import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 function scaleProgramCount(value: number, programType?: ProgramType) {
@@ -92,7 +92,8 @@ function formatProgramState(state: string, programType?: ProgramType) {
 }
 
 const DOCS_PAGE_STACK = "space-y-5";
-const DOCS_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const DOCS_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const DOCS_TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -103,7 +104,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -156,7 +163,9 @@ function DocMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -171,20 +180,28 @@ function DocumentsKpiRow({ programType }: { programType?: ProgramType }) {
 		<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 			<DocMetricCard
 				label="Total Documents"
-				value={scaleProgramCount(k.totalDocuments, programType).toLocaleString()}
+				value={scaleProgramCount(
+					k.totalDocuments,
+					programType
+				).toLocaleString()}
 				hint={<TrendHint delta={k.totalDocumentsDelta} />}
 				icon={FolderOpen}
 				tone="text-sky-700 bg-sky-500/10"
 			/>
 			<DocMetricCard
 				label="Submitted Files"
-				value={scaleProgramCount(k.submittedFiles, programType).toLocaleString()}
+				value={scaleProgramCount(
+					k.submittedFiles,
+					programType
+				).toLocaleString()}
 				hint={<TrendHint delta={k.submittedFilesDelta} />}
 				icon={Send}
 				tone="text-sky-700 bg-sky-500/10"
 			/>
 			<DocMetricCard
-				label={programType === "medicare" ? "CMS Response Files" : "Response Files"}
+				label={
+					programType === "medicare" ? "CMS Response Files" : "Response Files"
+				}
 				value={scaleProgramCount(k.responseFiles, programType).toLocaleString()}
 				hint={<TrendHint delta={k.responseFilesDelta} />}
 				icon={Inbox}
@@ -199,14 +216,20 @@ function DocumentsKpiRow({ programType }: { programType?: ProgramType }) {
 			/>
 			<DocMetricCard
 				label="Audit Documents"
-				value={scaleProgramCount(k.auditDocuments, programType).toLocaleString()}
+				value={scaleProgramCount(
+					k.auditDocuments,
+					programType
+				).toLocaleString()}
 				hint={<TrendHint delta={k.auditDocumentsDelta} />}
 				icon={Shield}
 				tone="text-teal-700 bg-teal-500/10"
 			/>
 			<DocMetricCard
 				label="Other Documents"
-				value={scaleProgramCount(k.otherDocuments, programType).toLocaleString()}
+				value={scaleProgramCount(
+					k.otherDocuments,
+					programType
+				).toLocaleString()}
 				hint={<TrendHint delta={k.otherDocumentsDelta} />}
 				icon={FileText}
 				tone="text-muted-foreground bg-muted/50"
@@ -369,7 +392,12 @@ function DocumentFiltersBar({
 						</SelectContent>
 					</Select>
 				</div>
-				<Button variant="link" size="sm" className="h-9 px-0 text-xs" onClick={onReset}>
+				<Button
+					variant="link"
+					size="sm"
+					className="h-9 px-0 text-xs"
+					onClick={onReset}
+				>
 					Reset
 				</Button>
 			</div>
@@ -377,8 +405,16 @@ function DocumentFiltersBar({
 				<Label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:pb-2">
 					Date Range (Uploaded)
 				</Label>
-				<Input type="date" defaultValue="2027-04-01" className="h-9 bg-background text-xs" />
-				<Input type="date" defaultValue="2027-06-30" className="h-9 bg-background text-xs" />
+				<Input
+					type="date"
+					defaultValue="2027-04-01"
+					className="h-9 bg-background text-xs"
+				/>
+				<Input
+					type="date"
+					defaultValue="2027-06-30"
+					className="h-9 bg-background text-xs"
+				/>
 			</div>
 		</div>
 	);
@@ -398,7 +434,9 @@ function DocumentDetailsPanel({
 			<CmsEdgeSectionPanel title="Document Details">
 				<div className="flex min-h-[160px] flex-col items-center justify-center border-t border-border/50 px-4 py-8 text-center">
 					<FileText className="size-10 text-muted-foreground/40" />
-					<p className="mt-3 text-sm font-medium text-foreground">No document selected</p>
+					<p className="mt-3 text-sm font-medium text-foreground">
+						No document selected
+					</p>
 					<p className="mt-1 max-w-[220px] text-xs text-muted-foreground">
 						Select a document from the list to view details
 					</p>
@@ -414,7 +452,9 @@ function DocumentDetailsPanel({
 					<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 						Document Name
 					</p>
-					<p className="mt-1 font-medium break-all">{formatProgramFileName(selected.name, programType)}</p>
+					<p className="mt-1 font-medium break-all">
+						{formatProgramFileName(selected.name, programType)}
+					</p>
 				</div>
 				<div className="grid grid-cols-2 gap-3">
 					<div>
@@ -445,7 +485,9 @@ function DocumentDetailsPanel({
 						<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 							{isMedicare ? "Program" : "State"}
 						</p>
-						<p className="mt-1">{formatProgramState(selected.state, programType)}</p>
+						<p className="mt-1">
+							{formatProgramState(selected.state, programType)}
+						</p>
 					</div>
 					<div>
 						<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -472,7 +514,9 @@ function DocumentDetailsPanel({
 						<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 							Description
 						</p>
-						<p className="mt-1 text-muted-foreground leading-relaxed">{selected.description}</p>
+						<p className="mt-1 text-muted-foreground leading-relaxed">
+							{selected.description}
+						</p>
 					</div>
 				) : null}
 			</div>
@@ -502,8 +546,12 @@ function QuickActionsPanel() {
 							>
 								<Icon className="mt-0.5 size-4 shrink-0 text-primary" />
 								<div>
-									<p className="text-xs font-semibold text-foreground">{action.title}</p>
-									<p className="mt-0.5 text-[10px] text-muted-foreground">{action.description}</p>
+									<p className="text-xs font-semibold text-foreground">
+										{action.title}
+									</p>
+									<p className="mt-0.5 text-[10px] text-muted-foreground">
+										{action.description}
+									</p>
 								</div>
 							</button>
 						</li>
@@ -525,7 +573,9 @@ function StorageSummaryPanel() {
 					<span className="font-medium tabular-nums">
 						{k.storageUsedGb.toFixed(1)} GB of {k.storageTotalGb} GB used
 					</span>
-					<span className="text-muted-foreground tabular-nums">({pct.toFixed(1)}%)</span>
+					<span className="text-muted-foreground tabular-nums">
+						({pct.toFixed(1)}%)
+					</span>
 				</div>
 				<div className="h-2.5 overflow-hidden rounded-full bg-muted">
 					<div
@@ -557,7 +607,8 @@ function DocumentLibraryPanel({
 	programType?: ProgramType;
 }) {
 	const isMedicare = programType === "medicare";
-	const allSelected = rows.length > 0 && rows.every((row) => selectedIds.has(row.id));
+	const allSelected =
+		rows.length > 0 && rows.every((row) => selectedIds.has(row.id));
 
 	return (
 		<CmsEdgeSectionPanel
@@ -565,14 +616,21 @@ function DocumentLibraryPanel({
 			title={`Document Library (${scaleProgramCount(MEDICAID_DOCUMENT_KPIS.totalDocuments, programType).toLocaleString()})`}
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			action={
-				<Button size="sm" className="h-8" onClick={() => toast.message("Upload document")}>
+				<Button
+					size="sm"
+					className="h-8"
+					onClick={() => toast.message("Upload document")}
+				>
 					<CloudUpload className="mr-1.5 size-3.5" />
 					Upload Document
 				</Button>
 			}
 			footer={
 				<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-2.5 text-xs text-muted-foreground">
-					<span>Showing 1 to {rows.length} of {scaleProgramCount(1248, programType).toLocaleString()} entries</span>
+					<span>
+						Showing 1 to {rows.length} of{" "}
+						{scaleProgramCount(1248, programType).toLocaleString()} entries
+					</span>
 					<div className="flex items-center gap-2">
 						<div className="flex items-center gap-1">
 							<Button variant="default" size="icon" className="size-7 text-xs">
@@ -616,14 +674,20 @@ function DocumentLibraryPanel({
 							</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Document Name</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Document Type</TableHead>
-							<TableHead className={DOCS_TABLE_HEAD}>Reporting Period</TableHead>
-							<TableHead className={DOCS_TABLE_HEAD}>{isMedicare ? "Program" : "State"}</TableHead>
+							<TableHead className={DOCS_TABLE_HEAD}>
+								Reporting Period
+							</TableHead>
+							<TableHead className={DOCS_TABLE_HEAD}>
+								{isMedicare ? "Program" : "State"}
+							</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Vendor / MCO</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Uploaded On</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Uploaded By</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>Status</TableHead>
 							<TableHead className={DOCS_TABLE_HEAD}>File Size</TableHead>
-							<TableHead className={cn(DOCS_TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead className={cn(DOCS_TABLE_HEAD, "pr-4 text-right")}>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -651,7 +715,10 @@ function DocumentLibraryPanel({
 										<FileKindIcon kind={row.fileKind} />
 										<Button
 											variant="link"
-											className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}
+											className={cn(
+												CMS_EDGE_TABLE_LINK_CLASS,
+												"whitespace-normal text-left"
+											)}
 											onClick={(e) => {
 												e.stopPropagation();
 												onSelect(row);
@@ -667,20 +734,32 @@ function DocumentLibraryPanel({
 										className={MEDICAID_DOCUMENT_TYPE_STYLES[row.documentType]}
 									/>
 								</TableCell>
-								<TableCell className={DOCS_TABLE_CELL}>{row.reportingPeriod}</TableCell>
-								<TableCell className={DOCS_TABLE_CELL}>{formatProgramState(row.state, programType)}</TableCell>
-								<TableCell className={cn(DOCS_TABLE_CELL, "text-muted-foreground")}>
+								<TableCell className={DOCS_TABLE_CELL}>
+									{row.reportingPeriod}
+								</TableCell>
+								<TableCell className={DOCS_TABLE_CELL}>
+									{formatProgramState(row.state, programType)}
+								</TableCell>
+								<TableCell
+									className={cn(DOCS_TABLE_CELL, "text-muted-foreground")}
+								>
 									{row.vendor}
 								</TableCell>
-								<TableCell className={cn(DOCS_TABLE_CELL, "tabular-nums")}>{row.uploadedOn}</TableCell>
-								<TableCell className={DOCS_TABLE_CELL}>{row.uploadedBy}</TableCell>
+								<TableCell className={cn(DOCS_TABLE_CELL, "tabular-nums")}>
+									{row.uploadedOn}
+								</TableCell>
+								<TableCell className={DOCS_TABLE_CELL}>
+									{row.uploadedBy}
+								</TableCell>
 								<TableCell className={DOCS_TABLE_CELL}>
 									<StatusPill
 										label={row.status}
 										className={MEDICAID_DOCUMENT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(DOCS_TABLE_CELL, "tabular-nums")}>{row.fileSize}</TableCell>
+								<TableCell className={cn(DOCS_TABLE_CELL, "tabular-nums")}>
+									{row.fileSize}
+								</TableCell>
 								<TableCell
 									className={cn(DOCS_TABLE_CELL, "pr-4 text-right")}
 									onClick={(e) => e.stopPropagation()}
@@ -694,7 +773,11 @@ function DocumentLibraryPanel({
 										>
 											<Download className="size-3.5" />
 										</Button>
-										<Button variant="ghost" size="icon" className="size-7 text-muted-foreground">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-7 text-muted-foreground"
+										>
 											<MoreVertical className="size-3.5" />
 										</Button>
 									</div>
@@ -721,8 +804,12 @@ function DocumentCategoriesRow() {
 						<div className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
 							<Icon className="size-5" />
 						</div>
-						<p className="mt-3 text-sm font-semibold text-foreground">{category.title}</p>
-						<p className="mt-1 text-lg font-bold tabular-nums">{category.count.toLocaleString()}</p>
+						<p className="mt-3 text-sm font-semibold text-foreground">
+							{category.title}
+						</p>
+						<p className="mt-1 text-lg font-bold tabular-nums">
+							{category.count.toLocaleString()}
+						</p>
 						<p className="mt-1 flex-1 text-[11px] leading-snug text-muted-foreground">
 							{category.description}
 						</p>
@@ -736,14 +823,18 @@ function DocumentCategoriesRow() {
 	);
 }
 
-export function MedicaidEncounterDocumentsTab({ programType }: { programType?: ProgramType } = {}) {
+export function MedicaidEncounterDocumentsTab({
+	programType,
+}: { programType?: ProgramType } = {}) {
 	const [search, setSearch] = useState("");
 	const [period, setPeriod] = useState("q2-2027");
 	const [documentType, setDocumentType] = useState("All Types");
 	const [state, setState] = useState("All States");
 	const [vendor, setVendor] = useState("All Vendors");
 	const [status, setStatus] = useState("All Statuses");
-	const [selectedDoc, setSelectedDoc] = useState<MedicaidDocumentRow | null>(null);
+	const [selectedDoc, setSelectedDoc] = useState<MedicaidDocumentRow | null>(
+		null
+	);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
 	const rows = useMemo(
@@ -816,7 +907,10 @@ export function MedicaidEncounterDocumentsTab({ programType }: { programType?: P
 				}
 				side={
 					<div className="flex flex-col gap-4">
-						<DocumentDetailsPanel selected={selectedDoc} programType={programType} />
+						<DocumentDetailsPanel
+							selected={selectedDoc}
+							programType={programType}
+						/>
 						<QuickActionsPanel />
 						<StorageSummaryPanel />
 					</div>
@@ -824,7 +918,9 @@ export function MedicaidEncounterDocumentsTab({ programType }: { programType?: P
 			/>
 
 			<div>
-				<h3 className="mb-3 text-sm font-semibold text-foreground">Document Categories</h3>
+				<h3 className="mb-3 text-sm font-semibold text-foreground">
+					Document Categories
+				</h3>
 				<DocumentCategoriesRow />
 			</div>
 

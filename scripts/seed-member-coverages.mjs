@@ -9,8 +9,8 @@
  * Usage:
  *   VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… node scripts/seed-member-coverages.mjs
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -91,9 +91,13 @@ async function main() {
 		process.exit(1);
 	}
 
-	const listed = await request("GET", "/api/v1/member-coverages/list/?limit=1", {
-		token,
-	});
+	const listed = await request(
+		"GET",
+		"/api/v1/member-coverages/list/?limit=1",
+		{
+			token,
+		}
+	);
 	const count = listed?.count ?? listed?.results?.length ?? 0;
 	console.log(`Existing coverages: ${count}`);
 	if (count > 0) {

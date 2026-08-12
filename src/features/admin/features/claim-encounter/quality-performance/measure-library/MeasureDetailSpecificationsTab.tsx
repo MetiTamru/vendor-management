@@ -2,13 +2,13 @@
 
 import {
 	ExternalRefLink,
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureDataTable,
 	MeasureField,
 	MeasureFieldGrid,
 	MeasureSectionPanel,
 	MeasureSubsection,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PdfLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasureSpecifications } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
@@ -44,13 +44,17 @@ export function MeasureDetailSpecificationsTab({
 							<MeasureField
 								label="Numerator Statement"
 								value={
-									<p className="leading-relaxed">{specifications.numeratorStatement}</p>
+									<p className="leading-relaxed">
+										{specifications.numeratorStatement}
+									</p>
 								}
 							/>
 							<MeasureField
 								label="Denominator Statement"
 								value={
-									<p className="leading-relaxed">{specifications.denominatorStatement}</p>
+									<p className="leading-relaxed">
+										{specifications.denominatorStatement}
+									</p>
 								}
 							/>
 						</div>
@@ -62,14 +66,26 @@ export function MeasureDetailSpecificationsTab({
 					>
 						<MeasureFieldGrid
 							fields={[
-								{ label: "Eligible Population", value: specifications.eligiblePopulation },
-								{ label: "Measurement Year", value: specifications.measurementYear },
-								{ label: "Look-Back Period", value: specifications.lookBackPeriod },
+								{
+									label: "Eligible Population",
+									value: specifications.eligiblePopulation,
+								},
+								{
+									label: "Measurement Year",
+									value: specifications.measurementYear,
+								},
+								{
+									label: "Look-Back Period",
+									value: specifications.lookBackPeriod,
+								},
 								{
 									label: "Continuous Enrollment",
 									value: specifications.continuousEnrollment,
 								},
-								{ label: "Measure Steward", value: specifications.measureSteward },
+								{
+									label: "Measure Steward",
+									value: specifications.measureSteward,
+								},
 							]}
 						/>
 					</MeasureSubsection>
@@ -82,10 +98,22 @@ export function MeasureDetailSpecificationsTab({
 							fields={[
 								{ label: "Data Sources", value: specifications.dataSources },
 								{ label: "Care Setting", value: specifications.careSetting },
-								{ label: "Collection Method", value: specifications.collectionMethod },
-								{ label: "Calculation Method", value: specifications.calculationMethod },
-								{ label: "Inverse Measure", value: specifications.inverseMeasure },
-								{ label: "Higher Rate is Better", value: specifications.higherRateIsBetter },
+								{
+									label: "Collection Method",
+									value: specifications.collectionMethod,
+								},
+								{
+									label: "Calculation Method",
+									value: specifications.calculationMethod,
+								},
+								{
+									label: "Inverse Measure",
+									value: specifications.inverseMeasure,
+								},
+								{
+									label: "Higher Rate is Better",
+									value: specifications.higherRateIsBetter,
+								},
 							]}
 						/>
 					</MeasureSubsection>
@@ -93,9 +121,15 @@ export function MeasureDetailSpecificationsTab({
 					<MeasureSubsection title="Reporting & Stratification">
 						<MeasureFieldGrid
 							fields={[
-								{ label: "Stratifications", value: specifications.stratifications },
+								{
+									label: "Stratifications",
+									value: specifications.stratifications,
+								},
 								{ label: "Measure Type", value: specifications.measureType },
-								{ label: "NCQA Reporting", value: specifications.ncqaReporting },
+								{
+									label: "NCQA Reporting",
+									value: specifications.ncqaReporting,
+								},
 							]}
 							columns={3}
 						/>
@@ -132,7 +166,11 @@ export function MeasureDetailSpecificationsTab({
 					<MeasureDataTable
 						columns={[
 							{ key: "term", header: "Term", className: "font-medium" },
-							{ key: "definition", header: "Definition", className: MEASURE_TABLE_MUTED },
+							{
+								key: "definition",
+								header: "Definition",
+								className: MEASURE_TABLE_MUTED,
+							},
 						]}
 						rows={specifications.keyDefinitions.map((row) => ({
 							term: row.term,
@@ -151,7 +189,11 @@ export function MeasureDetailSpecificationsTab({
 						columns={[
 							{ key: "type", header: "Type" },
 							{ key: "codeSetName", header: "Code Set Name" },
-							{ key: "version", header: "Version", className: MEASURE_TABLE_MUTED },
+							{
+								key: "version",
+								header: "Version",
+								className: MEASURE_TABLE_MUTED,
+							},
 						]}
 						rows={specifications.valueSets.map((row) => ({
 							type: row.type,

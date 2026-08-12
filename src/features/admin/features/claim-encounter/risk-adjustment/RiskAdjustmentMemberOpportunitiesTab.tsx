@@ -39,22 +39,22 @@ import {
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	MEMBER_OPPORTUNITY_KPIS,
-	MEMBER_OPPORTUNITY_ROWS,
-	type MemberOpportunityRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
-import {
+	RA_STACK,
+	RA_TABLE_CELL,
+	RA_TABLE_HEAD,
 	RaAllFilterSelect,
 	RaFilterLabel,
 	RaFilterPanel,
 	RaMetricCard,
 	RaSectionTitle,
-	RA_STACK,
 	RaStatusPill,
 	RaTablePagination,
-	RA_TABLE_CELL,
-	RA_TABLE_HEAD,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
+import {
+	MEMBER_OPPORTUNITY_KPIS,
+	MEMBER_OPPORTUNITY_ROWS,
+	type MemberOpportunityRow,
+} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +72,10 @@ function OpportunityFilters() {
 					<RaFilterLabel>Search Member</RaFilterLabel>
 					<div className="relative">
 						<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-						<Input className="h-8 pl-8 text-xs" placeholder="Search by Member ID, Name..." />
+						<Input
+							className="h-8 pl-8 text-xs"
+							placeholder="Search by Member ID, Name..."
+						/>
 					</div>
 				</div>
 				<RaAllFilterSelect label="Opportunity Type" />
@@ -86,14 +89,20 @@ function OpportunityFilters() {
 				<RaAllFilterSelect label="Coding Source" />
 				<div className="space-y-1">
 					<RaFilterLabel>Last Service Date</RaFilterLabel>
-					<Button variant="outline" className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal">
+					<Button
+						variant="outline"
+						className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal"
+					>
 						<CalendarDays className="size-3.5 text-muted-foreground" />
 						01/01/2024 – 12/31/2025
 					</Button>
 				</div>
 				<div className="space-y-1">
 					<RaFilterLabel>Date Identified</RaFilterLabel>
-					<Button variant="outline" className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal">
+					<Button
+						variant="outline"
+						className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal"
+					>
 						<CalendarDays className="size-3.5 text-muted-foreground" />
 						01/01/2024 – 12/31/2025
 					</Button>
@@ -101,10 +110,18 @@ function OpportunityFilters() {
 				<RaAllFilterSelect label="Assigned To" />
 			</div>
 			<div className="mt-2 flex items-center gap-2">
-				<Button size="sm" className="h-8 text-xs" onClick={() => toast.message("Filters applied")}>
+				<Button
+					size="sm"
+					className="h-8 text-xs"
+					onClick={() => toast.message("Filters applied")}
+				>
 					Apply Filters
 				</Button>
-				<Button variant="link" size="sm" className="h-8 px-0 text-xs text-primary">
+				<Button
+					variant="link"
+					size="sm"
+					className="h-8 px-0 text-xs text-primary"
+				>
 					Reset
 				</Button>
 			</div>
@@ -168,7 +185,9 @@ export function RiskAdjustmentMemberOpportunitiesTab() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="medicare-advantage">Medicare Advantage</SelectItem>
+							<SelectItem value="medicare-advantage">
+								Medicare Advantage
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -216,7 +235,10 @@ export function RiskAdjustmentMemberOpportunitiesTab() {
 					}
 				/>
 				<CmsEdgeTableScroll>
-					<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1400px]")}>
+					<Table
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1400px]")}
+					>
 						<TableHeader>
 							<TableRow className="hover:bg-transparent">
 								<TableHead className={cn(RA_TABLE_HEAD, "w-10")}>
@@ -227,24 +249,41 @@ export function RiskAdjustmentMemberOpportunitiesTab() {
 								<TableHead className={RA_TABLE_HEAD}>DOB</TableHead>
 								<TableHead className={RA_TABLE_HEAD}>HCC</TableHead>
 								<TableHead className={RA_TABLE_HEAD}>HCC Description</TableHead>
-								<TableHead className={RA_TABLE_HEAD}>Opportunity Type</TableHead>
-								<TableHead className={RA_TABLE_HEAD}>Last Service Date</TableHead>
-								<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>RAF Impact</TableHead>
-								<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Payment Impact (Est.)</TableHead>
+								<TableHead className={RA_TABLE_HEAD}>
+									Opportunity Type
+								</TableHead>
+								<TableHead className={RA_TABLE_HEAD}>
+									Last Service Date
+								</TableHead>
+								<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+									RAF Impact
+								</TableHead>
+								<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+									Payment Impact (Est.)
+								</TableHead>
 								<TableHead className={RA_TABLE_HEAD}>Status</TableHead>
 								<TableHead className={RA_TABLE_HEAD}>Assigned To</TableHead>
 								<TableHead className={RA_TABLE_HEAD}>Coding Source</TableHead>
-								<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>Action</TableHead>
+								<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>
+									Action
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{MEMBER_OPPORTUNITY_ROWS.map((row) => (
-								<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+								<TableRow
+									key={row.id}
+									className="border-b border-border/40 hover:bg-muted/20"
+								>
 									<TableCell className={RA_TABLE_CELL}>
 										<Checkbox aria-label={`Select ${row.memberId}`} />
 									</TableCell>
 									<TableCell className={RA_TABLE_CELL}>
-										<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS} asChild>
+										<Button
+											variant="link"
+											className={CMS_EDGE_TABLE_LINK_CLASS}
+											asChild
+										>
 											<Link
 												href={`/admin/claim-encounter/regulatory/risk-adjustment/member-opportunities/${row.id}`}
 											>
@@ -253,32 +292,57 @@ export function RiskAdjustmentMemberOpportunitiesTab() {
 										</Button>
 									</TableCell>
 									<TableCell className={RA_TABLE_CELL}>{row.name}</TableCell>
-									<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>{row.dob}</TableCell>
+									<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
+										{row.dob}
+									</TableCell>
 									<TableCell className={RA_TABLE_CELL}>
-										<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+										<Button
+											variant="link"
+											className={CMS_EDGE_TABLE_LINK_CLASS}
+										>
 											{row.hcc}
 										</Button>
 									</TableCell>
-									<TableCell className={cn(RA_TABLE_CELL, "max-w-[180px] truncate")}>
+									<TableCell
+										className={cn(RA_TABLE_CELL, "max-w-[180px] truncate")}
+									>
 										{row.hccDescription}
 									</TableCell>
-									<TableCell className={RA_TABLE_CELL}>{row.opportunityType}</TableCell>
+									<TableCell className={RA_TABLE_CELL}>
+										{row.opportunityType}
+									</TableCell>
 									<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
 										{row.lastServiceDate}
 									</TableCell>
-									<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+									>
 										{row.rafImpact.toFixed(3)}
 									</TableCell>
-									<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+									<TableCell
+										className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+									>
 										${row.paymentImpact.toLocaleString()}
 									</TableCell>
 									<TableCell className={RA_TABLE_CELL}>
-										<RaStatusPill label={row.status} tone={opportunityStatusTone(row.status)} />
+										<RaStatusPill
+											label={row.status}
+											tone={opportunityStatusTone(row.status)}
+										/>
 									</TableCell>
-									<TableCell className={RA_TABLE_CELL}>{row.assignedTo}</TableCell>
-									<TableCell className={RA_TABLE_CELL}>{row.codingSource}</TableCell>
+									<TableCell className={RA_TABLE_CELL}>
+										{row.assignedTo}
+									</TableCell>
+									<TableCell className={RA_TABLE_CELL}>
+										{row.codingSource}
+									</TableCell>
 									<TableCell className={cn(RA_TABLE_CELL, "pr-3 text-right")}>
-										<Button variant="outline" size="sm" className="h-7 px-2 text-xs" asChild>
+										<Button
+											variant="outline"
+											size="sm"
+											className="h-7 px-2 text-xs"
+											asChild
+										>
 											<Link
 												href={`/admin/claim-encounter/regulatory/risk-adjustment/member-opportunities/${row.id}`}
 											>

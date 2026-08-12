@@ -11,10 +11,10 @@
  *   … pnpm seed:vendor-core --skip-uploads
  *   … pnpm seed:vendor-core --dry-run
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Blob } from "node:buffer";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
 	ACCOUNT_NAMES,

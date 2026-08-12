@@ -4,12 +4,6 @@ import { useParams } from "next/navigation";
 
 import { ArrowLeft, Play } from "lucide-react";
 
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	VendorCoreErrorBanner,
-	VendorCoreLiveChrome,
-	VendorCoreLoadingRow,
-} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,6 +14,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import {
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { vendorCoreApi } from "@/lib/vendor-core";
@@ -185,7 +185,9 @@ function VendorDetailLiveBody({ id }: { id: string }) {
 								<TableBody>
 									{(accountsQ.data ?? []).map((a) => (
 										<TableRow key={a.id}>
-											<TableCell className="font-mono text-xs">{a.code}</TableCell>
+											<TableCell className="font-mono text-xs">
+												{a.code}
+											</TableCell>
 											<TableCell>{a.name ?? "—"}</TableCell>
 											<TableCell>
 												<StatusBadge status={a.status ?? "active"} />

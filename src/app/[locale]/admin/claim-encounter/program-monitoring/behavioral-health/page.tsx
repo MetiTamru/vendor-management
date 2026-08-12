@@ -2,6 +2,9 @@ import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-enco
 
 export default function Page() {
 	return (
-		<ComplianceProgramRoutePage slug="behavioral-health" section="program_monitoring" />
+		<ComplianceProgramRoutePage
+			slug="behavioral-health"
+			section="program_monitoring"
+		/>
 	);
 }

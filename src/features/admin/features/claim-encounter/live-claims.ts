@@ -1,4 +1,7 @@
-import type { ClaimLine, ProgramFileType } from "@/features/admin/features/claim-encounter/mock-data";
+import type {
+	ClaimLine,
+	ProgramFileType,
+} from "@/features/admin/features/claim-encounter/mock-data";
 import type { ClaimLineDto } from "@/lib/vendor-core/types";
 
 const PROVIDERS = [
@@ -44,8 +47,9 @@ export function claimLineDtosToClaimLines(
 ): ClaimLine[] {
 	return rows.map((row, index) => {
 		const seq =
-			Number(String(row.claim_reference_id ?? row.claim_id).replace(/\D/g, "")) ||
-			index + 1;
+			Number(
+				String(row.claim_reference_id ?? row.claim_id).replace(/\D/g, "")
+			) || index + 1;
 		const gainwellStatus = mapGainwellStatus(row.status);
 		const mfcReviewStatus = mapMfcStatus(row.status);
 		const billed = Number(row.billed_amount ?? 0);

@@ -30,12 +30,9 @@ import {
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	HCC_37_MEMBERS,
-	HCC_SUMMARY_ROWS,
-	type HccMemberRow,
-	type HccSummaryRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
-import {
+	RA_STACK,
+	RA_TABLE_CELL,
+	RA_TABLE_HEAD,
 	RaAllFilterSelect,
 	RaCaptureBar,
 	RaCountPct,
@@ -43,13 +40,16 @@ import {
 	RaFilterPanel,
 	RaPanelLink,
 	RaSectionTitle,
-	RA_STACK,
 	RaStatusPill,
 	RaTablePagination,
-	RA_TABLE_CELL,
-	RA_TABLE_HEAD,
 	RaViewAction,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
+import {
+	HCC_37_MEMBERS,
+	HCC_SUMMARY_ROWS,
+	type HccMemberRow,
+	type HccSummaryRow,
+} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { cn } from "@/lib/utils";
 
 function categoryToneClass(tone: HccSummaryRow["categoryTone"]) {
@@ -105,10 +105,18 @@ function HccFiltersBar() {
 				</div>
 			</div>
 			<div className="mt-2 flex items-center gap-2">
-				<Button size="sm" className="h-8 text-xs" onClick={() => toast.message("Filters applied")}>
+				<Button
+					size="sm"
+					className="h-8 text-xs"
+					onClick={() => toast.message("Filters applied")}
+				>
 					Apply Filters
 				</Button>
-				<Button variant="link" size="sm" className="h-8 px-0 text-xs text-primary">
+				<Button
+					variant="link"
+					size="sm"
+					className="h-8 px-0 text-xs text-primary"
+				>
 					Reset
 				</Button>
 			</div>
@@ -133,20 +141,35 @@ function HccSummaryTable({
 				subtitle="Showing 1 to 10 of 126 HCCs"
 			/>
 			<CmsEdgeTableScroll>
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={RA_TABLE_HEAD}>HCC Code</TableHead>
 							<TableHead className={RA_TABLE_HEAD}>HCC Description</TableHead>
 							<TableHead className={RA_TABLE_HEAD}>HCC Category</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Eligible Members</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Captured</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Not Captured</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Documentation Issues</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>RAF Impact</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+								Eligible Members
+							</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+								Captured
+							</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+								Not Captured
+							</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+								Documentation Issues
+							</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+								RAF Impact
+							</TableHead>
 							<TableHead className={RA_TABLE_HEAD}>Capture Rate</TableHead>
 							<TableHead className={RA_TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>Action</TableHead>
+							<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>
+								Action
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -164,7 +187,9 @@ function HccSummaryTable({
 										{row.code}
 									</Button>
 								</TableCell>
-								<TableCell className={RA_TABLE_CELL}>{row.description}</TableCell>
+								<TableCell className={RA_TABLE_CELL}>
+									{row.description}
+								</TableCell>
 								<TableCell className={RA_TABLE_CELL}>
 									<span
 										className={cn(
@@ -175,19 +200,35 @@ function HccSummaryTable({
 										{row.category}
 									</span>
 								</TableCell>
-								<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.eligibleMembers.toLocaleString()}
 								</TableCell>
 								<TableCell className={cn(RA_TABLE_CELL, "text-right")}>
-									<RaCountPct count={row.captured} pct={row.capturedPct} tone="success" />
+									<RaCountPct
+										count={row.captured}
+										pct={row.capturedPct}
+										tone="success"
+									/>
 								</TableCell>
 								<TableCell className={cn(RA_TABLE_CELL, "text-right")}>
-									<RaCountPct count={row.notCaptured} pct={row.notCapturedPct} tone="danger" />
+									<RaCountPct
+										count={row.notCaptured}
+										pct={row.notCapturedPct}
+										tone="danger"
+									/>
 								</TableCell>
 								<TableCell className={cn(RA_TABLE_CELL, "text-right")}>
-									<RaCountPct count={row.docIssues} pct={row.docIssuesPct} tone="warning" />
+									<RaCountPct
+										count={row.docIssues}
+										pct={row.docIssuesPct}
+										tone="warning"
+									/>
 								</TableCell>
-								<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{row.rafImpact.toFixed(3)}
 								</TableCell>
 								<TableCell className={RA_TABLE_CELL}>
@@ -220,8 +261,12 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 		<div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
 			<div className="grid lg:grid-cols-[240px_minmax(0,1fr)]">
 				<div className="border-b border-border/50 bg-muted/10 p-3 lg:border-b-0 lg:border-r">
-					<h3 className="text-base font-semibold text-foreground">{hcc.code}</h3>
-					<p className="mt-0.5 text-xs text-muted-foreground">{hcc.description}</p>
+					<h3 className="text-base font-semibold text-foreground">
+						{hcc.code}
+					</h3>
+					<p className="mt-0.5 text-xs text-muted-foreground">
+						{hcc.description}
+					</p>
 					<span
 						className={cn(
 							"mt-2 inline-flex rounded-md border px-2 py-0.5 text-[10px] font-medium",
@@ -233,29 +278,45 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 					<dl className="mt-3 space-y-2 text-xs">
 						<div className="flex justify-between gap-2">
 							<dt className="text-muted-foreground">Eligible Members</dt>
-							<dd className="font-medium tabular-nums">{hcc.eligibleMembers.toLocaleString()}</dd>
+							<dd className="font-medium tabular-nums">
+								{hcc.eligibleMembers.toLocaleString()}
+							</dd>
 						</div>
 						<div className="flex justify-between gap-2">
 							<dt className="text-muted-foreground">Captured</dt>
 							<dd>
-								<RaCountPct count={hcc.captured} pct={hcc.capturedPct} tone="success" />
+								<RaCountPct
+									count={hcc.captured}
+									pct={hcc.capturedPct}
+									tone="success"
+								/>
 							</dd>
 						</div>
 						<div className="flex justify-between gap-2">
 							<dt className="text-muted-foreground">Not Captured</dt>
 							<dd>
-								<RaCountPct count={hcc.notCaptured} pct={hcc.notCapturedPct} tone="danger" />
+								<RaCountPct
+									count={hcc.notCaptured}
+									pct={hcc.notCapturedPct}
+									tone="danger"
+								/>
 							</dd>
 						</div>
 						<div className="flex justify-between gap-2">
 							<dt className="text-muted-foreground">Documentation Issues</dt>
 							<dd>
-								<RaCountPct count={hcc.docIssues} pct={hcc.docIssuesPct} tone="warning" />
+								<RaCountPct
+									count={hcc.docIssues}
+									pct={hcc.docIssuesPct}
+									tone="warning"
+								/>
 							</dd>
 						</div>
 						<div className="flex justify-between gap-2">
 							<dt className="text-muted-foreground">RAF Impact</dt>
-							<dd className="font-medium tabular-nums">{hcc.rafImpact.toFixed(3)}</dd>
+							<dd className="font-medium tabular-nums">
+								{hcc.rafImpact.toFixed(3)}
+							</dd>
 						</div>
 						<div className="space-y-1 pt-1">
 							<dt className="text-muted-foreground">Capture Rate</dt>
@@ -270,7 +331,13 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 					<Tabs defaultValue="members">
 						<div className="border-b border-border/50 px-3">
 							<TabsList className="h-auto gap-0 rounded-none bg-transparent p-0">
-								{["Members", "Diagnoses", "Documentation", "Providers", "History"].map((tab) => (
+								{[
+									"Members",
+									"Diagnoses",
+									"Documentation",
+									"Providers",
+									"History",
+								].map((tab) => (
 									<TabsTrigger
 										key={tab}
 										value={tab.toLowerCase()}
@@ -289,50 +356,92 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 										Members Associated with {hcc.code}
 									</p>
 									<p className="text-xs text-muted-foreground">
-										Showing 1 to 10 of {hcc.eligibleMembers.toLocaleString()} members
+										Showing 1 to 10 of {hcc.eligibleMembers.toLocaleString()}{" "}
+										members
 									</p>
 								</div>
 								<div className="relative w-full max-w-[200px]">
 									<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-									<Input className="h-8 pl-8 text-xs" placeholder="Search members..." />
+									<Input
+										className="h-8 pl-8 text-xs"
+										placeholder="Search members..."
+									/>
 								</div>
 							</div>
 							<CmsEdgeTableScroll>
-								<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[960px]")}>
+								<Table
+									containerClassName={CMS_EDGE_TABLE_CONTAINER}
+									className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[960px]")}
+								>
 									<TableHeader>
 										<TableRow className="hover:bg-transparent">
 											<TableHead className={RA_TABLE_HEAD}>Member ID</TableHead>
-											<TableHead className={RA_TABLE_HEAD}>Member Name</TableHead>
+											<TableHead className={RA_TABLE_HEAD}>
+												Member Name
+											</TableHead>
 											<TableHead className={RA_TABLE_HEAD}>DOB</TableHead>
 											<TableHead className={RA_TABLE_HEAD}>Status</TableHead>
-											<TableHead className={RA_TABLE_HEAD}>Last Service Date</TableHead>
-											<TableHead className={RA_TABLE_HEAD}>Coding Source</TableHead>
-											<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>RAF Impact</TableHead>
-											<TableHead className={RA_TABLE_HEAD}>Documentation Status</TableHead>
-											<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>Action</TableHead>
+											<TableHead className={RA_TABLE_HEAD}>
+												Last Service Date
+											</TableHead>
+											<TableHead className={RA_TABLE_HEAD}>
+												Coding Source
+											</TableHead>
+											<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+												RAF Impact
+											</TableHead>
+											<TableHead className={RA_TABLE_HEAD}>
+												Documentation Status
+											</TableHead>
+											<TableHead
+												className={cn(RA_TABLE_HEAD, "pr-3 text-right")}
+											>
+												Action
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{HCC_37_MEMBERS.map((member) => (
-											<TableRow key={member.id} className="border-b border-border/40 hover:bg-muted/20">
+											<TableRow
+												key={member.id}
+												className="border-b border-border/40 hover:bg-muted/20"
+											>
 												<TableCell className={RA_TABLE_CELL}>
-													<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+													<Button
+														variant="link"
+														className={CMS_EDGE_TABLE_LINK_CLASS}
+													>
 														{member.memberId}
 													</Button>
 												</TableCell>
-												<TableCell className={RA_TABLE_CELL}>{member.name}</TableCell>
-												<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>{member.dob}</TableCell>
+												<TableCell className={RA_TABLE_CELL}>
+													{member.name}
+												</TableCell>
+												<TableCell
+													className={cn(RA_TABLE_CELL, "tabular-nums")}
+												>
+													{member.dob}
+												</TableCell>
 												<TableCell className={RA_TABLE_CELL}>
 													<RaStatusPill
 														label={member.status}
 														tone={memberStatusTone(member.status)}
 													/>
 												</TableCell>
-												<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
+												<TableCell
+													className={cn(RA_TABLE_CELL, "tabular-nums")}
+												>
 													{member.lastServiceDate}
 												</TableCell>
-												<TableCell className={RA_TABLE_CELL}>{member.codingSource}</TableCell>
-												<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+												<TableCell className={RA_TABLE_CELL}>
+													{member.codingSource}
+												</TableCell>
+												<TableCell
+													className={cn(
+														RA_TABLE_CELL,
+														"text-right tabular-nums"
+													)}
+												>
 													{member.rafImpact.toFixed(3)}
 												</TableCell>
 												<TableCell className={RA_TABLE_CELL}>
@@ -341,8 +450,14 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 														tone={docStatusTone(member.docStatus)}
 													/>
 												</TableCell>
-												<TableCell className={cn(RA_TABLE_CELL, "pr-3 text-right")}>
-													<Button variant="link" size="sm" className="h-7 px-0 text-xs text-primary">
+												<TableCell
+													className={cn(RA_TABLE_CELL, "pr-3 text-right")}
+												>
+													<Button
+														variant="link"
+														size="sm"
+														className="h-7 px-0 text-xs text-primary"
+													>
 														{member.action}
 													</Button>
 												</TableCell>
@@ -365,11 +480,18 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 							</div>
 						</TabsContent>
 
-						{["diagnoses", "documentation", "providers", "history"].map((tab) => (
-							<TabsContent key={tab} value={tab} className="mt-0 p-6 text-center text-sm text-muted-foreground">
-								{tab.charAt(0).toUpperCase() + tab.slice(1)} content for {hcc.code} will appear here.
-							</TabsContent>
-						))}
+						{["diagnoses", "documentation", "providers", "history"].map(
+							(tab) => (
+								<TabsContent
+									key={tab}
+									value={tab}
+									className="mt-0 p-6 text-center text-sm text-muted-foreground"
+								>
+									{tab.charAt(0).toUpperCase() + tab.slice(1)} content for{" "}
+									{hcc.code} will appear here.
+								</TabsContent>
+							)
+						)}
 					</Tabs>
 				</div>
 			</div>
@@ -379,7 +501,9 @@ function HccDetailPanel({ hcc }: { hcc: HccSummaryRow }) {
 
 export function RiskAdjustmentHccManagementTab() {
 	const [selectedId, setSelectedId] = useState(HCC_SUMMARY_ROWS[0]?.id ?? "");
-	const selectedHcc = HCC_SUMMARY_ROWS.find((row) => row.id === selectedId) ?? HCC_SUMMARY_ROWS[0];
+	const selectedHcc =
+		HCC_SUMMARY_ROWS.find((row) => row.id === selectedId) ??
+		HCC_SUMMARY_ROWS[0];
 
 	return (
 		<div className={RA_STACK}>
@@ -391,7 +515,9 @@ export function RiskAdjustmentHccManagementTab() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="medicare-advantage">Medicare Advantage</SelectItem>
+							<SelectItem value="medicare-advantage">
+								Medicare Advantage
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>

@@ -9,8 +9,8 @@
  *   VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:providers
  *   … pnpm seed:providers --force
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -104,7 +104,9 @@ async function main() {
 	}
 	console.log("✓ authenticated");
 
-	const vendors = await request("GET", "/api/v1/vendors/list/?limit=1", { token });
+	const vendors = await request("GET", "/api/v1/vendors/list/?limit=1", {
+		token,
+	});
 	const vendorCount = vendors?.count ?? vendors?.results?.length ?? 0;
 	if (!vendorCount) {
 		console.error(
@@ -137,9 +139,13 @@ async function main() {
 	const providerCount = providers?.count ?? providers?.results?.length ?? 0;
 	console.log(`Providers now: ${providerCount}`);
 
-	const rosters = await request("GET", "/api/v1/provider-rosters/list/?limit=5", {
-		token,
-	});
+	const rosters = await request(
+		"GET",
+		"/api/v1/provider-rosters/list/?limit=5",
+		{
+			token,
+		}
+	);
 	const rosterCount = rosters?.count ?? rosters?.results?.length ?? 0;
 	console.log(`Provider rosters now: ${rosterCount}`);
 

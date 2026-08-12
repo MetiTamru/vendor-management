@@ -2,6 +2,7 @@ import { vendorCoreFetch } from "@/lib/vendor-core/client";
 import type {
 	AccountDto,
 	AuditRecordDto,
+	ClaimLineDto,
 	ConnectionDto,
 	CoreUserDto,
 	CredentialDto,
@@ -16,13 +17,13 @@ import type {
 	ProcessingEventDto,
 	ProviderDto,
 	ProviderRosterDto,
-	ClaimLineDto,
 	RoutingRuleDto,
 	ValidationResultDto,
 	VendorDto,
 } from "@/lib/vendor-core/types";
 import {
 	normalizeAccount,
+	normalizeClaimLine,
 	normalizeConnection,
 	normalizeErrorRecord,
 	normalizeInboundFile,
@@ -32,7 +33,6 @@ import {
 	normalizeProcessingEvent,
 	normalizeProvider,
 	normalizeProviderRoster,
-	normalizeClaimLine,
 	normalizeValidationResult,
 	normalizeVendor,
 } from "@/lib/vendor-core/types";
@@ -103,7 +103,9 @@ export const vendorCoreEndpoints = {
 	health: "/health/",
 } as const;
 
-function pageParams(extra?: Record<string, string | number | undefined | null>) {
+function pageParams(
+	extra?: Record<string, string | number | undefined | null>
+) {
 	// Django list endpoints reject limit > 100 ("One or more fields are invalid.")
 	const merged = { limit: 100, offset: 0, ...extra };
 	const limit = Number(merged.limit);
@@ -286,17 +288,14 @@ export const vendorCoreApi = {
 
 	listIntakeJobs: async (params?: { status?: string; vendor_id?: string }) => {
 		// Intake jobs clamp page size (~50); page through until exhausted.
-		const results = await listAllPages(
-			async ({ limit, offset }) => {
-				const page = await vendorCoreFetch<
-					PaginatedResult<Record<string, unknown>>
-				>(vendorCoreEndpoints.intakeJobs, {
-					params: pageParams({ ...params, limit, offset }),
-				});
-				return mapPage(page, normalizeJob);
-			},
-			50
-		);
+		const results = await listAllPages(async ({ limit, offset }) => {
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.intakeJobs, {
+				params: pageParams({ ...params, limit, offset }),
+			});
+			return mapPage(page, normalizeJob);
+		}, 50);
 		return {
 			limit: results.length,
 			offset: 0,
@@ -434,10 +433,9 @@ export const vendorCoreApi = {
 	},
 
 	reprocessInboundFile: (id: string) =>
-		vendorCoreFetch<{ task_id?: string; id?: string } | Record<string, unknown>>(
-			vendorCoreEndpoints.inboundFileReprocess(id),
-			{ method: "POST" }
-		),
+		vendorCoreFetch<
+			{ task_id?: string; id?: string } | Record<string, unknown>
+		>(vendorCoreEndpoints.inboundFileReprocess(id), { method: "POST" }),
 
 	seedInboundProcessing: (body?: { vendor_id?: string; force?: boolean }) =>
 		vendorCoreFetch<{
@@ -452,8 +450,7 @@ export const vendorCoreApi = {
 
 	listInboundFileEvents: async (inboundFileId: string) => {
 		const data = await vendorCoreFetch<
-			| PaginatedResult<Record<string, unknown>>
-			| Record<string, unknown>[]
+			PaginatedResult<Record<string, unknown>> | Record<string, unknown>[]
 		>(vendorCoreEndpoints.inboundFileEvents(inboundFileId));
 
 		const rows = Array.isArray(data)
@@ -509,10 +506,11 @@ export const vendorCoreApi = {
 
 	listErrors: async (params?: { status?: string; category?: string }) => {
 		const results = await listAllPages(async ({ limit, offset }) => {
-			const page = await vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
-				vendorCoreEndpoints.errorsList,
-				{ params: pageParams({ ...params, limit, offset }) }
-			);
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.errorsList, {
+				params: pageParams({ ...params, limit, offset }),
+			});
 			return mapPage(page, normalizeErrorRecord);
 		});
 		return {
@@ -526,14 +524,17 @@ export const vendorCoreApi = {
 	},
 
 	getError: (id: string) =>
-		vendorCoreFetch<Record<string, unknown>>(vendorCoreEndpoints.error(id)).then(
-			(row) => normalizeErrorRecord(row)
-		),
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.error(id)
+		).then((row) => normalizeErrorRecord(row)),
 
 	retryError: (id: string) =>
-		vendorCoreFetch<Record<string, unknown>>(vendorCoreEndpoints.errorRetry(id), {
-			method: "POST",
-		}).then((row) => normalizeErrorRecord(row)),
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.errorRetry(id),
+			{
+				method: "POST",
+			}
+		).then((row) => normalizeErrorRecord(row)),
 
 	resolveError: (id: string, resolution_notes?: string) =>
 		vendorCoreFetch<Record<string, unknown>>(
@@ -546,10 +547,11 @@ export const vendorCoreApi = {
 
 	listProviders: async () => {
 		const results = await listAllPages(async ({ limit, offset }) => {
-			const page = await vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
-				vendorCoreEndpoints.providersList,
-				{ params: pageParams({ limit, offset }) }
-			);
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.providersList, {
+				params: pageParams({ limit, offset }),
+			});
 			return mapPage(page, normalizeProvider);
 		});
 		return {
@@ -564,10 +566,11 @@ export const vendorCoreApi = {
 
 	listProviderRosters: async () => {
 		const results = await listAllPages(async ({ limit, offset }) => {
-			const page = await vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
-				vendorCoreEndpoints.providerRostersList,
-				{ params: pageParams({ limit, offset }) }
-			);
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.providerRostersList, {
+				params: pageParams({ limit, offset }),
+			});
 			return mapPage(page, normalizeProviderRoster);
 		});
 		return {
@@ -580,7 +583,11 @@ export const vendorCoreApi = {
 		} satisfies PaginatedResult<ProviderRosterDto>;
 	},
 
-	seedProviders: (body?: { vendor_id?: string; count?: number; force?: boolean }) =>
+	seedProviders: (body?: {
+		vendor_id?: string;
+		count?: number;
+		force?: boolean;
+	}) =>
 		vendorCoreFetch<{
 			created: number;
 			skipped?: boolean;
@@ -594,10 +601,11 @@ export const vendorCoreApi = {
 
 	listClaimLines: async () => {
 		const results = await listAllPages(async ({ limit, offset }) => {
-			const page = await vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
-				vendorCoreEndpoints.claimLinesList,
-				{ params: pageParams({ limit, offset }) }
-			);
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.claimLinesList, {
+				params: pageParams({ limit, offset }),
+			});
 			return mapPage(page, normalizeClaimLine);
 		});
 		return {
@@ -611,15 +619,18 @@ export const vendorCoreApi = {
 	},
 
 	getClaimLine: (id: string) =>
-		vendorCoreFetch<Record<string, unknown>>(vendorCoreEndpoints.claimLine(id)).then(
-			(row) => normalizeClaimLine(row)
-		),
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.claimLine(id)
+		).then((row) => normalizeClaimLine(row)),
 
 	createClaimLine: (body: Record<string, unknown>) =>
-		vendorCoreFetch<Record<string, unknown>>(vendorCoreEndpoints.claimLinesCreate, {
-			method: "POST",
-			body: JSON.stringify(body),
-		}).then((row) => normalizeClaimLine(row)),
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.claimLinesCreate,
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		).then((row) => normalizeClaimLine(row)),
 
 	updateClaimLine: (id: string, body: Record<string, unknown>) =>
 		vendorCoreFetch<Record<string, unknown>>(
@@ -636,9 +647,12 @@ export const vendorCoreApi = {
 		}),
 
 	hardDeleteClaimLine: (id: string) =>
-		vendorCoreFetch<{ id: string }>(vendorCoreEndpoints.claimLineHardDelete(id), {
-			method: "DELETE",
-		}),
+		vendorCoreFetch<{ id: string }>(
+			vendorCoreEndpoints.claimLineHardDelete(id),
+			{
+				method: "DELETE",
+			}
+		),
 
 	restoreClaimLine: (id: string) =>
 		vendorCoreFetch<Record<string, unknown>>(

@@ -8,8 +8,8 @@ import {
 	CheckCircle2,
 	ClipboardCheck,
 	FileCheck,
-	Shield,
 	type LucideIcon,
+	Shield,
 } from "lucide-react";
 
 import {
@@ -21,9 +21,9 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
@@ -37,10 +37,17 @@ import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";
 const SECTION_GAP = "gap-4";
-const TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const TABLE_CELL = "px-4 py-2.5";
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -64,7 +71,12 @@ function MetricCard({
 	return (
 		<div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-sm">
 			<div className="flex items-center gap-3">
-				<div className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", tone)}>
+				<div
+					className={cn(
+						"flex size-8 shrink-0 items-center justify-center rounded-md",
+						tone
+					)}
+				>
 					<Icon className="size-4" aria-hidden />
 				</div>
 				<div className="min-w-0 flex-1">
@@ -80,7 +92,9 @@ function MetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -115,7 +129,9 @@ function ComplianceKpiRow() {
 				hint="Requires Immediate Action"
 				icon={AlertTriangle}
 				tone="text-red-700 bg-red-500/10"
-				valueClassName={k.overdueItems > 0 ? "text-red-600" : "text-emerald-700"}
+				valueClassName={
+					k.overdueItems > 0 ? "text-red-600" : "text-emerald-700"
+				}
 			/>
 			<MetricCard
 				label="Attestations Complete"
@@ -148,7 +164,10 @@ function RequirementsTablePanel() {
 	return (
 		<CmsEdgeSectionPanel title="Compliance Requirements">
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Requirement</TableHead>
@@ -160,12 +179,24 @@ function RequirementsTablePanel() {
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_COMPLIANCE_REQUIREMENTS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.requirement}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "font-mono text-[11px] text-muted-foreground")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.requirement}
+								</TableCell>
+								<TableCell
+									className={cn(
+										TABLE_CELL,
+										"font-mono text-[11px] text-muted-foreground"
+									)}
+								>
 									{row.regulation}
 								</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.dueDate}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.dueDate}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.owner}</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-5")}>
 									<StatusPill label={row.status} className={row.statusStyle} />
@@ -183,7 +214,10 @@ function AttestationsTablePanel() {
 	return (
 		<CmsEdgeSectionPanel title="Attestations">
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={TABLE_HEAD}>Attestation</TableHead>
@@ -194,10 +228,17 @@ function AttestationsTablePanel() {
 					</TableHeader>
 					<TableBody>
 						{MEDICARE_COMPLIANCE_ATTESTATIONS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(TABLE_CELL, "font-medium")}>{row.name}</TableCell>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell className={cn(TABLE_CELL, "font-medium")}>
+									{row.name}
+								</TableCell>
 								<TableCell className={TABLE_CELL}>{row.submittedBy}</TableCell>
-								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.submittedDate}</TableCell>
+								<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+									{row.submittedDate}
+								</TableCell>
 								<TableCell className={cn(TABLE_CELL, "pr-5")}>
 									<StatusPill label={row.status} className={row.statusStyle} />
 								</TableCell>

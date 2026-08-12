@@ -127,7 +127,13 @@ export const REPORT_ISSUER_OPTIONS = [
 	"Test Client(31674)",
 ];
 
-export const REPORT_ISSUER_ID_OPTIONS = ["31663", "32542", "33130", "31674", "32567"];
+export const REPORT_ISSUER_ID_OPTIONS = [
+	"31663",
+	"32542",
+	"33130",
+	"31674",
+	"32567",
+];
 
 export const REPORT_PROCESS_OPTIONS = ["Optum Process", "OIDS", "HHS"];
 
@@ -166,7 +172,7 @@ const TAB_PREFIX: Record<ReportTabId, string> = {
 	"claim-search": "CLM",
 	"error-summary": "ERR",
 	"overlap-analysis": "OVL",
-	"duplicates": "DUP",
+	duplicates: "DUP",
 	"generate-void-claims": "VOD",
 };
 
@@ -182,7 +188,9 @@ function displayDate(year: number, month: number, day: number) {
 	return `${pad(month)}/${pad(day)}/${year}`;
 }
 
-export function mockEnrollmentReportRows(tabId: ReportTabId): EnrollmentReportRow[] {
+export function mockEnrollmentReportRows(
+	tabId: ReportTabId
+): EnrollmentReportRow[] {
 	const prefix = TAB_PREFIX[tabId];
 	const count = 8 + (prefix.charCodeAt(0) % 4);
 
@@ -203,9 +211,12 @@ export function mockEnrollmentReportRows(tabId: ReportTabId): EnrollmentReportRo
 			acceptedCount: [12, 48, 7, 19, 3, 55, 21, 9, 14][index % 9]!,
 			rejectedCount: [0, 2, 1, 0, 3, 1, 0, 2, 1][index % 9]!,
 			issuerName: issuer,
-			process: index % 3 === 0 ? "Optum Process" : REPORT_PROCESS_OPTIONS[index % 3]!,
+			process:
+				index % 3 === 0 ? "Optum Process" : REPORT_PROCESS_OPTIONS[index % 3]!,
 			enrolleeStatus:
-				REPORT_ENROLLEE_STATUS_OPTIONS[index % REPORT_ENROLLEE_STATUS_OPTIONS.length]!,
+				REPORT_ENROLLEE_STATUS_OPTIONS[
+					index % REPORT_ENROLLEE_STATUS_OPTIONS.length
+				]!,
 			fileStatus:
 				REPORT_FILE_STATUS_OPTIONS[index % REPORT_FILE_STATUS_OPTIONS.length]!,
 			inboundFileName: fileName,
@@ -230,7 +241,8 @@ export function mockClaimSearchRows(): ClaimSearchRow[] {
 		claimId: `CLM-${880000 + index}`,
 		enrolleeId: `ENR-${100240 + index}`,
 		claimType: REPORT_CLAIM_TYPES[index % REPORT_CLAIM_TYPES.length]!,
-		issuerId: REPORT_ISSUER_ID_OPTIONS[index % REPORT_ISSUER_ID_OPTIONS.length]!,
+		issuerId:
+			REPORT_ISSUER_ID_OPTIONS[index % REPORT_ISSUER_ID_OPTIONS.length]!,
 		status: index % 4 === 0 ? "Denied" : "Accepted",
 		serviceDate: displayDate(2025, 7, 10 + index),
 	}));
@@ -240,7 +252,8 @@ export function mockErrorSummaryRows(): ErrorSummaryRow[] {
 	return Array.from({ length: 8 }, (_, index) => ({
 		id: `error-${index + 1}`,
 		fileName: `ERR_ACA_32_PROD_202507${pad(10 + index)}_${55001000 + index}.TDAT`,
-		issuerId: REPORT_ISSUER_ID_OPTIONS[index % REPORT_ISSUER_ID_OPTIONS.length]!,
+		issuerId:
+			REPORT_ISSUER_ID_OPTIONS[index % REPORT_ISSUER_ID_OPTIONS.length]!,
 		fileType: REPORT_ERROR_FILE_TYPES[index % REPORT_ERROR_FILE_TYPES.length]!,
 		process: REPORT_ERROR_PROCESS_OPTIONS[index % 2]!,
 		errorCount: 3 + index * 2,

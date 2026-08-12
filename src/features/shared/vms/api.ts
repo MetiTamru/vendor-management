@@ -1,11 +1,15 @@
 import { apiClient } from "@/lib/api/client";
-import { isMockEnabled, isNestApiEnabled, withMockOrRemote } from "@/lib/mock-mode";
+import {
+	isMockEnabled,
+	isNestApiEnabled,
+	withMockOrRemote,
+} from "@/lib/mock-mode";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
 import {
 	VendorCoreApiError,
 	getStoredAccessToken,
 	isVendorCoreLive,
 } from "@/lib/vendor-core/client";
-import { vendorCoreApi } from "@/lib/vendor-core/api";
 
 import { vendorDtoToModel } from "./map-vendor-core";
 import { CURRENT_VENDOR_ID, vmsStore } from "./mock-store";
@@ -115,8 +119,7 @@ export const vmsApi = {
 		if (isMockEnabled()) return mockDelay(vmsStore.createVendor(input));
 		if (isVendorCoreLive()) {
 			const code =
-				input.tags?.[0]?.trim() ||
-				`VND-${Date.now().toString().slice(-8)}`;
+				input.tags?.[0]?.trim() || `VND-${Date.now().toString().slice(-8)}`;
 			const dto = await vendorCoreApi.createVendor({
 				vendor_code: code,
 				legal_name: input.legalName,

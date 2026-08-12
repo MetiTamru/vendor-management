@@ -28,7 +28,11 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CmsEdgeSectionPanel } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	buildMay2025Grid,
+	ComplianceCalendarListView,
+	ComplianceCalendarWeekView,
+} from "@/features/admin/features/claim-encounter/compliance-calendar/ComplianceCalendarViews";
+import { ComplianceObligationsSection } from "@/features/admin/features/claim-encounter/compliance-calendar/ComplianceObligationsSection";
+import {
 	COMPLIANCE_CALENDAR_EVENTS,
 	COMPLIANCE_CALENDAR_KPIS,
 	COMPLIANCE_CALENDAR_WEEK_LABEL,
@@ -43,13 +47,9 @@ import {
 	COMPLIANCE_PROGRAM_SUMMARY,
 	type CalendarDayEvent,
 	type ComplianceProgramKey,
+	buildMay2025Grid,
 } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
 import { cn } from "@/lib/utils";
-import { ComplianceObligationsSection } from "@/features/admin/features/claim-encounter/compliance-calendar/ComplianceObligationsSection";
-import {
-	ComplianceCalendarListView,
-	ComplianceCalendarWeekView,
-} from "@/features/admin/features/claim-encounter/compliance-calendar/ComplianceCalendarViews";
 
 const PAGE_STACK = "space-y-4 pb-4";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -176,23 +176,29 @@ function ProgramSummaryChart() {
 			</div>
 			<ul className="min-w-0 flex-1 space-y-1.5 text-xs">
 				{COMPLIANCE_PROGRAM_SUMMARY.map((item) => (
-					<li key={item.key} className="flex items-center justify-between gap-2">
+					<li
+						key={item.key}
+						className="flex items-center justify-between gap-2"
+					>
 						<span className="flex min-w-0 items-center gap-1.5 font-medium text-foreground">
 							<span
 								className="size-2 shrink-0 rounded-full"
 								style={{ backgroundColor: COMPLIANCE_PROGRAM_COLORS[item.key] }}
 							/>
-							<span className="truncate">{COMPLIANCE_PROGRAM_LABELS[item.key]}</span>
+							<span className="truncate">
+								{COMPLIANCE_PROGRAM_LABELS[item.key]}
+							</span>
 						</span>
 						<span className="shrink-0 tabular-nums text-muted-foreground">
-							{item.count}{" "}
-							<span className="text-[10px]">({item.pct})</span>
+							{item.count} <span className="text-[10px]">({item.pct})</span>
 						</span>
 					</li>
 				))}
 				<li className="flex items-center justify-between border-t border-border/50 pt-2 font-semibold text-foreground">
 					<span>Total</span>
-					<span className="tabular-nums">{COMPLIANCE_CALENDAR_KPIS.total.value}</span>
+					<span className="tabular-nums">
+						{COMPLIANCE_CALENDAR_KPIS.total.value}
+					</span>
 				</li>
 			</ul>
 		</div>
@@ -205,21 +211,30 @@ export function ComplianceCalendarPage() {
 	const kpis = COMPLIANCE_CALENDAR_KPIS;
 
 	const periodLabel =
-		view === "week" ? COMPLIANCE_CALENDAR_WEEK_LABEL : view === "list" ? "May 2025" : "May 2025";
+		view === "week"
+			? COMPLIANCE_CALENDAR_WEEK_LABEL
+			: view === "list"
+				? "May 2025"
+				: "May 2025";
 
 	return (
 		<div className={PAGE_STACK}>
 			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="min-w-0 space-y-1">
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Compliance Calendar</h1>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">
+						Compliance Calendar
+					</h1>
 					<p className="text-sm text-muted-foreground">
-						Track and manage all regulatory, program, and quality obligations in one place.
+						Track and manage all regulatory, program, and quality obligations in
+						one place.
 					</p>
 				</div>
 				<div className="flex flex-wrap items-end gap-2">
 					<div className="flex flex-col gap-1">
-						<span className="text-[11px] font-medium text-muted-foreground">Program</span>
+						<span className="text-[11px] font-medium text-muted-foreground">
+							Program
+						</span>
 						<Select defaultValue="all">
 							<SelectTrigger className="h-9 w-[140px] bg-card text-xs shadow-sm">
 								<SelectValue />
@@ -234,7 +249,9 @@ export function ComplianceCalendarPage() {
 						</Select>
 					</div>
 					<div className="flex flex-col gap-1">
-						<span className="text-[11px] font-medium text-muted-foreground">Measurement Year</span>
+						<span className="text-[11px] font-medium text-muted-foreground">
+							Measurement Year
+						</span>
 						<Select defaultValue="2025">
 							<SelectTrigger className="h-9 w-[100px] bg-card text-xs shadow-sm">
 								<SelectValue />
@@ -245,7 +262,11 @@ export function ComplianceCalendarPage() {
 							</SelectContent>
 						</Select>
 					</div>
-					<Button variant="outline" size="sm" className="h-9 bg-card text-xs shadow-sm">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9 bg-card text-xs shadow-sm"
+					>
 						Today
 					</Button>
 					<Button
@@ -317,11 +338,23 @@ export function ComplianceCalendarPage() {
 					title={
 						<div className="flex w-full items-center justify-between gap-3">
 							<div className="flex items-center gap-2">
-								<Button variant="ghost" size="icon" className="size-7" aria-label="Previous month">
+								<Button
+									variant="ghost"
+									size="icon"
+									className="size-7"
+									aria-label="Previous month"
+								>
 									<ChevronLeft className="size-4" />
 								</Button>
-								<span className="text-sm font-semibold text-foreground">{periodLabel}</span>
-								<Button variant="ghost" size="icon" className="size-7" aria-label="Next month">
+								<span className="text-sm font-semibold text-foreground">
+									{periodLabel}
+								</span>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="size-7"
+									aria-label="Next month"
+								>
 									<ChevronRight className="size-4" />
 								</Button>
 							</div>
@@ -356,7 +389,10 @@ export function ComplianceCalendarPage() {
 					footer={
 						<div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border/50 px-4 py-2.5">
 							{COMPLIANCE_LEGEND_ITEMS.map((key: ComplianceProgramKey) => (
-								<span key={key} className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span
+									key={key}
+									className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+								>
 									<span
 										className="size-2 rounded-full"
 										style={{ backgroundColor: COMPLIANCE_PROGRAM_COLORS[key] }}
@@ -387,7 +423,9 @@ export function ComplianceCalendarPage() {
 										inMonth={cell.inMonth}
 										isToday={cell.isToday}
 										events={
-											cell.inMonth ? (COMPLIANCE_CALENDAR_EVENTS[cell.day] ?? []) : []
+											cell.inMonth
+												? (COMPLIANCE_CALENDAR_EVENTS[cell.day] ?? [])
+												: []
 										}
 									/>
 								))}
@@ -405,7 +443,11 @@ export function ComplianceCalendarPage() {
 						title={
 							<div className="flex w-full items-center justify-between">
 								<span>Filters</span>
-								<Button variant="link" size="sm" className="h-auto px-0 text-xs">
+								<Button
+									variant="link"
+									size="sm"
+									className="h-auto px-0 text-xs"
+								>
 									Clear All
 								</Button>
 							</div>
@@ -428,7 +470,9 @@ export function ComplianceCalendarPage() {
 							</Select>
 						</div>
 						<div className="space-y-1.5">
-							<Label className="text-xs text-muted-foreground">Obligation Type</Label>
+							<Label className="text-xs text-muted-foreground">
+								Obligation Type
+							</Label>
 							<Select defaultValue="All">
 								<SelectTrigger className="h-9 bg-card text-xs">
 									<SelectValue />
@@ -458,7 +502,9 @@ export function ComplianceCalendarPage() {
 							</Select>
 						</div>
 						<div className="space-y-1.5">
-							<Label className="text-xs text-muted-foreground">Owner / Assigned To</Label>
+							<Label className="text-xs text-muted-foreground">
+								Owner / Assigned To
+							</Label>
 							<Select defaultValue="All">
 								<SelectTrigger className="h-9 bg-card text-xs">
 									<SelectValue />
@@ -473,7 +519,9 @@ export function ComplianceCalendarPage() {
 							</Select>
 						</div>
 						<div className="space-y-1.5">
-							<Label className="text-xs text-muted-foreground">Date Range</Label>
+							<Label className="text-xs text-muted-foreground">
+								Date Range
+							</Label>
 							<div className="relative">
 								<CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
 								<Input

@@ -4,6 +4,8 @@ import { ExternalLink, MoreVertical, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureBulletList,
 	MeasureDataTable,
@@ -13,8 +15,6 @@ import {
 	MeasureStatTile,
 	MeasureSubsection,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 	PdfLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
@@ -66,14 +66,18 @@ export function MeasureDetailDenominatorTab({
 						<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 							Description
 						</p>
-						<p className="mt-2 text-sm leading-relaxed text-foreground">{data.definition}</p>
+						<p className="mt-2 text-sm leading-relaxed text-foreground">
+							{data.definition}
+						</p>
 					</div>
 
 					<MeasureSubsection
 						title="Denominator Criteria"
 						description="Clinical and administrative rules for denominator inclusion"
 					>
-						<p className="text-sm leading-relaxed text-muted-foreground">{data.criteria}</p>
+						<p className="text-sm leading-relaxed text-muted-foreground">
+							{data.criteria}
+						</p>
 					</MeasureSubsection>
 
 					<MeasureSubsection
@@ -88,7 +92,10 @@ export function MeasureDetailDenominatorTab({
 							fields={[
 								{ label: "Look-Back Period", value: data.lookBackPeriod },
 								{ label: "Age Calculation", value: data.ageCalculation },
-								{ label: "Continuous Enrollment", value: data.continuousEnrollment },
+								{
+									label: "Continuous Enrollment",
+									value: data.continuousEnrollment,
+								},
 							]}
 							columns={3}
 						/>
@@ -111,8 +118,14 @@ export function MeasureDetailDenominatorTab({
 							label="Commercial"
 							value={summary.commercial.toLocaleString()}
 						/>
-						<MeasureStatTile label="Medicaid" value={summary.medicaid.toLocaleString()} />
-						<MeasureStatTile label="Medicare" value={summary.medicare.toLocaleString()} />
+						<MeasureStatTile
+							label="Medicaid"
+							value={summary.medicaid.toLocaleString()}
+						/>
+						<MeasureStatTile
+							label="Medicare"
+							value={summary.medicare.toLocaleString()}
+						/>
 						<MeasureStatTile label="Total Plans" value={summary.totalPlans} />
 						<MeasureStatTile label="Total Groups" value={summary.totalGroups} />
 					</div>
@@ -123,7 +136,9 @@ export function MeasureDetailDenominatorTab({
 				title="Denominator Trend"
 				subtitle="Monthly counts by line of business"
 				action={
-					<PanelLink icon={<ExternalLink className="size-3.5" />}>View Trend Chart</PanelLink>
+					<PanelLink icon={<ExternalLink className="size-3.5" />}>
+						View Trend Chart
+					</PanelLink>
 				}
 				bodyClassName="p-0"
 			>
@@ -133,7 +148,12 @@ export function MeasureDetailDenominatorTab({
 						{ key: "commercial", header: "Commercial", align: "right" },
 						{ key: "medicaid", header: "Medicaid", align: "right" },
 						{ key: "medicare", header: "Medicare", align: "right" },
-						{ key: "total", header: "Total", align: "right", className: "font-semibold" },
+						{
+							key: "total",
+							header: "Total",
+							align: "right",
+							className: "font-semibold",
+						},
 					]}
 					rows={data.trend.map((row) => ({
 						month: row.month,
@@ -155,13 +175,31 @@ export function MeasureDetailDenominatorTab({
 					columns={[
 						{ key: "id", header: "Plan ID", className: "font-mono text-xs" },
 						{ key: "name", header: "Plan Name" },
-						{ key: "lob", header: "Line of Business", className: MEASURE_TABLE_MUTED },
-						{ key: "total", header: "Total Denominator", align: "right", className: "font-semibold" },
+						{
+							key: "lob",
+							header: "Line of Business",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "total",
+							header: "Total Denominator",
+							align: "right",
+							className: "font-semibold",
+						},
 						{ key: "commercial", header: "Commercial", align: "right" },
 						{ key: "medicaid", header: "Medicaid", align: "right" },
 						{ key: "medicare", header: "Medicare", align: "right" },
-						{ key: "pct", header: "% of Total", align: "right", className: MEASURE_TABLE_MUTED },
-						{ key: "refresh", header: "Last Refresh", className: MEASURE_TABLE_MUTED },
+						{
+							key: "pct",
+							header: "% of Total",
+							align: "right",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "refresh",
+							header: "Last Refresh",
+							className: MEASURE_TABLE_MUTED,
+						},
 						{ key: "actions", header: "Actions", align: "right" },
 					]}
 					rows={data.plans.map((plan) => ({
@@ -169,7 +207,8 @@ export function MeasureDetailDenominatorTab({
 						name: plan.name,
 						lob: plan.lineOfBusiness,
 						total: plan.totalDenominator.toLocaleString(),
-						commercial: plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
+						commercial:
+							plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
 						medicaid: plan.medicaid > 0 ? plan.medicaid.toLocaleString() : "—",
 						medicare: plan.medicare > 0 ? plan.medicare.toLocaleString() : "—",
 						pct: `${plan.pctOfTotal.toFixed(2)}%`,
@@ -182,7 +221,10 @@ export function MeasureDetailDenominatorTab({
 					}))}
 					getRowKey={(row) => String(row.id)}
 				/>
-				<MeasureTablePagination shown={data.plans.length} total={data.totalPlanEntries} />
+				<MeasureTablePagination
+					shown={data.plans.length}
+					total={data.totalPlanEntries}
+				/>
 			</MeasureSectionPanel>
 		</div>
 	);

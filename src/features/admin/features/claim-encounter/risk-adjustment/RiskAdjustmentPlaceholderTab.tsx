@@ -17,7 +17,9 @@ export function RiskAdjustmentPlaceholderTab({
 				<div className="flex size-10 items-center justify-center rounded-full bg-muted">
 					<Construction className="size-4 text-muted-foreground" />
 				</div>
-				<p className="text-sm font-medium text-foreground">This section is coming soon</p>
+				<p className="text-sm font-medium text-foreground">
+					This section is coming soon
+				</p>
 				<p className="max-w-md text-xs text-muted-foreground">{description}</p>
 			</div>
 		</CmsEdgeSectionPanel>

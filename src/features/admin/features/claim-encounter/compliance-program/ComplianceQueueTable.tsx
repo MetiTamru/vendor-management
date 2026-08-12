@@ -34,11 +34,11 @@ export function StatusPill({ status }: { status: string }) {
 			? "border-emerald-200/80 bg-emerald-50 text-emerald-900"
 			: /pending|review|draft|open|upcoming|due soon|in progress|suspected|gap|at risk|warning/i.test(
 						status
-					)
+				  )
 				? "border-amber-200/80 bg-amber-50 text-amber-950"
 				: /reject|exception|overdue|denied|finding|late|cap alert|remediating/i.test(
 							status
-						)
+					  )
 					? "border-red-200/80 bg-red-50 text-red-900"
 					: "border-slate-200/80 bg-slate-50 text-slate-800";
 
@@ -126,7 +126,9 @@ export function ComplianceQueueTable({
 								<TableHead className="pl-3 font-semibold text-primary">
 									Reference
 								</TableHead>
-								<TableHead className="font-semibold text-primary">Title</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Title
+								</TableHead>
 								<TableHead className="font-semibold text-primary">
 									Vendor
 								</TableHead>
@@ -139,7 +141,9 @@ export function ComplianceQueueTable({
 								<TableHead className="font-semibold text-primary">
 									Metric
 								</TableHead>
-								<TableHead className="font-semibold text-primary">Due</TableHead>
+								<TableHead className="font-semibold text-primary">
+									Due
+								</TableHead>
 								<TableHead className="font-semibold text-primary">
 									Owner
 								</TableHead>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -10,8 +10,8 @@ import {
 	ChevronRight,
 	Clock3,
 	FileText,
-	Mail,
 	type LucideIcon,
+	Mail,
 	Search,
 	XCircle,
 } from "lucide-react";
@@ -23,8 +23,8 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -48,27 +48,27 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
 	MEDICAID_RECENT_WARNINGS,
+	MEDICAID_RESPONSES_BY_STATUS,
 	MEDICAID_RESPONSE_FILES,
 	MEDICAID_RESPONSE_KPIS,
 	MEDICAID_RESPONSE_STATUS_STYLES,
 	MEDICAID_RESPONSE_SUMMARY_TREND,
-	MEDICAID_RESPONSES_BY_STATUS,
 	MEDICAID_TOP_ERROR_REASONS,
 	MEDICAID_WARNING_STATUS_STYLES,
 } from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
-import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 function scaleProgramCount(value: number, programType?: ProgramType) {
@@ -86,7 +86,8 @@ function formatProgramFileName(fileName: string, programType?: ProgramType) {
 const RESPONSE_PAGE_STACK = "space-y-5";
 const RESPONSE_SECTION_GAP = "gap-4";
 /** Wider table cells so file names and descriptions fit without horizontal scroll on desktop */
-const RESPONSE_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const RESPONSE_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const RESPONSE_TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -97,7 +98,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -142,7 +149,9 @@ function ResponseMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -157,7 +166,11 @@ function ResponsesKpiRow({ programType }: { programType?: ProgramType }) {
 	return (
 		<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 			<ResponseMetricCard
-				label={isMedicare ? "CMS Response Files Received" : "State Response Files Received"}
+				label={
+					isMedicare
+						? "CMS Response Files Received"
+						: "State Response Files Received"
+				}
 				value={scaleProgramCount(k.filesReceived, programType)}
 				hint={
 					<span className="inline-flex items-center gap-0.5 text-emerald-700">
@@ -210,7 +223,11 @@ function ResponsesKpiRow({ programType }: { programType?: ProgramType }) {
 	);
 }
 
-function StateResponseFilesTable({ programType }: { programType?: ProgramType }) {
+function StateResponseFilesTable({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
@@ -219,7 +236,9 @@ function StateResponseFilesTable({ programType }: { programType?: ProgramType })
 			action={<PanelLink>View All</PanelLink>}
 			footer={
 				<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border/50 px-5 py-3 text-xs text-muted-foreground">
-					<span>Showing 1 to 6 of {scaleProgramCount(40, programType)} entries</span>
+					<span>
+						Showing 1 to 6 of {scaleProgramCount(40, programType)} entries
+					</span>
 					<div className="flex items-center gap-1">
 						<Button variant="outline" size="icon" className="size-7" disabled>
 							<ChevronLeft className="size-3.5" />
@@ -245,41 +264,93 @@ function StateResponseFilesTable({ programType }: { programType?: ProgramType })
 			}
 		>
 			<CmsEdgeTableScroll className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[220px]")}>Response File Name</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[120px]")}>Report Type</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[140px]")}>Received Date/Time</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>Records</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>Accepted</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>Errors</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>Warnings</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "pr-5")}>Status</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[220px]")}>
+								Response File Name
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[120px]")}>
+								Report Type
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "min-w-[140px]")}>
+								Received Date/Time
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>
+								Records
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>
+								Accepted
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>
+								Errors
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "text-right")}>
+								Warnings
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "pr-5")}>
+								Status
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_RESPONSE_FILES.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={RESPONSE_TABLE_CELL}>
-									<Button variant="link" className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}>
+									<Button
+										variant="link"
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
+									>
 										{formatProgramFileName(row.fileName, programType)}
 									</Button>
 								</TableCell>
-								<TableCell className={RESPONSE_TABLE_CELL}>{row.reportType}</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "whitespace-nowrap tabular-nums")}>
+								<TableCell className={RESPONSE_TABLE_CELL}>
+									{row.reportType}
+								</TableCell>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"whitespace-nowrap tabular-nums"
+									)}
+								>
 									{row.receivedAt}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(scaleProgramCount(row.records, programType))}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums text-emerald-700")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"text-right tabular-nums text-emerald-700"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.accepted, programType))}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.errors, programType))}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums text-amber-600")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"text-right tabular-nums text-amber-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.warnings, programType))}
 								</TableCell>
 								<TableCell className={cn(RESPONSE_TABLE_CELL, "pr-5")}>
@@ -297,13 +368,21 @@ function StateResponseFilesTable({ programType }: { programType?: ProgramType })
 	);
 }
 
-function ResponseSummaryTrendPanel({ programType }: { programType?: ProgramType }) {
+function ResponseSummaryTrendPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
 		<CmsEdgeSectionPanel
 			className="flex h-full min-h-0 flex-col"
-			title={isMedicare ? "CMS Response Summary Trend" : "State Response Summary Trend"}
+			title={
+				isMedicare
+					? "CMS Response Summary Trend"
+					: "State Response Summary Trend"
+			}
 			bodyClassName="flex min-h-0 flex-1 flex-col"
 			footer={
 				<div className="border-t border-border/50 px-4 py-2 text-center">
@@ -397,7 +476,9 @@ function ResponseFiltersPanel() {
 					</div>
 				</div>
 				<div className="space-y-1">
-					<label className="text-[11px] font-medium text-muted-foreground">Report Type</label>
+					<label className="text-[11px] font-medium text-muted-foreground">
+						Report Type
+					</label>
 					<Select value={reportType} onValueChange={setReportType}>
 						<SelectTrigger className="h-8 text-xs">
 							<SelectValue placeholder="All types" />
@@ -412,7 +493,9 @@ function ResponseFiltersPanel() {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<label className="text-[11px] font-medium text-muted-foreground">Status</label>
+					<label className="text-[11px] font-medium text-muted-foreground">
+						Status
+					</label>
 					<Select value={status} onValueChange={setStatus}>
 						<SelectTrigger className="h-8 text-xs">
 							<SelectValue placeholder="All statuses" />
@@ -426,7 +509,9 @@ function ResponseFiltersPanel() {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<label className="text-[11px] font-medium text-muted-foreground">File Name</label>
+					<label className="text-[11px] font-medium text-muted-foreground">
+						File Name
+					</label>
 					<div className="relative">
 						<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
 						<Input
@@ -459,8 +544,15 @@ function ResponseFiltersPanel() {
 	);
 }
 
-function ResponsesByStatusPanel({ programType }: { programType?: ProgramType }) {
-	const total = scaleProgramCount(MEDICAID_RESPONSE_KPIS.filesReceived, programType);
+function ResponsesByStatusPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
+	const total = scaleProgramCount(
+		MEDICAID_RESPONSE_KPIS.filesReceived,
+		programType
+	);
 	const pieData = MEDICAID_RESPONSES_BY_STATUS.map((item) => ({
 		name: item.name,
 		value: scaleProgramCount(item.count, programType),
@@ -500,7 +592,10 @@ function ResponsesByStatusPanel({ programType }: { programType?: ProgramType }) 
 				</div>
 				<ul className="flex min-w-0 flex-1 flex-col gap-2 text-xs">
 					{MEDICAID_RESPONSES_BY_STATUS.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
 								<span
 									className="size-2 shrink-0 rounded-full"
@@ -531,30 +626,58 @@ function TopErrorReasonsPanel({ programType }: { programType?: ProgramType }) {
 			}
 		>
 			<div className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[88px]")}>Code</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[88px]")}>
+								Code
+							</TableHead>
 							<TableHead className={RESPONSE_TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[72px] text-right")}>Count</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[100px] pr-5 text-right")}>
+							<TableHead
+								className={cn(RESPONSE_TABLE_HEAD, "w-[72px] text-right")}
+							>
+								Count
+							</TableHead>
+							<TableHead
+								className={cn(RESPONSE_TABLE_HEAD, "w-[100px] pr-5 text-right")}
+							>
 								% of Total Errors
 							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_TOP_ERROR_REASONS.map((row) => (
-							<TableRow key={row.code} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "font-mono font-medium")}>
+							<TableRow
+								key={row.code}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(RESPONSE_TABLE_CELL, "font-mono font-medium")}
+								>
 									{row.code}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "pr-6 text-muted-foreground leading-relaxed")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"pr-6 text-muted-foreground leading-relaxed"
+									)}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(scaleProgramCount(row.count, programType))}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "pr-5 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"pr-5 text-right tabular-nums"
+									)}
+								>
 									{row.pct.toFixed(1)}%
 								</TableCell>
 							</TableRow>
@@ -577,25 +700,48 @@ function RecentWarningsPanel({ programType }: { programType?: ProgramType }) {
 			}
 		>
 			<div className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[88px]")}>Code</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[88px]")}>
+								Code
+							</TableHead>
 							<TableHead className={RESPONSE_TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[72px] text-right")}>Count</TableHead>
-							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[100px] pr-5")}>Status</TableHead>
+							<TableHead
+								className={cn(RESPONSE_TABLE_HEAD, "w-[72px] text-right")}
+							>
+								Count
+							</TableHead>
+							<TableHead className={cn(RESPONSE_TABLE_HEAD, "w-[100px] pr-5")}>
+								Status
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_RECENT_WARNINGS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "font-mono font-medium")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(RESPONSE_TABLE_CELL, "font-mono font-medium")}
+								>
 									{row.code}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "pr-6 text-muted-foreground leading-relaxed")}>
+								<TableCell
+									className={cn(
+										RESPONSE_TABLE_CELL,
+										"pr-6 text-muted-foreground leading-relaxed"
+									)}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(RESPONSE_TABLE_CELL, "text-right tabular-nums")}
+								>
 									{formatCount(scaleProgramCount(row.count, programType))}
 								</TableCell>
 								<TableCell className={cn(RESPONSE_TABLE_CELL, "pr-5")}>
@@ -617,7 +763,9 @@ type MedicaidEncounterResponsesTabProps = {
 	programType?: ProgramType;
 };
 
-export function MedicaidEncounterResponsesTab({ programType }: MedicaidEncounterResponsesTabProps = {}) {
+export function MedicaidEncounterResponsesTab({
+	programType,
+}: MedicaidEncounterResponsesTabProps = {}) {
 	return (
 		<div className={RESPONSE_PAGE_STACK}>
 			<ResponsesKpiRow programType={programType} />

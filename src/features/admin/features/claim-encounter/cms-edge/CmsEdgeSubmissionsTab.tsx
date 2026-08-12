@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	ArrowUpDown,
@@ -32,6 +32,18 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_PAGE_STACK,
+	CMS_EDGE_STATUS_PILL_CLASS,
+	CMS_EDGE_TABLE_CELL_CLASS,
+	CMS_EDGE_TABLE_CLASS,
+	CMS_EDGE_TABLE_CONTAINER,
+	CMS_EDGE_TABLE_HEAD_CLASS,
+	CmsEdgePageFooter,
+	CmsEdgeSectionPanel,
+	CmsEdgeSplitRow,
+	CmsEdgeTableScroll,
+} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import {
 	CMS_EDGE_SUBMISSION_DETAILS,
 	CMS_EDGE_SUBMISSION_HISTORY,
 	CMS_EDGE_SUBMISSION_KPIS,
@@ -39,24 +51,18 @@ import {
 	SUBMISSION_CMS_RESPONSE_STYLES,
 	SUBMISSION_STATUS_STYLES,
 } from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import {
-	CMS_EDGE_PAGE_STACK,
-	CMS_EDGE_TABLE_CELL_CLASS,
-	CMS_EDGE_TABLE_CLASS,
-	CMS_EDGE_TABLE_CONTAINER,
-	CMS_EDGE_TABLE_HEAD_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
-	CmsEdgePageFooter,
-	CmsEdgeSectionPanel,
-	CmsEdgeSplitRow,
-	CmsEdgeTableScroll,
-} from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_SELECTED_ID = "sub-h-2";
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -110,7 +116,9 @@ function SubmissionMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -183,7 +191,11 @@ function SubmissionHistoryPanel({
 			bodyClassName="flex min-h-0 flex-1 flex-col"
 			action={
 				<div className="flex items-center gap-2">
-					<Button size="sm" className="h-8" onClick={() => toast.message("New submission")}>
+					<Button
+						size="sm"
+						className="h-8"
+						onClick={() => toast.message("New submission")}
+					>
 						<Plus className="mr-1.5 size-3.5" />
 						New Submission
 					</Button>
@@ -225,18 +237,32 @@ function SubmissionHistoryPanel({
 				>
 					<TableHeader>
 						<TableRow className="border-b border-border/50 hover:bg-transparent">
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Submission Type</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Reporting Period</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>File Name</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Submission Type
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Reporting Period
+							</TableHead>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								File Name
+							</TableHead>
 							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								<SortableHead>Submitted Date / Time</SortableHead>
 							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Status</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Status
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "text-right")}
+							>
 								Records
 							</TableHead>
-							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Submitted By</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
+							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+								Submitted By
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+							>
 								Actions
 							</TableHead>
 						</TableRow>
@@ -263,7 +289,9 @@ function SubmissionHistoryPanel({
 								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<span className="font-mono text-[11px]">{row.fileName}</span>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+								>
 									{row.submittedDateTime}
 								</TableCell>
 								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
@@ -272,11 +300,20 @@ function SubmissionHistoryPanel({
 										className={SUBMISSION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(row.records)}
 								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.submittedBy}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+									{row.submittedBy}
+								</TableCell>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}
+								>
 									<Button
 										variant="ghost"
 										size="icon"
@@ -298,7 +335,9 @@ function SubmissionHistoryPanel({
 	);
 }
 
-function buildDetailsFromRow(row: (typeof CMS_EDGE_SUBMISSION_HISTORY)[number]) {
+function buildDetailsFromRow(
+	row: (typeof CMS_EDGE_SUBMISSION_HISTORY)[number]
+) {
 	return {
 		submissionType: row.submissionType,
 		reportingPeriod: row.reportingPeriod,
@@ -367,7 +406,9 @@ function SubmissionDetailsPanel({ selectedId }: { selectedId: string }) {
 			</p>
 			<div className="flex-1 space-y-4 px-4 pb-3 text-xs">
 				<section>
-					<p className="mb-2 text-[11px] font-semibold text-foreground">Basic Information</p>
+					<p className="mb-2 text-[11px] font-semibold text-foreground">
+						Basic Information
+					</p>
 					<dl className="space-y-2">
 						{[
 							["Reporting Period", details.reportingPeriod],
@@ -385,7 +426,9 @@ function SubmissionDetailsPanel({ selectedId }: { selectedId: string }) {
 				</section>
 
 				<section className="border-t border-border/40 pt-3">
-					<p className="mb-2 text-[11px] font-semibold text-foreground">Record Summary</p>
+					<p className="mb-2 text-[11px] font-semibold text-foreground">
+						Record Summary
+					</p>
 					<dl className="space-y-2">
 						<div className="flex justify-between gap-3">
 							<dt className="text-muted-foreground">Total Records</dt>
@@ -396,13 +439,15 @@ function SubmissionDetailsPanel({ selectedId }: { selectedId: string }) {
 						<div className="flex justify-between gap-3">
 							<dt className="text-muted-foreground">Accepted</dt>
 							<dd className="font-semibold tabular-nums text-emerald-700">
-								{formatCount(details.acceptedRecords)} ({details.acceptedPercent.toFixed(1)}%)
+								{formatCount(details.acceptedRecords)} (
+								{details.acceptedPercent.toFixed(1)}%)
 							</dd>
 						</div>
 						<div className="flex justify-between gap-3">
 							<dt className="text-muted-foreground">Rejected</dt>
 							<dd className="font-semibold tabular-nums text-red-600">
-								{formatCount(details.rejectedRecords)} ({details.rejectedPercent.toFixed(1)}%)
+								{formatCount(details.rejectedRecords)} (
+								{details.rejectedPercent.toFixed(1)}%)
 							</dd>
 						</div>
 						<div className="flex justify-between gap-3">
@@ -413,10 +458,15 @@ function SubmissionDetailsPanel({ selectedId }: { selectedId: string }) {
 				</section>
 
 				<section className="border-t border-border/40 pt-3">
-					<p className="mb-2 text-[11px] font-semibold text-foreground">CMS Response</p>
+					<p className="mb-2 text-[11px] font-semibold text-foreground">
+						CMS Response
+					</p>
 					<ul className="space-y-2">
 						{details.cmsResponses.map((item) => (
-							<li key={item.label} className="flex items-center justify-between gap-2">
+							<li
+								key={item.label}
+								className="flex items-center justify-between gap-2"
+							>
 								<span className="text-muted-foreground">{item.label}</span>
 								<span className="inline-flex items-center gap-1.5">
 									<StatusPill
@@ -466,12 +516,21 @@ function SubmissionNotesPanel() {
 			</div>
 			{open ? (
 				<CmsEdgeTableScroll className="max-h-[220px]">
-					<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+					<Table
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+						className={CMS_EDGE_TABLE_CLASS}
+					>
 						<TableHeader>
 							<TableRow className="border-b border-border/50 hover:bg-transparent">
-								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Date / Time</TableHead>
-								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>Source</TableHead>
-								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>Note</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Date / Time
+								</TableHead>
+								<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
+									Source
+								</TableHead>
+								<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4")}>
+									Note
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -480,13 +539,28 @@ function SubmissionNotesPanel() {
 									key={note.id}
 									className="border-b border-border/40 hover:bg-muted/20"
 								>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums whitespace-nowrap")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"tabular-nums whitespace-nowrap"
+										)}
+									>
 										{note.dateTime}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "whitespace-nowrap font-medium")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"whitespace-nowrap font-medium"
+										)}
+									>
 										{note.source}
 									</TableCell>
-									<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-muted-foreground")}>
+									<TableCell
+										className={cn(
+											CMS_EDGE_TABLE_CELL_CLASS,
+											"pr-4 text-muted-foreground"
+										)}
+									>
 										{note.note}
 									</TableCell>
 								</TableRow>
@@ -509,7 +583,10 @@ export function CmsEdgeSubmissionsTab() {
 			<CmsEdgeSplitRow
 				wideMain
 				main={
-					<SubmissionHistoryPanel selectedId={selectedId} onSelect={setSelectedId} />
+					<SubmissionHistoryPanel
+						selectedId={selectedId}
+						onSelect={setSelectedId}
+					/>
 				}
 				side={<SubmissionDetailsPanel selectedId={selectedId} />}
 			/>

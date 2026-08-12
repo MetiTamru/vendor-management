@@ -66,12 +66,18 @@ function DetailCard({
 	);
 }
 
-function FieldGrid({ fields }: { fields: { label: string; value: ReactNode }[] }) {
+function FieldGrid({
+	fields,
+}: {
+	fields: { label: string; value: ReactNode }[];
+}) {
 	return (
 		<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{fields.map((field) => (
 				<div key={field.label} className="min-w-0">
-					<p className="text-[11px] font-medium text-muted-foreground">{field.label}</p>
+					<p className="text-[11px] font-medium text-muted-foreground">
+						{field.label}
+					</p>
 					<div className="mt-0.5 text-sm text-foreground">{field.value}</div>
 				</div>
 			))}
@@ -81,13 +87,21 @@ function FieldGrid({ fields }: { fields: { label: string; value: ReactNode }[] }
 
 function PanelLink({ children }: { children: ReactNode }) {
 	return (
-		<Button variant="link" size="sm" className="h-auto px-0 text-xs text-primary">
+		<Button
+			variant="link"
+			size="sm"
+			className="h-auto px-0 text-xs text-primary"
+		>
 			{children}
 		</Button>
 	);
 }
 
-export function ComplianceObligationDetailPage({ obligation }: { obligation: ObligationDetail }) {
+export function ComplianceObligationDetailPage({
+	obligation,
+}: {
+	obligation: ObligationDetail;
+}) {
 	const isOverdue = obligation.status === "Overdue";
 
 	return (
@@ -95,13 +109,20 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 			{/* Header */}
 			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div className="flex min-w-0 items-start gap-3">
-					<Button variant="ghost" size="icon" className="mt-0.5 size-8 shrink-0" asChild>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="mt-0.5 size-8 shrink-0"
+						asChild
+					>
 						<Link href="/admin/claim-encounter/regulatory/compliance-calendar">
 							<ArrowLeft className="size-4" />
 						</Link>
 					</Button>
 					<div className="min-w-0">
-						<h1 className="text-xl font-bold tracking-tight text-foreground">Obligation Detail</h1>
+						<h1 className="text-xl font-bold tracking-tight text-foreground">
+							Obligation Detail
+						</h1>
 					</div>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -132,93 +153,116 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 				<div className="space-y-3">
 					<section className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
 						<div className="space-y-4 p-4">
-						<div className="flex flex-wrap items-start justify-between gap-3">
-							<div className="flex min-w-0 items-start gap-3">
-								<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-700">
-									<CalendarDays className="size-5" />
+							<div className="flex flex-wrap items-start justify-between gap-3">
+								<div className="flex min-w-0 items-start gap-3">
+									<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-700">
+										<CalendarDays className="size-5" />
+									</div>
+									<div className="min-w-0">
+										<h2 className="text-lg font-bold text-foreground">
+											{obligation.title}
+										</h2>
+										<span className="mt-1 inline-flex rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800">
+											{obligation.obligationType}
+										</span>
+									</div>
 								</div>
-								<div className="min-w-0">
-									<h2 className="text-lg font-bold text-foreground">{obligation.title}</h2>
-									<span className="mt-1 inline-flex rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800">
-										{obligation.obligationType}
-									</span>
-								</div>
+								<span
+									className={cn(
+										CMS_EDGE_STATUS_PILL_CLASS,
+										complianceStatusPillClass(obligation.status),
+										"text-xs"
+									)}
+								>
+									{obligation.status}
+								</span>
 							</div>
-							<span
-								className={cn(
-									CMS_EDGE_STATUS_PILL_CLASS,
-									complianceStatusPillClass(obligation.status),
-									"text-xs"
-								)}
-							>
-								{obligation.status}
-							</span>
-						</div>
 
-						<FieldGrid
-							fields={[
-								{
-									label: "Program",
-									value: (
-										<span
-											className={cn(
-												CMS_EDGE_STATUS_PILL_CLASS,
-												complianceProgramPillClass(obligation.program),
-												"inline-flex"
-											)}
-										>
-											{COMPLIANCE_PROGRAM_LABELS[obligation.program]}
-										</span>
-									),
-								},
-								{ label: "Reporting Period", value: obligation.reportingPeriod },
-								{
-									label: "Regulatory Due Date",
-									value: (
-										<span className={cn(isOverdue && "font-semibold text-red-600")}>
-											{obligation.dueDate}
-										</span>
-									),
-								},
-								{ label: "Internal Due Date", value: obligation.internalDueDate },
-								{ label: "Regulatory Agency", value: obligation.regulatoryAgency },
-								{ label: "Obligation Type", value: obligation.obligationType },
-								{
-									label: "Status",
-									value: (
-										<span
-											className={cn(
-												CMS_EDGE_STATUS_PILL_CLASS,
-												complianceStatusPillClass(obligation.status),
-												"inline-flex"
-											)}
-										>
-											{obligation.status}
-										</span>
-									),
-								},
-								{
-									label: "Priority",
-									value: (
-										<span className="inline-flex items-center gap-1 font-semibold text-red-600">
-											<ArrowUp className="size-3.5" />
-											{obligation.priority}
-										</span>
-									),
-								},
-								{ label: "Owner / Assigned To", value: obligation.owner },
-								{ label: "Source Module", value: obligation.sourceModule },
-								{ label: "Regulatory Reference", value: obligation.regulatoryReference },
-								{ label: "Last Updated", value: obligation.lastUpdated },
-							]}
-						/>
+							<FieldGrid
+								fields={[
+									{
+										label: "Program",
+										value: (
+											<span
+												className={cn(
+													CMS_EDGE_STATUS_PILL_CLASS,
+													complianceProgramPillClass(obligation.program),
+													"inline-flex"
+												)}
+											>
+												{COMPLIANCE_PROGRAM_LABELS[obligation.program]}
+											</span>
+										),
+									},
+									{
+										label: "Reporting Period",
+										value: obligation.reportingPeriod,
+									},
+									{
+										label: "Regulatory Due Date",
+										value: (
+											<span
+												className={cn(
+													isOverdue && "font-semibold text-red-600"
+												)}
+											>
+												{obligation.dueDate}
+											</span>
+										),
+									},
+									{
+										label: "Internal Due Date",
+										value: obligation.internalDueDate,
+									},
+									{
+										label: "Regulatory Agency",
+										value: obligation.regulatoryAgency,
+									},
+									{
+										label: "Obligation Type",
+										value: obligation.obligationType,
+									},
+									{
+										label: "Status",
+										value: (
+											<span
+												className={cn(
+													CMS_EDGE_STATUS_PILL_CLASS,
+													complianceStatusPillClass(obligation.status),
+													"inline-flex"
+												)}
+											>
+												{obligation.status}
+											</span>
+										),
+									},
+									{
+										label: "Priority",
+										value: (
+											<span className="inline-flex items-center gap-1 font-semibold text-red-600">
+												<ArrowUp className="size-3.5" />
+												{obligation.priority}
+											</span>
+										),
+									},
+									{ label: "Owner / Assigned To", value: obligation.owner },
+									{ label: "Source Module", value: obligation.sourceModule },
+									{
+										label: "Regulatory Reference",
+										value: obligation.regulatoryReference,
+									},
+									{ label: "Last Updated", value: obligation.lastUpdated },
+								]}
+							/>
 
-						<div className="border-t border-border/50 pt-3">
-							<p className="text-xs font-semibold text-foreground">Description</p>
-							<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-								{obligation.description}
-							</p>
-						</div>
+							<div className="border-t border-border/50 pt-3">
+								<p className="text-xs font-semibold text-foreground">
+									Description
+								</p>
+								<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+									{obligation.description}
+								</p>
+							</div>
 						</div>
 					</section>
 
@@ -226,34 +270,53 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 						<DetailCard
 							title="Notes"
 							action={
-								<Button variant="ghost" size="icon" className="size-7" aria-label="Edit notes">
+								<Button
+									variant="ghost"
+									size="icon"
+									className="size-7"
+									aria-label="Edit notes"
+								>
 									<Pencil className="size-3.5" />
 								</Button>
 							}
 						>
-							<p className="text-sm leading-relaxed text-muted-foreground">{obligation.notes}</p>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								{obligation.notes}
+							</p>
 						</DetailCard>
 
 						<DetailCard title="Related Information">
 							<ul className="space-y-2.5 text-sm">
 								<li className="flex items-center justify-between gap-2">
 									<div>
-										<p className="text-[11px] text-muted-foreground">Related Submission</p>
-										<p className="font-medium text-foreground">{obligation.relatedSubmission}</p>
+										<p className="text-[11px] text-muted-foreground">
+											Related Submission
+										</p>
+										<p className="font-medium text-foreground">
+											{obligation.relatedSubmission}
+										</p>
 									</div>
 									<PanelLink>Go to CMS EDGE →</PanelLink>
 								</li>
 								<li className="flex items-center justify-between gap-2">
 									<div>
-										<p className="text-[11px] text-muted-foreground">Latest CMS Response</p>
-										<p className="font-medium text-foreground">{obligation.latestResponse}</p>
+										<p className="text-[11px] text-muted-foreground">
+											Latest CMS Response
+										</p>
+										<p className="font-medium text-foreground">
+											{obligation.latestResponse}
+										</p>
 									</div>
 									<PanelLink>Go to Response →</PanelLink>
 								</li>
 								<li className="flex items-center justify-between gap-2">
 									<div>
-										<p className="text-[11px] text-muted-foreground">Open Issues</p>
-										<p className="font-medium text-foreground">{obligation.openIssues}</p>
+										<p className="text-[11px] text-muted-foreground">
+											Open Issues
+										</p>
+										<p className="font-medium text-foreground">
+											{obligation.openIssues}
+										</p>
 									</div>
 									<PanelLink>Go to Issues →</PanelLink>
 								</li>
@@ -264,10 +327,16 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 
 				{/* Sidebar */}
 				<div className="space-y-3">
-					<DetailCard title="Documents" action={<PanelLink>View All</PanelLink>}>
+					<DetailCard
+						title="Documents"
+						action={<PanelLink>View All</PanelLink>}
+					>
 						<ul className="divide-y divide-border/40">
 							{obligation.documents.map((doc) => (
-								<li key={doc.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
+								<li
+									key={doc.id}
+									className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0"
+								>
 									<div
 										className={cn(
 											"flex size-8 shrink-0 items-center justify-center rounded-md",
@@ -277,10 +346,19 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 										<FileText className="size-4" />
 									</div>
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-xs font-semibold text-foreground">{doc.title}</p>
-										<p className="text-[10px] text-muted-foreground">{doc.meta}</p>
+										<p className="truncate text-xs font-semibold text-foreground">
+											{doc.title}
+										</p>
+										<p className="text-[10px] text-muted-foreground">
+											{doc.meta}
+										</p>
 									</div>
-									<Button variant="ghost" size="icon" className="size-7 shrink-0" aria-label="Download">
+									<Button
+										variant="ghost"
+										size="icon"
+										className="size-7 shrink-0"
+										aria-label="Download"
+									>
 										<Download className="size-3.5" />
 									</Button>
 								</li>
@@ -288,18 +366,31 @@ export function ComplianceObligationDetailPage({ obligation }: { obligation: Obl
 						</ul>
 					</DetailCard>
 
-					<DetailCard title="Activity History" action={<PanelLink>View All</PanelLink>}>
+					<DetailCard
+						title="Activity History"
+						action={<PanelLink>View All</PanelLink>}
+					>
 						<ul className="relative space-y-0 pl-4">
-							<div className="absolute bottom-2 left-[7px] top-2 w-px bg-primary/30" aria-hidden />
+							<div
+								className="absolute bottom-2 left-[7px] top-2 w-px bg-primary/30"
+								aria-hidden
+							/>
 							{obligation.activity.map((entry) => (
-								<li key={entry.id} className="relative flex gap-3 pb-4 last:pb-0">
+								<li
+									key={entry.id}
+									className="relative flex gap-3 pb-4 last:pb-0"
+								>
 									<span className="absolute -left-4 top-1.5 size-2 rounded-full bg-primary ring-2 ring-background" />
 									<div className="min-w-[72px] shrink-0 whitespace-pre-line text-[10px] tabular-nums text-muted-foreground">
 										{entry.timestamp}
 									</div>
 									<div className="min-w-0 flex-1">
-										<p className="text-xs font-medium text-foreground">{entry.action}</p>
-										<p className="text-[10px] text-muted-foreground">{entry.actor}</p>
+										<p className="text-xs font-medium text-foreground">
+											{entry.action}
+										</p>
+										<p className="text-[10px] text-muted-foreground">
+											{entry.actor}
+										</p>
 									</div>
 								</li>
 							))}

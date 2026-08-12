@@ -35,6 +35,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -43,6 +44,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { inboundFileToRun } from "@/features/admin/features/dashboard/live-file-runs";
+import {
+	type ProcessingLogRow,
+	processingEventsToLogs,
+	validationResultsToLogs,
+} from "@/features/admin/features/file-management/live-processing";
 import {
 	FILE_RUNS,
 	type FileRun,
@@ -51,16 +59,9 @@ import {
 	getFileRun,
 	markFileRunReviewed,
 } from "@/features/admin/features/file-management/mock-data";
-import {
-	type ProcessingLogRow,
-	processingEventsToLogs,
-	validationResultsToLogs,
-} from "@/features/admin/features/file-management/live-processing";
-import { inboundFileToRun } from "@/features/admin/features/dashboard/live-file-runs";
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import {
 	useVendorCoreInboundFile,
 	useVendorCoreInboundFileEvents,
@@ -68,7 +69,6 @@ import {
 	useVendorCoreValidationResults,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type LogSource = "File Receiver" | "Parser" | "Validation" | "Processor";
@@ -403,9 +403,7 @@ function ProcessingLogsBody() {
 	const runIdFromPath = typeof params?.runId === "string" ? params.runId : null;
 	const runFilter = runIdFromPath ?? searchParams.get("run");
 	const filesQ = useVendorCoreInboundFiles();
-	const fileQ = useVendorCoreInboundFile(
-		useLive && runFilter ? runFilter : ""
-	);
+	const fileQ = useVendorCoreInboundFile(useLive && runFilter ? runFilter : "");
 	const eventsQ = useVendorCoreInboundFileEvents(
 		useLive && runFilter ? runFilter : ""
 	);
@@ -437,7 +435,9 @@ function ProcessingLogsBody() {
 
 	const run = useLive ? liveRun : mockRun;
 
-	const runHref = run ? `/admin/file-monitoring/${run.id}` : "/admin/file-monitoring";
+	const runHref = run
+		? `/admin/file-monitoring/${run.id}`
+		: "/admin/file-monitoring";
 	const firstErrorIssue = run?.issues.find((i) => i.severity === "error");
 	const investigationHref = run
 		? firstErrorIssue
@@ -564,7 +564,10 @@ function ProcessingLogsBody() {
 				<h1 className="text-xl font-semibold">Processing Log Viewer</h1>
 				<p className="text-sm text-muted-foreground">
 					No inbound files found. Open a file run from{" "}
-					<Link href="/admin/file-monitoring" className="text-primary underline">
+					<Link
+						href="/admin/file-monitoring"
+						className="text-primary underline"
+					>
 						File Monitoring
 					</Link>
 					.
@@ -973,18 +976,15 @@ function ProcessingLogsBody() {
 											colSpan={5}
 											className="h-24 text-center text-sm text-muted-foreground"
 										>
-											{useLive &&
-											(eventsQ.isLoading || validationQ.isLoading) ? (
-												"Loading log entries from vendor-core…"
-											) : useLive &&
-											  logDataSource === "empty" &&
-											  !query &&
-											  level === "all" &&
-											  section === "all" ? (
-												"No log entries returned from vendor-core for this file."
-											) : (
-												"No log entries match the current filters."
-											)}
+											{useLive && (eventsQ.isLoading || validationQ.isLoading)
+												? "Loading log entries from vendor-core…"
+												: useLive &&
+													  logDataSource === "empty" &&
+													  !query &&
+													  level === "all" &&
+													  section === "all"
+													? "No log entries returned from vendor-core for this file."
+													: "No log entries match the current filters."}
 										</TableCell>
 									</TableRow>
 								)}

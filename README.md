@@ -14,8 +14,8 @@ pnpm dev -p 3006
 
 ### Mock vs live (one switch)
 
-| Variable               | Role                                                                 |
-| ---------------------- | -------------------------------------------------------------------- |
+| Variable               | Role                                                                |
+| ---------------------- | ------------------------------------------------------------------- |
 | `NEXT_PUBLIC_USE_MOCK` | `true` = fixtures on; `false` = live APIs (fixtures stay in source) |
 
 ```env

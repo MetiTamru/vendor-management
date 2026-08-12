@@ -15,5 +15,7 @@ export default async function Page({
 		notFound();
 	}
 
-	return <RiskAdjustmentMemberOpportunityDetailPage opportunity={opportunity} />;
+	return (
+		<RiskAdjustmentMemberOpportunityDetailPage opportunity={opportunity} />
+	);
 }

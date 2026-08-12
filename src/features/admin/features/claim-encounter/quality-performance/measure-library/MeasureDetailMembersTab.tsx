@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 
-import { Bookmark, ExternalLink, Gauge, MoreVertical, Search, Users } from "lucide-react";
+import {
+	Bookmark,
+	ExternalLink,
+	Gauge,
+	MoreVertical,
+	Search,
+	Users,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +23,8 @@ import {
 } from "@/components/ui/select";
 import { CMS_EDGE_STATUS_PILL_CLASS } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureDataTable,
 	MeasureDonutBreakdown,
@@ -23,13 +32,11 @@ import {
 	MeasureKpiCard,
 	MeasurePipeline,
 	MeasureSectionPanel,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import {
-	getMemberStatusStyle,
 	type MeasureMembersDetail,
+	getMemberStatusStyle,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +76,10 @@ export function MeasureDetailMembersTab({
 					value={summary.eligiblePopulation.toLocaleString()}
 					icon={Users}
 				/>
-				<MeasureKpiCard label="Denominator" value={summary.denominator.toLocaleString()} />
+				<MeasureKpiCard
+					label="Denominator"
+					value={summary.denominator.toLocaleString()}
+				/>
 				<MeasureKpiCard
 					label="Numerator"
 					value={summary.numerator.toLocaleString()}
@@ -118,7 +128,9 @@ export function MeasureDetailMembersTab({
 					title="Members by Plan"
 					subtitle="Denominator and numerator by plan"
 					action={
-						<PanelLink icon={<ExternalLink className="size-3.5" />}>View All Plans</PanelLink>
+						<PanelLink icon={<ExternalLink className="size-3.5" />}>
+							View All Plans
+						</PanelLink>
 					}
 					bodyClassName="p-0"
 				>
@@ -127,7 +139,12 @@ export function MeasureDetailMembersTab({
 							{ key: "plan", header: "Plan Name" },
 							{ key: "den", header: "Denominator", align: "right" },
 							{ key: "num", header: "Numerator", align: "right" },
-							{ key: "rate", header: "Rate", align: "right", className: "font-semibold text-primary" },
+							{
+								key: "rate",
+								header: "Rate",
+								align: "right",
+								className: "font-semibold text-primary",
+							},
 						]}
 						rows={data.byPlan.map((row) => ({
 							plan: row.planName,
@@ -146,18 +163,28 @@ export function MeasureDetailMembersTab({
 					subtitle="Narrow the member list"
 					bodyClassName="space-y-2 p-0"
 					action={
-						<Button variant="link" size="sm" className="h-8 px-0 text-sm text-primary">
+						<Button
+							variant="link"
+							size="sm"
+							className="h-8 px-0 text-sm text-primary"
+						>
 							Clear All
 						</Button>
 					}
 				>
 					{[
 						{ label: "Plan", options: data.filterOptions.plans },
-						{ label: "Line of Business", options: data.filterOptions.linesOfBusiness },
+						{
+							label: "Line of Business",
+							options: data.filterOptions.linesOfBusiness,
+						},
 						{ label: "Status", options: data.filterOptions.statuses },
 						{ label: "Provider", options: data.filterOptions.providers },
 						{ label: "Risk Group", options: data.filterOptions.riskGroups },
-						{ label: "Last Outreach", options: data.filterOptions.lastOutreach },
+						{
+							label: "Last Outreach",
+							options: data.filterOptions.lastOutreach,
+						},
 					].map((filter) => (
 						<MeasureFilterField key={filter.label} label={filter.label}>
 							<Select defaultValue="All">
@@ -209,23 +236,42 @@ export function MeasureDetailMembersTab({
 								header: "",
 								className: "w-10",
 							},
-							{ key: "id", header: "Member ID", className: "font-mono text-xs" },
+							{
+								key: "id",
+								header: "Member ID",
+								className: "font-mono text-xs",
+							},
 							{ key: "name", header: "Member Name" },
 							{ key: "dob", header: "DOB", className: MEASURE_TABLE_MUTED },
 							{ key: "age", header: "Age", align: "right" },
 							{ key: "plan", header: "Plan Name" },
 							{ key: "status", header: "Status" },
 							{ key: "bp", header: "Last BP Reading" },
-							{ key: "bpDate", header: "Last BP Date", className: MEASURE_TABLE_MUTED },
+							{
+								key: "bpDate",
+								header: "Last BP Date",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "provider", header: "Provider" },
-							{ key: "risk", header: "Risk Group", className: MEASURE_TABLE_MUTED },
-							{ key: "outreach", header: "Last Outreach", className: MEASURE_TABLE_MUTED },
+							{
+								key: "risk",
+								header: "Risk Group",
+								className: MEASURE_TABLE_MUTED,
+							},
+							{
+								key: "outreach",
+								header: "Last Outreach",
+								className: MEASURE_TABLE_MUTED,
+							},
 							{ key: "actions", header: "Actions", align: "right" },
 						]}
 						rows={filteredMembers.map((member) => ({
 							select: <Checkbox aria-label={`Select ${member.id}`} />,
 							id: (
-								<Button variant="link" className="h-auto p-0 text-sm text-primary">
+								<Button
+									variant="link"
+									className="h-auto p-0 text-sm text-primary"
+								>
 									{member.id}
 								</Button>
 							),
@@ -246,7 +292,10 @@ export function MeasureDetailMembersTab({
 							bp: member.lastBpReading,
 							bpDate: member.lastBpDate,
 							provider: (
-								<Button variant="link" className="h-auto p-0 text-sm text-primary">
+								<Button
+									variant="link"
+									className="h-auto p-0 text-sm text-primary"
+								>
 									{member.provider}
 								</Button>
 							),
@@ -258,10 +307,13 @@ export function MeasureDetailMembersTab({
 								</Button>
 							),
 						}))}
-						getRowKey={(_, index) => filteredMembers[index]?.id ?? String(index)}
+						getRowKey={(_, index) =>
+							filteredMembers[index]?.id ?? String(index)
+						}
 					/>
 					<div className="border-t border-border/50 px-3 py-2 text-sm text-muted-foreground">
-						Showing 1 to {filteredMembers.length} of {data.totalMembers.toLocaleString()} entries
+						Showing 1 to {filteredMembers.length} of{" "}
+						{data.totalMembers.toLocaleString()} entries
 					</div>
 				</MeasureSectionPanel>
 			</div>

@@ -275,7 +275,11 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 						required
 					/>
 					{error ? <p className="text-sm text-destructive">{error}</p> : null}
-					<Button type="submit" disabled={loading || !signIn} className="w-full">
+					<Button
+						type="submit"
+						disabled={loading || !signIn}
+						className="w-full"
+					>
 						{loading ? (
 							<>
 								<Loader2 className="animate-spin" /> Connecting…

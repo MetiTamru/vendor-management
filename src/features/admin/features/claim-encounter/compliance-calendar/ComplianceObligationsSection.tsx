@@ -47,7 +47,13 @@ const TABLE_HEAD =
 	"h-9 whitespace-nowrap bg-muted/30 px-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground";
 const TABLE_CELL = "whitespace-nowrap px-3 py-2.5 text-xs";
 
-function DeadlineBadge({ tone, label }: { tone: "overdue" | "warning" | "info"; label: string }) {
+function DeadlineBadge({
+	tone,
+	label,
+}: {
+	tone: "overdue" | "warning" | "info";
+	label: string;
+}) {
 	const toneClass =
 		tone === "overdue"
 			? "border-red-200 bg-red-50 text-red-700"
@@ -56,7 +62,13 @@ function DeadlineBadge({ tone, label }: { tone: "overdue" | "warning" | "info"; 
 				: "border-sky-200 bg-sky-50 text-sky-800";
 
 	return (
-		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, toneClass, "shrink-0 text-[10px]")}>
+		<span
+			className={cn(
+				CMS_EDGE_STATUS_PILL_CLASS,
+				toneClass,
+				"shrink-0 text-[10px]"
+			)}
+		>
 			{label}
 		</span>
 	);
@@ -93,12 +105,24 @@ export function ComplianceObligationsSection() {
 							</Select>
 						</div>
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="text-xs tabular-nums text-muted-foreground">1–10 of {total}</span>
+							<span className="text-xs tabular-nums text-muted-foreground">
+								1–10 of {total}
+							</span>
 							<div className="flex items-center gap-0.5">
-								<Button variant="outline" size="icon" className="size-8" aria-label="First page">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									aria-label="First page"
+								>
 									<ChevronsLeft className="size-3.5" />
 								</Button>
-								<Button variant="outline" size="icon" className="size-8" aria-label="Previous page">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									aria-label="Previous page"
+								>
 									<ChevronLeft className="size-3.5" />
 								</Button>
 								{[1, 2, 3, 4, 5].map((page) => (
@@ -112,13 +136,27 @@ export function ComplianceObligationsSection() {
 									</Button>
 								))}
 								<span className="px-1 text-xs text-muted-foreground">…</span>
-								<Button variant="outline" size="icon" className="size-8 text-xs">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8 text-xs"
+								>
 									16
 								</Button>
-								<Button variant="outline" size="icon" className="size-8" aria-label="Next page">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									aria-label="Next page"
+								>
 									<ChevronRight className="size-3.5" />
 								</Button>
-								<Button variant="outline" size="icon" className="size-8" aria-label="Last page">
+								<Button
+									variant="outline"
+									size="icon"
+									className="size-8"
+									aria-label="Last page"
+								>
 									<ChevronsRight className="size-3.5" />
 								</Button>
 							</div>
@@ -127,7 +165,10 @@ export function ComplianceObligationsSection() {
 				}
 			>
 				<CmsEdgeTableScroll>
-					<Table className={CMS_EDGE_TABLE_CLASS} containerClassName={CMS_EDGE_TABLE_CONTAINER}>
+					<Table
+						className={CMS_EDGE_TABLE_CLASS}
+						containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					>
 						<TableHeader>
 							<TableRow>
 								<TableHead className={cn(TABLE_HEAD, "min-w-[220px]")}>
@@ -143,16 +184,27 @@ export function ComplianceObligationsSection() {
 									</span>
 								</TableHead>
 								<TableHead className={TABLE_HEAD}>Status</TableHead>
-								<TableHead className={TABLE_HEAD}>Days to Due / Overdue</TableHead>
-								<TableHead className={TABLE_HEAD}>Owner / Assigned To</TableHead>
+								<TableHead className={TABLE_HEAD}>
+									Days to Due / Overdue
+								</TableHead>
+								<TableHead className={TABLE_HEAD}>
+									Owner / Assigned To
+								</TableHead>
 								<TableHead className={TABLE_HEAD}>Source / Module</TableHead>
-								<TableHead className={cn(TABLE_HEAD, "text-right")}>Action</TableHead>
+								<TableHead className={cn(TABLE_HEAD, "text-right")}>
+									Action
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{COMPLIANCE_OBLIGATIONS.map((row) => (
 								<TableRow key={row.id}>
-									<TableCell className={cn(TABLE_CELL, "max-w-[240px] font-medium text-foreground")}>
+									<TableCell
+										className={cn(
+											TABLE_CELL,
+											"max-w-[240px] font-medium text-foreground"
+										)}
+									>
 										<Link
 											href={`/admin/claim-encounter/regulatory/compliance-calendar/${row.id}`}
 											className="text-primary hover:underline"
@@ -170,9 +222,13 @@ export function ComplianceObligationsSection() {
 											{COMPLIANCE_PROGRAM_LABELS[row.program]}
 										</span>
 									</TableCell>
-									<TableCell className={TABLE_CELL}>{row.obligationType}</TableCell>
+									<TableCell className={TABLE_CELL}>
+										{row.obligationType}
+									</TableCell>
 									<TableCell className={TABLE_CELL}>{row.frequency}</TableCell>
-									<TableCell className={cn(TABLE_CELL, "tabular-nums")}>{row.dueDate}</TableCell>
+									<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+										{row.dueDate}
+									</TableCell>
 									<TableCell className={TABLE_CELL}>
 										<span
 											className={cn(
@@ -193,7 +249,9 @@ export function ComplianceObligationsSection() {
 										{row.daysToDue}
 									</TableCell>
 									<TableCell className={TABLE_CELL}>{row.owner}</TableCell>
-									<TableCell className={TABLE_CELL}>{row.sourceModule}</TableCell>
+									<TableCell className={TABLE_CELL}>
+										{row.sourceModule}
+									</TableCell>
 									<TableCell className={cn(TABLE_CELL, "text-right")}>
 										<div className="inline-flex overflow-hidden rounded-md border border-border/70">
 											<Button
@@ -237,7 +295,11 @@ export function ComplianceObligationsSection() {
 				bodyClassName="p-0"
 				footer={
 					<div className="border-t border-border/50 p-3">
-						<Button variant="outline" size="sm" className="w-full gap-1.5 text-xs">
+						<Button
+							variant="outline"
+							size="sm"
+							className="w-full gap-1.5 text-xs"
+						>
 							<CalendarDays className="size-3.5" />
 							View Full Calendar
 						</Button>
@@ -260,13 +322,18 @@ export function ComplianceObligationsSection() {
 										<p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
 											{item.month}
 										</p>
-										<p className="text-lg font-bold tabular-nums text-foreground">{item.day}</p>
+										<p className="text-lg font-bold tabular-nums text-foreground">
+											{item.day}
+										</p>
 									</div>
 								</div>
 								<div className="min-w-0 flex-1">
-									<p className="text-xs font-semibold leading-snug text-foreground">{item.title}</p>
+									<p className="text-xs font-semibold leading-snug text-foreground">
+										{item.title}
+									</p>
 									<p className="mt-0.5 text-[10px] text-muted-foreground">
-										{COMPLIANCE_PROGRAM_LABELS[item.program]} • {item.obligationType}
+										{COMPLIANCE_PROGRAM_LABELS[item.program]} •{" "}
+										{item.obligationType}
 									</p>
 								</div>
 								<DeadlineBadge tone={item.badgeTone} label={item.badge} />

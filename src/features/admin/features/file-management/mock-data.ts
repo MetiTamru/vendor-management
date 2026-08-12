@@ -1,5 +1,5 @@
-import type { ProgramFileType } from "@/types/UI/system.types";
 import { isMockEnabled } from "@/lib/mock-mode";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
 export type FileDirection = "inbound" | "outbound";
 export type ProcessStatus =

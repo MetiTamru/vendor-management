@@ -43,13 +43,13 @@ import {
 	CMS_EDGE_TABLE_LINK_CLASS,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
-import type { MemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import {
-	RaStatusPill,
 	RA_STACK,
 	RA_TABLE_CELL,
 	RA_TABLE_HEAD,
+	RaStatusPill,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
+import type { MemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,12 @@ function DetailCard({
 	className?: string;
 }) {
 	return (
-		<div className={cn("overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm", className)}>
+		<div
+			className={cn(
+				"overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm",
+				className
+			)}
+		>
 			<div className="border-b border-border/50 px-3 py-2">
 				<h3 className="text-sm font-semibold text-foreground">{title}</h3>
 			</div>
@@ -92,7 +97,9 @@ function FieldGrid({
 		>
 			{fields.map((field) => (
 				<div key={field.label} className="min-w-0">
-					<p className="text-[11px] font-medium text-muted-foreground">{field.label}</p>
+					<p className="text-[11px] font-medium text-muted-foreground">
+						{field.label}
+					</p>
 					<div className="mt-0.5 text-sm text-foreground">{field.value}</div>
 				</div>
 			))}
@@ -173,11 +180,15 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 							<p className="text-sm">{d.planLob}</p>
 						</div>
 						<div>
-							<p className="text-[11px] text-muted-foreground">PCP / Provider</p>
+							<p className="text-[11px] text-muted-foreground">
+								PCP / Provider
+							</p>
 							<p className="text-sm">{d.pcp}</p>
 						</div>
 						<div>
-							<p className="text-[11px] text-muted-foreground">Coverage Status</p>
+							<p className="text-[11px] text-muted-foreground">
+								Coverage Status
+							</p>
 							<RaStatusPill label={d.coverageStatus} tone="success" />
 						</div>
 						<div>
@@ -199,7 +210,10 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 							].map((tab) => (
 								<TabsTrigger
 									key={tab}
-									value={tab.toLowerCase().replace(/\s+&\s+/g, "-").replace(/\s+/g, "-")}
+									value={tab
+										.toLowerCase()
+										.replace(/\s+&\s+/g, "-")
+										.replace(/\s+/g, "-")}
 									className="rounded-none border-b-2 border-transparent px-3 py-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary"
 								>
 									{tab}
@@ -217,18 +231,29 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 										fields={[
 											{
 												label: "HCC",
-												value: <span className="font-medium text-primary">{d.hcc}</span>,
+												value: (
+													<span className="font-medium text-primary">
+														{d.hcc}
+													</span>
+												),
 											},
 											{ label: "Condition", value: d.hccDescription },
 											{
 												label: "Opportunity Type",
-												value: <RaStatusPill label={d.opportunityType} tone="warning" />,
+												value: (
+													<RaStatusPill
+														label={d.opportunityType}
+														tone="warning"
+													/>
+												),
 											},
 											{ label: "Risk Model", value: d.riskModel },
 											{
 												label: "Current RAF",
 												value: (
-													<span className="tabular-nums">{d.currentRaf.toFixed(3)}</span>
+													<span className="tabular-nums">
+														{d.currentRaf.toFixed(3)}
+													</span>
 												),
 											},
 											{
@@ -262,13 +287,25 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 										>
 											<TableHeader>
 												<TableRow className="hover:bg-transparent">
-													<TableHead className={RA_TABLE_HEAD}>Diagnosis Code</TableHead>
-													<TableHead className={RA_TABLE_HEAD}>Diagnosis Description</TableHead>
-													<TableHead className={RA_TABLE_HEAD}>Date of Service</TableHead>
-													<TableHead className={RA_TABLE_HEAD}>Claim / Encounter</TableHead>
-													<TableHead className={RA_TABLE_HEAD}>Rendering Provider</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Diagnosis Code
+													</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Diagnosis Description
+													</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Date of Service
+													</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Claim / Encounter
+													</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Rendering Provider
+													</TableHead>
 													<TableHead className={RA_TABLE_HEAD}>POS</TableHead>
-													<TableHead className={RA_TABLE_HEAD}>Evidence Source</TableHead>
+													<TableHead className={RA_TABLE_HEAD}>
+														Evidence Source
+													</TableHead>
 													<TableHead className={cn(RA_TABLE_HEAD, "pr-3")}>
 														Documentation Available
 													</TableHead>
@@ -276,26 +313,43 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 											</TableHeader>
 											<TableBody>
 												{d.evidence.map((row) => (
-													<TableRow key={row.claimEncounter} className="hover:bg-muted/20">
-														<TableCell className={cn(RA_TABLE_CELL, "font-mono text-primary")}>
+													<TableRow
+														key={row.claimEncounter}
+														className="hover:bg-muted/20"
+													>
+														<TableCell
+															className={cn(
+																RA_TABLE_CELL,
+																"font-mono text-primary"
+															)}
+														>
 															{row.diagnosisCode}
 														</TableCell>
 														<TableCell className={RA_TABLE_CELL}>
 															{row.diagnosisDescription}
 														</TableCell>
-														<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
+														<TableCell
+															className={cn(RA_TABLE_CELL, "tabular-nums")}
+														>
 															{row.dateOfService}
 														</TableCell>
 														<TableCell className={RA_TABLE_CELL}>
-															<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+															<Button
+																variant="link"
+																className={CMS_EDGE_TABLE_LINK_CLASS}
+															>
 																{row.claimEncounter}
 															</Button>
 														</TableCell>
 														<TableCell className={RA_TABLE_CELL}>
 															{row.renderingProvider}
 														</TableCell>
-														<TableCell className={RA_TABLE_CELL}>{row.pos}</TableCell>
-														<TableCell className={RA_TABLE_CELL}>{row.evidenceSource}</TableCell>
+														<TableCell className={RA_TABLE_CELL}>
+															{row.pos}
+														</TableCell>
+														<TableCell className={RA_TABLE_CELL}>
+															{row.evidenceSource}
+														</TableCell>
 														<TableCell className={cn(RA_TABLE_CELL, "pr-3")}>
 															<span className="inline-flex items-center gap-1 text-emerald-700">
 																<Check className="size-3.5" />
@@ -313,11 +367,26 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 									<FieldGrid
 										columns={2}
 										fields={[
-											{ label: "HCC Category", value: d.supporting.hccCategory },
-											{ label: "Comorbidity / Complication", value: d.supporting.comorbidity },
-											{ label: "Hierarchical Rule", value: d.supporting.hierarchicalRule },
-											{ label: "Complication Status", value: d.supporting.complicationStatus },
-											{ label: "Exclusion / Consideration", value: d.supporting.exclusion },
+											{
+												label: "HCC Category",
+												value: d.supporting.hccCategory,
+											},
+											{
+												label: "Comorbidity / Complication",
+												value: d.supporting.comorbidity,
+											},
+											{
+												label: "Hierarchical Rule",
+												value: d.supporting.hierarchicalRule,
+											},
+											{
+												label: "Complication Status",
+												value: d.supporting.complicationStatus,
+											},
+											{
+												label: "Exclusion / Consideration",
+												value: d.supporting.exclusion,
+											},
 											{
 												label: "Documentation Type Needed",
 												value: d.supporting.documentationTypeNeeded,
@@ -394,18 +463,24 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 								<DetailCard title="Workflow & Assignment">
 									<div className="space-y-3">
 										<div className="flex items-center justify-between gap-2">
-											<span className="text-xs text-muted-foreground">Status</span>
+											<span className="text-xs text-muted-foreground">
+												Status
+											</span>
 											<RaStatusPill label={d.workflow.status} tone="warning" />
 										</div>
 										<div className="flex items-center justify-between gap-2">
-											<span className="text-xs text-muted-foreground">Priority</span>
+											<span className="text-xs text-muted-foreground">
+												Priority
+											</span>
 											<span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700">
 												<ArrowUp className="size-3.5" />
 												{d.workflow.priority}
 											</span>
 										</div>
 										<div className="space-y-1">
-											<Label className="text-[11px] text-muted-foreground">Assigned To</Label>
+											<Label className="text-[11px] text-muted-foreground">
+												Assigned To
+											</Label>
 											<Select defaultValue="sarah">
 												<SelectTrigger className="h-8 text-xs">
 													<SelectValue />
@@ -417,7 +492,9 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 											</Select>
 										</div>
 										<div className="space-y-1">
-											<Label className="text-[11px] text-muted-foreground">Due Date</Label>
+											<Label className="text-[11px] text-muted-foreground">
+												Due Date
+											</Label>
 											<div className="relative">
 												<CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
 												<Input
@@ -427,7 +504,9 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 											</div>
 										</div>
 										<div className="space-y-1">
-											<Label className="text-[11px] text-muted-foreground">Notes</Label>
+											<Label className="text-[11px] text-muted-foreground">
+												Notes
+											</Label>
 											<Textarea
 												className="min-h-[88px] text-xs"
 												defaultValue={d.workflow.notes}
@@ -454,7 +533,10 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 									<dl className="space-y-2 text-xs">
 										{[
 											["First Identified", d.history.firstIdentified],
-											["First Opportunity Type", d.history.firstOpportunityType],
+											[
+												"First Opportunity Type",
+												d.history.firstOpportunityType,
+											],
 											[
 												"Opportunities (All Time)",
 												String(d.history.opportunitiesAllTime),
@@ -472,14 +554,19 @@ export function RiskAdjustmentMemberOpportunityDetailPage({
 						</div>
 					</TabsContent>
 
-					{["evidence", "claims-encounters", "documentation", "activity-history"].map((tab) => (
+					{[
+						"evidence",
+						"claims-encounters",
+						"documentation",
+						"activity-history",
+					].map((tab) => (
 						<TabsContent
 							key={tab}
 							value={tab}
 							className="mt-0 p-6 text-center text-sm text-muted-foreground"
 						>
-							{tab.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} content will
-							appear here.
+							{tab.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
+							content will appear here.
 						</TabsContent>
 					))}
 				</Tabs>

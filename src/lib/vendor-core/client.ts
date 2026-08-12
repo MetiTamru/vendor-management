@@ -94,10 +94,7 @@ type RequestOptions = RequestInit & {
 function buildUrl(path: string, params?: RequestOptions["params"]) {
 	const normalized = path.startsWith("/") ? path : `/${path}`;
 	const url = shouldUseBrowserProxy()
-		? new URL(
-				`${BROWSER_PROXY_PREFIX}${normalized}`,
-				window.location.origin
-			)
+		? new URL(`${BROWSER_PROXY_PREFIX}${normalized}`, window.location.origin)
 		: new URL(normalized, `${getVendorCoreUpstreamUrl()}/`);
 
 	if (params) {
@@ -122,10 +119,7 @@ export async function vendorCoreLogin(input: {
 	const data = text ? JSON.parse(text) : {};
 	if (!response.ok) {
 		throw new VendorCoreApiError(
-			data?.result?.detail ??
-				data?.detail ??
-				data?.message ??
-				"Login failed",
+			data?.result?.detail ?? data?.detail ?? data?.message ?? "Login failed",
 			response.status,
 			data
 		);
@@ -153,9 +147,7 @@ export async function vendorCoreFetch<T>(
 		typeof FormData !== "undefined" && init.body instanceof FormData;
 	const reqHeaders: HeadersInit = {
 		Accept: "application/json",
-		...(init.body && !isFormData
-			? { "Content-Type": "application/json" }
-			: {}),
+		...(init.body && !isFormData ? { "Content-Type": "application/json" } : {}),
 		...headers,
 	};
 	// Drop empty Content-Type so multipart uploads set their own boundary

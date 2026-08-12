@@ -83,10 +83,35 @@ export const COMPLIANCE_PROGRAM_SUMMARY = [
 	{ key: "other" as const, count: 12, pct: "7.7%" },
 ];
 
-export const COMPLIANCE_FILTER_PROGRAMS = ["All", "CMS EDGE", "Medicaid", "Medicare", "Quality", "Other"];
-export const COMPLIANCE_FILTER_TYPES = ["All", "Submission", "Reporting", "Attestation", "Audit"];
-export const COMPLIANCE_FILTER_STATUSES = ["All", "Upcoming", "Overdue", "Completed", "At Risk"];
-export const COMPLIANCE_FILTER_OWNERS = ["All", "Compliance Team", "Regulatory Ops", "Quality Team", "Vendor Relations"];
+export const COMPLIANCE_FILTER_PROGRAMS = [
+	"All",
+	"CMS EDGE",
+	"Medicaid",
+	"Medicare",
+	"Quality",
+	"Other",
+];
+export const COMPLIANCE_FILTER_TYPES = [
+	"All",
+	"Submission",
+	"Reporting",
+	"Attestation",
+	"Audit",
+];
+export const COMPLIANCE_FILTER_STATUSES = [
+	"All",
+	"Upcoming",
+	"Overdue",
+	"Completed",
+	"At Risk",
+];
+export const COMPLIANCE_FILTER_OWNERS = [
+	"All",
+	"Compliance Team",
+	"Regulatory Ops",
+	"Quality Team",
+	"Vendor Relations",
+];
 
 export const COMPLIANCE_DATE_RANGE = "05/14/2025 - 06/14/2025";
 
@@ -293,7 +318,15 @@ export type CalendarScheduleItem = {
 	day: number;
 };
 
-const CALENDAR_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const CALENDAR_WEEKDAY_LABELS = [
+	"Sun",
+	"Mon",
+	"Tue",
+	"Wed",
+	"Thu",
+	"Fri",
+	"Sat",
+] as const;
 
 /** Week of May 11–17, 2025 (contains "today" May 14) */
 export const COMPLIANCE_CALENDAR_WEEK_START = { year: 2025, month: 4, day: 11 };
@@ -304,7 +337,10 @@ function parseDueDate(dueDate: string) {
 }
 
 /** Extra calendar-only items for days with events but no table obligation */
-const COMPLIANCE_CALENDAR_EXTRA: Omit<CalendarScheduleItem, "year" | "month" | "day">[] = [
+const COMPLIANCE_CALENDAR_EXTRA: Omit<
+	CalendarScheduleItem,
+	"year" | "month" | "day"
+>[] = [
 	{
 		id: "cal-001",
 		title: "Medicaid Provider Roster Update",
@@ -491,7 +527,10 @@ export function buildComplianceWeekDays() {
 				date.getDate() === COMPLIANCE_CALENDAR_TODAY &&
 				date.getMonth() === COMPLIANCE_CALENDAR_MONTH.month,
 			dateKey: `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
-			label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+			label: date.toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+			}),
 		};
 	});
 }
@@ -543,14 +582,22 @@ export function getScheduleListGroups(): CalendarListGroup[] {
 		.sort(([a], [b]) => {
 			const [ay, am, ad] = a.split("-").map(Number);
 			const [by, bm, bd] = b.split("-").map(Number);
-			return new Date(ay!, am!, ad!).getTime() - new Date(by!, bm!, bd!).getTime();
+			return (
+				new Date(ay!, am!, ad!).getTime() - new Date(by!, bm!, bd!).getTime()
+			);
 		})
 		.map(([key, items]) => ({
 			key,
-			label: new Date(items[0]!.year, items[0]!.month, items[0]!.day).toLocaleDateString(
-				"en-US",
-				{ weekday: "long", month: "long", day: "numeric", year: "numeric" }
-			),
+			label: new Date(
+				items[0]!.year,
+				items[0]!.month,
+				items[0]!.day
+			).toLocaleDateString("en-US", {
+				weekday: "long",
+				month: "long",
+				day: "numeric",
+				year: "numeric",
+			}),
 			items,
 		}));
 }
@@ -633,7 +680,9 @@ export const COMPLIANCE_UPCOMING_DEADLINES: UpcomingDeadline[] = [
 	},
 ];
 
-export function complianceProgramPillClass(program: Exclude<ComplianceProgramKey, "overdue">) {
+export function complianceProgramPillClass(
+	program: Exclude<ComplianceProgramKey, "overdue">
+) {
 	switch (program) {
 		case "cms-edge":
 			return "border-sky-200 bg-sky-50 text-sky-800";

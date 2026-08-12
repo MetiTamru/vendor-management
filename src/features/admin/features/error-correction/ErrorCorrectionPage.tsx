@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,18 +20,18 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NoFileSelectedIllustration } from "@/features/admin/features/claim-encounter/file-management/NoFileSelectedIllustration";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
+import { NoFileSelectedIllustration } from "@/features/admin/features/claim-encounter/file-management/NoFileSelectedIllustration";
 import {
 	ERROR_CORRECTION_ENROLLEE_TYPES,
 	ERROR_CORRECTION_ENROLLMENT_YEARS,
 	ERROR_CORRECTION_FILE_TYPES,
 	ERROR_CORRECTION_ISSUER_NAMES,
 	ERROR_CORRECTION_PROCESS_TYPES,
+	type ErrorSummaryFilters,
 	MOCK_ERROR_REVIEW_ROWS,
 	MOCK_ERROR_SUMMARY_ROWS,
 	filterErrorSummaryRows,
-	type ErrorSummaryFilters,
 } from "@/features/admin/features/error-correction/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -76,15 +76,15 @@ const EMPTY_ERROR_SUMMARY_FILTERS: ErrorSummaryFilters = {
 };
 
 function ErrorSummaryPanel() {
-	const [draft, setDraft] = useState<ErrorSummaryFilters>(EMPTY_ERROR_SUMMARY_FILTERS);
+	const [draft, setDraft] = useState<ErrorSummaryFilters>(
+		EMPTY_ERROR_SUMMARY_FILTERS
+	);
 	const [applied, setApplied] = useState<ErrorSummaryFilters | null>(null);
 	const [searched, setSearched] = useState(false);
 
 	const filteredRows = useMemo(
 		() =>
-			applied
-				? filterErrorSummaryRows(MOCK_ERROR_SUMMARY_ROWS, applied)
-				: [],
+			applied ? filterErrorSummaryRows(MOCK_ERROR_SUMMARY_ROWS, applied) : [],
 		[applied]
 	);
 
@@ -103,9 +103,7 @@ function ErrorSummaryPanel() {
 				<div className="overflow-hidden rounded-lg border border-border/70">
 					<div className="grid lg:grid-cols-2">
 						<div>
-							<LegacyFormRow
-								label={<RequiredLabel>File Type</RequiredLabel>}
-							>
+							<LegacyFormRow label={<RequiredLabel>File Type</RequiredLabel>}>
 								<Select
 									value={draft.fileType}
 									onValueChange={(value) =>
@@ -168,9 +166,7 @@ function ErrorSummaryPanel() {
 							</LegacyFormRow>
 						</div>
 						<div className="border-t border-border/60 lg:border-t-0 lg:border-l">
-							<LegacyFormRow
-								label={<RequiredLabel>Issuer Name</RequiredLabel>}
-							>
+							<LegacyFormRow label={<RequiredLabel>Issuer Name</RequiredLabel>}>
 								<Select
 									value={draft.issuerName}
 									onValueChange={(value) =>
@@ -302,11 +298,7 @@ function ErrorSummaryPanel() {
 					<div className="rounded-xl border border-border/60 bg-card">
 						<NoFileSelectedIllustration
 							variant={searched ? "empty" : "idle"}
-							title={
-								searched
-									? undefined
-									: "No error summary search applied"
-							}
+							title={searched ? undefined : "No error summary search applied"}
 							description={
 								searched
 									? undefined

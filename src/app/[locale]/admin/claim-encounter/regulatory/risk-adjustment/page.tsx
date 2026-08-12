@@ -6,5 +6,7 @@ export default async function Page({
 	params: Promise<{ locale: string }>;
 }) {
 	const { locale } = await params;
-	redirect(`/${locale}/admin/claim-encounter/regulatory/risk-adjustment/overview`);
+	redirect(
+		`/${locale}/admin/claim-encounter/regulatory/risk-adjustment/overview`
+	);
 }

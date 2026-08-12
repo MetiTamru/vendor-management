@@ -12,6 +12,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureActivityList,
 	MeasureDataTable,
 	MeasureFieldGrid,
@@ -21,13 +23,15 @@ import {
 	MeasureStatTile,
 	MeasureStatusPill,
 	MeasureSubsection,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
 import type { MeasureDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 
-export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }) {
+export function MeasureDetailOverviewTab({
+	measure,
+}: {
+	measure: MeasureDetail;
+}) {
 	const perf = measure.performanceSummary;
 	const varianceNegative = measure.varianceToGoal < 0;
 
@@ -81,7 +85,9 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 						<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 							Description
 						</p>
-						<p className="mt-2 text-sm leading-relaxed text-foreground">{measure.description}</p>
+						<p className="mt-2 text-sm leading-relaxed text-foreground">
+							{measure.description}
+						</p>
 					</div>
 
 					<MeasureSubsection
@@ -92,7 +98,10 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 							fields={[
 								{ label: "Age Range", value: measure.ageRange },
 								{ label: "Measurement Year", value: measure.measurementYear },
-								{ label: "Eligible Population", value: measure.eligiblePopulation },
+								{
+									label: "Eligible Population",
+									value: measure.eligiblePopulation,
+								},
 								{ label: "Reporting Plan(s)", value: measure.reportingPlans },
 								{ label: "Line of Business", value: measure.lineOfBusiness },
 								{ label: "Care Setting", value: measure.careSetting },
@@ -108,7 +117,10 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 							fields={[
 								{ label: "Data Sources", value: measure.dataSources },
 								{ label: "Collection Method", value: measure.collectionMethod },
-								{ label: "Calculation Method", value: measure.calculationMethod },
+								{
+									label: "Calculation Method",
+									value: measure.calculationMethod,
+								},
 								{ label: "Frequency", value: measure.frequency },
 							]}
 						/>
@@ -118,7 +130,10 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 						<MeasureFieldGrid
 							fields={[
 								{ label: "Inverse Measure", value: measure.inverseMeasure },
-								{ label: "Higher Rate is Better", value: measure.higherRateIsBetter },
+								{
+									label: "Higher Rate is Better",
+									value: measure.higherRateIsBetter,
+								},
 							]}
 							columns={2}
 						/>
@@ -126,10 +141,16 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 				</MeasureSectionPanel>
 
 				<div className="space-y-3">
-					<MeasureSectionPanel title="Measure Status" bodyClassName="space-y-3 p-0">
+					<MeasureSectionPanel
+						title="Measure Status"
+						bodyClassName="space-y-3 p-0"
+					>
 						<div className="flex flex-wrap gap-2">
 							<MeasureStatusPill label={measure.status} tone="success" />
-							<MeasureStatusPill label={measure.reportingStatus} tone="purple" />
+							<MeasureStatusPill
+								label={measure.reportingStatus}
+								tone="purple"
+							/>
 						</div>
 
 						<div className="grid grid-cols-2 gap-3">
@@ -138,7 +159,10 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 								value={`${measure.complianceRate.toFixed(1)}%`}
 								accent="green"
 							/>
-							<MeasureStatTile label="Goal" value={`${measure.planGoal.toFixed(1)}%`} />
+							<MeasureStatTile
+								label="Goal"
+								value={`${measure.planGoal.toFixed(1)}%`}
+							/>
 							<MeasureStatTile
 								label="Variance"
 								value={`${measure.varianceToGoal > 0 ? "+" : ""}${measure.varianceToGoal.toFixed(1)}%`}
@@ -159,31 +183,45 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 							<CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
 							<div className="space-y-2 text-sm">
 								<div>
-									<p className="text-xs text-muted-foreground">Last Calculated</p>
-									<p className="font-medium text-foreground">{measure.lastCalculated}</p>
+									<p className="text-xs text-muted-foreground">
+										Last Calculated
+									</p>
+									<p className="font-medium text-foreground">
+										{measure.lastCalculated}
+									</p>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground">Next Refresh</p>
-									<p className="font-medium text-foreground">{measure.nextRefresh}</p>
+									<p className="font-medium text-foreground">
+										{measure.nextRefresh}
+									</p>
 								</div>
 							</div>
 						</div>
 						<div className="space-y-2 border-t border-border/50 pt-3 text-sm">
 							<div className="flex justify-between gap-3">
 								<span className="text-muted-foreground">Created By</span>
-								<span className="text-right font-medium">{measure.createdBy}</span>
+								<span className="text-right font-medium">
+									{measure.createdBy}
+								</span>
 							</div>
 							<div className="flex justify-between gap-3">
 								<span className="text-muted-foreground">Created On</span>
-								<span className="text-right font-medium">{measure.createdOn}</span>
+								<span className="text-right font-medium">
+									{measure.createdOn}
+								</span>
 							</div>
 							<div className="flex justify-between gap-3">
 								<span className="text-muted-foreground">Last Updated By</span>
-								<span className="text-right font-medium">{measure.lastUpdatedBy}</span>
+								<span className="text-right font-medium">
+									{measure.lastUpdatedBy}
+								</span>
 							</div>
 							<div className="flex justify-between gap-3">
 								<span className="text-muted-foreground">Last Updated</span>
-								<span className="text-right font-medium">{measure.lastUpdated}</span>
+								<span className="text-right font-medium">
+									{measure.lastUpdated}
+								</span>
 							</div>
 						</div>
 					</MeasureSectionPanel>
@@ -232,9 +270,17 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 				>
 					<MeasureDataTable
 						columns={[
-							{ key: "id", header: "Measure ID", className: "font-mono text-xs" },
+							{
+								key: "id",
+								header: "Measure ID",
+								className: "font-mono text-xs",
+							},
 							{ key: "name", header: "Name" },
-							{ key: "relationship", header: "Relationship", className: MEASURE_TABLE_MUTED },
+							{
+								key: "relationship",
+								header: "Relationship",
+								className: MEASURE_TABLE_MUTED,
+							},
 						]}
 						rows={measure.relatedMeasures.map((row) => ({
 							id: row.id,
@@ -273,7 +319,9 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 								</Button>
 							),
 						}))}
-						getRowKey={(_, index) => measure.documents[index]?.id ?? String(index)}
+						getRowKey={(_, index) =>
+							measure.documents[index]?.id ?? String(index)
+						}
 					/>
 				</MeasureSectionPanel>
 			</div>
@@ -289,7 +337,9 @@ export function MeasureDetailOverviewTab({ measure }: { measure: MeasureDetail }
 				}
 				bodyClassName="p-0"
 			>
-				<p className="text-sm leading-relaxed text-foreground">{measure.notes}</p>
+				<p className="text-sm leading-relaxed text-foreground">
+					{measure.notes}
+				</p>
 			</MeasureSectionPanel>
 		</div>
 	);

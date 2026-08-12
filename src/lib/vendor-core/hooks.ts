@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
-import { VendorCoreApiError } from "@/lib/vendor-core/client";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
+import { VendorCoreApiError } from "@/lib/vendor-core/client";
 
 export const vendorCoreKeys = {
 	all: ["vendor-core"] as const,
@@ -45,6 +45,8 @@ function useAuthAwareQuery<T>(
 ) {
 	const session = useVendorCoreSession();
 
+	/* Callers own the cache key; auth only gates fetching. */
+	/* eslint-disable @tanstack/query/exhaustive-deps -- wrapper: stable keys from callers */
 	return useQuery({
 		queryKey,
 		enabled: session.live && session.authed && enabled,
@@ -64,6 +66,7 @@ function useAuthAwareQuery<T>(
 		staleTime: 15_000,
 		refetchOnMount: "always",
 	});
+	/* eslint-enable @tanstack/query/exhaustive-deps */
 }
 
 export function useVendorCoreVendors() {
@@ -210,10 +213,13 @@ export function useVendorCoreValidationResults(params?: {
 	inbound_file_id?: string;
 	search?: string;
 }) {
-	return useAuthAwareQuery(vendorCoreKeys.validationResults(params), async () => {
-		const page = await vendorCoreApi.listValidationResults(params);
-		return page.results ?? [];
-	});
+	return useAuthAwareQuery(
+		vendorCoreKeys.validationResults(params),
+		async () => {
+			const page = await vendorCoreApi.listValidationResults(params);
+			return page.results ?? [];
+		}
+	);
 }
 
 export function useVendorCoreProviders(enabled = true) {

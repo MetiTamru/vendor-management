@@ -10,8 +10,8 @@
  *   VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:errors
  *   … pnpm seed:errors --force
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -105,7 +105,9 @@ async function main() {
 	}
 	console.log("✓ authenticated");
 
-	const files = await request("GET", "/api/v1/inbound-files/?limit=1", { token });
+	const files = await request("GET", "/api/v1/inbound-files/?limit=1", {
+		token,
+	});
 	const fileCount = files?.count ?? files?.results?.length ?? 0;
 	if (!fileCount) {
 		console.warn(
@@ -143,7 +145,9 @@ async function main() {
 		}
 	}
 
-	const errors = await request("GET", "/api/v1/errors/list/?limit=5", { token });
+	const errors = await request("GET", "/api/v1/errors/list/?limit=5", {
+		token,
+	});
 	const errorCount = errors?.count ?? errors?.results?.length ?? 0;
 	console.log(`Error records now: ${errorCount}`);
 

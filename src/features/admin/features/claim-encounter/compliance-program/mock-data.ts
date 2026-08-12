@@ -62,7 +62,10 @@ function metricForPage(config: ComplianceProgramPageConfig, index: number) {
 			if (config.slug === "compliance-calendar") {
 				return { label: "Days to due", value: String(3 + (index % 14)) };
 			}
-			if (config.slug === "hedis-quality" || config.slug === "quality-performance") {
+			if (
+				config.slug === "hedis-quality" ||
+				config.slug === "quality-performance"
+			) {
 				return { label: "Rate", value: `${72 + (index % 24)}%` };
 			}
 			if (config.slug === "risk-adjustment") {
@@ -73,7 +76,10 @@ function metricForPage(config: ComplianceProgramPageConfig, index: number) {
 			if (config.slug === "dme" || config.slug === "ltss") {
 				return { label: "Units", value: String(4 + (index % 18)) };
 			}
-			return { label: "Amount", value: `$${(base * 125).toLocaleString("en-US")}` };
+			return {
+				label: "Amount",
+				value: `$${(base * 125).toLocaleString("en-US")}`,
+			};
 	}
 }
 

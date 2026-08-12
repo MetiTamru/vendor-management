@@ -2,6 +2,8 @@ import { CLAIM_VENDOR_SEED } from "@/features/admin/features/vendors/vendor-inte
 import { isMockEnabled } from "@/lib/mock-mode";
 import type { ProgramFileType } from "@/types/UI/system.types";
 
+export type { ProgramFileType };
+
 export type ClaimFileStatus =
 	| "accepted"
 	| "rejected"
@@ -807,7 +809,10 @@ function statusFromGainwell(
 	return "Pending";
 }
 
-export function buildClaimDetailFromLine(line: ClaimLine, index = 0): ClaimDetail {
+export function buildClaimDetailFromLine(
+	line: ClaimLine,
+	index = 0
+): ClaimDetail {
 	const file = getVendorFile(line.fileId);
 	const response = getClaimResponse(line.responseId);
 	const seq = Number(line.claimId.replace(/\D/g, "")) || index + 1;

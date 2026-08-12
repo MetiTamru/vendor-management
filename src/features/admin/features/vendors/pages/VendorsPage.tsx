@@ -43,6 +43,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -52,9 +53,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import { Skeleton } from "@/components/ui/skeleton";
-import { liveVendorsToDirectoryRows } from "@/features/admin/features/vendors/live-directory";
 import { VendorActionsMenu } from "@/features/admin/features/vendors/components/VendorActionsMenu";
+import { liveVendorsToDirectoryRows } from "@/features/admin/features/vendors/live-directory";
 import {
 	VENDOR_DIRECTORY,
 	type VendorDirectoryRow,
@@ -65,6 +65,7 @@ import {
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreAccounts,
@@ -73,7 +74,6 @@ import {
 	useVendorCoreJobs,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
-import { cn } from "@/lib/utils";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
 	return <StatusBadge status={status} />;
@@ -184,8 +184,7 @@ function VendorsDirectoryPage() {
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
 	const vendorTypes = useMemo(
-		() =>
-			Array.from(new Set(directory.map((row) => row.vendorType))).sort(),
+		() => Array.from(new Set(directory.map((row) => row.vendorType))).sort(),
 		[directory]
 	);
 
@@ -223,7 +222,16 @@ function VendorsDirectoryPage() {
 			return sortDir === "asc" ? as.localeCompare(bs) : bs.localeCompare(as);
 		});
 		return rows;
-	}, [activity, directory, health, search, sortDir, sortKey, status, vendorType]);
+	}, [
+		activity,
+		directory,
+		health,
+		search,
+		sortDir,
+		sortKey,
+		status,
+		vendorType,
+	]);
 
 	const summary = useMemo(() => summarizeVendorDirectory(filtered), [filtered]);
 

@@ -64,7 +64,10 @@ export const SUBMISSION_STATUS_STYLES: Record<string, string> = {
 	Failed: "border-red-200 bg-red-50 text-red-700",
 };
 
-export const MEDICARE_SUBMISSION_STATUS_STYLES: Record<MedicareSubmissionStatus, string> = {
+export const MEDICARE_SUBMISSION_STATUS_STYLES: Record<
+	MedicareSubmissionStatus,
+	string
+> = {
 	Accepted: "border-emerald-300 bg-emerald-100 text-emerald-800",
 	Acknowledged: "border-blue-200 bg-blue-50 text-blue-800",
 	Completed: "border-blue-200 bg-blue-50 text-blue-800",
@@ -72,7 +75,10 @@ export const MEDICARE_SUBMISSION_STATUS_STYLES: Record<MedicareSubmissionStatus,
 	Failed: "border-red-200 bg-red-50 text-red-700",
 };
 
-export const MEDICAID_SUBMISSION_STATUS_STYLES: Record<MedicaidSubmissionStatus, string> = {
+export const MEDICAID_SUBMISSION_STATUS_STYLES: Record<
+	MedicaidSubmissionStatus,
+	string
+> = {
 	Submitted: "border-sky-200 bg-sky-50 text-sky-800",
 	Acknowledged: "border-blue-200 bg-blue-50 text-blue-800",
 	Accepted: "border-emerald-300 bg-emerald-100 text-emerald-800",
@@ -208,15 +214,30 @@ export type ProgramAuditData = {
 		findings: number;
 		criticalFindings: number;
 	}[];
-	findingsBySeverity: { name: string; value: number; color: string; pct: number }[];
-	findingsTrend: { month: string; total: number; critical: number; high: number }[];
+	findingsBySeverity: {
+		name: string;
+		value: number;
+		color: string;
+		pct: number;
+	}[];
+	findingsTrend: {
+		month: string;
+		total: number;
+		critical: number;
+		high: number;
+	}[];
 	topFindings: {
 		category: string;
 		description: string;
 		occurrences: number;
 		severity: FindingSeverity;
 	}[];
-	correctiveActions: { status: string; count: number; pct: number; color: string }[];
+	correctiveActions: {
+		status: string;
+		count: number;
+		pct: number;
+		color: string;
+	}[];
 	quickActions: { id: string; title: string; description: string }[];
 	totalAuditEntries: number;
 };
@@ -237,23 +258,119 @@ const MEDICAID_OVERVIEW: ProgramOverviewData = {
 		acceptanceRateDelta: 2.17,
 	},
 	recentSubmissions: [
-		{ id: "s1", batch: "MED-2027-Q2-001", reportType: "Encounter File", submittedDate: "Jul 18, 2027", status: "Submitted", records: 512_840, region: "DC" },
-		{ id: "s2", batch: "MED-2027-Q2-002", reportType: "Encounter File", submittedDate: "Jul 12, 2027", status: "Acknowledged", records: 498_220, region: "DC" },
-		{ id: "s3", batch: "MED-2027-Q2-003", reportType: "Member Eligibility", submittedDate: "Jul 08, 2027", status: "Accepted", records: 421_560, region: "MD" },
-		{ id: "s4", batch: "MED-2027-Q2-004", reportType: "Encounter File", submittedDate: "Jul 05, 2027", status: "Accepted", records: 389_104, region: "VA" },
-		{ id: "s5", batch: "MED-2027-Q2-005", reportType: "Provider Data", submittedDate: "Jun 28, 2027", status: "Acknowledged", records: 628_098, region: "DC" },
+		{
+			id: "s1",
+			batch: "MED-2027-Q2-001",
+			reportType: "Encounter File",
+			submittedDate: "Jul 18, 2027",
+			status: "Submitted",
+			records: 512_840,
+			region: "DC",
+		},
+		{
+			id: "s2",
+			batch: "MED-2027-Q2-002",
+			reportType: "Encounter File",
+			submittedDate: "Jul 12, 2027",
+			status: "Acknowledged",
+			records: 498_220,
+			region: "DC",
+		},
+		{
+			id: "s3",
+			batch: "MED-2027-Q2-003",
+			reportType: "Member Eligibility",
+			submittedDate: "Jul 08, 2027",
+			status: "Accepted",
+			records: 421_560,
+			region: "MD",
+		},
+		{
+			id: "s4",
+			batch: "MED-2027-Q2-004",
+			reportType: "Encounter File",
+			submittedDate: "Jul 05, 2027",
+			status: "Accepted",
+			records: 389_104,
+			region: "VA",
+		},
+		{
+			id: "s5",
+			batch: "MED-2027-Q2-005",
+			reportType: "Provider Data",
+			submittedDate: "Jun 28, 2027",
+			status: "Acknowledged",
+			records: 628_098,
+			region: "DC",
+		},
 	],
 	recentResponses: [
-		{ id: "r1", file: "DC_Response_Q2_2027_001.rsp", reportType: "Encounter File", receivedDate: "Jul 19, 2027", accepted: 498_120, rejected: 14_720, status: "Processed" },
-		{ id: "r2", file: "MD_Response_Q2_2027_Final.rsp", reportType: "Member Eligibility", receivedDate: "Jul 10, 2027", accepted: 410_880, rejected: 10_680, status: "Processed" },
-		{ id: "r3", file: "VA_Response_Q2_2027_001.rsp", reportType: "Encounter File", receivedDate: "Jul 06, 2027", accepted: 378_420, rejected: 10_684, status: "Processed" },
-		{ id: "r4", file: "DC_Response_Q2_2027_002.rsp", reportType: "Encounter File", receivedDate: "Jun 30, 2027", accepted: 612_440, rejected: 15_658, status: "Processed" },
+		{
+			id: "r1",
+			file: "DC_Response_Q2_2027_001.rsp",
+			reportType: "Encounter File",
+			receivedDate: "Jul 19, 2027",
+			accepted: 498_120,
+			rejected: 14_720,
+			status: "Processed",
+		},
+		{
+			id: "r2",
+			file: "MD_Response_Q2_2027_Final.rsp",
+			reportType: "Member Eligibility",
+			receivedDate: "Jul 10, 2027",
+			accepted: 410_880,
+			rejected: 10_680,
+			status: "Processed",
+		},
+		{
+			id: "r3",
+			file: "VA_Response_Q2_2027_001.rsp",
+			reportType: "Encounter File",
+			receivedDate: "Jul 06, 2027",
+			accepted: 378_420,
+			rejected: 10_684,
+			status: "Processed",
+		},
+		{
+			id: "r4",
+			file: "DC_Response_Q2_2027_002.rsp",
+			reportType: "Encounter File",
+			receivedDate: "Jun 30, 2027",
+			accepted: 612_440,
+			rejected: 15_658,
+			status: "Processed",
+		},
 	],
 	exceptions: [
-		{ id: "e1", code: "ME-1024", description: "Member ID not found in eligibility file", count: 842, status: "Open" },
-		{ id: "e2", code: "ME-2048", description: "Service date outside member eligibility period", count: 516, status: "Open" },
-		{ id: "e3", code: "PR-008", description: "Rendering provider NPI not on file", count: 384, status: "In Review" },
-		{ id: "e4", code: "EN-022", description: "Duplicate encounter record detected", count: 291, status: "In Review" },
+		{
+			id: "e1",
+			code: "ME-1024",
+			description: "Member ID not found in eligibility file",
+			count: 842,
+			status: "Open",
+		},
+		{
+			id: "e2",
+			code: "ME-2048",
+			description: "Service date outside member eligibility period",
+			count: 516,
+			status: "Open",
+		},
+		{
+			id: "e3",
+			code: "PR-008",
+			description: "Rendering provider NPI not on file",
+			count: 384,
+			status: "In Review",
+		},
+		{
+			id: "e4",
+			code: "EN-022",
+			description: "Duplicate encounter record detected",
+			count: 291,
+			status: "In Review",
+		},
 	],
 	acceptanceTrend: [
 		{ month: "Jan 2027", rate: 92.4 },
@@ -264,17 +381,48 @@ const MEDICAID_OVERVIEW: ProgramOverviewData = {
 		{ month: "Jun 2027", rate: 95.52 },
 	],
 	rejectionDonut: [
-		{ name: "Missing/Invalid Member ID", count: 22_840, color: "#13446c", pct: 29.8 },
-		{ name: "Invalid Diagnosis Code", count: 18_920, color: "#3b82f6", pct: 24.7 },
-		{ name: "Provider Not Enrolled", count: 12_640, color: "#8b5cf6", pct: 16.5 },
+		{
+			name: "Missing/Invalid Member ID",
+			count: 22_840,
+			color: "#13446c",
+			pct: 29.8,
+		},
+		{
+			name: "Invalid Diagnosis Code",
+			count: 18_920,
+			color: "#3b82f6",
+			pct: 24.7,
+		},
+		{
+			name: "Provider Not Enrolled",
+			count: 12_640,
+			color: "#8b5cf6",
+			pct: 16.5,
+		},
 		{ name: "Duplicate Encounter", count: 10_208, color: "#f59e0b", pct: 13.3 },
 		{ name: "Other", count: 11_904, color: "#94a3b8", pct: 15.7 },
 	],
 	quickActions: [
-		{ id: "qa-1", title: "Submit Encounter File", description: "Upload a new encounter batch for the current period" },
-		{ id: "qa-2", title: "View State Edits", description: "Review state-specific edit rules and thresholds" },
-		{ id: "qa-3", title: "Download Reports", description: "Export acceptance and rejection summary reports" },
-		{ id: "qa-4", title: "View Exception Queue", description: "Open encounter exceptions requiring remediation" },
+		{
+			id: "qa-1",
+			title: "Submit Encounter File",
+			description: "Upload a new encounter batch for the current period",
+		},
+		{
+			id: "qa-2",
+			title: "View State Edits",
+			description: "Review state-specific edit rules and thresholds",
+		},
+		{
+			id: "qa-3",
+			title: "Download Reports",
+			description: "Export acceptance and rejection summary reports",
+		},
+		{
+			id: "qa-4",
+			title: "View Exception Queue",
+			description: "Open encounter exceptions requiring remediation",
+		},
 	],
 };
 
@@ -295,23 +443,106 @@ const MEDICARE_OVERVIEW: ProgramOverviewData = {
 		partDHint: "Last PDE: Jul 20, 2027",
 	},
 	recentSubmissions: [
-		{ id: "s1", batch: "MCR-2027-Q2-001", reportType: "Encounter Data", submittedDate: "Jul 18, 2027", status: "Accepted", records: 512_840 },
-		{ id: "s2", batch: "MCR-2027-Q2-002", reportType: "Risk Adjustment", submittedDate: "Jul 15, 2027", status: "Accepted", records: 245_302 },
-		{ id: "s3", batch: "MCR-2027-Q2-003", reportType: "Part D (PDE)", submittedDate: "Jul 12, 2027", status: "Accepted", records: 842_560 },
-		{ id: "s4", batch: "MCR-2027-Q2-004", reportType: "Encounter Data", submittedDate: "Jul 08, 2027", status: "Submitted", records: 498_220 },
-		{ id: "s5", batch: "MCR-2027-Q2-005", reportType: "HEDIS Measures", submittedDate: "Jul 05, 2027", status: "Acknowledged", records: 128_440 },
+		{
+			id: "s1",
+			batch: "MCR-2027-Q2-001",
+			reportType: "Encounter Data",
+			submittedDate: "Jul 18, 2027",
+			status: "Accepted",
+			records: 512_840,
+		},
+		{
+			id: "s2",
+			batch: "MCR-2027-Q2-002",
+			reportType: "Risk Adjustment",
+			submittedDate: "Jul 15, 2027",
+			status: "Accepted",
+			records: 245_302,
+		},
+		{
+			id: "s3",
+			batch: "MCR-2027-Q2-003",
+			reportType: "Part D (PDE)",
+			submittedDate: "Jul 12, 2027",
+			status: "Accepted",
+			records: 842_560,
+		},
+		{
+			id: "s4",
+			batch: "MCR-2027-Q2-004",
+			reportType: "Encounter Data",
+			submittedDate: "Jul 08, 2027",
+			status: "Submitted",
+			records: 498_220,
+		},
+		{
+			id: "s5",
+			batch: "MCR-2027-Q2-005",
+			reportType: "HEDIS Measures",
+			submittedDate: "Jul 05, 2027",
+			status: "Acknowledged",
+			records: 128_440,
+		},
 	],
 	recentResponses: [
-		{ id: "r1", file: "CMS_RESP_Q2_2027_001.xml", reportType: "Encounter Data", receivedDate: "Jul 19, 2027", status: "Accepted" },
-		{ id: "r2", file: "CMS_RESP_Q2_2027_002.xml", reportType: "Risk Adjustment", receivedDate: "Jul 16, 2027", status: "Accepted" },
-		{ id: "r3", file: "CMS_RESP_Q2_2027_003.xml", reportType: "Part D (PDE)", receivedDate: "Jul 14, 2027", status: "Accepted" },
-		{ id: "r4", file: "CMS_RESP_Q2_2027_004.xml", reportType: "Encounter Data", receivedDate: "Jul 10, 2027", status: "Processed with Errors" },
+		{
+			id: "r1",
+			file: "CMS_RESP_Q2_2027_001.xml",
+			reportType: "Encounter Data",
+			receivedDate: "Jul 19, 2027",
+			status: "Accepted",
+		},
+		{
+			id: "r2",
+			file: "CMS_RESP_Q2_2027_002.xml",
+			reportType: "Risk Adjustment",
+			receivedDate: "Jul 16, 2027",
+			status: "Accepted",
+		},
+		{
+			id: "r3",
+			file: "CMS_RESP_Q2_2027_003.xml",
+			reportType: "Part D (PDE)",
+			receivedDate: "Jul 14, 2027",
+			status: "Accepted",
+		},
+		{
+			id: "r4",
+			file: "CMS_RESP_Q2_2027_004.xml",
+			reportType: "Encounter Data",
+			receivedDate: "Jul 10, 2027",
+			status: "Processed with Errors",
+		},
 	],
 	exceptions: [
-		{ id: "e1", code: "HCC-401", description: "Invalid HCC code mapping for member", count: 124, status: "Open" },
-		{ id: "e2", code: "PDE-112", description: "PDE validation error – missing NDC", count: 86, status: "Open" },
-		{ id: "e3", code: "ENC-208", description: "Missing diagnosis code on encounter line", count: 64, status: "In Review" },
-		{ id: "e4", code: "RA-055", description: "Suspect condition gap not documented", count: 42, status: "In Review" },
+		{
+			id: "e1",
+			code: "HCC-401",
+			description: "Invalid HCC code mapping for member",
+			count: 124,
+			status: "Open",
+		},
+		{
+			id: "e2",
+			code: "PDE-112",
+			description: "PDE validation error – missing NDC",
+			count: 86,
+			status: "Open",
+		},
+		{
+			id: "e3",
+			code: "ENC-208",
+			description: "Missing diagnosis code on encounter line",
+			count: 64,
+			status: "In Review",
+		},
+		{
+			id: "e4",
+			code: "RA-055",
+			description: "Suspect condition gap not documented",
+			count: 42,
+			status: "In Review",
+		},
 	],
 	acceptanceTrend: [
 		{ month: "Jan 2027", rate: 91.2 },
@@ -329,10 +560,26 @@ const MEDICARE_OVERVIEW: ProgramOverviewData = {
 		{ name: "Other", count: 5_024, color: "#94a3b8", pct: 16.8 },
 	],
 	quickActions: [
-		{ id: "qa-1", title: "Submit Medicare Report", description: "Upload a new reporting file for the current period" },
-		{ id: "qa-2", title: "View CMS Requirements", description: "Review CMS submission guidelines and deadlines" },
-		{ id: "qa-3", title: "Download CMS Responses", description: "Export CMS response files and acceptance reports" },
-		{ id: "qa-4", title: "View Audit Findings", description: "Open audit findings requiring remediation" },
+		{
+			id: "qa-1",
+			title: "Submit Medicare Report",
+			description: "Upload a new reporting file for the current period",
+		},
+		{
+			id: "qa-2",
+			title: "View CMS Requirements",
+			description: "Review CMS submission guidelines and deadlines",
+		},
+		{
+			id: "qa-3",
+			title: "Download CMS Responses",
+			description: "Export CMS response files and acceptance reports",
+		},
+		{
+			id: "qa-4",
+			title: "View Audit Findings",
+			description: "Open audit findings requiring remediation",
+		},
 	],
 	medicareExtras: {
 		riskAdjustment: {
@@ -357,10 +604,30 @@ const MEDICARE_OVERVIEW: ProgramOverviewData = {
 			],
 		},
 		complianceDeadlines: [
-			{ requirement: "Risk Adjustment Data Submission", dueDate: "Jul 31, 2027", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-			{ requirement: "Part D PDE Submission", dueDate: "Jul 20, 2027", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-			{ requirement: "Encounter Data Submission", dueDate: "Jul 15, 2027", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-			{ requirement: "HEDIS Measure Submission", dueDate: "Aug 15, 2027", status: "Upcoming", statusStyle: "border-amber-200 bg-amber-50 text-amber-800" },
+			{
+				requirement: "Risk Adjustment Data Submission",
+				dueDate: "Jul 31, 2027",
+				status: "On Track",
+				statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+			},
+			{
+				requirement: "Part D PDE Submission",
+				dueDate: "Jul 20, 2027",
+				status: "On Track",
+				statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+			},
+			{
+				requirement: "Encounter Data Submission",
+				dueDate: "Jul 15, 2027",
+				status: "On Track",
+				statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+			},
+			{
+				requirement: "HEDIS Measure Submission",
+				dueDate: "Aug 15, 2027",
+				status: "Upcoming",
+				statusStyle: "border-amber-200 bg-amber-50 text-amber-800",
+			},
 		],
 	},
 };
@@ -382,11 +649,66 @@ const MEDICAID_AUDIT: ProgramAuditData = {
 	},
 	planColumnLabel: "MCO / Plan",
 	recentActivities: [
-		{ id: "AUD-2027-018", auditType: "Encounter Data Validation", reportType: "Encounter File", plan: "MFC-DC-100", auditPeriod: "Q2 2027", auditDate: "Jul 15, 2027", auditor: "State MMIS Review", status: "Completed", findings: 12, criticalFindings: 2 },
-		{ id: "AUD-2027-017", auditType: "Eligibility Reconciliation", reportType: "Member Eligibility", plan: "MFC-DC-200", auditPeriod: "Q2 2027", auditDate: "Jul 12, 2027", auditor: "Internal Compliance", status: "Completed", findings: 8, criticalFindings: 1 },
-		{ id: "AUD-2027-016", auditType: "Provider Enrollment Audit", reportType: "Provider Data", plan: "MFC-DC-100", auditPeriod: "Q2 2027", auditDate: "Jul 08, 2027", auditor: "State MMIS Review", status: "In Progress", findings: 6, criticalFindings: 0 },
-		{ id: "AUD-2027-015", auditType: "Duplicate Encounter Review", reportType: "Encounter File", plan: "MFC-DC-300", auditPeriod: "Q1 2027", auditDate: "Apr 22, 2027", auditor: "Internal Compliance", status: "Completed", findings: 14, criticalFindings: 3 },
-		{ id: "AUD-2027-014", auditType: "Capitation Accuracy Review", reportType: "Capitation Adj.", plan: "MFC-DC-200", auditPeriod: "Q1 2027", auditDate: "Apr 18, 2027", auditor: "External Auditor", status: "In Progress", findings: 4, criticalFindings: 1 },
+		{
+			id: "AUD-2027-018",
+			auditType: "Encounter Data Validation",
+			reportType: "Encounter File",
+			plan: "MFC-DC-100",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 15, 2027",
+			auditor: "State MMIS Review",
+			status: "Completed",
+			findings: 12,
+			criticalFindings: 2,
+		},
+		{
+			id: "AUD-2027-017",
+			auditType: "Eligibility Reconciliation",
+			reportType: "Member Eligibility",
+			plan: "MFC-DC-200",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 12, 2027",
+			auditor: "Internal Compliance",
+			status: "Completed",
+			findings: 8,
+			criticalFindings: 1,
+		},
+		{
+			id: "AUD-2027-016",
+			auditType: "Provider Enrollment Audit",
+			reportType: "Provider Data",
+			plan: "MFC-DC-100",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 08, 2027",
+			auditor: "State MMIS Review",
+			status: "In Progress",
+			findings: 6,
+			criticalFindings: 0,
+		},
+		{
+			id: "AUD-2027-015",
+			auditType: "Duplicate Encounter Review",
+			reportType: "Encounter File",
+			plan: "MFC-DC-300",
+			auditPeriod: "Q1 2027",
+			auditDate: "Apr 22, 2027",
+			auditor: "Internal Compliance",
+			status: "Completed",
+			findings: 14,
+			criticalFindings: 3,
+		},
+		{
+			id: "AUD-2027-014",
+			auditType: "Capitation Accuracy Review",
+			reportType: "Capitation Adj.",
+			plan: "MFC-DC-200",
+			auditPeriod: "Q1 2027",
+			auditDate: "Apr 18, 2027",
+			auditor: "External Auditor",
+			status: "In Progress",
+			findings: 4,
+			criticalFindings: 1,
+		},
 	],
 	findingsBySeverity: [
 		{ name: "Critical", value: 16, color: "#ef4444", pct: 21.6 },
@@ -403,11 +725,36 @@ const MEDICAID_AUDIT: ProgramAuditData = {
 		{ month: "Jun 2027", total: 74, critical: 16, high: 22 },
 	],
 	topFindings: [
-		{ category: "Invalid Member ID", description: "Member identifier not found in eligibility file", occurrences: 18, severity: "Critical" },
-		{ category: "Service Date Error", description: "Service date outside member eligibility period", occurrences: 14, severity: "High" },
-		{ category: "Provider Not Enrolled", description: "Rendering provider NPI not on state enrollment file", occurrences: 11, severity: "High" },
-		{ category: "Duplicate Encounter", description: "Duplicate encounter record within reporting period", occurrences: 9, severity: "Medium" },
-		{ category: "Missing Modifier", description: "Required procedure modifier not submitted", occurrences: 7, severity: "Medium" },
+		{
+			category: "Invalid Member ID",
+			description: "Member identifier not found in eligibility file",
+			occurrences: 18,
+			severity: "Critical",
+		},
+		{
+			category: "Service Date Error",
+			description: "Service date outside member eligibility period",
+			occurrences: 14,
+			severity: "High",
+		},
+		{
+			category: "Provider Not Enrolled",
+			description: "Rendering provider NPI not on state enrollment file",
+			occurrences: 11,
+			severity: "High",
+		},
+		{
+			category: "Duplicate Encounter",
+			description: "Duplicate encounter record within reporting period",
+			occurrences: 9,
+			severity: "Medium",
+		},
+		{
+			category: "Missing Modifier",
+			description: "Required procedure modifier not submitted",
+			occurrences: 7,
+			severity: "Medium",
+		},
 	],
 	correctiveActions: [
 		{ status: "Completed", count: 18, pct: 50.0, color: "#22c55e" },
@@ -415,8 +762,16 @@ const MEDICAID_AUDIT: ProgramAuditData = {
 		{ status: "Pending", count: 6, pct: 16.7, color: "#f59e0b" },
 	],
 	quickActions: [
-		{ id: "aq-1", title: "Create Corrective Action", description: "Create new action" },
-		{ id: "aq-2", title: "Track Corrective Actions", description: "Monitor action progress" },
+		{
+			id: "aq-1",
+			title: "Create Corrective Action",
+			description: "Create new action",
+		},
+		{
+			id: "aq-2",
+			title: "Track Corrective Actions",
+			description: "Monitor action progress",
+		},
 		{ id: "aq-3", title: "Audit Calendar", description: "View audit schedule" },
 	],
 	totalAuditEntries: 22,
@@ -439,11 +794,66 @@ const MEDICARE_AUDIT: ProgramAuditData = {
 	},
 	planColumnLabel: "Contract / Plan",
 	recentActivities: [
-		{ id: "AUD-MCR-018", auditType: "Risk Adjustment Validation", reportType: "Risk Adjustment", plan: "H1234 – SilverScript", auditPeriod: "Q2 2027", auditDate: "Jul 15, 2027", auditor: "CMS Review", status: "Completed", findings: 12, criticalFindings: 2 },
-		{ id: "AUD-MCR-017", auditType: "PDE Data Validation", reportType: "Part D (PDE)", plan: "H5678 – Aetna Medicare Rx", auditPeriod: "Q2 2027", auditDate: "Jul 12, 2027", auditor: "Internal Compliance", status: "Completed", findings: 8, criticalFindings: 1 },
-		{ id: "AUD-MCR-016", auditType: "Encounter Data Audit", reportType: "Encounter Data", plan: "H1234 – SilverScript", auditPeriod: "Q2 2027", auditDate: "Jul 08, 2027", auditor: "CMS Review", status: "In Progress", findings: 6, criticalFindings: 0 },
-		{ id: "AUD-MCR-015", auditType: "HCC Capture Review", reportType: "Risk Adjustment", plan: "H9012 – Humana PDP", auditPeriod: "Q1 2027", auditDate: "Apr 22, 2027", auditor: "Internal Compliance", status: "Completed", findings: 14, criticalFindings: 3 },
-		{ id: "AUD-MCR-014", auditType: "Compliance Attestation", reportType: "Compliance", plan: "H5678 – Aetna Medicare Rx", auditPeriod: "Q1 2027", auditDate: "Apr 18, 2027", auditor: "External Auditor", status: "In Progress", findings: 4, criticalFindings: 1 },
+		{
+			id: "AUD-MCR-018",
+			auditType: "Risk Adjustment Validation",
+			reportType: "Risk Adjustment",
+			plan: "H1234 – SilverScript",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 15, 2027",
+			auditor: "CMS Review",
+			status: "Completed",
+			findings: 12,
+			criticalFindings: 2,
+		},
+		{
+			id: "AUD-MCR-017",
+			auditType: "PDE Data Validation",
+			reportType: "Part D (PDE)",
+			plan: "H5678 – Aetna Medicare Rx",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 12, 2027",
+			auditor: "Internal Compliance",
+			status: "Completed",
+			findings: 8,
+			criticalFindings: 1,
+		},
+		{
+			id: "AUD-MCR-016",
+			auditType: "Encounter Data Audit",
+			reportType: "Encounter Data",
+			plan: "H1234 – SilverScript",
+			auditPeriod: "Q2 2027",
+			auditDate: "Jul 08, 2027",
+			auditor: "CMS Review",
+			status: "In Progress",
+			findings: 6,
+			criticalFindings: 0,
+		},
+		{
+			id: "AUD-MCR-015",
+			auditType: "HCC Capture Review",
+			reportType: "Risk Adjustment",
+			plan: "H9012 – Humana PDP",
+			auditPeriod: "Q1 2027",
+			auditDate: "Apr 22, 2027",
+			auditor: "Internal Compliance",
+			status: "Completed",
+			findings: 14,
+			criticalFindings: 3,
+		},
+		{
+			id: "AUD-MCR-014",
+			auditType: "Compliance Attestation",
+			reportType: "Compliance",
+			plan: "H5678 – Aetna Medicare Rx",
+			auditPeriod: "Q1 2027",
+			auditDate: "Apr 18, 2027",
+			auditor: "External Auditor",
+			status: "In Progress",
+			findings: 4,
+			criticalFindings: 1,
+		},
 	],
 	findingsBySeverity: [
 		{ name: "Critical", value: 16, color: "#ef4444", pct: 21.62 },
@@ -460,11 +870,36 @@ const MEDICARE_AUDIT: ProgramAuditData = {
 		{ month: "Jun 2027", total: 74, critical: 16, high: 22 },
 	],
 	topFindings: [
-		{ category: "Invalid HCC", description: "HCC code not supported by submitted diagnosis", occurrences: 18, severity: "Critical" },
-		{ category: "PDE Validation Error", description: "PDE record failed CMS validation rules", occurrences: 14, severity: "High" },
-		{ category: "Missing Diagnosis Code", description: "Required diagnosis code missing on encounter", occurrences: 11, severity: "High" },
-		{ category: "Invalid NDC", description: "National Drug Code not recognized by CMS", occurrences: 9, severity: "Medium" },
-		{ category: "Duplicate PDE Record", description: "Duplicate prescription drug event detected", occurrences: 7, severity: "Medium" },
+		{
+			category: "Invalid HCC",
+			description: "HCC code not supported by submitted diagnosis",
+			occurrences: 18,
+			severity: "Critical",
+		},
+		{
+			category: "PDE Validation Error",
+			description: "PDE record failed CMS validation rules",
+			occurrences: 14,
+			severity: "High",
+		},
+		{
+			category: "Missing Diagnosis Code",
+			description: "Required diagnosis code missing on encounter",
+			occurrences: 11,
+			severity: "High",
+		},
+		{
+			category: "Invalid NDC",
+			description: "National Drug Code not recognized by CMS",
+			occurrences: 9,
+			severity: "Medium",
+		},
+		{
+			category: "Duplicate PDE Record",
+			description: "Duplicate prescription drug event detected",
+			occurrences: 7,
+			severity: "Medium",
+		},
 	],
 	correctiveActions: [
 		{ status: "Completed", count: 18, pct: 50.0, color: "#22c55e" },
@@ -472,8 +907,16 @@ const MEDICARE_AUDIT: ProgramAuditData = {
 		{ status: "Pending", count: 6, pct: 16.7, color: "#f59e0b" },
 	],
 	quickActions: [
-		{ id: "aq-1", title: "Create Corrective Action", description: "Create new action" },
-		{ id: "aq-2", title: "Track Corrective Actions", description: "Monitor action progress" },
+		{
+			id: "aq-1",
+			title: "Create Corrective Action",
+			description: "Create new action",
+		},
+		{
+			id: "aq-2",
+			title: "Track Corrective Actions",
+			description: "Monitor action progress",
+		},
 		{ id: "aq-3", title: "Audit Calendar", description: "View audit schedule" },
 	],
 	totalAuditEntries: 22,
@@ -506,11 +949,46 @@ export const MEDICARE_RISK_ADJUSTMENT_KPIS = {
 };
 
 export const MEDICARE_RISK_ADJUSTMENT_HCC_CATEGORIES = [
-	{ category: "Diabetes", captured: 18_420, suspected: 2_840, gaps: 1_120, target: 95.0, rate: 92.4 },
-	{ category: "Heart Failure", captured: 12_680, suspected: 1_960, gaps: 840, target: 94.0, rate: 91.8 },
-	{ category: "COPD", captured: 9_240, suspected: 1_420, gaps: 620, target: 93.0, rate: 90.2 },
-	{ category: "CKD", captured: 8_120, suspected: 1_280, gaps: 540, target: 92.0, rate: 89.6 },
-	{ category: "Depression", captured: 6_840, suspected: 980, gaps: 420, target: 90.0, rate: 88.4 },
+	{
+		category: "Diabetes",
+		captured: 18_420,
+		suspected: 2_840,
+		gaps: 1_120,
+		target: 95.0,
+		rate: 92.4,
+	},
+	{
+		category: "Heart Failure",
+		captured: 12_680,
+		suspected: 1_960,
+		gaps: 840,
+		target: 94.0,
+		rate: 91.8,
+	},
+	{
+		category: "COPD",
+		captured: 9_240,
+		suspected: 1_420,
+		gaps: 620,
+		target: 93.0,
+		rate: 90.2,
+	},
+	{
+		category: "CKD",
+		captured: 8_120,
+		suspected: 1_280,
+		gaps: 540,
+		target: 92.0,
+		rate: 89.6,
+	},
+	{
+		category: "Depression",
+		captured: 6_840,
+		suspected: 980,
+		gaps: 420,
+		target: 90.0,
+		rate: 88.4,
+	},
 ];
 
 export const MEDICARE_COMPLIANCE_KPIS = {
@@ -524,17 +1002,78 @@ export const MEDICARE_COMPLIANCE_KPIS = {
 };
 
 export const MEDICARE_COMPLIANCE_REQUIREMENTS = [
-	{ id: "cr-1", requirement: "Risk Adjustment Data Submission", regulation: "42 CFR §422.310", dueDate: "Jul 31, 2027", owner: "Compliance Team", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-	{ id: "cr-2", requirement: "Part D PDE Submission", regulation: "42 CFR §423.360", dueDate: "Jul 20, 2027", owner: "Pharmacy Ops", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-	{ id: "cr-3", requirement: "Encounter Data Submission", regulation: "42 CFR §422.504", dueDate: "Jul 15, 2027", owner: "Claims Ops", status: "On Track", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-	{ id: "cr-4", requirement: "HEDIS Measure Submission", regulation: "NCQA HEDIS", dueDate: "Aug 15, 2027", owner: "Quality Team", status: "Upcoming", statusStyle: "border-amber-200 bg-amber-50 text-amber-800" },
-	{ id: "cr-5", requirement: "CMS Compliance Attestation", regulation: "CMS Guidance", dueDate: "Aug 30, 2027", owner: "Compliance Team", status: "Upcoming", statusStyle: "border-amber-200 bg-amber-50 text-amber-800" },
+	{
+		id: "cr-1",
+		requirement: "Risk Adjustment Data Submission",
+		regulation: "42 CFR §422.310",
+		dueDate: "Jul 31, 2027",
+		owner: "Compliance Team",
+		status: "On Track",
+		statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	},
+	{
+		id: "cr-2",
+		requirement: "Part D PDE Submission",
+		regulation: "42 CFR §423.360",
+		dueDate: "Jul 20, 2027",
+		owner: "Pharmacy Ops",
+		status: "On Track",
+		statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	},
+	{
+		id: "cr-3",
+		requirement: "Encounter Data Submission",
+		regulation: "42 CFR §422.504",
+		dueDate: "Jul 15, 2027",
+		owner: "Claims Ops",
+		status: "On Track",
+		statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	},
+	{
+		id: "cr-4",
+		requirement: "HEDIS Measure Submission",
+		regulation: "NCQA HEDIS",
+		dueDate: "Aug 15, 2027",
+		owner: "Quality Team",
+		status: "Upcoming",
+		statusStyle: "border-amber-200 bg-amber-50 text-amber-800",
+	},
+	{
+		id: "cr-5",
+		requirement: "CMS Compliance Attestation",
+		regulation: "CMS Guidance",
+		dueDate: "Aug 30, 2027",
+		owner: "Compliance Team",
+		status: "Upcoming",
+		statusStyle: "border-amber-200 bg-amber-50 text-amber-800",
+	},
 ];
 
 export const MEDICARE_COMPLIANCE_ATTESTATIONS = [
-	{ id: "att-1", name: "Q2 2027 Data Quality Attestation", submittedBy: "J. Martinez", submittedDate: "Jul 10, 2027", status: "Complete", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-	{ id: "att-2", name: "Part D Formulary Compliance", submittedBy: "R. Chen", submittedDate: "Jul 08, 2027", status: "Complete", statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-	{ id: "att-3", name: "Risk Adjustment Documentation", submittedBy: "Pending", submittedDate: "—", status: "Pending", statusStyle: "border-amber-200 bg-amber-50 text-amber-800" },
+	{
+		id: "att-1",
+		name: "Q2 2027 Data Quality Attestation",
+		submittedBy: "J. Martinez",
+		submittedDate: "Jul 10, 2027",
+		status: "Complete",
+		statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	},
+	{
+		id: "att-2",
+		name: "Part D Formulary Compliance",
+		submittedBy: "R. Chen",
+		submittedDate: "Jul 08, 2027",
+		status: "Complete",
+		statusStyle: "border-emerald-200 bg-emerald-50 text-emerald-700",
+	},
+	{
+		id: "att-3",
+		name: "Risk Adjustment Documentation",
+		submittedBy: "Pending",
+		submittedDate: "—",
+		status: "Pending",
+		statusStyle: "border-amber-200 bg-amber-50 text-amber-800",
+	},
 ];
 
 export type ProgramSubmissionsData =
@@ -551,7 +1090,12 @@ export type ProgramSubmissionsData =
 				submittedBy: string;
 			}[];
 			byReportType: { name: string; value: number; color: string }[];
-			summaryByStatus: { status: string; count: number; pct: number; color: string }[];
+			summaryByStatus: {
+				status: string;
+				count: number;
+				pct: number;
+				color: string;
+			}[];
 			trendByMonth: {
 				month: string;
 				accepted: number;
@@ -590,7 +1134,12 @@ export type ProgramSubmissionsData =
 				pending: number;
 			}[];
 			byState: { name: string; value: number; color: string }[];
-			summaryByStatus: { status: string; count: number; pct: number; color: string }[];
+			summaryByStatus: {
+				status: string;
+				count: number;
+				pct: number;
+				color: string;
+			}[];
 			recentActivity: {
 				id: string;
 				at: string;
@@ -605,16 +1154,70 @@ export type ProgramSubmissionsData =
 			totalEncounters: number;
 	  };
 
-const MEDICARE_SUBMISSIONS: Extract<ProgramSubmissionsData, { kind: "medicare" }> = {
+const MEDICARE_SUBMISSIONS: Extract<
+	ProgramSubmissionsData,
+	{ kind: "medicare" }
+> = {
 	kind: "medicare",
-	kpis: MEDICARE_OVERVIEW.kpis as Extract<ProgramOverviewData["kpis"], { kind: "medicare" }>,
+	kpis: MEDICARE_OVERVIEW.kpis as Extract<
+		ProgramOverviewData["kpis"],
+		{ kind: "medicare" }
+	>,
 	submissions: [
-		{ id: "MCR-SUB-2027-042", reportType: "PDE", submittedAt: "Jul 20, 2027 04:12 PM", reportingPeriod: "Q2 2027", status: "Accepted", records: 842_560, submittedBy: "System" },
-		{ id: "MCR-SUB-2027-041", reportType: "MAO-004", submittedAt: "Jul 18, 2027 11:08 AM", reportingPeriod: "Q2 2027", status: "Accepted", records: 245_302, submittedBy: "System" },
-		{ id: "MCR-SUB-2027-040", reportType: "Risk Adjustment", submittedAt: "Jul 15, 2027 09:44 AM", reportingPeriod: "Q2 2027", status: "Acknowledged", records: 198_440, submittedBy: "J. Martinez" },
-		{ id: "MCR-SUB-2027-039", reportType: "Encounter Data", submittedAt: "Jul 12, 2027 03:22 PM", reportingPeriod: "Q2 2027", status: "Completed", records: 512_840, submittedBy: "System" },
-		{ id: "MCR-SUB-2027-038", reportType: "Part D Reconciliation", submittedAt: "Jul 08, 2027 08:55 AM", reportingPeriod: "Q2 2027", status: "In-Progress", records: 128_440, submittedBy: "R. Chen" },
-		{ id: "MCR-SUB-2027-037", reportType: "Enrollment", submittedAt: "Jul 05, 2027 02:30 PM", reportingPeriod: "Q2 2027", status: "Failed", records: 42_180, submittedBy: "System" },
+		{
+			id: "MCR-SUB-2027-042",
+			reportType: "PDE",
+			submittedAt: "Jul 20, 2027 04:12 PM",
+			reportingPeriod: "Q2 2027",
+			status: "Accepted",
+			records: 842_560,
+			submittedBy: "System",
+		},
+		{
+			id: "MCR-SUB-2027-041",
+			reportType: "MAO-004",
+			submittedAt: "Jul 18, 2027 11:08 AM",
+			reportingPeriod: "Q2 2027",
+			status: "Accepted",
+			records: 245_302,
+			submittedBy: "System",
+		},
+		{
+			id: "MCR-SUB-2027-040",
+			reportType: "Risk Adjustment",
+			submittedAt: "Jul 15, 2027 09:44 AM",
+			reportingPeriod: "Q2 2027",
+			status: "Acknowledged",
+			records: 198_440,
+			submittedBy: "J. Martinez",
+		},
+		{
+			id: "MCR-SUB-2027-039",
+			reportType: "Encounter Data",
+			submittedAt: "Jul 12, 2027 03:22 PM",
+			reportingPeriod: "Q2 2027",
+			status: "Completed",
+			records: 512_840,
+			submittedBy: "System",
+		},
+		{
+			id: "MCR-SUB-2027-038",
+			reportType: "Part D Reconciliation",
+			submittedAt: "Jul 08, 2027 08:55 AM",
+			reportingPeriod: "Q2 2027",
+			status: "In-Progress",
+			records: 128_440,
+			submittedBy: "R. Chen",
+		},
+		{
+			id: "MCR-SUB-2027-037",
+			reportType: "Enrollment",
+			submittedAt: "Jul 05, 2027 02:30 PM",
+			reportingPeriod: "Q2 2027",
+			status: "Failed",
+			records: 42_180,
+			submittedBy: "System",
+		},
 	],
 	byReportType: [
 		{ name: "PDE", value: 12, color: "#13446c" },
@@ -632,40 +1235,186 @@ const MEDICARE_SUBMISSIONS: Extract<ProgramSubmissionsData, { kind: "medicare" }
 		{ status: "Failed", count: 3, pct: 7.1, color: "#ef4444" },
 	],
 	trendByMonth: [
-		{ month: "Jan 2027", accepted: 5, acknowledged: 2, completed: 1, failed: 0 },
-		{ month: "Feb 2027", accepted: 6, acknowledged: 2, completed: 2, failed: 1 },
-		{ month: "Mar 2027", accepted: 7, acknowledged: 3, completed: 2, failed: 0 },
-		{ month: "Apr 2027", accepted: 8, acknowledged: 3, completed: 3, failed: 1 },
-		{ month: "May 2027", accepted: 9, acknowledged: 4, completed: 3, failed: 1 },
-		{ month: "Jun 2027", accepted: 10, acknowledged: 4, completed: 4, failed: 1 },
+		{
+			month: "Jan 2027",
+			accepted: 5,
+			acknowledged: 2,
+			completed: 1,
+			failed: 0,
+		},
+		{
+			month: "Feb 2027",
+			accepted: 6,
+			acknowledged: 2,
+			completed: 2,
+			failed: 1,
+		},
+		{
+			month: "Mar 2027",
+			accepted: 7,
+			acknowledged: 3,
+			completed: 2,
+			failed: 0,
+		},
+		{
+			month: "Apr 2027",
+			accepted: 8,
+			acknowledged: 3,
+			completed: 3,
+			failed: 1,
+		},
+		{
+			month: "May 2027",
+			accepted: 9,
+			acknowledged: 4,
+			completed: 3,
+			failed: 1,
+		},
+		{
+			month: "Jun 2027",
+			accepted: 10,
+			acknowledged: 4,
+			completed: 4,
+			failed: 1,
+		},
 	],
 	recentActivity: [
-		{ id: "a1", at: "Jul 20, 2027 04:15 PM", submissionId: "MCR-SUB-2027-042", reportType: "PDE", status: "Accepted", details: "PDE file accepted by CMS" },
-		{ id: "a2", at: "Jul 18, 2027 11:12 AM", submissionId: "MCR-SUB-2027-041", reportType: "MAO-004", status: "Accepted", details: "MAO-004 submission acknowledged" },
-		{ id: "a3", at: "Jul 15, 2027 09:50 AM", submissionId: "MCR-SUB-2027-040", reportType: "Risk Adjustment", status: "Acknowledged", details: "Risk adjustment file received by CMS" },
-		{ id: "a4", at: "Jul 12, 2027 03:28 PM", submissionId: "MCR-SUB-2027-039", reportType: "Encounter Data", status: "Completed", details: "Encounter data processing complete" },
-		{ id: "a5", at: "Jul 08, 2027 09:02 AM", submissionId: "MCR-SUB-2027-038", reportType: "Part D Reconciliation", status: "In-Progress", details: "Reconciliation file under CMS review" },
+		{
+			id: "a1",
+			at: "Jul 20, 2027 04:15 PM",
+			submissionId: "MCR-SUB-2027-042",
+			reportType: "PDE",
+			status: "Accepted",
+			details: "PDE file accepted by CMS",
+		},
+		{
+			id: "a2",
+			at: "Jul 18, 2027 11:12 AM",
+			submissionId: "MCR-SUB-2027-041",
+			reportType: "MAO-004",
+			status: "Accepted",
+			details: "MAO-004 submission acknowledged",
+		},
+		{
+			id: "a3",
+			at: "Jul 15, 2027 09:50 AM",
+			submissionId: "MCR-SUB-2027-040",
+			reportType: "Risk Adjustment",
+			status: "Acknowledged",
+			details: "Risk adjustment file received by CMS",
+		},
+		{
+			id: "a4",
+			at: "Jul 12, 2027 03:28 PM",
+			submissionId: "MCR-SUB-2027-039",
+			reportType: "Encounter Data",
+			status: "Completed",
+			details: "Encounter data processing complete",
+		},
+		{
+			id: "a5",
+			at: "Jul 08, 2027 09:02 AM",
+			submissionId: "MCR-SUB-2027-038",
+			reportType: "Part D Reconciliation",
+			status: "In-Progress",
+			details: "Reconciliation file under CMS review",
+		},
 	],
 	quickActions: [
-		{ id: "sq-1", title: "Submit Medicare Report", description: "Upload a new reporting file" },
-		{ id: "sq-2", title: "View CMS Responses", description: "Review CMS response files" },
-		{ id: "sq-3", title: "PDE Dashboard", description: "Open Part D submission dashboard" },
-		{ id: "sq-4", title: "Risk Adjustment Dashboard", description: "View HCC capture and gaps" },
-		{ id: "sq-5", title: "Compliance Calendar", description: "View upcoming deadlines" },
-		{ id: "sq-6", title: "Download Reports", description: "Export submission summary reports" },
+		{
+			id: "sq-1",
+			title: "Submit Medicare Report",
+			description: "Upload a new reporting file",
+		},
+		{
+			id: "sq-2",
+			title: "View CMS Responses",
+			description: "Review CMS response files",
+		},
+		{
+			id: "sq-3",
+			title: "PDE Dashboard",
+			description: "Open Part D submission dashboard",
+		},
+		{
+			id: "sq-4",
+			title: "Risk Adjustment Dashboard",
+			description: "View HCC capture and gaps",
+		},
+		{
+			id: "sq-5",
+			title: "Compliance Calendar",
+			description: "View upcoming deadlines",
+		},
+		{
+			id: "sq-6",
+			title: "Download Reports",
+			description: "Export submission summary reports",
+		},
 	],
 	totalEntries: 42,
 };
 
-const MEDICAID_SUBMISSIONS: Extract<ProgramSubmissionsData, { kind: "medicaid" }> = {
+const MEDICAID_SUBMISSIONS: Extract<
+	ProgramSubmissionsData,
+	{ kind: "medicaid" }
+> = {
 	kind: "medicaid",
-	kpis: MEDICAID_OVERVIEW.kpis as Extract<ProgramOverviewData["kpis"], { kind: "medicaid" }>,
+	kpis: MEDICAID_OVERVIEW.kpis as Extract<
+		ProgramOverviewData["kpis"],
+		{ kind: "medicaid" }
+	>,
 	submissions: [
-		{ id: "s1", batch: "MED-2027-Q2-001", fileName: "837_Encounter_20270718_001.edi", state: "Maryland", submittedAt: "Jul 18, 2027 04:12 PM", status: "Submitted", encounters: 512_840, submittedBy: "System" },
-		{ id: "s2", batch: "MED-2027-Q2-002", fileName: "837_Encounter_20270712_002.edi", state: "Maryland", submittedAt: "Jul 12, 2027 11:08 AM", status: "Acknowledged", encounters: 498_220, submittedBy: "System" },
-		{ id: "s3", batch: "MED-2027-Q2-003", fileName: "837_Encounter_20270708_Final.edi", state: "DC", submittedAt: "Jul 08, 2027 09:44 AM", status: "Accepted", encounters: 421_560, submittedBy: "J. Martinez" },
-		{ id: "s4", batch: "MED-2027-Q2-004", fileName: "837_Encounter_20270705_001.edi", state: "Virginia", submittedAt: "Jul 05, 2027 03:22 PM", status: "Accepted", encounters: 389_104, submittedBy: "System" },
-		{ id: "s5", batch: "MED-2027-Q2-005", fileName: "837_Encounter_20270628_003.edi", state: "Maryland", submittedAt: "Jun 28, 2027 08:55 AM", status: "Failed", encounters: 628_098, submittedBy: "R. Chen" },
+		{
+			id: "s1",
+			batch: "MED-2027-Q2-001",
+			fileName: "837_Encounter_20270718_001.edi",
+			state: "Maryland",
+			submittedAt: "Jul 18, 2027 04:12 PM",
+			status: "Submitted",
+			encounters: 512_840,
+			submittedBy: "System",
+		},
+		{
+			id: "s2",
+			batch: "MED-2027-Q2-002",
+			fileName: "837_Encounter_20270712_002.edi",
+			state: "Maryland",
+			submittedAt: "Jul 12, 2027 11:08 AM",
+			status: "Acknowledged",
+			encounters: 498_220,
+			submittedBy: "System",
+		},
+		{
+			id: "s3",
+			batch: "MED-2027-Q2-003",
+			fileName: "837_Encounter_20270708_Final.edi",
+			state: "DC",
+			submittedAt: "Jul 08, 2027 09:44 AM",
+			status: "Accepted",
+			encounters: 421_560,
+			submittedBy: "J. Martinez",
+		},
+		{
+			id: "s4",
+			batch: "MED-2027-Q2-004",
+			fileName: "837_Encounter_20270705_001.edi",
+			state: "Virginia",
+			submittedAt: "Jul 05, 2027 03:22 PM",
+			status: "Accepted",
+			encounters: 389_104,
+			submittedBy: "System",
+		},
+		{
+			id: "s5",
+			batch: "MED-2027-Q2-005",
+			fileName: "837_Encounter_20270628_003.edi",
+			state: "Maryland",
+			submittedAt: "Jun 28, 2027 08:55 AM",
+			status: "Failed",
+			encounters: 628_098,
+			submittedBy: "R. Chen",
+		},
 	],
 	trendWeekly: [
 		{ week: "Jun W1", accepted: 820_000, rejected: 28_000, pending: 12_000 },
@@ -689,24 +1438,92 @@ const MEDICAID_SUBMISSIONS: Extract<ProgramSubmissionsData, { kind: "medicaid" }
 		{ status: "Failed", count: 76_512, pct: 3.12, color: "#ef4444" },
 	],
 	recentActivity: [
-		{ id: "a1", at: "Jul 18, 2027 04:15 PM", batch: "MED-2027-Q2-001", fileName: "837_Encounter_20270718_001.edi", status: "Submitted", encounters: 512_840, details: "File submitted successfully" },
-		{ id: "a2", at: "Jul 12, 2027 11:12 AM", batch: "MED-2027-Q2-002", fileName: "837_Encounter_20270712_002.edi", status: "Acknowledged", encounters: 498_220, details: "State MMIS acknowledged receipt" },
-		{ id: "a3", at: "Jul 08, 2027 09:50 AM", batch: "MED-2027-Q2-003", fileName: "837_Encounter_20270708_Final.edi", status: "Accepted", encounters: 421_560, details: "Encounter file accepted by state" },
-		{ id: "a4", at: "Jul 05, 2027 03:28 PM", batch: "MED-2027-Q2-004", fileName: "837_Encounter_20270705_001.edi", status: "Accepted", encounters: 389_104, details: "All encounters accepted" },
-		{ id: "a5", at: "Jun 28, 2027 09:02 AM", batch: "MED-2027-Q2-005", fileName: "837_Encounter_20270628_003.edi", status: "Failed", encounters: 628_098, details: "Validation errors – resubmission required" },
+		{
+			id: "a1",
+			at: "Jul 18, 2027 04:15 PM",
+			batch: "MED-2027-Q2-001",
+			fileName: "837_Encounter_20270718_001.edi",
+			status: "Submitted",
+			encounters: 512_840,
+			details: "File submitted successfully",
+		},
+		{
+			id: "a2",
+			at: "Jul 12, 2027 11:12 AM",
+			batch: "MED-2027-Q2-002",
+			fileName: "837_Encounter_20270712_002.edi",
+			status: "Acknowledged",
+			encounters: 498_220,
+			details: "State MMIS acknowledged receipt",
+		},
+		{
+			id: "a3",
+			at: "Jul 08, 2027 09:50 AM",
+			batch: "MED-2027-Q2-003",
+			fileName: "837_Encounter_20270708_Final.edi",
+			status: "Accepted",
+			encounters: 421_560,
+			details: "Encounter file accepted by state",
+		},
+		{
+			id: "a4",
+			at: "Jul 05, 2027 03:28 PM",
+			batch: "MED-2027-Q2-004",
+			fileName: "837_Encounter_20270705_001.edi",
+			status: "Accepted",
+			encounters: 389_104,
+			details: "All encounters accepted",
+		},
+		{
+			id: "a5",
+			at: "Jun 28, 2027 09:02 AM",
+			batch: "MED-2027-Q2-005",
+			fileName: "837_Encounter_20270628_003.edi",
+			status: "Failed",
+			encounters: 628_098,
+			details: "Validation errors – resubmission required",
+		},
 	],
 	quickActions: [
-		{ id: "sq-1", title: "Submit 837 File", description: "Upload a new encounter batch" },
-		{ id: "sq-2", title: "Check File Status", description: "Track submission processing status" },
-		{ id: "sq-3", title: "Download Reports", description: "Export acceptance summary reports" },
-		{ id: "sq-4", title: "View Response Files", description: "Open state MMIS response files" },
-		{ id: "sq-5", title: "Resubmit File", description: "Resubmit a rejected encounter file" },
-		{ id: "sq-6", title: "View Error Summary", description: "Review validation error details" },
+		{
+			id: "sq-1",
+			title: "Submit 837 File",
+			description: "Upload a new encounter batch",
+		},
+		{
+			id: "sq-2",
+			title: "Check File Status",
+			description: "Track submission processing status",
+		},
+		{
+			id: "sq-3",
+			title: "Download Reports",
+			description: "Export acceptance summary reports",
+		},
+		{
+			id: "sq-4",
+			title: "View Response Files",
+			description: "Open state MMIS response files",
+		},
+		{
+			id: "sq-5",
+			title: "Resubmit File",
+			description: "Resubmit a rejected encounter file",
+		},
+		{
+			id: "sq-6",
+			title: "View Error Summary",
+			description: "Review validation error details",
+		},
 	],
 	totalEntries: 128,
 	totalEncounters: 2_450_822,
 };
 
-export function getSubmissionsData(programType: ProgramType): ProgramSubmissionsData {
-	return programType === "medicare" ? MEDICARE_SUBMISSIONS : MEDICAID_SUBMISSIONS;
+export function getSubmissionsData(
+	programType: ProgramType
+): ProgramSubmissionsData {
+	return programType === "medicare"
+		? MEDICARE_SUBMISSIONS
+		: MEDICAID_SUBMISSIONS;
 }

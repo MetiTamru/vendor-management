@@ -42,23 +42,23 @@ import {
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	CODING_VALIDATION_DETAIL,
-	CODING_VALIDATION_KPIS,
-	CODING_VALIDATION_ROWS,
-	type CodingValidationRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
-import {
+	RA_STACK,
+	RA_TABLE_CELL,
+	RA_TABLE_HEAD,
 	RaAllFilterSelect,
 	RaFilterLabel,
 	RaFilterPanel,
 	RaMetricCard,
 	RaSectionTitle,
-	RA_STACK,
 	RaStatusPill,
 	RaTablePagination,
-	RA_TABLE_CELL,
-	RA_TABLE_HEAD,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
+import {
+	CODING_VALIDATION_DETAIL,
+	CODING_VALIDATION_KPIS,
+	CODING_VALIDATION_ROWS,
+	type CodingValidationRow,
+} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { cn } from "@/lib/utils";
 
 function validationStatusTone(status: CodingValidationRow["status"]) {
@@ -76,7 +76,10 @@ function ValidationFilters() {
 					<RaFilterLabel>Search Member</RaFilterLabel>
 					<div className="relative">
 						<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-						<Input className="h-8 pl-8 text-xs" placeholder="Search by Member ID, Name..." />
+						<Input
+							className="h-8 pl-8 text-xs"
+							placeholder="Search by Member ID, Name..."
+						/>
 					</div>
 				</div>
 				<RaAllFilterSelect label="HCC" />
@@ -88,16 +91,27 @@ function ValidationFilters() {
 				<RaAllFilterSelect label="Risk Score Impact" />
 				<div className="space-y-1">
 					<RaFilterLabel>Date of Service</RaFilterLabel>
-					<Button variant="outline" className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal">
+					<Button
+						variant="outline"
+						className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal"
+					>
 						<CalendarDays className="size-3.5 text-muted-foreground" />
 						01/01/2024 – 12/31/2025
 					</Button>
 				</div>
 				<div className="flex items-end gap-2 xl:col-span-2">
-					<Button size="sm" className="h-8 text-xs" onClick={() => toast.message("Filters applied")}>
+					<Button
+						size="sm"
+						className="h-8 text-xs"
+						onClick={() => toast.message("Filters applied")}
+					>
 						Apply Filters
 					</Button>
-					<Button variant="link" size="sm" className="h-8 px-0 text-xs text-primary">
+					<Button
+						variant="link"
+						size="sm"
+						className="h-8 px-0 text-xs text-primary"
+					>
 						Reset
 					</Button>
 				</div>
@@ -152,13 +166,20 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 		<div className="flex h-full flex-col overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
 			<div className="flex items-start justify-between gap-2 border-b border-border/50 px-3 py-2">
 				<div className="min-w-0">
-					<h3 className="text-sm font-semibold text-foreground">Coding Validation Detail</h3>
+					<h3 className="text-sm font-semibold text-foreground">
+						Coding Validation Detail
+					</h3>
 					<p className="text-xs text-muted-foreground">
 						{d.memberId} · {d.name} · {d.hcc}
 					</p>
 					<p className="text-xs text-muted-foreground">{d.condition}</p>
 				</div>
-				<Button variant="ghost" size="icon" className="size-7 shrink-0" onClick={onClose}>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="size-7 shrink-0"
+					onClick={onClose}
+				>
 					<X className="size-4" />
 				</Button>
 			</div>
@@ -166,19 +187,24 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 			<Tabs defaultValue="summary" className="flex min-h-0 flex-1 flex-col">
 				<div className="border-b border-border/50 px-3">
 					<TabsList className="h-auto gap-0 rounded-none bg-transparent p-0">
-						{["Summary", "Diagnosis Codes", "Documentation", "History"].map((tab) => (
-							<TabsTrigger
-								key={tab}
-								value={tab.toLowerCase().replace(/\s+/g, "-")}
-								className="rounded-none border-b-2 border-transparent px-3 py-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary"
-							>
-								{tab}
-							</TabsTrigger>
-						))}
+						{["Summary", "Diagnosis Codes", "Documentation", "History"].map(
+							(tab) => (
+								<TabsTrigger
+									key={tab}
+									value={tab.toLowerCase().replace(/\s+/g, "-")}
+									className="rounded-none border-b-2 border-transparent px-3 py-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary"
+								>
+									{tab}
+								</TabsTrigger>
+							)
+						)}
 					</TabsList>
 				</div>
 
-				<TabsContent value="summary" className="mt-0 flex-1 overflow-y-auto p-3">
+				<TabsContent
+					value="summary"
+					className="mt-0 flex-1 overflow-y-auto p-3"
+				>
 					<div className="space-y-3">
 						<div className="rounded-lg border border-border/50 bg-muted/10 p-3">
 							<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -191,11 +217,17 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Risk Score Impact</dt>
-									<dd className="font-medium tabular-nums">{d.riskScoreImpact.toFixed(3)}</dd>
+									<dd className="font-medium tabular-nums">
+										{d.riskScoreImpact.toFixed(3)}
+									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
-									<dt className="text-muted-foreground">Estimated Payment Impact</dt>
-									<dd className="font-medium tabular-nums">${d.paymentImpact.toLocaleString()}</dd>
+									<dt className="text-muted-foreground">
+										Estimated Payment Impact
+									</dt>
+									<dd className="font-medium tabular-nums">
+										${d.paymentImpact.toLocaleString()}
+									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Risk Model</dt>
@@ -215,7 +247,9 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Description</dt>
-									<dd className="max-w-[180px] text-right">{d.diagnosisDescription}</dd>
+									<dd className="max-w-[180px] text-right">
+										{d.diagnosisDescription}
+									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Provider</dt>
@@ -228,13 +262,18 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Claim / Encounter</dt>
 									<dd>
-										<Button variant="link" className="h-auto p-0 text-xs text-primary">
+										<Button
+											variant="link"
+											className="h-auto p-0 text-xs text-primary"
+										>
 											{d.claimEncounter}
 										</Button>
 									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
-									<dt className="text-muted-foreground">Documentation Available</dt>
+									<dt className="text-muted-foreground">
+										Documentation Available
+									</dt>
 									<dd>
 										<RaStatusPill label="Yes" tone="success" />
 									</dd>
@@ -291,7 +330,10 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="space-y-1">
 									<Label className="text-[11px]">Notes</Label>
-									<Textarea className="min-h-[72px] text-xs" placeholder="Add validation notes..." />
+									<Textarea
+										className="min-h-[72px] text-xs"
+										placeholder="Add validation notes..."
+									/>
 								</div>
 							</div>
 						</div>
@@ -299,17 +341,29 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 				</TabsContent>
 
 				{["diagnosis-codes", "documentation", "history"].map((tab) => (
-					<TabsContent key={tab} value={tab} className="mt-0 p-6 text-center text-sm text-muted-foreground">
-						{tab.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} content will appear here.
+					<TabsContent
+						key={tab}
+						value={tab}
+						className="mt-0 p-6 text-center text-sm text-muted-foreground"
+					>
+						{tab.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
+						content will appear here.
 					</TabsContent>
 				))}
 			</Tabs>
 
 			<div className="flex flex-wrap gap-2 border-t border-border/50 p-3">
-				<Button size="sm" className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700">
+				<Button
+					size="sm"
+					className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700"
+				>
 					Validate
 				</Button>
-				<Button variant="outline" size="sm" className="h-8 border-red-200 text-xs text-red-600">
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-8 border-red-200 text-xs text-red-600"
+				>
 					Reject
 				</Button>
 				<Button variant="outline" size="sm" className="h-8 text-xs">
@@ -324,7 +378,9 @@ function ValidationDetailPanel({ onClose }: { onClose: () => void }) {
 }
 
 export function RiskAdjustmentCodingValidationTab() {
-	const [selectedId, setSelectedId] = useState(CODING_VALIDATION_ROWS[0]?.id ?? "");
+	const [selectedId, setSelectedId] = useState(
+		CODING_VALIDATION_ROWS[0]?.id ?? ""
+	);
 	const showDetail = Boolean(selectedId);
 
 	return (
@@ -332,7 +388,12 @@ export function RiskAdjustmentCodingValidationTab() {
 			<ValidationFilters />
 			<KpiRow />
 
-			<div className={cn("grid gap-3", showDetail ? "xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]" : "")}>
+			<div
+				className={cn(
+					"grid gap-3",
+					showDetail ? "xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]" : ""
+				)}
+			>
 				<div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
 					<RaSectionTitle
 						title="Validation Queue"
@@ -362,7 +423,10 @@ export function RiskAdjustmentCodingValidationTab() {
 						}
 					/>
 					<CmsEdgeTableScroll>
-						<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1000px]")}>
+						<Table
+							containerClassName={CMS_EDGE_TABLE_CONTAINER}
+							className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1000px]")}
+						>
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
 									<TableHead className={cn(RA_TABLE_HEAD, "w-10")}>
@@ -371,13 +435,19 @@ export function RiskAdjustmentCodingValidationTab() {
 									<TableHead className={RA_TABLE_HEAD}>Member ID</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Member Name</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>HCC</TableHead>
-									<TableHead className={RA_TABLE_HEAD}>Condition / Description</TableHead>
+									<TableHead className={RA_TABLE_HEAD}>
+										Condition / Description
+									</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>DOS</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Coding Source</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Risk Score Impact</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+										Risk Score Impact
+									</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Status</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Assigned To</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>Action</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>
+										Action
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -390,34 +460,60 @@ export function RiskAdjustmentCodingValidationTab() {
 										)}
 										onClick={() => setSelectedId(row.id)}
 									>
-										<TableCell className={RA_TABLE_CELL} onClick={(e) => e.stopPropagation()}>
+										<TableCell
+											className={RA_TABLE_CELL}
+											onClick={(e) => e.stopPropagation()}
+										>
 											<Checkbox aria-label={`Select ${row.memberId}`} />
 										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>
-											<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+											<Button
+												variant="link"
+												className={CMS_EDGE_TABLE_LINK_CLASS}
+											>
 												{row.memberId}
 											</Button>
 										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>{row.name}</TableCell>
 										<TableCell className={RA_TABLE_CELL}>
-											<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+											<Button
+												variant="link"
+												className={CMS_EDGE_TABLE_LINK_CLASS}
+											>
 												{row.hcc}
 											</Button>
 										</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "max-w-[160px] truncate")}>
+										<TableCell
+											className={cn(RA_TABLE_CELL, "max-w-[160px] truncate")}
+										>
 											{row.condition}
 										</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>{row.dos}</TableCell>
-										<TableCell className={RA_TABLE_CELL}>{row.codingSource}</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+										<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
+											{row.dos}
+										</TableCell>
+										<TableCell className={RA_TABLE_CELL}>
+											{row.codingSource}
+										</TableCell>
+										<TableCell
+											className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+										>
 											{row.riskScoreImpact.toFixed(3)}
 										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>
-											<RaStatusPill label={row.status} tone={validationStatusTone(row.status)} />
+											<RaStatusPill
+												label={row.status}
+												tone={validationStatusTone(row.status)}
+											/>
 										</TableCell>
-										<TableCell className={RA_TABLE_CELL}>{row.assignedTo}</TableCell>
+										<TableCell className={RA_TABLE_CELL}>
+											{row.assignedTo}
+										</TableCell>
 										<TableCell className={cn(RA_TABLE_CELL, "pr-3 text-right")}>
-											<Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+											<Button
+												variant="outline"
+												size="sm"
+												className="h-7 px-2 text-xs"
+											>
 												Review
 											</Button>
 										</TableCell>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -41,21 +41,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
-	CMS_EDGE_DOCUMENT_KPIS,
-	CMS_EDGE_DOCUMENT_LIBRARY,
-	CMS_EDGE_DOCUMENT_STATUSES,
-	CMS_EDGE_DOCUMENT_SUBMISSIONS,
-	CMS_EDGE_DOCUMENT_TYPES,
-	CMS_EDGE_RECENT_DOCUMENTS,
-	CMS_EDGE_REPORTING_PERIODS,
-	CMS_EDGE_RETENTION_ALERTS,
-	CMS_EDGE_STORAGE_MIX,
-	DOCUMENT_STATUS_STYLES,
-	RETENTION_ALERT_STYLES,
-	filterDocumentLibrary,
-	type DocumentFileKind,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
-import {
 	CMS_EDGE_PAGE_STACK,
 	CMS_EDGE_SECTION_GAP,
 	CMS_EDGE_STATUS_PILL_CLASS,
@@ -72,6 +57,21 @@ import {
 	CmsEdgeSplitRow,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
+import {
+	CMS_EDGE_DOCUMENT_KPIS,
+	CMS_EDGE_DOCUMENT_LIBRARY,
+	CMS_EDGE_DOCUMENT_STATUSES,
+	CMS_EDGE_DOCUMENT_SUBMISSIONS,
+	CMS_EDGE_DOCUMENT_TYPES,
+	CMS_EDGE_RECENT_DOCUMENTS,
+	CMS_EDGE_REPORTING_PERIODS,
+	CMS_EDGE_RETENTION_ALERTS,
+	CMS_EDGE_STORAGE_MIX,
+	DOCUMENT_STATUS_STYLES,
+	type DocumentFileKind,
+	RETENTION_ALERT_STYLES,
+	filterDocumentLibrary,
+} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
 import { cn } from "@/lib/utils";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -145,7 +145,9 @@ function DocMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -331,7 +333,9 @@ function DocumentLibraryPanel() {
 							<TableHead className={CMS_EDGE_TABLE_HEAD_CLASS}>
 								Retention Until
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "pr-4 text-right")}
+							>
 								Actions
 							</TableHead>
 						</TableRow>
@@ -353,7 +357,9 @@ function DocumentLibraryPanel() {
 										</Button>
 									</span>
 								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.documentType}</TableCell>
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+									{row.documentType}
+								</TableCell>
 								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
 									<Button
 										variant="link"
@@ -362,11 +368,17 @@ function DocumentLibraryPanel() {
 										{row.relatedSubmission}
 									</Button>
 								</TableCell>
-								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>{row.reportingPeriod}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
+									{row.reportingPeriod}
+								</TableCell>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+								>
 									{row.dateUploaded}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+								>
 									{row.fileSize}
 								</TableCell>
 								<TableCell className={CMS_EDGE_TABLE_CELL_CLASS}>
@@ -375,10 +387,14 @@ function DocumentLibraryPanel() {
 										className={DOCUMENT_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "tabular-nums")}
+								>
 									{row.retentionUntil}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_CELL_CLASS, "pr-4 text-right")}
+								>
 									<div className="inline-flex items-center gap-0.5">
 										<Button
 											variant="ghost"
@@ -615,7 +631,12 @@ function RecentlyUploadedPanel() {
 								<TableCell className={CMS_EDGE_TABLE_COMPACT_CELL_CLASS}>
 									{row.uploadedBy}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_COMPACT_CELL_CLASS,
+										"tabular-nums"
+									)}
+								>
 									{row.dateUploaded}
 								</TableCell>
 							</TableRow>
@@ -654,7 +675,9 @@ function RetentionAlertsPanel() {
 							<TableHead className={CMS_EDGE_TABLE_COMPACT_HEAD_CLASS}>
 								Days Remaining
 							</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_COMPACT_HEAD_CLASS, "pr-4")}>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_COMPACT_HEAD_CLASS, "pr-4")}
+							>
 								Status
 							</TableHead>
 						</TableRow>
@@ -671,13 +694,25 @@ function RetentionAlertsPanel() {
 										<span className="truncate">{row.name}</span>
 									</span>
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_COMPACT_CELL_CLASS,
+										"tabular-nums"
+									)}
+								>
 									{row.retentionUntil}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_COMPACT_CELL_CLASS,
+										"tabular-nums"
+									)}
+								>
 									{row.daysRemaining} days
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "pr-4")}>
+								<TableCell
+									className={cn(CMS_EDGE_TABLE_COMPACT_CELL_CLASS, "pr-4")}
+								>
 									<StatusPill
 										label={row.status}
 										className={RETENTION_ALERT_STYLES[row.status]}
@@ -701,7 +736,9 @@ export function CmsEdgeDocumentsTab() {
 				wideMain
 				main={<DocumentLibraryPanel />}
 				side={
-					<div className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}>
+					<div
+						className={cn("flex h-full min-h-0 flex-col", CMS_EDGE_SECTION_GAP)}
+					>
 						<DocumentFiltersPanel />
 						<StorageOverviewPanel />
 					</div>

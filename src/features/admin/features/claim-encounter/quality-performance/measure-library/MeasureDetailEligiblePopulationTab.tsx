@@ -4,6 +4,8 @@ import { ExternalLink, MoreVertical, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
+	MEASURE_TABLE_MUTED,
+	MEASURE_TAB_STACK,
 	MeasureAsOfBar,
 	MeasureBulletList,
 	MeasureDataTable,
@@ -13,8 +15,6 @@ import {
 	MeasureStatTile,
 	MeasureSubsection,
 	MeasureTablePagination,
-	MEASURE_TAB_STACK,
-	MEASURE_TABLE_MUTED,
 	PanelLink,
 	PdfLink,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailShared";
@@ -66,7 +66,9 @@ export function MeasureDetailEligiblePopulationTab({
 						<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 							Description
 						</p>
-						<p className="mt-2 text-sm leading-relaxed text-foreground">{data.definition}</p>
+						<p className="mt-2 text-sm leading-relaxed text-foreground">
+							{data.definition}
+						</p>
 					</div>
 
 					<MeasureSubsection
@@ -86,7 +88,10 @@ export function MeasureDetailEligiblePopulationTab({
 					<MeasureSubsection title="Enrollment & Timing">
 						<MeasureFieldGrid
 							fields={[
-								{ label: "Continuous Enrollment", value: data.continuousEnrollment },
+								{
+									label: "Continuous Enrollment",
+									value: data.continuousEnrollment,
+								},
 								{ label: "Look-Back Period", value: data.lookBackPeriod },
 								{ label: "Age Calculation", value: data.ageCalculation },
 							]}
@@ -111,8 +116,14 @@ export function MeasureDetailEligiblePopulationTab({
 							label="Commercial"
 							value={summary.commercial.toLocaleString()}
 						/>
-						<MeasureStatTile label="Medicaid" value={summary.medicaid.toLocaleString()} />
-						<MeasureStatTile label="Medicare" value={summary.medicare.toLocaleString()} />
+						<MeasureStatTile
+							label="Medicaid"
+							value={summary.medicaid.toLocaleString()}
+						/>
+						<MeasureStatTile
+							label="Medicare"
+							value={summary.medicare.toLocaleString()}
+						/>
 						<MeasureStatTile label="Total Plans" value={summary.totalPlans} />
 						<MeasureStatTile label="Total Groups" value={summary.totalGroups} />
 					</div>
@@ -123,7 +134,9 @@ export function MeasureDetailEligiblePopulationTab({
 				title="Eligible Population Trend"
 				subtitle="Monthly counts by line of business"
 				action={
-					<PanelLink icon={<ExternalLink className="size-3.5" />}>View Trend Chart</PanelLink>
+					<PanelLink icon={<ExternalLink className="size-3.5" />}>
+						View Trend Chart
+					</PanelLink>
 				}
 				bodyClassName="p-0"
 			>
@@ -133,7 +146,12 @@ export function MeasureDetailEligiblePopulationTab({
 						{ key: "commercial", header: "Commercial", align: "right" },
 						{ key: "medicaid", header: "Medicaid", align: "right" },
 						{ key: "medicare", header: "Medicare", align: "right" },
-						{ key: "total", header: "Total", align: "right", className: "font-semibold" },
+						{
+							key: "total",
+							header: "Total",
+							align: "right",
+							className: "font-semibold",
+						},
 					]}
 					rows={data.trend.map((row) => ({
 						month: row.month,
@@ -155,13 +173,31 @@ export function MeasureDetailEligiblePopulationTab({
 					columns={[
 						{ key: "id", header: "Plan ID", className: "font-mono text-xs" },
 						{ key: "name", header: "Plan Name" },
-						{ key: "lob", header: "Line of Business", className: MEASURE_TABLE_MUTED },
-						{ key: "total", header: "Total Eligible", align: "right", className: "font-semibold" },
+						{
+							key: "lob",
+							header: "Line of Business",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "total",
+							header: "Total Eligible",
+							align: "right",
+							className: "font-semibold",
+						},
 						{ key: "commercial", header: "Commercial", align: "right" },
 						{ key: "medicaid", header: "Medicaid", align: "right" },
 						{ key: "medicare", header: "Medicare", align: "right" },
-						{ key: "pct", header: "% of Total", align: "right", className: MEASURE_TABLE_MUTED },
-						{ key: "refresh", header: "Last Refresh", className: MEASURE_TABLE_MUTED },
+						{
+							key: "pct",
+							header: "% of Total",
+							align: "right",
+							className: MEASURE_TABLE_MUTED,
+						},
+						{
+							key: "refresh",
+							header: "Last Refresh",
+							className: MEASURE_TABLE_MUTED,
+						},
 						{ key: "actions", header: "Actions", align: "right" },
 					]}
 					rows={data.plans.map((plan) => ({
@@ -169,7 +205,8 @@ export function MeasureDetailEligiblePopulationTab({
 						name: plan.name,
 						lob: plan.lineOfBusiness,
 						total: plan.totalEligible.toLocaleString(),
-						commercial: plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
+						commercial:
+							plan.commercial > 0 ? plan.commercial.toLocaleString() : "—",
 						medicaid: plan.medicaid > 0 ? plan.medicaid.toLocaleString() : "—",
 						medicare: plan.medicare > 0 ? plan.medicare.toLocaleString() : "—",
 						pct: `${plan.pctOfTotal.toFixed(1)}%`,
@@ -182,7 +219,10 @@ export function MeasureDetailEligiblePopulationTab({
 					}))}
 					getRowKey={(row) => String(row.id)}
 				/>
-				<MeasureTablePagination shown={data.plans.length} total={data.totalPlanEntries} />
+				<MeasureTablePagination
+					shown={data.plans.length}
+					total={data.totalPlanEntries}
+				/>
 			</MeasureSectionPanel>
 		</div>
 	);

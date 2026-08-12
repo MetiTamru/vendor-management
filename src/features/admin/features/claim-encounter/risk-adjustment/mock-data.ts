@@ -600,7 +600,11 @@ export type MemberOpportunityDetail = {
 		notes: string;
 		lastActivity: string;
 	};
-	checklist: { label: string; status: string; tone: "success" | "warning" | "neutral" }[];
+	checklist: {
+		label: string;
+		status: string;
+		tone: "success" | "warning" | "neutral";
+	}[];
 	history: {
 		firstIdentified: string;
 		firstOpportunityType: string;
@@ -633,7 +637,8 @@ const MEMBER_OPPORTUNITY_DETAILS: Record<string, MemberOpportunityDetail> = {
 		evidence: [
 			{
 				diagnosisCode: "E11.22",
-				diagnosisDescription: "Type 2 diabetes mellitus with diabetic chronic kidney disease",
+				diagnosisDescription:
+					"Type 2 diabetes mellitus with diabetic chronic kidney disease",
 				dateOfService: "05/09/2025",
 				claimEncounter: "CLM-20250509-784512",
 				renderingProvider: "Sarah L. Thompson, MD",
@@ -815,7 +820,8 @@ export const CODING_VALIDATION_DETAIL = {
 	paymentImpact: 4_650,
 	riskModel: "CMS-HCC V28",
 	diagnosisCode: "E11.22",
-	diagnosisDescription: "Type 2 diabetes mellitus with diabetic chronic kidney disease",
+	diagnosisDescription:
+		"Type 2 diabetes mellitus with diabetic chronic kidney disease",
 	provider: "Dr. Smith, Internal Medicine",
 	placeOfService: "Office",
 	claimEncounter: "CLM-2025-041234",

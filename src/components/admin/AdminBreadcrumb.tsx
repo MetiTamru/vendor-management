@@ -19,16 +19,14 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { siteConfig } from "@/constants/siteconfig";
-import {
-	getMeasureDetail,
-} from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
-import { getMemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { getObligationDetail } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
 import {
 	getClaimResponse,
 	getSubmissionBatch,
 	getVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
+import { getMeasureDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
+import { getMemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import {
 	getFileRun,
 	getValidationIssue,
@@ -282,7 +280,9 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 			if (prev === "measure-library") {
 				const measure = getMeasureDetail(segment.toUpperCase());
 				items.push({
-					label: measure ? `${measure.id} — ${measure.name}` : formatSegment(segment),
+					label: measure
+						? `${measure.id} — ${measure.name}`
+						: formatSegment(segment),
 					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;

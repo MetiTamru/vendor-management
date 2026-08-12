@@ -20,6 +20,8 @@ import { MeasureDetailProvidersTab } from "@/features/admin/features/claim-encou
 import { MeasureDetailSpecificationsTab } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/MeasureDetailSpecificationsTab";
 import {
 	MEASURE_DETAIL_TABS,
+	type MeasureDetail,
+	type MeasureDetailTab,
 	getMeasureDenominator,
 	getMeasureDocuments,
 	getMeasureEligiblePopulation,
@@ -31,8 +33,6 @@ import {
 	getMeasurePerformance,
 	getMeasureProviders,
 	getMeasureSpecifications,
-	type MeasureDetail,
-	type MeasureDetailTab,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -60,8 +60,13 @@ function MetadataBar({ measure }: { measure: MeasureDetail }) {
 			<div className="grid grid-cols-2 divide-x divide-y divide-border/50 sm:grid-cols-4">
 				{fields.map((field) => (
 					<div key={field.label} className="min-w-0 px-3 py-2">
-						<p className="truncate text-[10px] font-medium text-muted-foreground">{field.label}</p>
-						<p className="mt-0.5 truncate text-xs font-semibold text-foreground" title={String(field.value)}>
+						<p className="truncate text-[10px] font-medium text-muted-foreground">
+							{field.label}
+						</p>
+						<p
+							className="mt-0.5 truncate text-xs font-semibold text-foreground"
+							title={String(field.value)}
+						>
 							{field.value}
 						</p>
 					</div>
@@ -116,7 +121,12 @@ export function MeasureDetailPage({ measure }: { measure: MeasureDetail }) {
 		<div className="space-y-3 pb-3">
 			<div className="flex flex-wrap items-start justify-between gap-2 border-b border-border pb-3">
 				<div className="min-w-0 space-y-2">
-					<Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-8 px-2 text-xs"
+						asChild
+					>
 						<Link href="/admin/claim-encounter/regulatory/quality-performance/measure-library">
 							<ArrowLeft className="mr-1.5 size-3.5" />
 							Back to Measure Library
@@ -142,7 +152,11 @@ export function MeasureDetailPage({ measure }: { measure: MeasureDetail }) {
 				<div className="overflow-x-auto rounded-t-xl border border-b-0 border-border/70 bg-card">
 					<TabsList className="inline-flex h-auto w-max min-w-full justify-start gap-0 rounded-none bg-transparent p-0">
 						{MEASURE_DETAIL_TABS.map((tab) => (
-							<TabsTrigger key={tab} value={tab} className={MEASURE_DETAIL_TAB_TRIGGER}>
+							<TabsTrigger
+								key={tab}
+								value={tab}
+								className={MEASURE_DETAIL_TAB_TRIGGER}
+							>
 								{tab}
 							</TabsTrigger>
 						))}
@@ -150,80 +164,80 @@ export function MeasureDetailPage({ measure }: { measure: MeasureDetail }) {
 				</div>
 
 				<div className="rounded-b-xl border border-border/70 bg-muted/20 p-3">
-				<TabsContent value="Overview" className="mt-0">
-					<MeasureDetailOverviewTab measure={measure} />
-				</TabsContent>
-
-				<TabsContent value="Specifications" className="mt-0">
-					<MeasureDetailSpecificationsTab specifications={specifications} />
-				</TabsContent>
-
-				<TabsContent value="Eligible Population" className="mt-0">
-					<MeasureDetailEligiblePopulationTab
-						data={eligiblePopulation}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Denominator" className="mt-0">
-					<MeasureDetailDenominatorTab
-						data={denominator}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Numerator" className="mt-0">
-					<MeasureDetailNumeratorTab
-						data={numerator}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Exclusions" className="mt-0">
-					<MeasureDetailExclusionsTab
-						data={exclusions}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Performance" className="mt-0">
-					<MeasureDetailPerformanceTab
-						data={performance}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Members" className="mt-0">
-					<MeasureDetailMembersTab
-						data={members}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Providers" className="mt-0">
-					<MeasureDetailProvidersTab data={providers} />
-				</TabsContent>
-
-				<TabsContent value="Gap Closure" className="mt-0">
-					<MeasureDetailGapClosureTab
-						data={gapClosure}
-						measurementYear={measure.measurementYear}
-					/>
-				</TabsContent>
-
-				<TabsContent value="Documents" className="mt-0">
-					<MeasureDetailDocumentsTab data={documents} />
-				</TabsContent>
-
-				<TabsContent value="History" className="mt-0">
-					<MeasureDetailHistoryTab data={history} />
-				</TabsContent>
-
-				{placeholderTabs.map((tab) => (
-					<TabsContent key={tab} value={tab} className="mt-0">
-						<PlaceholderTab tab={tab} />
+					<TabsContent value="Overview" className="mt-0">
+						<MeasureDetailOverviewTab measure={measure} />
 					</TabsContent>
-				))}
+
+					<TabsContent value="Specifications" className="mt-0">
+						<MeasureDetailSpecificationsTab specifications={specifications} />
+					</TabsContent>
+
+					<TabsContent value="Eligible Population" className="mt-0">
+						<MeasureDetailEligiblePopulationTab
+							data={eligiblePopulation}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Denominator" className="mt-0">
+						<MeasureDetailDenominatorTab
+							data={denominator}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Numerator" className="mt-0">
+						<MeasureDetailNumeratorTab
+							data={numerator}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Exclusions" className="mt-0">
+						<MeasureDetailExclusionsTab
+							data={exclusions}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Performance" className="mt-0">
+						<MeasureDetailPerformanceTab
+							data={performance}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Members" className="mt-0">
+						<MeasureDetailMembersTab
+							data={members}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Providers" className="mt-0">
+						<MeasureDetailProvidersTab data={providers} />
+					</TabsContent>
+
+					<TabsContent value="Gap Closure" className="mt-0">
+						<MeasureDetailGapClosureTab
+							data={gapClosure}
+							measurementYear={measure.measurementYear}
+						/>
+					</TabsContent>
+
+					<TabsContent value="Documents" className="mt-0">
+						<MeasureDetailDocumentsTab data={documents} />
+					</TabsContent>
+
+					<TabsContent value="History" className="mt-0">
+						<MeasureDetailHistoryTab data={history} />
+					</TabsContent>
+
+					{placeholderTabs.map((tab) => (
+						<TabsContent key={tab} value={tab} className="mt-0">
+							<PlaceholderTab tab={tab} />
+						</TabsContent>
+					))}
 				</div>
 			</Tabs>
 		</div>

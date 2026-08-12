@@ -26,23 +26,23 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NoFileSelectedIllustration } from "@/features/admin/features/claim-encounter/file-management/NoFileSelectedIllustration";
+import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import {
+	type EdgeServerRow,
+	type EdgeServerTabId,
 	HHS_MASTER_DATA_ROWS,
 	PUBLISHED_DATE_OPTIONS,
 	QUARTERLY_BASELINE_DATES,
 	QUARTERLY_BENEFIT_YEARS,
 	QUARTERLY_EXTRACTION_DATES,
 	QUARTERLY_HIOS_IDS,
+	type QuarterlyBaselineFilters,
 	filterHhsMasterDataRows,
 	mockEdgeServerRows,
 	mockQuarterlyBaselineRows,
 	mockThresholdReportRows,
 	publishedDateLabel,
-	type EdgeServerRow,
-	type EdgeServerTabId,
-	type QuarterlyBaselineFilters,
 } from "@/features/admin/features/edge-server-data/mock-data";
-import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
 function RequiredLabel({ children }: { children: React.ReactNode }) {
@@ -94,8 +94,12 @@ function EdgeServerResultsTable({
 								<TableHead className="h-8 px-2 pl-3 font-normal">
 									Issuer (HIOS ID)
 								</TableHead>
-								<TableHead className="h-8 px-2 font-normal">Market Type</TableHead>
-								<TableHead className="h-8 px-2 font-normal">Data Type</TableHead>
+								<TableHead className="h-8 px-2 font-normal">
+									Market Type
+								</TableHead>
+								<TableHead className="h-8 px-2 font-normal">
+									Data Type
+								</TableHead>
 								<TableHead className="h-8 px-2 text-right font-normal">
 									Baseline
 								</TableHead>
@@ -119,7 +123,9 @@ function EdgeServerResultsTable({
 									<TableCell className="px-2 py-1.5 pl-3 tabular-nums">
 										{row.issuerHiosId}
 									</TableCell>
-									<TableCell className="px-2 py-1.5">{row.marketType}</TableCell>
+									<TableCell className="px-2 py-1.5">
+										{row.marketType}
+									</TableCell>
 									<TableCell className="px-2 py-1.5">{row.dataType}</TableCell>
 									<TableCell className="px-2 py-1.5 text-right tabular-nums">
 										{formatCount(row.baseline)}
@@ -146,7 +152,10 @@ function EdgeServerResultsTable({
 	);
 }
 
-function resolvePublishedDateRows(tabId: EdgeServerTabId, publishedDate: string) {
+function resolvePublishedDateRows(
+	tabId: EdgeServerTabId,
+	publishedDate: string
+) {
 	if (tabId === "threshold-report") {
 		return mockThresholdReportRows(publishedDate);
 	}
@@ -205,8 +214,7 @@ export function PublishedDateEdgePanel({ tabId }: { tabId: EdgeServerTabId }) {
 	const [publishedDate, setPublishedDate] = useState("");
 
 	const rows = useMemo(
-		() =>
-			publishedDate ? resolvePublishedDateRows(tabId, publishedDate) : [],
+		() => (publishedDate ? resolvePublishedDateRows(tabId, publishedDate) : []),
 		[tabId, publishedDate]
 	);
 
@@ -258,10 +266,12 @@ const EMPTY_QUARTERLY_FILTERS: QuarterlyBaselineFilters = {
 };
 
 export function QuarterlyBaselineReportPanel() {
-	const [subView, setSubView] = useState<"quarterly-baseline" | "enrollee-dashboard">(
-		"quarterly-baseline"
+	const [subView, setSubView] = useState<
+		"quarterly-baseline" | "enrollee-dashboard"
+	>("quarterly-baseline");
+	const [draft, setDraft] = useState<QuarterlyBaselineFilters>(
+		EMPTY_QUARTERLY_FILTERS
 	);
-	const [draft, setDraft] = useState<QuarterlyBaselineFilters>(EMPTY_QUARTERLY_FILTERS);
 	const [applied, setApplied] = useState<QuarterlyBaselineFilters | null>(null);
 	const [searched, setSearched] = useState(false);
 
@@ -451,7 +461,8 @@ export function HhsMasterDataUpdatesPanel() {
 		[search]
 	);
 
-	const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
+	const allSelected =
+		rows.length > 0 && rows.every((row) => selected.has(row.id));
 
 	return (
 		<div className="space-y-3">
@@ -469,7 +480,9 @@ export function HhsMasterDataUpdatesPanel() {
 					variant="outline"
 					size="sm"
 					className="ml-auto h-9 shrink-0"
-					onClick={() => toast.success("Downloading all HHS master data tables")}
+					onClick={() =>
+						toast.success("Downloading all HHS master data tables")
+					}
 				>
 					<Download className="mr-1.5 size-3.5" />
 					Download all
@@ -504,7 +517,9 @@ export function HhsMasterDataUpdatesPanel() {
 									<TableHead className="h-8 font-semibold">
 										Last Release Date
 									</TableHead>
-									<TableHead className="h-8 pr-3 font-semibold">Download</TableHead>
+									<TableHead className="h-8 pr-3 font-semibold">
+										Download
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>

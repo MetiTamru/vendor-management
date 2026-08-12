@@ -51,8 +51,7 @@ export const vmsKeys = {
 export function useVendorsList() {
 	const vc = useVendorCoreSessionOptional();
 	const liveNeedsAuth = Boolean(vc?.live);
-	const ready =
-		!liveNeedsAuth || (!vc?.bootstrapping && Boolean(vc?.authed));
+	const ready = !liveNeedsAuth || (!vc?.bootstrapping && Boolean(vc?.authed));
 
 	const q = useQuery({
 		queryKey: [...vmsKeys.vendors(), vc?.authed ? "authed" : "anon"],
@@ -71,8 +70,7 @@ export function useVendor(id: string | undefined) {
 	const vc = useVendorCoreSessionOptional();
 	const liveNeedsAuth = Boolean(vc?.live);
 	const ready =
-		!!id &&
-		(!liveNeedsAuth || (!vc?.bootstrapping && Boolean(vc?.authed)));
+		!!id && (!liveNeedsAuth || (!vc?.bootstrapping && Boolean(vc?.authed)));
 
 	const q = useQuery({
 		queryKey: [...vmsKeys.vendor(id ?? ""), vc?.authed ? "authed" : "anon"],

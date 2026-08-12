@@ -60,9 +60,17 @@ export const HHS_STATUS_OPTIONS = [
 	"Rejected",
 ];
 
-const SOURCE_STATUSES = ["Received", "Validated", "Processing", "Accepted", "Rejected"];
+const SOURCE_STATUSES = [
+	"Received",
+	"Validated",
+	"Processing",
+	"Accepted",
+	"Rejected",
+];
 
-const TEST_CLIENT_IDS = [31663, 32542, 33130, 31674, 32567, 33112, 31890, 32901];
+const TEST_CLIENT_IDS = [
+	31663, 32542, 33130, 31674, 32567, 33112, 31890, 32901,
+];
 
 export const ISSUER_NAME_OPTIONS = [
 	"All",
@@ -159,7 +167,10 @@ export function mockHhsFiles(): TrackedFileRow[] {
 
 export function filterTrackedFiles(
 	rows: TrackedFileRow[],
-	filters: Pick<TrackFileFilters, "fileType" | "submittedFrom" | "submittedTo" | "fileName">
+	filters: Pick<
+		TrackFileFilters,
+		"fileType" | "submittedFrom" | "submittedTo" | "fileName"
+	>
 ) {
 	return rows.filter((row) => {
 		if (filters.fileType !== "all" && row.fileType !== filters.fileType) {
@@ -200,7 +211,12 @@ export function filterIssuerHhsFiles(
 	});
 }
 
-export function hasSourceSearch(filters: Pick<TrackFileFilters, "fileType" | "submittedFrom" | "submittedTo" | "fileName">) {
+export function hasSourceSearch(
+	filters: Pick<
+		TrackFileFilters,
+		"fileType" | "submittedFrom" | "submittedTo" | "fileName"
+	>
+) {
 	return (
 		filters.fileName.trim() !== "" ||
 		filters.fileType !== "all" ||

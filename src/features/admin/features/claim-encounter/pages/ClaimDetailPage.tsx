@@ -21,6 +21,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import {
 	EdiViewerLoader,
 	loadEdiFixture,
@@ -34,11 +35,10 @@ import {
 	getClaimDetail,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
-import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { cn } from "@/lib/utils";
+import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 
 const MAIN_TABS = ["Overview", "Operations & Audit"] as const;
 type MainTab = (typeof MAIN_TABS)[number];

@@ -25,7 +25,11 @@ export const QUALITY_COMPLIANCE_TREND = [
 export const QUALITY_COMPLIANCE_GOAL = 90;
 
 export const QUALITY_TOP_MEASURES = [
-	{ name: "Controlling High Blood Pressure (CBP)", rate: 92.1, color: "#22c55e" },
+	{
+		name: "Controlling High Blood Pressure (CBP)",
+		rate: 92.1,
+		color: "#22c55e",
+	},
 	{ name: "Follow-Up After ED Visit (FUA)", rate: 81.4, color: "#22c55e" },
 	{ name: "Diabetes: HbA1c Control (A1C)", rate: 76.8, color: "#22c55e" },
 	{ name: "Breast Cancer Screening (BCS)", rate: 63.3, color: "#f97316" },
@@ -160,8 +164,24 @@ export const QUALITY_DOCUMENTS = [
 export const QUALITY_QUICK_ACTIONS = [
 	{ id: "qa-1", title: "View Measures", description: "Browse HEDIS measures" },
 	{ id: "qa-2", title: "Gap Closure", description: "Manage member gaps" },
-	{ id: "qa-3", title: "Member Outreach", description: "Track outreach activities" },
-	{ id: "qa-4", title: "Provider Performance", description: "View provider results" },
-	{ id: "qa-5", title: "NCQA Submission", description: "Track submission status" },
-	{ id: "qa-6", title: "View Reports", description: "Generate quality reports" },
+	{
+		id: "qa-3",
+		title: "Member Outreach",
+		description: "Track outreach activities",
+	},
+	{
+		id: "qa-4",
+		title: "Provider Performance",
+		description: "View provider results",
+	},
+	{
+		id: "qa-5",
+		title: "NCQA Submission",
+		description: "Track submission status",
+	},
+	{
+		id: "qa-6",
+		title: "View Reports",
+		description: "Generate quality reports",
+	},
 ];

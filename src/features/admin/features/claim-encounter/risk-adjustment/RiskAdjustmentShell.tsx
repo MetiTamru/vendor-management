@@ -8,12 +8,12 @@ import {
 	FileCheck,
 	FolderOpen,
 	LayoutDashboard,
+	type LucideIcon,
 	Scale,
 	Send,
 	Shield,
 	Stethoscope,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,9 +27,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import {
+	RISK_ADJUSTMENT_TABS,
 	RISK_ADJUSTMENT_TAB_META,
 	RISK_ADJUSTMENT_TAB_SLUGS,
-	RISK_ADJUSTMENT_TABS,
 	type RiskAdjustmentTab,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -73,7 +73,11 @@ export function RiskAdjustmentShell({
 	return (
 		<div className="space-y-0 pb-3">
 			<div className="flex flex-col gap-0 border-b border-border/70 bg-card lg:flex-row lg:items-stretch">
-				<ScrollArea type="always" className="min-w-0 flex-1" scrollbarClassName="h-2">
+				<ScrollArea
+					type="always"
+					className="min-w-0 flex-1"
+					scrollbarClassName="h-2"
+				>
 					<nav className="inline-flex h-auto w-max min-w-full justify-start gap-0 p-0">
 						{RISK_ADJUSTMENT_TABS.map((tab) => {
 							const slug = RISK_ADJUSTMENT_TAB_SLUGS[tab];
@@ -102,12 +106,17 @@ export function RiskAdjustmentShell({
 							Program
 						</label>
 						<Select defaultValue="medicare-advantage">
-							<SelectTrigger id="ra-program" className="h-8 w-[150px] border-border/70 bg-background text-xs">
+							<SelectTrigger
+								id="ra-program"
+								className="h-8 w-[150px] border-border/70 bg-background text-xs"
+							>
 								<Scale className="mr-1.5 size-3.5 shrink-0 text-muted-foreground" />
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="medicare-advantage">Medicare Advantage</SelectItem>
+								<SelectItem value="medicare-advantage">
+									Medicare Advantage
+								</SelectItem>
 								<SelectItem value="medicaid">Medicaid</SelectItem>
 								<SelectItem value="aca">ACA Marketplace</SelectItem>
 							</SelectContent>
@@ -118,7 +127,10 @@ export function RiskAdjustmentShell({
 							Measurement Year
 						</label>
 						<Select defaultValue="2025">
-							<SelectTrigger id="ra-year" className="h-8 w-[100px] border-border/70 bg-background text-xs">
+							<SelectTrigger
+								id="ra-year"
+								className="h-8 w-[100px] border-border/70 bg-background text-xs"
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -142,7 +154,11 @@ export function RiskAdjustmentShell({
 						</p>
 					</div>
 					{headerAction ?? (
-						<Button size="sm" className="h-8" onClick={() => toast.success("Export queued")}>
+						<Button
+							size="sm"
+							className="h-8"
+							onClick={() => toast.success("Export queued")}
+						>
 							<Download className="mr-1.5 size-3.5" />
 							Export
 						</Button>

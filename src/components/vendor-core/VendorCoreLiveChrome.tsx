@@ -2,10 +2,10 @@
 
 import { Loader2, RefreshCw } from "lucide-react";
 
-import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
 import { Button } from "@/components/ui/button";
-import { getVendorCoreBaseUrl } from "@/lib/vendor-core/client";
+import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
 import { cn } from "@/lib/utils";
+import { getVendorCoreBaseUrl } from "@/lib/vendor-core/client";
 
 export function VendorCoreLiveChrome({
 	title,
@@ -53,7 +53,11 @@ export function VendorCoreLiveChrome({
 	);
 }
 
-export function VendorCoreLoadingRow({ label = "Loading…" }: { label?: string }) {
+export function VendorCoreLoadingRow({
+	label = "Loading…",
+}: {
+	label?: string;
+}) {
 	return (
 		<div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
 			<Loader2 className="size-4 animate-spin" />

@@ -34,12 +34,12 @@ import {
 	BASELINE_METRICS,
 	BASELINE_QUARTERS,
 	BASELINE_SEGMENTS,
-	SAVED_BASELINE_RECORDS,
-	emptyBaselineGrid,
-	isNumericBaselineInput,
 	type BaselineGridValues,
 	type BaselineMarketType,
 	type BaselineSegmentId,
+	SAVED_BASELINE_RECORDS,
+	emptyBaselineGrid,
+	isNumericBaselineInput,
 } from "@/features/admin/features/master-data-entry/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +53,8 @@ function AddNewBaselinePanel() {
 	const [hiosId, setHiosId] = useState("31663");
 	const [benefitYear, setBenefitYear] = useState("BY2024");
 	const [quarter, setQuarter] = useState("Q1");
-	const [marketType, setMarketType] = useState<BaselineMarketType>("non-merged");
+	const [marketType, setMarketType] =
+		useState<BaselineMarketType>("non-merged");
 	const [enabledSegments, setEnabledSegments] = useState<
 		Record<BaselineSegmentId, boolean>
 	>({
@@ -146,7 +147,10 @@ function AddNewBaselinePanel() {
 						>
 							<div className="flex items-center gap-2">
 								<RadioGroupItem value="non-merged" id="market-non-merged" />
-								<Label htmlFor="market-non-merged" className="text-xs font-normal">
+								<Label
+									htmlFor="market-non-merged"
+									className="text-xs font-normal"
+								>
 									Non - Merged Market
 								</Label>
 							</div>
@@ -167,7 +171,9 @@ function AddNewBaselinePanel() {
 
 			<Card className="min-w-0 bg-card">
 				<CardHeader className="px-3 pb-1 pt-3">
-					<CardTitle className="text-sm font-medium">Baseline Metrics</CardTitle>
+					<CardTitle className="text-sm font-medium">
+						Baseline Metrics
+					</CardTitle>
 				</CardHeader>
 				<CardContent className="px-0 pb-0">
 					<div className="w-full overflow-x-auto border-t border-border/50">
@@ -206,7 +212,10 @@ function AddNewBaselinePanel() {
 											{metric.label}
 										</TableCell>
 										{BASELINE_SEGMENTS.map((segment) => (
-											<TableCell key={segment.id} className="px-2 py-2 align-top">
+											<TableCell
+												key={segment.id}
+												className="px-2 py-2 align-top"
+											>
 												<Input
 													value={values[metric.id][segment.id]}
 													onChange={(event) =>
@@ -272,7 +281,9 @@ function ViewBaselinePanel() {
 									<TableHead className="h-8 px-2 font-normal">
 										Benefit Year
 									</TableHead>
-									<TableHead className="h-8 px-2 font-normal">Quarter</TableHead>
+									<TableHead className="h-8 px-2 font-normal">
+										Quarter
+									</TableHead>
 									<TableHead className="h-8 px-2 font-normal">
 										Market Type
 									</TableHead>
@@ -290,7 +301,9 @@ function ViewBaselinePanel() {
 										<TableCell className="px-2 py-1.5 pl-3">
 											{row.hiosLabel}
 										</TableCell>
-										<TableCell className="px-2 py-1.5">{row.benefitYear}</TableCell>
+										<TableCell className="px-2 py-1.5">
+											{row.benefitYear}
+										</TableCell>
 										<TableCell className="px-2 py-1.5">{row.quarter}</TableCell>
 										<TableCell className="px-2 py-1.5">
 											{row.marketType === "non-merged"
@@ -298,7 +311,11 @@ function ViewBaselinePanel() {
 												: "Merged Market"}
 										</TableCell>
 										<TableCell className="px-2 py-1.5 tabular-nums">
-											{row.values["enrollment-count"]["individual-non-catastrophic"]}
+											{
+												row.values["enrollment-count"][
+													"individual-non-catastrophic"
+												]
+											}
 										</TableCell>
 										<TableCell className="px-2 py-1.5 pr-3 tabular-nums">
 											{row.updatedAt}

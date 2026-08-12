@@ -9,7 +9,7 @@ export { metadata } from "@/constants/metadata";
 type RootLayoutProps = {
 	children: ReactNode;
 };
-
+// update the changes
 export default function RootLayout({ children }: RootLayoutProps) {
 	return children;
 }

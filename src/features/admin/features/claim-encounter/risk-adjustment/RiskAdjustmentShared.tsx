@@ -15,7 +15,8 @@ import {
 import { CMS_EDGE_STATUS_PILL_CLASS } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import { cn } from "@/lib/utils";
 
-export const RA_TABLE_HEAD = "h-9 bg-muted/30 px-3 text-[11px] font-semibold text-foreground";
+export const RA_TABLE_HEAD =
+	"h-9 bg-muted/30 px-3 text-[11px] font-semibold text-foreground";
 export const RA_TABLE_CELL = "px-3 py-2 text-sm";
 export const RA_STACK = "space-y-3";
 
@@ -36,7 +37,9 @@ export function RaStatusPill({
 	}[tone];
 
 	return (
-		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-[10px]", toneClass)}>{label}</span>
+		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-[10px]", toneClass)}>
+			{label}
+		</span>
 	);
 }
 
@@ -44,9 +47,14 @@ export function RaCaptureBar({ pct }: { pct: number }) {
 	return (
 		<div className="flex min-w-[100px] items-center gap-2">
 			<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-				<div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+				<div
+					className="h-full rounded-full bg-primary"
+					style={{ width: `${pct}%` }}
+				/>
 			</div>
-			<span className="shrink-0 text-xs tabular-nums text-muted-foreground">{pct.toFixed(1)}%</span>
+			<span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+				{pct.toFixed(1)}%
+			</span>
 		</div>
 	);
 }
@@ -123,16 +131,18 @@ export function RaTablePagination({
 					<Button variant="outline" size="icon" className="size-7" disabled>
 						<ChevronLeft className="size-3.5" />
 					</Button>
-					{Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
-						<Button
-							key={page}
-							variant={page === 1 ? "default" : "outline"}
-							size="icon"
-							className="size-7 text-xs"
-						>
-							{page}
-						</Button>
-					))}
+					{Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(
+						(page) => (
+							<Button
+								key={page}
+								variant={page === 1 ? "default" : "outline"}
+								size="icon"
+								className="size-7 text-xs"
+							>
+								{page}
+							</Button>
+						)
+					)}
 					{totalPages > 5 ? (
 						<>
 							<span className="px-1">…</span>
@@ -173,7 +183,9 @@ export function RaSectionTitle({
 		<div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-3 py-2">
 			<div className="flex min-w-0 items-center gap-2">
 				<h3 className="text-sm font-semibold text-foreground">{title}</h3>
-				{info ? <Info className="size-3.5 text-muted-foreground" aria-hidden /> : null}
+				{info ? (
+					<Info className="size-3.5 text-muted-foreground" aria-hidden />
+				) : null}
 				{subtitle ? (
 					<span className="text-xs text-muted-foreground">{subtitle}</span>
 				) : null}
@@ -225,7 +237,13 @@ export function RaMetricCard({
 	);
 }
 
-export function RaAllFilterSelect({ label, defaultValue = "all" }: { label: string; defaultValue?: string }) {
+export function RaAllFilterSelect({
+	label,
+	defaultValue = "all",
+}: {
+	label: string;
+	defaultValue?: string;
+}) {
 	return (
 		<div className="space-y-1">
 			<RaFilterLabel>{label}</RaFilterLabel>

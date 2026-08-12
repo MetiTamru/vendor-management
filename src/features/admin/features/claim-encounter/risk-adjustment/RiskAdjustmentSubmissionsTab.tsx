@@ -41,24 +41,24 @@ import {
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	RA_SUBMISSION_DETAIL,
-	RA_SUBMISSION_KPIS,
-	RA_SUBMISSION_ROWS,
-	type RaSubmissionRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
-import {
+	RA_STACK,
+	RA_TABLE_CELL,
+	RA_TABLE_HEAD,
 	RaAllFilterSelect,
 	RaFilterLabel,
 	RaFilterPanel,
 	RaMetricCard,
 	RaSectionTitle,
-	RA_STACK,
 	RaStatusPill,
 	RaTablePagination,
 	RaViewAction,
-	RA_TABLE_CELL,
-	RA_TABLE_HEAD,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
+import {
+	RA_SUBMISSION_DETAIL,
+	RA_SUBMISSION_KPIS,
+	RA_SUBMISSION_ROWS,
+	type RaSubmissionRow,
+} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import { cn } from "@/lib/utils";
 
 function submissionStatusTone(status: RaSubmissionRow["status"]) {
@@ -79,22 +79,36 @@ function SubmissionFilters() {
 					<RaFilterLabel>File Name / ID</RaFilterLabel>
 					<div className="relative">
 						<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-						<Input className="h-8 pl-8 text-xs" placeholder="Search submissions..." />
+						<Input
+							className="h-8 pl-8 text-xs"
+							placeholder="Search submissions..."
+						/>
 					</div>
 				</div>
 			</div>
 			<div className="mt-2 flex flex-wrap items-end gap-2">
 				<div className="min-w-[200px] flex-1 space-y-1">
 					<RaFilterLabel>Date Range</RaFilterLabel>
-					<Button variant="outline" className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal">
+					<Button
+						variant="outline"
+						className="h-8 w-full justify-start gap-1.5 px-2 text-xs font-normal"
+					>
 						<CalendarDays className="size-3.5 text-muted-foreground" />
 						01/01/2024 – 12/31/2025
 					</Button>
 				</div>
-				<Button size="sm" className="h-8 text-xs" onClick={() => toast.message("Filters applied")}>
+				<Button
+					size="sm"
+					className="h-8 text-xs"
+					onClick={() => toast.message("Filters applied")}
+				>
 					Apply Filters
 				</Button>
-				<Button variant="link" size="sm" className="h-8 px-0 text-xs text-primary">
+				<Button
+					variant="link"
+					size="sm"
+					className="h-8 px-0 text-xs text-primary"
+				>
 					Reset
 				</Button>
 			</div>
@@ -157,7 +171,9 @@ function KpiRow() {
 						<XCircle className="size-4" />
 					</div>
 					<div>
-						<p className="text-[11px] text-muted-foreground">Rejected / Failed</p>
+						<p className="text-[11px] text-muted-foreground">
+							Rejected / Failed
+						</p>
 						<p className="text-lg font-semibold tabular-nums">
 							{k.rejected}{" "}
 							<span className="text-sm font-normal text-muted-foreground">
@@ -182,8 +198,12 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 			<div className="border-b border-border/50 px-3 py-2">
 				<div className="flex items-start justify-between gap-2">
 					<div>
-						<h3 className="text-sm font-semibold text-foreground">Submission Details</h3>
-						<p className="mt-1 font-mono text-xs font-medium text-foreground">{d.submissionId}</p>
+						<h3 className="text-sm font-semibold text-foreground">
+							Submission Details
+						</h3>
+						<p className="mt-1 font-mono text-xs font-medium text-foreground">
+							{d.submissionId}
+						</p>
 						<div className="mt-1 flex flex-wrap items-center gap-2">
 							<RaStatusPill label={d.status} tone="warning" />
 							<span className="text-[11px] text-muted-foreground">
@@ -191,7 +211,12 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 							</span>
 						</div>
 					</div>
-					<Button variant="ghost" size="icon" className="size-7" onClick={onClose}>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-7"
+						onClick={onClose}
+					>
 						<X className="size-4" />
 					</Button>
 				</div>
@@ -200,19 +225,24 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 			<Tabs defaultValue="summary" className="flex min-h-0 flex-1 flex-col">
 				<div className="border-b border-border/50 px-3">
 					<TabsList className="h-auto gap-0 rounded-none bg-transparent p-0">
-						{["Summary", "Files", "Responses", "Validation", "History"].map((tab) => (
-							<TabsTrigger
-								key={tab}
-								value={tab.toLowerCase()}
-								className="rounded-none border-b-2 border-transparent px-3 py-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary"
-							>
-								{tab}
-							</TabsTrigger>
-						))}
+						{["Summary", "Files", "Responses", "Validation", "History"].map(
+							(tab) => (
+								<TabsTrigger
+									key={tab}
+									value={tab.toLowerCase()}
+									className="rounded-none border-b-2 border-transparent px-3 py-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary"
+								>
+									{tab}
+								</TabsTrigger>
+							)
+						)}
 					</TabsList>
 				</div>
 
-				<TabsContent value="summary" className="mt-0 flex-1 overflow-y-auto p-3">
+				<TabsContent
+					value="summary"
+					className="mt-0 flex-1 overflow-y-auto p-3"
+				>
 					<div className="space-y-3">
 						<div className="rounded-lg border border-border/50 bg-muted/10 p-3">
 							<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -247,7 +277,10 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 							</div>
 							<div className="mt-3 flex items-center justify-between gap-1">
 								{d.steps.map((step, index) => (
-									<div key={step.label} className="flex flex-1 flex-col items-center gap-1">
+									<div
+										key={step.label}
+										className="flex flex-1 flex-col items-center gap-1"
+									>
 										<div
 											className={cn(
 												"flex size-7 items-center justify-center rounded-full border-2 text-[10px] font-semibold",
@@ -265,7 +298,9 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 												index + 1
 											)}
 										</div>
-										<p className="text-center text-[10px] font-medium">{step.label}</p>
+										<p className="text-center text-[10px] font-medium">
+											{step.label}
+										</p>
 										{"date" in step && step.date ? (
 											<p className="text-center text-[10px] text-muted-foreground">
 												{step.date}
@@ -294,14 +329,20 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 							</p>
 							<dl className="mt-2 space-y-1.5 text-xs">
 								<div className="flex justify-between gap-2">
-									<dt className="text-muted-foreground">Estimated Payment Impact</dt>
+									<dt className="text-muted-foreground">
+										Estimated Payment Impact
+									</dt>
 									<dd className="font-semibold text-emerald-700">
 										${(d.paymentImpact / 1_000_000).toFixed(2)}M
 									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
-									<dt className="text-muted-foreground">Potential RAF Impact</dt>
-									<dd className="font-medium tabular-nums">{d.rafImpact.toFixed(3)}</dd>
+									<dt className="text-muted-foreground">
+										Potential RAF Impact
+									</dt>
+									<dd className="font-medium tabular-nums">
+										{d.rafImpact.toFixed(3)}
+									</dd>
 								</div>
 								<div className="flex justify-between gap-2">
 									<dt className="text-muted-foreground">Included Members</dt>
@@ -315,8 +356,13 @@ function SubmissionDetailPanel({ onClose }: { onClose: () => void }) {
 				</TabsContent>
 
 				{["files", "responses", "validation", "history"].map((tab) => (
-					<TabsContent key={tab} value={tab} className="mt-0 p-6 text-center text-sm text-muted-foreground">
-						{tab.charAt(0).toUpperCase() + tab.slice(1)} content will appear here.
+					<TabsContent
+						key={tab}
+						value={tab}
+						className="mt-0 p-6 text-center text-sm text-muted-foreground"
+					>
+						{tab.charAt(0).toUpperCase() + tab.slice(1)} content will appear
+						here.
 					</TabsContent>
 				))}
 			</Tabs>
@@ -343,7 +389,12 @@ export function RiskAdjustmentSubmissionsTab() {
 			<SubmissionFilters />
 			<KpiRow />
 
-			<div className={cn("grid gap-3", showDetail ? "xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]" : "")}>
+			<div
+				className={cn(
+					"grid gap-3",
+					showDetail ? "xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)]" : ""
+				)}
+			>
 				<div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
 					<RaSectionTitle
 						title="Submissions"
@@ -373,20 +424,39 @@ export function RiskAdjustmentSubmissionsTab() {
 						}
 					/>
 					<CmsEdgeTableScroll>
-						<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}>
+						<Table
+							containerClassName={CMS_EDGE_TABLE_CONTAINER}
+							className={cn(CMS_EDGE_TABLE_CLASS, "min-w-[1100px]")}
+						>
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
 									<TableHead className={RA_TABLE_HEAD}>Submission ID</TableHead>
-									<TableHead className={RA_TABLE_HEAD}>Submission Type</TableHead>
-									<TableHead className={RA_TABLE_HEAD}>Submission Period</TableHead>
+									<TableHead className={RA_TABLE_HEAD}>
+										Submission Type
+									</TableHead>
+									<TableHead className={RA_TABLE_HEAD}>
+										Submission Period
+									</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Payer</TableHead>
-									<TableHead className={RA_TABLE_HEAD}>Submitted Date</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Records</TableHead>
+									<TableHead className={RA_TABLE_HEAD}>
+										Submitted Date
+									</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+										Records
+									</TableHead>
 									<TableHead className={RA_TABLE_HEAD}>Status</TableHead>
-									<TableHead className={RA_TABLE_HEAD}>Response Received</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Acceptance Rate</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>Est. Payment Impact</TableHead>
-									<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>Action</TableHead>
+									<TableHead className={RA_TABLE_HEAD}>
+										Response Received
+									</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+										Acceptance Rate
+									</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "text-right")}>
+										Est. Payment Impact
+									</TableHead>
+									<TableHead className={cn(RA_TABLE_HEAD, "pr-3 text-right")}>
+										Action
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -400,17 +470,24 @@ export function RiskAdjustmentSubmissionsTab() {
 										onClick={() => setSelectedId(row.id)}
 									>
 										<TableCell className={RA_TABLE_CELL}>
-											<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
+											<Button
+												variant="link"
+												className={CMS_EDGE_TABLE_LINK_CLASS}
+											>
 												{row.submissionId}
 											</Button>
 										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>{row.type}</TableCell>
-										<TableCell className={RA_TABLE_CELL}>{row.period}</TableCell>
+										<TableCell className={RA_TABLE_CELL}>
+											{row.period}
+										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>{row.payer}</TableCell>
 										<TableCell className={cn(RA_TABLE_CELL, "tabular-nums")}>
 											{row.submittedDate}
 										</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+										<TableCell
+											className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+										>
 											{row.records.toLocaleString()}
 										</TableCell>
 										<TableCell className={RA_TABLE_CELL}>
@@ -419,10 +496,17 @@ export function RiskAdjustmentSubmissionsTab() {
 												tone={submissionStatusTone(row.status)}
 											/>
 										</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "tabular-nums text-muted-foreground")}>
+										<TableCell
+											className={cn(
+												RA_TABLE_CELL,
+												"tabular-nums text-muted-foreground"
+											)}
+										>
 											{row.responseReceived ?? "—"}
 										</TableCell>
-										<TableCell className={cn(RA_TABLE_CELL, "text-right tabular-nums")}>
+										<TableCell
+											className={cn(RA_TABLE_CELL, "text-right tabular-nums")}
+										>
 											{row.acceptanceRate != null ? (
 												<span className="font-medium text-emerald-700">
 													{row.acceptanceRate}%
@@ -435,7 +519,9 @@ export function RiskAdjustmentSubmissionsTab() {
 											className={cn(
 												RA_TABLE_CELL,
 												"text-right tabular-nums font-medium",
-												row.paymentImpact < 0 ? "text-red-600" : "text-foreground"
+												row.paymentImpact < 0
+													? "text-red-600"
+													: "text-foreground"
 											)}
 										>
 											{row.paymentImpactLabel}
@@ -451,12 +537,14 @@ export function RiskAdjustmentSubmissionsTab() {
 					<RaTablePagination shown={10} total={32} />
 				</div>
 
-				{showDetail ? <SubmissionDetailPanel onClose={() => setSelectedId("")} /> : null}
+				{showDetail ? (
+					<SubmissionDetailPanel onClose={() => setSelectedId("")} />
+				) : null}
 			</div>
 
 			<p className="text-[11px] text-muted-foreground">
-				Note: Estimated payment impact is based on current risk model and may change after final
-				reconciliation.
+				Note: Estimated payment impact is based on current risk model and may
+				change after final reconciliation.
 			</p>
 		</div>
 	);

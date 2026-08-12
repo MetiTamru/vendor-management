@@ -2,7 +2,16 @@
 
 import { type ReactNode } from "react";
 
-import { ChevronLeft, ChevronRight, ArrowDownRight, ArrowUpRight, ExternalLink, FileText, type LucideIcon } from "lucide-react";
+import {
+	ArrowDownRight,
+	ArrowUpRight,
+	ChevronLeft,
+	ChevronRight,
+	ExternalLink,
+	FileText,
+	type LucideIcon,
+} from "lucide-react";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +22,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import {
 	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
@@ -33,7 +41,8 @@ export const MEASURE_CALLOUT =
 export const MEASURE_TABLE_CLASS = "text-sm";
 export const MEASURE_TABLE_HEAD =
 	"h-9 bg-muted/40 px-3 text-xs font-semibold tracking-wide text-foreground";
-export const MEASURE_TABLE_CELL = "px-3 py-2 align-middle text-sm text-foreground";
+export const MEASURE_TABLE_CELL =
+	"px-3 py-2 align-middle text-sm text-foreground";
 export const MEASURE_TABLE_MUTED = "text-muted-foreground";
 
 export function PanelLink({
@@ -44,7 +53,11 @@ export function PanelLink({
 	icon?: ReactNode;
 }) {
 	return (
-		<Button variant="link" size="sm" className="h-8 gap-1.5 px-0 text-sm text-primary">
+		<Button
+			variant="link"
+			size="sm"
+			className="h-8 gap-1.5 px-0 text-sm text-primary"
+		>
 			{icon}
 			{children}
 		</Button>
@@ -87,7 +100,9 @@ export function MeasureStatusPill({
 	}[tone];
 
 	return (
-		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-xs", toneClass)}>{label}</span>
+		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-xs", toneClass)}>
+			{label}
+		</span>
 	);
 }
 
@@ -123,7 +138,11 @@ export function MeasureFieldGrid({
 			)}
 		>
 			{fields.map((field) => (
-				<MeasureField key={field.label} label={field.label} value={field.value} />
+				<MeasureField
+					key={field.label}
+					label={field.label}
+					value={field.value}
+				/>
 			))}
 		</div>
 	);
@@ -133,7 +152,9 @@ export function SpecRow({ label, value }: { label: string; value: ReactNode }) {
 	return (
 		<div className="grid gap-2 border-b border-border/50 py-2.5 last:border-b-0 sm:grid-cols-[minmax(160px,220px)_1fr] sm:gap-4">
 			<p className="text-sm font-medium text-foreground">{label}</p>
-			<div className="text-sm leading-relaxed text-muted-foreground">{value}</div>
+			<div className="text-sm leading-relaxed text-muted-foreground">
+				{value}
+			</div>
 		</div>
 	);
 }
@@ -152,7 +173,9 @@ export function MeasureSubsection({
 			<div>
 				<h4 className="text-sm font-semibold text-foreground">{title}</h4>
 				{description ? (
-					<p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
+					<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+						{description}
+					</p>
 				) : null}
 			</div>
 			{children}
@@ -202,7 +225,12 @@ export function MeasureKpiCard({
 			<div className="flex items-start justify-between gap-3">
 				<div className="min-w-0 flex-1">
 					<p className="text-xs font-medium text-muted-foreground">{label}</p>
-					<p className={cn("mt-0.5 text-xl font-semibold tabular-nums tracking-tight", valueStyles[tone])}>
+					<p
+						className={cn(
+							"mt-0.5 text-xl font-semibold tabular-nums tracking-tight",
+							valueStyles[tone]
+						)}
+					>
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
@@ -240,7 +268,14 @@ export function MeasureStatTile({
 	return (
 		<div className="rounded-lg border border-border/60 bg-background px-3 py-2.5">
 			<p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-			<p className={cn("mt-0.5 text-base font-semibold tabular-nums", accentClass)}>{value}</p>
+			<p
+				className={cn(
+					"mt-0.5 text-base font-semibold tabular-nums",
+					accentClass
+				)}
+			>
+				{value}
+			</p>
 		</div>
 	);
 }
@@ -255,12 +290,18 @@ export function MeasurePipeline({
 			{steps.map((step, index) => (
 				<div key={step.label} className="relative">
 					<div className="rounded-lg border border-border/60 bg-background px-3 py-2">
-						<p className="text-xs font-medium text-muted-foreground">{step.label}</p>
+						<p className="text-xs font-medium text-muted-foreground">
+							{step.label}
+						</p>
 						<p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
-							{typeof step.value === "number" ? step.value.toLocaleString() : step.value}
+							{typeof step.value === "number"
+								? step.value.toLocaleString()
+								: step.value}
 						</p>
 						{step.description ? (
-							<p className="mt-0.5 text-[11px] text-muted-foreground">{step.description}</p>
+							<p className="mt-0.5 text-[11px] text-muted-foreground">
+								{step.description}
+							</p>
 						) : null}
 					</div>
 					{index < steps.length - 1 ? (
@@ -280,7 +321,13 @@ export function MeasurePipeline({
 export function MeasureActivityList({
 	items,
 }: {
-	items: { id: string; activity: string; user: string; dateTime: string; details: string }[];
+	items: {
+		id: string;
+		activity: string;
+		user: string;
+		dateTime: string;
+		details: string;
+	}[];
 }) {
 	return (
 		<ul className="divide-y divide-border/50">
@@ -289,7 +336,9 @@ export function MeasureActivityList({
 					<div className="mt-1.5 size-2 shrink-0 rounded-full bg-primary/70" />
 					<div className="min-w-0 flex-1 space-y-1">
 						<div className="flex flex-wrap items-start justify-between gap-2">
-							<p className="text-sm font-medium text-foreground">{item.activity}</p>
+							<p className="text-sm font-medium text-foreground">
+								{item.activity}
+							</p>
 							<time className="shrink-0 text-xs tabular-nums text-muted-foreground">
 								{item.dateTime}
 							</time>
@@ -308,13 +357,21 @@ export function MeasureDataTable({
 	rows,
 	getRowKey,
 }: {
-	columns: { key: string; header: string; className?: string; align?: "left" | "right" }[];
+	columns: {
+		key: string;
+		header: string;
+		className?: string;
+		align?: "left" | "right";
+	}[];
 	rows: Record<string, ReactNode>[];
 	getRowKey: (row: Record<string, ReactNode>, index: number) => string;
 }) {
 	return (
 		<CmsEdgeTableScroll>
-			<Table className={MEASURE_TABLE_CLASS} containerClassName={CMS_EDGE_TABLE_CONTAINER}>
+			<Table
+				className={MEASURE_TABLE_CLASS}
+				containerClassName={CMS_EDGE_TABLE_CONTAINER}
+			>
 				<TableHeader>
 					<TableRow className="hover:bg-transparent">
 						{columns.map((col) => (
@@ -384,7 +441,11 @@ export function MeasureChangeCell({ value }: { value: number | null }) {
 				up ? "text-emerald-700" : "text-red-600"
 			)}
 		>
-			{up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
+			{up ? (
+				<ArrowUpRight className="size-3.5" />
+			) : (
+				<ArrowDownRight className="size-3.5" />
+			)}
 			{up ? "+" : ""}
 			{value.toFixed(2)}%
 		</span>
@@ -412,14 +473,26 @@ export function MeasureGoalProgress({
 		<div className="space-y-2 rounded-lg border border-border/50 bg-muted/15 p-3">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
-					<p className="text-xs font-medium text-muted-foreground">Performance Rate</p>
-					<p className="text-2xl font-semibold tabular-nums text-primary">{rate.toFixed(2)}%</p>
+					<p className="text-xs font-medium text-muted-foreground">
+						Performance Rate
+					</p>
+					<p className="text-2xl font-semibold tabular-nums text-primary">
+						{rate.toFixed(2)}%
+					</p>
 				</div>
 				<div className="text-right">
 					<p className="text-xs font-medium text-muted-foreground">Goal</p>
-					<p className="text-lg font-semibold tabular-nums text-foreground">{goal.toFixed(2)}%</p>
+					<p className="text-lg font-semibold tabular-nums text-foreground">
+						{goal.toFixed(2)}%
+					</p>
 				</div>
-				<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, "text-xs", statusStyles[statusTone])}>
+				<span
+					className={cn(
+						CMS_EDGE_STATUS_PILL_CLASS,
+						"text-xs",
+						statusStyles[statusTone]
+					)}
+				>
 					{status}
 				</span>
 			</div>
@@ -458,7 +531,9 @@ export function MeasureReasonBar({
 	return (
 		<div className="space-y-1.5">
 			<div className="flex items-center justify-between gap-2 text-sm">
-				<span className="min-w-0 truncate font-medium text-foreground">{label}</span>
+				<span className="min-w-0 truncate font-medium text-foreground">
+					{label}
+				</span>
 				<span className="shrink-0 tabular-nums text-muted-foreground">
 					{value.toLocaleString()} ({pct.toFixed(1)}%)
 				</span>
@@ -522,7 +597,12 @@ export function MeasureAsOfBar({
 				As of <span className="font-medium text-foreground">{asOf}</span>
 			</span>
 			{onRefresh ? (
-				<Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onRefresh}>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 text-xs"
+					onClick={onRefresh}
+				>
 					Refresh
 				</Button>
 			) : null}
@@ -578,13 +658,18 @@ export function MeasureDonutBreakdown({
 					</PieChart>
 				</ResponsiveContainer>
 				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-					<p className="text-base font-bold tabular-nums text-foreground">{centerValue}</p>
+					<p className="text-base font-bold tabular-nums text-foreground">
+						{centerValue}
+					</p>
 					<p className="text-[11px] text-muted-foreground">{centerLabel}</p>
 				</div>
 			</div>
 			<ul className="flex flex-1 flex-col justify-center gap-2.5 text-sm">
 				{items.map((item) => (
-					<li key={item.name} className="flex items-center justify-between gap-2">
+					<li
+						key={item.name}
+						className="flex items-center justify-between gap-2"
+					>
 						<span className="flex min-w-0 items-center gap-2">
 							<span
 								className="size-2.5 shrink-0 rounded-full"

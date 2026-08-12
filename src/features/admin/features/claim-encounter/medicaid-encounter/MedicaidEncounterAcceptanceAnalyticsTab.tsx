@@ -8,9 +8,9 @@ import {
 	CheckCircle2,
 	Clock3,
 	FileText,
+	type LucideIcon,
 	Percent,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	Bar,
@@ -108,7 +108,9 @@ function MetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -126,7 +128,8 @@ function AcceptanceKpiRow() {
 				value={`${k.acceptanceRate.toFixed(2)}%`}
 				hint={
 					<span className="inline-flex items-center gap-0.5 text-emerald-700">
-						<ArrowUpRight className="size-3" />+ {k.acceptanceDelta.toFixed(2)}% vs Prior Period
+						<ArrowUpRight className="size-3" />+ {k.acceptanceDelta.toFixed(2)}%
+						vs Prior Period
 					</span>
 				}
 				icon={Percent}
@@ -188,11 +191,15 @@ function ChartPanel({
 			bodyClassName="flex min-h-0 flex-1 flex-col"
 			footer={
 				footer ? (
-					<div className="border-t border-border/50 px-4 py-2 text-center">{footer}</div>
+					<div className="border-t border-border/50 px-4 py-2 text-center">
+						{footer}
+					</div>
 				) : undefined
 			}
 		>
-			<div className="min-h-[200px] flex-1 border-t border-border/50 px-2 py-2">{children}</div>
+			<div className="min-h-[200px] flex-1 border-t border-border/50 px-2 py-2">
+				{children}
+			</div>
 		</CmsEdgeSectionPanel>
 	);
 }
@@ -204,14 +211,37 @@ function AcceptanceTrendChart() {
 			footer={<PanelLink>View Details</PanelLink>}
 		>
 			<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-				<LineChart data={MEDICAID_ACCEPTANCE_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+				<LineChart
+					data={MEDICAID_ACCEPTANCE_TREND}
+					margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+				>
 					<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
 					<XAxis dataKey="month" tick={{ fontSize: 11 }} />
-					<YAxis tick={{ fontSize: 11 }} width={36} domain={[85, 100]} tickFormatter={(v) => `${v}%`} />
+					<YAxis
+						tick={{ fontSize: 11 }}
+						width={36}
+						domain={[85, 100]}
+						tickFormatter={(v) => `${v}%`}
+					/>
 					<Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
 					<Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-					<Line type="monotone" dataKey="rate" name="Acceptance Rate" stroke="#13446c" strokeWidth={2} dot={{ r: 3 }} />
-					<Line type="monotone" dataKey="prior" name="Prior Period" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 2 }} />
+					<Line
+						type="monotone"
+						dataKey="rate"
+						name="Acceptance Rate"
+						stroke="#13446c"
+						strokeWidth={2}
+						dot={{ r: 3 }}
+					/>
+					<Line
+						type="monotone"
+						dataKey="prior"
+						name="Prior Period"
+						stroke="#94a3b8"
+						strokeWidth={2}
+						strokeDasharray="4 4"
+						dot={{ r: 2 }}
+					/>
 				</LineChart>
 			</ResponsiveContainer>
 		</ChartPanel>
@@ -230,10 +260,28 @@ function HorizontalRateChart({
 	return (
 		<ChartPanel title={title} footer={<PanelLink>View Details</PanelLink>}>
 			<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-				<BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
-					<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" horizontal={false} />
-					<XAxis type="number" domain={[80, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
-					<YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={88} />
+				<BarChart
+					data={data}
+					layout="vertical"
+					margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
+				>
+					<CartesianGrid
+						strokeDasharray="3 3"
+						className="stroke-border/50"
+						horizontal={false}
+					/>
+					<XAxis
+						type="number"
+						domain={[80, 100]}
+						tick={{ fontSize: 10 }}
+						tickFormatter={(v) => `${v}%`}
+					/>
+					<YAxis
+						type="category"
+						dataKey="name"
+						tick={{ fontSize: 10 }}
+						width={88}
+					/>
 					<Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
 					<Bar dataKey="rate" fill={color} radius={[0, 4, 4, 0]} barSize={14} />
 				</BarChart>
@@ -246,7 +294,10 @@ function ReportsByTypeDonut() {
 	const total = MEDICAID_REPORTS_BY_TYPE.reduce((s, d) => s + d.value, 0);
 
 	return (
-		<ChartPanel title="Reports by Type" footer={<PanelLink>View Full Report</PanelLink>}>
+		<ChartPanel
+			title="Reports by Type"
+			footer={<PanelLink>View Full Report</PanelLink>}
+		>
 			<div className="flex h-full min-h-[200px] flex-col gap-2 px-2 sm:flex-row">
 				<div className="relative mx-auto w-full max-w-[140px] flex-1">
 					<ResponsiveContainer width="100%" height="100%" minHeight={120}>
@@ -274,14 +325,22 @@ function ReportsByTypeDonut() {
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-1.5 text-xs">
 					{MEDICAID_REPORTS_BY_TYPE.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
 								<span className="truncate">{item.name}</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
 								{item.value}
-								<span className="ml-1">({((item.value / total) * 100).toFixed(0)}%)</span>
+								<span className="ml-1">
+									({((item.value / total) * 100).toFixed(0)}%)
+								</span>
 							</span>
 						</li>
 					))}
@@ -304,28 +363,66 @@ function TopRejectionReasonsTable() {
 			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>Reason Code</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>Description</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}>Rejected Reports</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 pr-3 text-right")}>% of Total</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>
+								Reason Code
+							</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>
+								Description
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}
+							>
+								Rejected Reports
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 pr-3 text-right")}
+							>
+								% of Total
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_TOP_REJECTIONS.map((row) => (
-							<TableRow key={row.code} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 font-mono font-medium")}>
+							<TableRow
+								key={row.code}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 font-mono font-medium"
+									)}
+								>
 									{row.code}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-muted-foreground")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 text-muted-foreground"
+									)}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 text-right tabular-nums"
+									)}
+								>
 									{row.count}
 								</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 pr-3 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 pr-3 text-right tabular-nums"
+									)}
+								>
 									{row.pct.toFixed(1)}%
 								</TableCell>
 							</TableRow>
@@ -339,14 +436,37 @@ function TopRejectionReasonsTable() {
 
 function AcceptanceRateByMonthChart() {
 	return (
-		<ChartPanel title="Acceptance Rate by Month" footer={<PanelLink>View Details</PanelLink>}>
+		<ChartPanel
+			title="Acceptance Rate by Month"
+			footer={<PanelLink>View Details</PanelLink>}
+		>
 			<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-				<BarChart data={MEDICAID_RATE_BY_MONTH} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+				<BarChart
+					data={MEDICAID_RATE_BY_MONTH}
+					margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+				>
 					<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-					<XAxis dataKey="month" tick={{ fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={48} />
-					<YAxis tick={{ fontSize: 11 }} width={36} domain={[85, 100]} tickFormatter={(v) => `${v}%`} />
+					<XAxis
+						dataKey="month"
+						tick={{ fontSize: 10 }}
+						interval={0}
+						angle={-20}
+						textAnchor="end"
+						height={48}
+					/>
+					<YAxis
+						tick={{ fontSize: 11 }}
+						width={36}
+						domain={[85, 100]}
+						tickFormatter={(v) => `${v}%`}
+					/>
 					<Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
-					<Bar dataKey="rate" fill="#13446c" radius={[4, 4, 0, 0]} barSize={28} />
+					<Bar
+						dataKey="rate"
+						fill="#13446c"
+						radius={[4, 4, 0, 0]}
+						barSize={28}
+					/>
 				</BarChart>
 			</ResponsiveContainer>
 		</ChartPanel>
@@ -362,7 +482,9 @@ function SummaryByReportTypeTable() {
 		}),
 		{ submitted: 0, accepted: 0, rejected: 0 }
 	);
-	const totalRate = totals.submitted ? (totals.accepted / totals.submitted) * 100 : 0;
+	const totalRate = totals.submitted
+		? (totals.accepted / totals.submitted) * 100
+		: 0;
 
 	return (
 		<CmsEdgeSectionPanel
@@ -376,32 +498,121 @@ function SummaryByReportTypeTable() {
 			}
 		>
 			<CmsEdgeTableScroll className="min-h-0 flex-1 border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>Report Type</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}>Submitted</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}>Accepted</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}>Rejected</TableHead>
-							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 pr-3 text-right")}>Acceptance Rate</TableHead>
+							<TableHead className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7")}>
+								Report Type
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}
+							>
+								Submitted
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}
+							>
+								Accepted
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 text-right")}
+							>
+								Rejected
+							</TableHead>
+							<TableHead
+								className={cn(CMS_EDGE_TABLE_HEAD_CLASS, "h-7 pr-3 text-right")}
+							>
+								Acceptance Rate
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_SUMMARY_BY_TYPE.map((row) => (
-							<TableRow key={row.type} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 font-medium")}>{row.type}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums")}>{row.submitted}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums text-emerald-700")}>{row.accepted}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums text-red-600")}>{row.rejected}</TableCell>
-								<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 pr-3 text-right tabular-nums")}>{row.rate.toFixed(1)}%</TableCell>
+							<TableRow
+								key={row.type}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 font-medium"
+									)}
+								>
+									{row.type}
+								</TableCell>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 text-right tabular-nums"
+									)}
+								>
+									{row.submitted}
+								</TableCell>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 text-right tabular-nums text-emerald-700"
+									)}
+								>
+									{row.accepted}
+								</TableCell>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 text-right tabular-nums text-red-600"
+									)}
+								>
+									{row.rejected}
+								</TableCell>
+								<TableCell
+									className={cn(
+										CMS_EDGE_TABLE_CELL_CLASS,
+										"py-1.5 pr-3 text-right tabular-nums"
+									)}
+								>
+									{row.rate.toFixed(1)}%
+								</TableCell>
 							</TableRow>
 						))}
 						<TableRow className="border-t border-border/60 bg-muted/20 font-semibold hover:bg-muted/20">
-							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5")}>Total</TableCell>
-							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums")}>{totals.submitted}</TableCell>
-							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums text-emerald-700")}>{totals.accepted}</TableCell>
-							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 text-right tabular-nums text-red-600")}>{totals.rejected}</TableCell>
-							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5 pr-3 text-right tabular-nums")}>{totalRate.toFixed(1)}%</TableCell>
+							<TableCell className={cn(CMS_EDGE_TABLE_CELL_CLASS, "py-1.5")}>
+								Total
+							</TableCell>
+							<TableCell
+								className={cn(
+									CMS_EDGE_TABLE_CELL_CLASS,
+									"py-1.5 text-right tabular-nums"
+								)}
+							>
+								{totals.submitted}
+							</TableCell>
+							<TableCell
+								className={cn(
+									CMS_EDGE_TABLE_CELL_CLASS,
+									"py-1.5 text-right tabular-nums text-emerald-700"
+								)}
+							>
+								{totals.accepted}
+							</TableCell>
+							<TableCell
+								className={cn(
+									CMS_EDGE_TABLE_CELL_CLASS,
+									"py-1.5 text-right tabular-nums text-red-600"
+								)}
+							>
+								{totals.rejected}
+							</TableCell>
+							<TableCell
+								className={cn(
+									CMS_EDGE_TABLE_CELL_CLASS,
+									"py-1.5 pr-3 text-right tabular-nums"
+								)}
+							>
+								{totalRate.toFixed(1)}%
+							</TableCell>
 						</TableRow>
 					</TableBody>
 				</Table>

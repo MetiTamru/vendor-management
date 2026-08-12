@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	AlertCircle,
@@ -25,8 +25,8 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -51,30 +51,30 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
-	filterMedicaidExceptions,
+	MEDICAID_EXCEPTIONS_BY_SEVERITY,
+	MEDICAID_EXCEPTIONS_BY_STATE,
+	MEDICAID_EXCEPTIONS_TREND,
 	MEDICAID_EXCEPTION_DETAILS,
 	MEDICAID_EXCEPTION_KPIS,
 	MEDICAID_EXCEPTION_SEVERITY_FILTER,
 	MEDICAID_EXCEPTION_SEVERITY_STYLES,
 	MEDICAID_EXCEPTION_STATUS_FILTER,
 	MEDICAID_EXCEPTION_STATUS_STYLES,
-	MEDICAID_EXCEPTIONS_BY_SEVERITY,
-	MEDICAID_EXCEPTIONS_BY_STATE,
-	MEDICAID_EXCEPTIONS_TREND,
 	MEDICAID_TOP_EXCEPTION_REASONS,
+	filterMedicaidExceptions,
 } from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
-import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 function scaleProgramCount(value: number, programType?: ProgramType) {
@@ -89,7 +89,8 @@ function formatProgramState(state: string, programType?: ProgramType) {
 
 const EXCEPTION_PAGE_STACK = "space-y-5";
 const EXCEPTION_SECTION_GAP = "gap-4";
-const EXCEPTION_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const EXCEPTION_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const EXCEPTION_TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -100,13 +101,25 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
 }
 
-function TrendHint({ delta, invert = false }: { delta: number; invert?: boolean }) {
+function TrendHint({
+	delta,
+	invert = false,
+}: {
+	delta: number;
+	invert?: boolean;
+}) {
 	const positive = invert ? delta < 0 : delta > 0;
 	const Icon = positive ? ArrowUpRight : ArrowDownRight;
 	const tone = positive ? "text-emerald-700" : "text-red-600";
@@ -160,7 +173,9 @@ function ExceptionMetricCard({
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -224,8 +239,15 @@ function ExceptionsKpiRow({ programType }: { programType?: ProgramType }) {
 	);
 }
 
-function ExceptionsBySeverityPanel({ programType }: { programType?: ProgramType }) {
-	const total = MEDICAID_EXCEPTIONS_BY_SEVERITY.reduce((sum, item) => sum + item.value, 0);
+function ExceptionsBySeverityPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
+	const total = MEDICAID_EXCEPTIONS_BY_SEVERITY.reduce(
+		(sum, item) => sum + item.value,
+		0
+	);
 	const scaledTotal = scaleProgramCount(total, programType);
 
 	return (
@@ -260,15 +282,25 @@ function ExceptionsBySeverityPanel({ programType }: { programType?: ProgramType 
 						</PieChart>
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-						<p className="text-sm font-bold tabular-nums">{formatCount(scaledTotal)}</p>
-						<p className="text-[10px] text-muted-foreground">Total Exceptions</p>
+						<p className="text-sm font-bold tabular-nums">
+							{formatCount(scaledTotal)}
+						</p>
+						<p className="text-[10px] text-muted-foreground">
+							Total Exceptions
+						</p>
 					</div>
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-2 text-xs">
 					{MEDICAID_EXCEPTIONS_BY_SEVERITY.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
 								<span className="truncate">{item.name}</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
@@ -297,15 +329,55 @@ function ExceptionsTrendPanel() {
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={MEDICAID_EXCEPTIONS_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={MEDICAID_EXCEPTIONS_TREND}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-						<XAxis dataKey="week" tick={{ fontSize: 10 }} interval={0} angle={-12} textAnchor="end" height={48} />
-						<YAxis tick={{ fontSize: 11 }} width={40} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-						<RechartsTooltip formatter={(value: number) => formatCount(value)} />
-						<Legend iconSize={8} wrapperStyle={{ fontSize: 10, paddingBottom: 4 }} />
-						<Line type="monotone" dataKey="critical" name="Critical" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="warning" name="Warning" stroke="#f97316" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="info" name="Info" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2 }} />
+						<XAxis
+							dataKey="week"
+							tick={{ fontSize: 10 }}
+							interval={0}
+							angle={-12}
+							textAnchor="end"
+							height={48}
+						/>
+						<YAxis
+							tick={{ fontSize: 11 }}
+							width={40}
+							tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+						/>
+						<RechartsTooltip
+							formatter={(value: number) => formatCount(value)}
+						/>
+						<Legend
+							iconSize={8}
+							wrapperStyle={{ fontSize: 10, paddingBottom: 4 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="critical"
+							name="Critical"
+							stroke="#ef4444"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="warning"
+							name="Warning"
+							stroke="#f97316"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="info"
+							name="Info"
+							stroke="#3b82f6"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
@@ -313,8 +385,14 @@ function ExceptionsTrendPanel() {
 	);
 }
 
-function TopExceptionReasonsPanel({ programType }: { programType?: ProgramType }) {
-	const maxCount = Math.max(...MEDICAID_TOP_EXCEPTION_REASONS.map((item) => item.count));
+function TopExceptionReasonsPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
+	const maxCount = Math.max(
+		...MEDICAID_TOP_EXCEPTION_REASONS.map((item) => item.count)
+	);
 
 	return (
 		<CmsEdgeSectionPanel
@@ -331,7 +409,9 @@ function TopExceptionReasonsPanel({ programType }: { programType?: ProgramType }
 				{MEDICAID_TOP_EXCEPTION_REASONS.map((item) => (
 					<div key={item.reason}>
 						<div className="mb-1 flex items-center justify-between gap-2 text-xs">
-							<span className="min-w-0 truncate font-medium">{item.reason}</span>
+							<span className="min-w-0 truncate font-medium">
+								{item.reason}
+							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
 								{formatCount(scaleProgramCount(item.count, programType))}
 							</span>
@@ -349,7 +429,11 @@ function TopExceptionReasonsPanel({ programType }: { programType?: ProgramType }
 	);
 }
 
-function ExceptionsByStatePanel({ programType }: { programType?: ProgramType }) {
+function ExceptionsByStatePanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
@@ -359,29 +443,55 @@ function ExceptionsByStatePanel({ programType }: { programType?: ProgramType }) 
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
 				<div className="border-t border-border/50 px-4 py-2 text-center">
-					<PanelLink>{isMedicare ? "View All Programs" : "View All States"}</PanelLink>
+					<PanelLink>
+						{isMedicare ? "View All Programs" : "View All States"}
+					</PanelLink>
 				</div>
 			}
 		>
 			<div className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={EXCEPTION_TABLE_HEAD}>{isMedicare ? "Program" : "State"}</TableHead>
-							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "text-right")}>Exceptions</TableHead>
-							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "pr-4 text-right")}>% of Total</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								{isMedicare ? "Program" : "State"}
+							</TableHead>
+							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "text-right")}>
+								Exceptions
+							</TableHead>
+							<TableHead
+								className={cn(EXCEPTION_TABLE_HEAD, "pr-4 text-right")}
+							>
+								% of Total
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_EXCEPTIONS_BY_STATE.map((row) => (
-							<TableRow key={row.state} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.state}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={cn(EXCEPTION_TABLE_CELL, "font-medium")}>
 									{formatProgramState(row.state, programType)}
 								</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										EXCEPTION_TABLE_CELL,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.count, programType))}
 								</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "pr-4 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										EXCEPTION_TABLE_CELL,
+										"pr-4 text-right tabular-nums"
+									)}
+								>
 									{row.pct.toFixed(1)}%
 								</TableCell>
 							</TableRow>
@@ -423,7 +533,10 @@ function ExceptionDetailsPanel({
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
 				<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border/50 px-4 py-2.5 text-xs text-muted-foreground">
-					<span>Showing 1 to {rows.length} of {scaleProgramCount(48, programType)} entries</span>
+					<span>
+						Showing 1 to {rows.length} of {scaleProgramCount(48, programType)}{" "}
+						entries
+					</span>
 					<div className="flex items-center gap-2">
 						<div className="flex items-center gap-1">
 							<Button variant="outline" size="icon" className="size-7" disabled>
@@ -467,7 +580,10 @@ function ExceptionDetailsPanel({
 						<Label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 							Error Code
 						</Label>
-						<Input placeholder="All codes" className="h-9 bg-background text-xs" />
+						<Input
+							placeholder="All codes"
+							className="h-9 bg-background text-xs"
+						/>
 					</div>
 					<div className="space-y-1">
 						<Label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -514,8 +630,16 @@ function ExceptionDetailsPanel({
 					<Label className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:pb-2">
 						Date Range
 					</Label>
-					<Input type="date" defaultValue="2027-04-01" className="h-9 bg-background text-xs" />
-					<Input type="date" defaultValue="2027-06-30" className="h-9 bg-background text-xs" />
+					<Input
+						type="date"
+						defaultValue="2027-04-01"
+						className="h-9 bg-background text-xs"
+					/>
+					<Input
+						type="date"
+						defaultValue="2027-06-30"
+						className="h-9 bg-background text-xs"
+					/>
 				</div>
 			</div>
 
@@ -527,27 +651,52 @@ function ExceptionDetailsPanel({
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
 							<TableHead className={EXCEPTION_TABLE_HEAD}>Error Code</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>Description</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								Description
+							</TableHead>
 							<TableHead className={EXCEPTION_TABLE_HEAD}>Severity</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>{isMedicare ? "Program" : "State"}</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								{isMedicare ? "Program" : "State"}
+							</TableHead>
 							<TableHead className={EXCEPTION_TABLE_HEAD}>MCO</TableHead>
 							<TableHead className={EXCEPTION_TABLE_HEAD}>Vendor</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>Submission Batch</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>Response File</TableHead>
-							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "text-right")}>Encounter Count</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>First Occurrence</TableHead>
-							<TableHead className={EXCEPTION_TABLE_HEAD}>Last Occurrence</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								Submission Batch
+							</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								Response File
+							</TableHead>
+							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "text-right")}>
+								Encounter Count
+							</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								First Occurrence
+							</TableHead>
+							<TableHead className={EXCEPTION_TABLE_HEAD}>
+								Last Occurrence
+							</TableHead>
 							<TableHead className={EXCEPTION_TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(EXCEPTION_TABLE_HEAD, "pr-4 text-right")}>Actions</TableHead>
+							<TableHead
+								className={cn(EXCEPTION_TABLE_HEAD, "pr-4 text-right")}
+							>
+								Actions
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{rows.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "font-mono font-medium")}>
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(EXCEPTION_TABLE_CELL, "font-mono font-medium")}
+								>
 									{row.errorCode}
 								</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "text-muted-foreground")}>
+								<TableCell
+									className={cn(EXCEPTION_TABLE_CELL, "text-muted-foreground")}
+								>
 									{row.description}
 								</TableCell>
 								<TableCell className={EXCEPTION_TABLE_CELL}>
@@ -556,12 +705,20 @@ function ExceptionDetailsPanel({
 										className={MEDICAID_EXCEPTION_SEVERITY_STYLES[row.severity]}
 									/>
 								</TableCell>
-								<TableCell className={EXCEPTION_TABLE_CELL}>{formatProgramState(row.state, programType)}</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "text-muted-foreground")}>
+								<TableCell className={EXCEPTION_TABLE_CELL}>
+									{formatProgramState(row.state, programType)}
+								</TableCell>
+								<TableCell
+									className={cn(EXCEPTION_TABLE_CELL, "text-muted-foreground")}
+								>
 									{row.mco}
 								</TableCell>
-								<TableCell className={EXCEPTION_TABLE_CELL}>{row.vendor}</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "font-mono text-[11px]")}>
+								<TableCell className={EXCEPTION_TABLE_CELL}>
+									{row.vendor}
+								</TableCell>
+								<TableCell
+									className={cn(EXCEPTION_TABLE_CELL, "font-mono text-[11px]")}
+								>
 									{row.submissionBatch}
 								</TableCell>
 								<TableCell className={EXCEPTION_TABLE_CELL}>
@@ -569,8 +726,15 @@ function ExceptionDetailsPanel({
 										{row.responseFile}
 									</Button>
 								</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "text-right tabular-nums")}>
-									{formatCount(scaleProgramCount(row.encounterCount, programType))}
+								<TableCell
+									className={cn(
+										EXCEPTION_TABLE_CELL,
+										"text-right tabular-nums"
+									)}
+								>
+									{formatCount(
+										scaleProgramCount(row.encounterCount, programType)
+									)}
 								</TableCell>
 								<TableCell className={cn(EXCEPTION_TABLE_CELL, "tabular-nums")}>
 									{row.firstOccurrence}
@@ -584,7 +748,9 @@ function ExceptionDetailsPanel({
 										className={MEDICAID_EXCEPTION_STATUS_STYLES[row.status]}
 									/>
 								</TableCell>
-								<TableCell className={cn(EXCEPTION_TABLE_CELL, "pr-4 text-right")}>
+								<TableCell
+									className={cn(EXCEPTION_TABLE_CELL, "pr-4 text-right")}
+								>
 									<div className="inline-flex items-center gap-0.5">
 										<Button
 											variant="ghost"
@@ -613,13 +779,19 @@ function ExceptionDetailsPanel({
 	);
 }
 
-export function MedicaidEncounterExceptionsTab({ programType }: { programType?: ProgramType } = {}) {
+export function MedicaidEncounterExceptionsTab({
+	programType,
+}: { programType?: ProgramType } = {}) {
 	const [search, setSearch] = useState("");
 	const [severity, setSeverity] = useState("All Severities");
 	const [status, setStatus] = useState("All Statuses");
 
 	const rows = useMemo(
-		() => filterMedicaidExceptions(MEDICAID_EXCEPTION_DETAILS, search, { severity, status }),
+		() =>
+			filterMedicaidExceptions(MEDICAID_EXCEPTION_DETAILS, search, {
+				severity,
+				status,
+			}),
 		[search, severity, status]
 	);
 
@@ -645,12 +817,22 @@ export function MedicaidEncounterExceptionsTab({ programType }: { programType?: 
 				programType={programType}
 			/>
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-2", EXCEPTION_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-2",
+					EXCEPTION_SECTION_GAP
+				)}
+			>
 				<ExceptionsBySeverityPanel programType={programType} />
 				<ExceptionsTrendPanel />
 			</div>
 
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-2", EXCEPTION_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-2",
+					EXCEPTION_SECTION_GAP
+				)}
+			>
 				<TopExceptionReasonsPanel programType={programType} />
 				<ExceptionsByStatePanel programType={programType} />
 			</div>

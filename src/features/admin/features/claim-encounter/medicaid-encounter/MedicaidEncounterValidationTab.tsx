@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -9,9 +9,9 @@ import {
 	CheckCircle2,
 	Download,
 	FileText,
+	type LucideIcon,
 	RefreshCw,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	CartesianGrid,
@@ -21,15 +21,14 @@ import {
 	LineChart,
 	Pie,
 	PieChart,
-	ResponsiveContainer,
 	Tooltip as RechartsTooltip,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
 } from "recharts";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	Table,
 	TableBody,
@@ -38,21 +37,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+	CMS_EDGE_STATUS_PILL_CLASS,
 	CMS_EDGE_TABLE_CLASS,
 	CMS_EDGE_TABLE_CONTAINER,
 	CMS_EDGE_TABLE_LINK_CLASS,
-	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgePageFooter,
 	CmsEdgeSectionPanel,
 	CmsEdgeTableScroll,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import {
+	MEDICAID_EXTERNAL_TOP_REJECTION_CODES,
 	MEDICAID_EXTERNAL_VALIDATION_DETAILS,
 	MEDICAID_EXTERNAL_VALIDATION_STATUS_STYLES,
 	MEDICAID_EXTERNAL_VALIDATION_SUMMARY,
 	MEDICAID_EXTERNAL_VALIDATION_TREND,
-	MEDICAID_EXTERNAL_TOP_REJECTION_CODES,
 	MEDICAID_INTERNAL_VALIDATION_DETAILS,
 	MEDICAID_INTERNAL_VALIDATION_STATUS_STYLES,
 	MEDICAID_INTERNAL_VALIDATION_SUMMARY,
@@ -62,8 +62,8 @@ import {
 	MEDICAID_VALIDATION_TYPE_BREAKDOWN,
 } from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
-import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 
 type ValidationSubTab = "internal" | "external";
@@ -97,7 +97,8 @@ function formatProgramState(state: string, programType?: ProgramType) {
 
 const VALIDATION_PAGE_STACK = "space-y-5";
 const VALIDATION_SECTION_GAP = "gap-4";
-const VALIDATION_TABLE_HEAD = "h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
+const VALIDATION_TABLE_HEAD =
+	"h-9 bg-muted/30 px-4 text-[11px] font-semibold text-foreground";
 const VALIDATION_TABLE_CELL = "px-4 py-2.5";
 
 function PanelLink({ children }: { children: ReactNode }) {
@@ -108,7 +109,13 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function StatusPill({ label, className }: { label: string; className: string }) {
+function StatusPill({
+	label,
+	className,
+}: {
+	label: string;
+	className: string;
+}) {
 	return (
 		<span className={cn(CMS_EDGE_STATUS_PILL_CLASS, className)}>{label}</span>
 	);
@@ -144,11 +151,18 @@ function SummaryStatCard({
 					<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 						{label}
 					</p>
-					<p className={cn("mt-0.5 text-lg font-semibold tabular-nums leading-tight", valueClassName)}>
+					<p
+						className={cn(
+							"mt-0.5 text-lg font-semibold tabular-nums leading-tight",
+							valueClassName
+						)}
+					>
 						{value}
 					</p>
 					{hint != null && hint !== "" ? (
-						<div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
+						<div className="mt-0.5 text-[10px] text-muted-foreground">
+							{hint}
+						</div>
 					) : null}
 				</div>
 			</div>
@@ -156,7 +170,11 @@ function SummaryStatCard({
 	);
 }
 
-function InternalValidationSummaryPanel({ programType }: { programType?: ProgramType }) {
+function InternalValidationSummaryPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const s = MEDICAID_INTERNAL_VALIDATION_SUMMARY;
 
 	return (
@@ -167,7 +185,8 @@ function InternalValidationSummaryPanel({ programType }: { programType?: Program
 					value={scaleProgramCount(s.filesValidated, programType)}
 					hint={
 						<span className="inline-flex items-center gap-0.5 text-emerald-700">
-							<ArrowUpRight className="size-3" />+{s.filesValidatedDelta.toFixed(2)}% vs Prior Period
+							<ArrowUpRight className="size-3" />+
+							{s.filesValidatedDelta.toFixed(2)}% vs Prior Period
 						</span>
 					}
 					icon={FileText}
@@ -202,12 +221,22 @@ function InternalValidationSummaryPanel({ programType }: { programType?: Program
 	);
 }
 
-function ExternalValidationSummaryPanel({ programType }: { programType?: ProgramType }) {
+function ExternalValidationSummaryPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const s = MEDICAID_EXTERNAL_VALIDATION_SUMMARY;
 	const isMedicare = programType === "medicare";
 
 	return (
-		<CmsEdgeSectionPanel title={isMedicare ? "External (CMS) Validation Summary" : "External (State) Validation Summary"}>
+		<CmsEdgeSectionPanel
+			title={
+				isMedicare
+					? "External (CMS) Validation Summary"
+					: "External (State) Validation Summary"
+			}
+		>
 			<div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2 xl:grid-cols-4">
 				<SummaryStatCard
 					label="Files Validated"
@@ -244,7 +273,11 @@ function ExternalValidationSummaryPanel({ programType }: { programType?: Program
 	);
 }
 
-function InternalValidationDetailsPanel({ programType }: { programType?: ProgramType }) {
+function InternalValidationDetailsPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
@@ -265,52 +298,103 @@ function InternalValidationDetailsPanel({ programType }: { programType?: Program
 				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={VALIDATION_TABLE_HEAD}>Submission Batch</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Submission Batch
+							</TableHead>
 							<TableHead className={VALIDATION_TABLE_HEAD}>File Name</TableHead>
-							<TableHead className={VALIDATION_TABLE_HEAD}>{isMedicare ? "Program" : "State"}</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								{isMedicare ? "Program" : "State"}
+							</TableHead>
 							<TableHead className={VALIDATION_TABLE_HEAD}>File Type</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Records</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Records
+							</TableHead>
 							<TableHead className={VALIDATION_TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Passed</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Warnings</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Errors</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "pr-4")}>Validated On</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Passed
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Warnings
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Errors
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "pr-4")}>
+								Validated On
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_INTERNAL_VALIDATION_DETAILS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={VALIDATION_TABLE_CELL}>
 									<Button variant="link" className={CMS_EDGE_TABLE_LINK_CLASS}>
 										{row.submissionBatch}
 									</Button>
 								</TableCell>
 								<TableCell className={VALIDATION_TABLE_CELL}>
-									<Button variant="link" className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}>
+									<Button
+										variant="link"
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
+									>
 										{formatProgramFileName(row.fileName, programType)}
 									</Button>
 								</TableCell>
-								<TableCell className={VALIDATION_TABLE_CELL}>{formatProgramState(row.state, programType)}</TableCell>
-								<TableCell className={VALIDATION_TABLE_CELL}>{row.fileType}</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell className={VALIDATION_TABLE_CELL}>
+									{formatProgramState(row.state, programType)}
+								</TableCell>
+								<TableCell className={VALIDATION_TABLE_CELL}>
+									{row.fileType}
+								</TableCell>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.records, programType))}
 								</TableCell>
 								<TableCell className={VALIDATION_TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICAID_INTERNAL_VALIDATION_STATUS_STYLES[row.status]}
+										className={
+											MEDICAID_INTERNAL_VALIDATION_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums text-emerald-700")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums text-emerald-700"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.passed, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums text-amber-600")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums text-amber-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.warnings, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.errors, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "pr-4 tabular-nums")}>
+								<TableCell
+									className={cn(VALIDATION_TABLE_CELL, "pr-4 tabular-nums")}
+								>
 									{row.validatedOn}
 								</TableCell>
 							</TableRow>
@@ -322,13 +406,21 @@ function InternalValidationDetailsPanel({ programType }: { programType?: Program
 	);
 }
 
-function ExternalValidationDetailsPanel({ programType }: { programType?: ProgramType }) {
+function ExternalValidationDetailsPanel({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
 		<CmsEdgeSectionPanel
 			className="flex h-full min-h-0 flex-col"
-			title={isMedicare ? "External (CMS) Validation Details" : "External (State) Validation Details"}
+			title={
+				isMedicare
+					? "External (CMS) Validation Details"
+					: "External (State) Validation Details"
+			}
 			bodyClassName="flex min-h-0 flex-1 flex-col pb-4"
 			footer={
 				<div className="border-t border-border/50 px-4 py-2 text-center">
@@ -343,22 +435,49 @@ function ExternalValidationDetailsPanel({ programType }: { programType?: Program
 				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={VALIDATION_TABLE_HEAD}>Response File Name</TableHead>
-							<TableHead className={VALIDATION_TABLE_HEAD}>Submission Batch</TableHead>
-							<TableHead className={VALIDATION_TABLE_HEAD}>{isMedicare ? "Program" : "State"}</TableHead>
-							<TableHead className={VALIDATION_TABLE_HEAD}>Response Received</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Records</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Response File Name
+							</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Submission Batch
+							</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								{isMedicare ? "Program" : "State"}
+							</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Response Received
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Records
+							</TableHead>
 							<TableHead className={VALIDATION_TABLE_HEAD}>Status</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Accepted</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Warnings</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "pr-4 text-right")}>Rejected</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Accepted
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Warnings
+							</TableHead>
+							<TableHead
+								className={cn(VALIDATION_TABLE_HEAD, "pr-4 text-right")}
+							>
+								Rejected
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{MEDICAID_EXTERNAL_VALIDATION_DETAILS.map((row) => (
-							<TableRow key={row.id} className="border-b border-border/40 hover:bg-muted/20">
+							<TableRow
+								key={row.id}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
 								<TableCell className={VALIDATION_TABLE_CELL}>
-									<Button variant="link" className={cn(CMS_EDGE_TABLE_LINK_CLASS, "whitespace-normal text-left")}>
+									<Button
+										variant="link"
+										className={cn(
+											CMS_EDGE_TABLE_LINK_CLASS,
+											"whitespace-normal text-left"
+										)}
+									>
 										{formatProgramFileName(row.responseFileName, programType)}
 									</Button>
 								</TableCell>
@@ -367,26 +486,52 @@ function ExternalValidationDetailsPanel({ programType }: { programType?: Program
 										{row.submissionBatch}
 									</Button>
 								</TableCell>
-								<TableCell className={VALIDATION_TABLE_CELL}>{formatProgramState(row.state, programType)}</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "tabular-nums")}>
+								<TableCell className={VALIDATION_TABLE_CELL}>
+									{formatProgramState(row.state, programType)}
+								</TableCell>
+								<TableCell
+									className={cn(VALIDATION_TABLE_CELL, "tabular-nums")}
+								>
 									{row.responseReceived}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.records, programType))}
 								</TableCell>
 								<TableCell className={VALIDATION_TABLE_CELL}>
 									<StatusPill
 										label={row.status}
-										className={MEDICAID_EXTERNAL_VALIDATION_STATUS_STYLES[row.status]}
+										className={
+											MEDICAID_EXTERNAL_VALIDATION_STATUS_STYLES[row.status]
+										}
 									/>
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums text-emerald-700")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums text-emerald-700"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.accepted, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums text-amber-600")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums text-amber-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.warnings, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "pr-4 text-right tabular-nums text-red-600")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"pr-4 text-right tabular-nums text-red-600"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.rejected, programType))}
 								</TableCell>
 							</TableRow>
@@ -412,28 +557,58 @@ function TopErrorCodesPanel({
 	return (
 		<CmsEdgeSectionPanel title={title}>
 			<div className="border-t border-border/50">
-				<Table containerClassName={CMS_EDGE_TABLE_CONTAINER} className={CMS_EDGE_TABLE_CLASS}>
+				<Table
+					containerClassName={CMS_EDGE_TABLE_CONTAINER}
+					className={CMS_EDGE_TABLE_CLASS}
+				>
 					<TableHeader>
 						<TableRow className="hover:bg-transparent">
-							<TableHead className={VALIDATION_TABLE_HEAD}>Error Code</TableHead>
-							<TableHead className={VALIDATION_TABLE_HEAD}>Description</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>Count</TableHead>
-							<TableHead className={cn(VALIDATION_TABLE_HEAD, "pr-4 text-right")}>{lastColumnLabel}</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Error Code
+							</TableHead>
+							<TableHead className={VALIDATION_TABLE_HEAD}>
+								Description
+							</TableHead>
+							<TableHead className={cn(VALIDATION_TABLE_HEAD, "text-right")}>
+								Count
+							</TableHead>
+							<TableHead
+								className={cn(VALIDATION_TABLE_HEAD, "pr-4 text-right")}
+							>
+								{lastColumnLabel}
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{rows.map((row) => (
-							<TableRow key={row.code} className="border-b border-border/40 hover:bg-muted/20">
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "font-mono font-medium")}>
+							<TableRow
+								key={row.code}
+								className="border-b border-border/40 hover:bg-muted/20"
+							>
+								<TableCell
+									className={cn(VALIDATION_TABLE_CELL, "font-mono font-medium")}
+								>
 									{row.code}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-muted-foreground")}>
+								<TableCell
+									className={cn(VALIDATION_TABLE_CELL, "text-muted-foreground")}
+								>
 									{row.description}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"text-right tabular-nums"
+									)}
+								>
 									{formatCount(scaleProgramCount(row.count, programType))}
 								</TableCell>
-								<TableCell className={cn(VALIDATION_TABLE_CELL, "pr-4 text-right tabular-nums")}>
+								<TableCell
+									className={cn(
+										VALIDATION_TABLE_CELL,
+										"pr-4 text-right tabular-nums"
+									)}
+								>
 									{row.pct.toFixed(2)}%
 								</TableCell>
 							</TableRow>
@@ -460,15 +635,56 @@ function ValidationTrendPanel({
 		>
 			<div className="min-h-[220px] flex-1 border-t border-border/50 px-2 py-2">
 				<ResponsiveContainer width="100%" height="100%" minHeight={180}>
-					<LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+					<LineChart
+						data={data}
+						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+					>
 						<CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-						<XAxis dataKey="week" tick={{ fontSize: 10 }} interval={0} angle={-12} textAnchor="end" height={48} />
-						<YAxis tick={{ fontSize: 11 }} width={36} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-						<RechartsTooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-						<Legend iconSize={8} wrapperStyle={{ fontSize: 10, paddingBottom: 4 }} />
-						<Line type="monotone" dataKey="passed" name="Passed %" stroke="#22c55e" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="warnings" name="Warnings %" stroke="#f97316" strokeWidth={2} dot={{ r: 2 }} />
-						<Line type="monotone" dataKey="errors" name="Errors %" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
+						<XAxis
+							dataKey="week"
+							tick={{ fontSize: 10 }}
+							interval={0}
+							angle={-12}
+							textAnchor="end"
+							height={48}
+						/>
+						<YAxis
+							tick={{ fontSize: 11 }}
+							width={36}
+							domain={[0, 100]}
+							tickFormatter={(v) => `${v}%`}
+						/>
+						<RechartsTooltip
+							formatter={(value: number) => `${value.toFixed(1)}%`}
+						/>
+						<Legend
+							iconSize={8}
+							wrapperStyle={{ fontSize: 10, paddingBottom: 4 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="passed"
+							name="Passed %"
+							stroke="#22c55e"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="warnings"
+							name="Warnings %"
+							stroke="#f97316"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="errors"
+							name="Errors %"
+							stroke="#ef4444"
+							strokeWidth={2}
+							dot={{ r: 2 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
@@ -476,13 +692,21 @@ function ValidationTrendPanel({
 	);
 }
 
-function ValidationTypeBreakdownPanel({ scope }: { scope: "internal" | "external" }) {
+function ValidationTypeBreakdownPanel({
+	scope,
+}: {
+	scope: "internal" | "external";
+}) {
 	const breakdown = MEDICAID_VALIDATION_TYPE_BREAKDOWN.filter((item) =>
-		scope === "internal" ? item.name.startsWith("Internal") : item.name.startsWith("External")
+		scope === "internal"
+			? item.name.startsWith("Internal")
+			: item.name.startsWith("External")
 	);
 	const total = breakdown.reduce((sum, item) => sum + item.value, 0);
 	const title =
-		scope === "internal" ? "Internal Validation Breakdown" : "External Validation Breakdown";
+		scope === "internal"
+			? "Internal Validation Breakdown"
+			: "External Validation Breakdown";
 
 	return (
 		<CmsEdgeSectionPanel
@@ -517,10 +741,18 @@ function ValidationTypeBreakdownPanel({ scope }: { scope: "internal" | "external
 				</div>
 				<ul className="flex flex-1 flex-col justify-center gap-1.5 text-[11px]">
 					{breakdown.map((item) => (
-						<li key={item.name} className="flex items-center justify-between gap-2">
+						<li
+							key={item.name}
+							className="flex items-center justify-between gap-2"
+						>
 							<span className="flex min-w-0 items-center gap-1.5 font-medium">
-								<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-								<span className="truncate">{item.name.replace(/^(Internal|External) /, "")}</span>
+								<span
+									className="size-2 shrink-0 rounded-full"
+									style={{ backgroundColor: item.color }}
+								/>
+								<span className="truncate">
+									{item.name.replace(/^(Internal|External) /, "")}
+								</span>
 							</span>
 							<span className="shrink-0 tabular-nums text-muted-foreground">
 								{item.pct.toFixed(2)}%
@@ -540,10 +772,20 @@ const QUICK_ACTION_ICONS: Record<string, LucideIcon> = {
 	"vq-4": RefreshCw,
 };
 
-function ValidationQuickActionsPanel({ scope }: { scope: "internal" | "external" }) {
-	const actionIds = scope === "internal" ? INTERNAL_QUICK_ACTION_IDS : EXTERNAL_QUICK_ACTION_IDS;
-	const actions = MEDICAID_VALIDATION_QUICK_ACTIONS.filter((action) => actionIds.has(action.id));
-	const title = scope === "internal" ? "Internal Quick Actions" : "External Quick Actions";
+function ValidationQuickActionsPanel({
+	scope,
+}: {
+	scope: "internal" | "external";
+}) {
+	const actionIds =
+		scope === "internal"
+			? INTERNAL_QUICK_ACTION_IDS
+			: EXTERNAL_QUICK_ACTION_IDS;
+	const actions = MEDICAID_VALIDATION_QUICK_ACTIONS.filter((action) =>
+		actionIds.has(action.id)
+	);
+	const title =
+		scope === "internal" ? "Internal Quick Actions" : "External Quick Actions";
 
 	return (
 		<CmsEdgeSectionPanel title={title}>
@@ -559,8 +801,12 @@ function ValidationQuickActionsPanel({ scope }: { scope: "internal" | "external"
 							>
 								<Icon className="mt-0.5 size-4 shrink-0 text-primary" />
 								<div>
-									<p className="text-xs font-semibold text-foreground">{action.title}</p>
-									<p className="mt-0.5 text-[10px] text-muted-foreground">{action.description}</p>
+									<p className="text-xs font-semibold text-foreground">
+										{action.title}
+									</p>
+									<p className="mt-0.5 text-[10px] text-muted-foreground">
+										{action.description}
+									</p>
 								</div>
 							</button>
 						</li>
@@ -571,13 +817,22 @@ function ValidationQuickActionsPanel({ scope }: { scope: "internal" | "external"
 	);
 }
 
-function InternalValidationView({ programType }: { programType?: ProgramType }) {
+function InternalValidationView({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	return (
 		<div className={VALIDATION_PAGE_STACK}>
 			<InternalValidationSummaryPanel programType={programType} />
 			<InternalValidationDetailsPanel programType={programType} />
 			<TopErrorCodesPanel programType={programType} />
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-2", VALIDATION_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-2",
+					VALIDATION_SECTION_GAP
+				)}
+			>
 				<ValidationTrendPanel title="Internal Validation Trend (by Week)" />
 				<ValidationTypeBreakdownPanel scope="internal" />
 			</div>
@@ -586,7 +841,11 @@ function InternalValidationView({ programType }: { programType?: ProgramType }) 
 	);
 }
 
-function ExternalValidationView({ programType }: { programType?: ProgramType }) {
+function ExternalValidationView({
+	programType,
+}: {
+	programType?: ProgramType;
+}) {
 	const isMedicare = programType === "medicare";
 
 	return (
@@ -595,13 +854,26 @@ function ExternalValidationView({ programType }: { programType?: ProgramType }) 
 			<ExternalValidationDetailsPanel programType={programType} />
 			<TopErrorCodesPanel
 				programType={programType}
-				title={isMedicare ? "External (CMS) Validation – Top Rejection Codes" : "External (State) Validation – Top Rejection Codes"}
+				title={
+					isMedicare
+						? "External (CMS) Validation – Top Rejection Codes"
+						: "External (State) Validation – Top Rejection Codes"
+				}
 				rows={MEDICAID_EXTERNAL_TOP_REJECTION_CODES}
 				lastColumnLabel="% of Total Rejections"
 			/>
-			<div className={cn("grid grid-cols-1 items-stretch lg:grid-cols-2", VALIDATION_SECTION_GAP)}>
+			<div
+				className={cn(
+					"grid grid-cols-1 items-stretch lg:grid-cols-2",
+					VALIDATION_SECTION_GAP
+				)}
+			>
 				<ValidationTrendPanel
-					title={isMedicare ? "External (CMS) Validation Trend (by Week)" : "External (State) Validation Trend (by Week)"}
+					title={
+						isMedicare
+							? "External (CMS) Validation Trend (by Week)"
+							: "External (State) Validation Trend (by Week)"
+					}
 					data={MEDICAID_EXTERNAL_VALIDATION_TREND}
 				/>
 				<ValidationTypeBreakdownPanel scope="external" />
@@ -611,20 +883,27 @@ function ExternalValidationView({ programType }: { programType?: ProgramType }) 
 	);
 }
 
-export function MedicaidEncounterValidationTab({ programType }: { programType?: ProgramType } = {}) {
+export function MedicaidEncounterValidationTab({
+	programType,
+}: { programType?: ProgramType } = {}) {
 	const [subTab, setSubTab] = useState<ValidationSubTab>("internal");
 	const isMedicare = programType === "medicare";
 
 	return (
 		<div className={VALIDATION_PAGE_STACK}>
-			<Tabs value={subTab} onValueChange={(value) => setSubTab(value as ValidationSubTab)}>
+			<Tabs
+				value={subTab}
+				onValueChange={(value) => setSubTab(value as ValidationSubTab)}
+			>
 				<div className="rounded-lg border border-border/70 bg-card shadow-sm">
 					<TabsList className="inline-flex h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0">
 						<TabsTrigger value="internal" className={VALIDATION_SUB_TAB_CLASS}>
 							Internal Validation (Pre-Submission)
 						</TabsTrigger>
 						<TabsTrigger value="external" className={VALIDATION_SUB_TAB_CLASS}>
-							{isMedicare ? "External Validation (CMS)" : "External Validation (State)"}
+							{isMedicare
+								? "External Validation (CMS)"
+								: "External Validation (State)"}
 						</TabsTrigger>
 					</TabsList>
 				</div>
