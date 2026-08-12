@@ -24,6 +24,7 @@ import {
 	History,
 	Home,
 	LifeBuoy,
+	LineChart,
 	MessageSquareReply,
 	Radio,
 	Scale,
@@ -67,6 +68,7 @@ import type { SidebarNavItem } from "@/types/UI/system.types";
 
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
+	"Executive Analytics": LineChart,
 	Vendors: Users,
 	Members: UserRound,
 	Providers: Stethoscope,
@@ -97,7 +99,6 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	"Medicare Reporting": Stethoscope,
 	"Risk Adjustment": Scale,
 	"Quality Performance": ClipboardCheck,
-	"Audit Management": ShieldCheck,
 	"Compliance Calendar": CalendarDays,
 	"ESRD / Dialysis": Activity,
 	DME: Accessibility,

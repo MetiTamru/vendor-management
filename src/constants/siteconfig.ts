@@ -193,6 +193,31 @@ const claimEncounterNav: SidebarNavItem[] = [
 		section: "top",
 		module: "claim_encounter",
 	},
+	{
+		title: "Executive Analytics",
+		href: "/admin/claim-encounter/executive-analytics/overview",
+		permission: "dashboard-view",
+		section: "top",
+		module: "claim_encounter",
+		items: [
+			{
+				title: "Executive Overview",
+				href: "/admin/claim-encounter/executive-analytics/overview",
+			},
+			{
+				title: "Operations & Vendors",
+				href: "/admin/claim-encounter/executive-analytics/operations-vendors",
+			},
+			{
+				title: "Regulatory & Quality",
+				href: "/admin/claim-encounter/executive-analytics/regulatory-quality",
+			},
+			{
+				title: "Risk & Exceptions",
+				href: "/admin/claim-encounter/executive-analytics/risk-exceptions",
+			},
+		],
+	},
 	// Claims & Encounters
 	{
 		title: "Claims",
@@ -287,38 +312,7 @@ const claimEncounterNav: SidebarNavItem[] = [
 				title: "Measure Library",
 				href: "/admin/claim-encounter/regulatory/quality-performance/measure-library",
 			},
-			{
-				title: "Gap Closure",
-				href: "/admin/claim-encounter/regulatory/quality-performance/gap-closure",
-			},
-			{
-				title: "Provider Performance",
-				href: "/admin/claim-encounter/regulatory/quality-performance/provider-performance",
-			},
-			{
-				title: "Performance Trends",
-				href: "/admin/claim-encounter/regulatory/quality-performance/performance-trends",
-			},
-			{
-				title: "NCQA Submission",
-				href: "/admin/claim-encounter/regulatory/quality-performance/ncqa-submission",
-			},
-			{
-				title: "Audit",
-				href: "/admin/claim-encounter/regulatory/quality-performance/audit",
-			},
-			{
-				title: "Documents",
-				href: "/admin/claim-encounter/regulatory/quality-performance/documents",
-			},
 		],
-	},
-	{
-		title: "Audit Management",
-		href: "/admin/claim-encounter/regulatory/audit-management",
-		permission: "dashboard-view",
-		section: "regulatory_compliance",
-		module: "claim_encounter",
 	},
 	{
 		title: "Compliance Calendar",

@@ -1,7 +1,5 @@
-import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceProgramRoutePage";
+import { ComplianceCalendarPage } from "@/features/admin/features/claim-encounter/compliance-calendar/ComplianceCalendarPage";
 
 export default function Page() {
-	return (
-		<ComplianceProgramRoutePage slug="compliance-calendar" section="regulatory_compliance" />
-	);
+	return <ComplianceCalendarPage />;
 }

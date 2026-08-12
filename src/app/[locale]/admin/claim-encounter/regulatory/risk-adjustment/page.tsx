@@ -1,7 +1,10 @@
-import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceProgramRoutePage";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-	return (
-		<ComplianceProgramRoutePage slug="risk-adjustment" section="regulatory_compliance" />
-	);
+export default async function Page({
+	params,
+}: {
+	params: Promise<{ locale: string }>;
+}) {
+	const { locale } = await params;
+	redirect(`/${locale}/admin/claim-encounter/regulatory/risk-adjustment/overview`);
 }

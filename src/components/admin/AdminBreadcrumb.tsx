@@ -22,6 +22,8 @@ import { siteConfig } from "@/constants/siteconfig";
 import {
 	getMeasureDetail,
 } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
+import { getMemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+import { getObligationDetail } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
 import {
 	getClaimResponse,
 	getSubmissionBatch,
@@ -87,6 +89,10 @@ const STATIC_LABELS: Record<string, string> = {
 	edit: "Edit",
 	match: "Match",
 	"claim-encounter": "Claims & Encounters",
+	"executive-analytics": "Executive Analytics",
+	"operations-vendors": "Operations & Vendors",
+	"regulatory-quality": "Regulatory & Quality",
+	"risk-exceptions": "Risk & Exceptions",
 	claims: "Claims",
 	inbound: "Inbound Vendor File",
 	outbound: "Outbound Vendor File",
@@ -100,6 +106,10 @@ const STATIC_LABELS: Record<string, string> = {
 	"medicaid-encounter-reporting": "Medicare & Medicaid Reporting",
 	"medicare-reporting": "Medicare & Medicaid Reporting",
 	"risk-adjustment": "Risk Adjustment",
+	"hcc-management": "HCC Management",
+	"member-opportunities": "Member Opportunities",
+	"coding-validation": "Coding Validation",
+	"audit-reconciliation": "Audit & Reconciliation",
 	"quality-performance": "Quality Performance",
 	"hedis-quality": "Quality Performance",
 	overview: "Overview",
@@ -273,6 +283,26 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				const measure = getMeasureDetail(segment.toUpperCase());
 				items.push({
 					label: measure ? `${measure.id} — ${measure.name}` : formatSegment(segment),
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (prev === "member-opportunities") {
+				const opportunity = getMemberOpportunityDetail(segment);
+				items.push({
+					label: opportunity
+						? `${opportunity.memberId} — ${opportunity.name}`
+						: formatSegment(segment),
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (prev === "compliance-calendar") {
+				const obligation = getObligationDetail(segment);
+				items.push({
+					label: obligation?.title ?? "Obligation Detail",
 					href: i < trail.length - 1 ? path : undefined,
 				});
 				continue;
