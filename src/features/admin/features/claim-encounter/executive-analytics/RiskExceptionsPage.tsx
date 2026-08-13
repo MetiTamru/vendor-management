@@ -19,9 +19,9 @@ import {
 	CartesianGrid,
 	Cell,
 	Line,
-	LineChart as RechartsLineChart,
 	Pie,
 	PieChart,
+	LineChart as RechartsLineChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -391,8 +391,7 @@ export function RiskExceptionsPage() {
 							<div className="flex items-center justify-between text-xs">
 								<span className="font-medium text-foreground">{row.name}</span>
 								<span className="tabular-nums text-muted-foreground">
-									{row.count}{" "}
-									<span className="text-[10px]">({row.pct})</span>
+									{row.count} <span className="text-[10px]">({row.pct})</span>
 								</span>
 							</div>
 							<div className="h-2.5 overflow-hidden rounded-full bg-muted/80">
@@ -458,7 +457,9 @@ export function RiskExceptionsPage() {
 										<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
 											{row.detectedOn}
 										</TableCell>
-										<TableCell className={cn(TABLE_CELL, "tabular-nums font-medium")}>
+										<TableCell
+											className={cn(TABLE_CELL, "tabular-nums font-medium")}
+										>
 											{row.impact}
 										</TableCell>
 										<TableCell className={TABLE_CELL}>
@@ -492,7 +493,9 @@ export function RiskExceptionsPage() {
 						<p className="text-2xl font-bold tabular-nums text-foreground">
 							{RE_FINANCIAL_IMPACT.total}
 						</p>
-						<p className="text-xs text-muted-foreground">Total Potential Impact</p>
+						<p className="text-xs text-muted-foreground">
+							Total Potential Impact
+						</p>
 						<div className="mt-1">
 							<DeltaHint
 								delta={RE_FINANCIAL_IMPACT.delta}
@@ -504,8 +507,12 @@ export function RiskExceptionsPage() {
 						{RE_FINANCIAL_IMPACT.categories.map((row) => (
 							<div key={row.name} className="space-y-1">
 								<div className="flex items-center justify-between text-xs">
-									<span className="font-medium text-foreground">{row.name}</span>
-									<span className="tabular-nums font-semibold">{row.label}</span>
+									<span className="font-medium text-foreground">
+										{row.name}
+									</span>
+									<span className="tabular-nums font-semibold">
+										{row.label}
+									</span>
 								</div>
 								<div className="h-2.5 overflow-hidden rounded-full bg-muted/80">
 									<div

@@ -11,9 +11,9 @@ import {
 	FileText,
 	Filter,
 	FolderOpen,
+	type LucideIcon,
 	Percent,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import {
 	Bar,
@@ -56,8 +56,8 @@ import {
 	OV_ALERTS,
 	OV_CLAIMS_METRICS,
 	OV_ENCOUNTER_METRICS,
-	OV_FILE_STATUS,
 	OV_FILES_OVER_TIME,
+	OV_FILE_STATUS,
 	OV_KPIS,
 	OV_REPORTING_PERIODS,
 	OV_SLA_BREACHES,
@@ -173,7 +173,10 @@ function PeriodCompareTable({
 			<p className="border-b border-border/40 px-3 py-2 text-xs font-semibold text-foreground">
 				{title}
 			</p>
-			<Table className={CMS_EDGE_TABLE_CLASS} containerClassName={CMS_EDGE_TABLE_CONTAINER}>
+			<Table
+				className={CMS_EDGE_TABLE_CLASS}
+				containerClassName={CMS_EDGE_TABLE_CONTAINER}
+			>
 				<TableHeader>
 					<TableRow>
 						<TableHead className={TABLE_HEAD}>Metric</TableHead>
@@ -191,7 +194,9 @@ function PeriodCompareTable({
 							<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
 								{row.current}
 							</TableCell>
-							<TableCell className={cn(TABLE_CELL, "tabular-nums text-muted-foreground")}>
+							<TableCell
+								className={cn(TABLE_CELL, "tabular-nums text-muted-foreground")}
+							>
 								{row.prior}
 							</TableCell>
 							<TableCell className={TABLE_CELL}>
@@ -250,7 +255,9 @@ function VendorPerformanceContent() {
 								</PieChart>
 							</ResponsiveContainer>
 							<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-								<p className="text-lg font-bold tabular-nums">{OV_TOTAL_VENDORS}</p>
+								<p className="text-lg font-bold tabular-nums">
+									{OV_TOTAL_VENDORS}
+								</p>
 								<p className="text-[10px] text-muted-foreground">Vendors</p>
 							</div>
 						</div>
@@ -306,7 +313,9 @@ function VendorPerformanceContent() {
 										<TableCell className={cn(TABLE_CELL, "font-medium")}>
 											{row.vendor}
 										</TableCell>
-										<TableCell className={cn(TABLE_CELL, "tabular-nums font-semibold")}>
+										<TableCell
+											className={cn(TABLE_CELL, "tabular-nums font-semibold")}
+										>
 											{row.health}
 										</TableCell>
 										<TableCell className={TABLE_CELL}>
@@ -359,7 +368,9 @@ function VendorPerformanceContent() {
 								<p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
 									{item.label}
 								</p>
-								<p className="mt-0.5 text-sm font-bold tabular-nums">{item.value}</p>
+								<p className="mt-0.5 text-sm font-bold tabular-nums">
+									{item.value}
+								</p>
 								<div className="mt-1 flex justify-center">
 									<DeltaHint delta={item.delta} positive={item.deltaPositive} />
 								</div>
@@ -452,13 +463,18 @@ function VendorPerformanceContent() {
 									</PieChart>
 								</ResponsiveContainer>
 								<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-									<p className="text-sm font-bold tabular-nums">{OV_TOTAL_FILES}</p>
+									<p className="text-sm font-bold tabular-nums">
+										{OV_TOTAL_FILES}
+									</p>
 									<p className="text-[9px] text-muted-foreground">Files</p>
 								</div>
 							</div>
 							<ul className="mt-2 w-full space-y-1 text-[10px]">
 								{OV_FILE_STATUS.map((item) => (
-									<li key={item.name} className="flex items-center justify-between gap-1">
+									<li
+										key={item.name}
+										className="flex items-center justify-between gap-1"
+									>
 										<span className="flex items-center gap-1">
 											<span
 												className="size-1.5 rounded-full"
@@ -466,7 +482,9 @@ function VendorPerformanceContent() {
 											/>
 											<span className="truncate">{item.name}</span>
 										</span>
-										<span className="tabular-nums text-muted-foreground">{item.pct}</span>
+										<span className="tabular-nums text-muted-foreground">
+											{item.pct}
+										</span>
 									</li>
 								))}
 							</ul>
@@ -546,7 +564,10 @@ function VendorPerformanceContent() {
 				>
 					<div className="grid divide-y divide-border/40 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
 						<PeriodCompareTable title="Claims" rows={OV_CLAIMS_METRICS} />
-						<PeriodCompareTable title="Encounters" rows={OV_ENCOUNTER_METRICS} />
+						<PeriodCompareTable
+							title="Encounters"
+							rows={OV_ENCOUNTER_METRICS}
+						/>
 					</div>
 				</CmsEdgeSectionPanel>
 			</div>
@@ -568,7 +589,9 @@ function VendorPerformanceContent() {
 					>
 						<TableHeader>
 							<TableRow>
-								<TableHead className={cn(TABLE_HEAD, "min-w-[220px]")}>Alert</TableHead>
+								<TableHead className={cn(TABLE_HEAD, "min-w-[220px]")}>
+									Alert
+								</TableHead>
 								<TableHead className={TABLE_HEAD}>Category</TableHead>
 								<TableHead className={TABLE_HEAD}>Vendor</TableHead>
 								<TableHead className={TABLE_HEAD}>Severity</TableHead>

@@ -178,7 +178,12 @@ export const OV_SLA_BREACHES = [
 ];
 
 export const OV_FILE_STATUS = [
-	{ name: "Processed Successfully", value: 4120, pct: "85.3%", color: "#22c55e" },
+	{
+		name: "Processed Successfully",
+		value: 4120,
+		pct: "85.3%",
+		color: "#22c55e",
+	},
 	{ name: "With Errors", value: 480, pct: "9.9%", color: "#eab308" },
 	{ name: "Failed", value: 232, pct: "4.8%", color: "#ef4444" },
 ];
@@ -200,15 +205,30 @@ export const OV_CLAIMS_METRICS = [
 	{ metric: "Denied", current: "184K", prior: "201K", positive: true },
 	{ metric: "Rejected", current: "96K", prior: "88K", positive: false },
 	{ metric: "Pending", current: "142K", prior: "156K", positive: true },
-	{ metric: "Avg Processing Time", current: "1.8d", prior: "2.1d", positive: true },
+	{
+		metric: "Avg Processing Time",
+		current: "1.8d",
+		prior: "2.1d",
+		positive: true,
+	},
 ];
 
 export const OV_ENCOUNTER_METRICS = [
 	{ metric: "Accepted", current: "4.04M", prior: "3.72M", positive: true },
 	{ metric: "Rejected", current: "276K", prior: "298K", positive: true },
-	{ metric: "Acceptance Rate", current: "93.6%", prior: "91.2%", positive: true },
+	{
+		metric: "Acceptance Rate",
+		current: "93.6%",
+		prior: "91.2%",
+		positive: true,
+	},
 	{ metric: "Avg Cycle Time", current: "2.4d", prior: "2.7d", positive: true },
-	{ metric: "Open Exceptions", current: "1,842", prior: "1,620", positive: false },
+	{
+		metric: "Open Exceptions",
+		current: "1,842",
+		prior: "1,620",
+		positive: false,
+	},
 ];
 
 export type OvSeverity = "High" | "Medium" | "Low";

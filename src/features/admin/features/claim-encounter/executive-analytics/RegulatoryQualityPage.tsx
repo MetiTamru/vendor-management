@@ -12,8 +12,8 @@ import {
 	FileText,
 	Filter,
 	Gauge,
-	ShieldCheck,
 	type LucideIcon,
+	ShieldCheck,
 } from "lucide-react";
 import {
 	Area,
@@ -94,13 +94,7 @@ function PanelLink({ children }: { children: ReactNode }) {
 	);
 }
 
-function DeltaHint({
-	delta,
-	positive,
-}: {
-	delta: string;
-	positive: boolean;
-}) {
+function DeltaHint({ delta, positive }: { delta: string; positive: boolean }) {
 	const Icon = positive ? ArrowUpRight : ArrowDownRight;
 	return (
 		<span
@@ -158,7 +152,9 @@ function KpiCard({
 							<span
 								className={cn(
 									"text-[11px] font-semibold",
-									badgeTone === "success" ? "text-emerald-700" : "text-muted-foreground"
+									badgeTone === "success"
+										? "text-emerald-700"
+										: "text-muted-foreground"
 								)}
 							>
 								{badge}
@@ -188,15 +184,23 @@ function MiniSparkline({
 	const config = { value: { label: "Trend", color } } satisfies ChartConfig;
 
 	return (
-		<ChartContainer
-			config={config}
-			className="aspect-auto h-8 w-16"
-		>
-			<AreaChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+		<ChartContainer config={config} className="aspect-auto h-8 w-16">
+			<AreaChart
+				data={chartData}
+				margin={{ top: 2, right: 0, left: 0, bottom: 0 }}
+			>
 				<defs>
 					<linearGradient id={`rq-spark-${id}`} x1="0" y1="0" x2="0" y2="1">
-						<stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.35} />
-						<stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.05} />
+						<stop
+							offset="5%"
+							stopColor="var(--color-value)"
+							stopOpacity={0.35}
+						/>
+						<stop
+							offset="95%"
+							stopColor="var(--color-value)"
+							stopOpacity={0.05}
+						/>
 					</linearGradient>
 				</defs>
 				<Area
@@ -251,7 +255,9 @@ function QualityGauge() {
 				<p className="text-lg font-bold tabular-nums leading-none text-foreground">
 					{score}/{maxScore}
 				</p>
-				<p className="mt-0.5 text-[11px] font-semibold text-emerald-700">{label}</p>
+				<p className="mt-0.5 text-[11px] font-semibold text-emerald-700">
+					{label}
+				</p>
 				<div className="mt-1">
 					<DeltaHint delta={delta} positive={deltaPositive} />
 				</div>
@@ -289,13 +295,20 @@ function ProgramComplianceDonut() {
 					</PieChart>
 				</ResponsiveContainer>
 				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-					<p className="text-lg font-bold tabular-nums leading-none">{RQ_OVERALL_SCORE}</p>
-					<p className="mt-0.5 text-[10px] text-muted-foreground">Overall Score</p>
+					<p className="text-lg font-bold tabular-nums leading-none">
+						{RQ_OVERALL_SCORE}
+					</p>
+					<p className="mt-0.5 text-[10px] text-muted-foreground">
+						Overall Score
+					</p>
 				</div>
 			</div>
 			<ul className="min-w-0 flex-1 space-y-1.5 text-xs">
 				{RQ_PROGRAM_COMPLIANCE.map((item) => (
-					<li key={item.name} className="flex items-center justify-between gap-2">
+					<li
+						key={item.name}
+						className="flex items-center justify-between gap-2"
+					>
 						<span className="flex min-w-0 items-center gap-1.5 font-medium">
 							<span
 								className="size-2 shrink-0 rounded-full"
@@ -336,13 +349,20 @@ function MeasureDistributionDonut() {
 					</PieChart>
 				</ResponsiveContainer>
 				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-					<p className="text-lg font-bold tabular-nums leading-none">{RQ_TOTAL_MEASURES}</p>
-					<p className="mt-0.5 text-[10px] text-muted-foreground">Total Measures</p>
+					<p className="text-lg font-bold tabular-nums leading-none">
+						{RQ_TOTAL_MEASURES}
+					</p>
+					<p className="mt-0.5 text-[10px] text-muted-foreground">
+						Total Measures
+					</p>
 				</div>
 			</div>
 			<ul className="min-w-0 flex-1 space-y-1.5 text-xs">
 				{RQ_MEASURE_DISTRIBUTION.map((item) => (
-					<li key={item.name} className="flex items-center justify-between gap-2">
+					<li
+						key={item.name}
+						className="flex items-center justify-between gap-2"
+					>
 						<span className="flex min-w-0 items-center gap-1.5 font-medium">
 							<span
 								className="size-2 shrink-0 rounded-full"
@@ -351,8 +371,7 @@ function MeasureDistributionDonut() {
 							<span className="truncate">{item.name}</span>
 						</span>
 						<span className="shrink-0 tabular-nums text-muted-foreground">
-							{item.value}{" "}
-							<span className="text-[10px]">({item.pct})</span>
+							{item.value} <span className="text-[10px]">({item.pct})</span>
 						</span>
 					</li>
 				))}
@@ -484,7 +503,9 @@ function RegulatoryOverviewContent() {
 										<TableCell className={cn(TABLE_CELL, "tabular-nums")}>
 											{row.late}
 										</TableCell>
-										<TableCell className={cn(TABLE_CELL, "tabular-nums font-medium")}>
+										<TableCell
+											className={cn(TABLE_CELL, "tabular-nums font-medium")}
+										>
 											{row.acceptance}
 										</TableCell>
 									</TableRow>
@@ -591,7 +612,9 @@ function RegulatoryOverviewContent() {
 					>
 						<TableHeader>
 							<TableRow>
-								<TableHead className={cn(TABLE_HEAD, "min-w-[220px]")}>Alert</TableHead>
+								<TableHead className={cn(TABLE_HEAD, "min-w-[220px]")}>
+									Alert
+								</TableHead>
 								<TableHead className={TABLE_HEAD}>Category</TableHead>
 								<TableHead className={TABLE_HEAD}>Program</TableHead>
 								<TableHead className={TABLE_HEAD}>Severity</TableHead>
@@ -647,8 +670,8 @@ function TabPlaceholder({ label }: { label: string }) {
 		<div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-border/70 bg-card p-8 text-center shadow-sm">
 			<p className="text-sm font-semibold text-foreground">{label}</p>
 			<p className="mt-1 max-w-md text-xs text-muted-foreground">
-				Filtered regulatory and quality metrics for this program will appear here.
-				Use Regulatory Overview for the full enterprise summary.
+				Filtered regulatory and quality metrics for this program will appear
+				here. Use Regulatory Overview for the full enterprise summary.
 			</p>
 		</div>
 	);

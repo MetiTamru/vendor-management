@@ -161,11 +161,26 @@ export const RE_FINANCIAL_IMPACT = {
 	delta: "+$620K",
 	deltaPositive: false,
 	categories: [
-		{ name: "Encounter/Claims", amount: 0.92, label: "$0.92M", color: "#eab308" },
+		{
+			name: "Encounter/Claims",
+			amount: 0.92,
+			label: "$0.92M",
+			color: "#eab308",
+		},
 		{ name: "Data Quality", amount: 0.74, label: "$0.74M", color: "#ef4444" },
 		{ name: "Coding/RAF", amount: 0.58, label: "$0.58M", color: "#3b82f6" },
-		{ name: "Eligibility Issues", amount: 0.36, label: "$0.36M", color: "#f97316" },
-		{ name: "Vendor/File Issues", amount: 0.21, label: "$0.21M", color: "#22c55e" },
+		{
+			name: "Eligibility Issues",
+			amount: 0.36,
+			label: "$0.36M",
+			color: "#f97316",
+		},
+		{
+			name: "Vendor/File Issues",
+			amount: 0.21,
+			label: "$0.21M",
+			color: "#22c55e",
+		},
 	],
 };
 
