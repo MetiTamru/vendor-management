@@ -1,10 +1,5 @@
-import { ExecutiveAnalyticsPlaceholderPage } from "@/features/admin/features/claim-encounter/executive-analytics/ExecutiveAnalyticsPlaceholderPage";
+import { RegulatoryQualityPage } from "@/features/admin/features/claim-encounter/executive-analytics/RegulatoryQualityPage";
 
 export default function Page() {
-	return (
-		<ExecutiveAnalyticsPlaceholderPage
-			title="Regulatory & Quality"
-			description="Regulatory submission health, compliance posture, and quality performance summaries."
-		/>
-	);
+	return <RegulatoryQualityPage />;
 }

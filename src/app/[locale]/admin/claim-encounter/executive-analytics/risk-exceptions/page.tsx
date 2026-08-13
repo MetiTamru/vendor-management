@@ -1,10 +1,5 @@
-import { ExecutiveAnalyticsPlaceholderPage } from "@/features/admin/features/claim-encounter/executive-analytics/ExecutiveAnalyticsPlaceholderPage";
+import { RiskExceptionsPage } from "@/features/admin/features/claim-encounter/executive-analytics/RiskExceptionsPage";
 
 export default function Page() {
-	return (
-		<ExecutiveAnalyticsPlaceholderPage
-			title="Risk & Exceptions"
-			description="Risk adjustment impact, exception trends, and items requiring executive attention."
-		/>
-	);
+	return <RiskExceptionsPage />;
 }
