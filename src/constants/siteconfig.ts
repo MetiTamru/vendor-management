@@ -20,6 +20,39 @@ const vendorManagementNav: SidebarNavItem[] = [
 		module: "vendor_management",
 	},
 	{
+		title: "Contracts",
+		href: "/admin/contracts",
+		permission: "vendors-list",
+		section: "master_data",
+		module: "vendor_management",
+		items: [
+			{
+				title: "Overview",
+				href: "/admin/contracts",
+			},
+			{
+				title: "Contract Details",
+				href: "/admin/contracts/details",
+			},
+			{
+				title: "Effective Dates",
+				href: "/admin/contracts/effective-dates",
+			},
+			{
+				title: "Rate / Fee Schedule",
+				href: "/admin/contracts/rate-fee-schedule",
+			},
+			{
+				title: "SLA Terms",
+				href: "/admin/contracts/sla-terms",
+			},
+			{
+				title: "Documents",
+				href: "/admin/contracts/documents",
+			},
+		],
+	},
+	{
 		title: "Members",
 		href: "/admin/members",
 		permission: "vendors-list",
@@ -253,6 +286,28 @@ const claimEncounterNav: SidebarNavItem[] = [
 		permission: "dashboard-view",
 		section: "claim_encounter",
 		module: "claim_encounter",
+		items: [
+			{
+				title: "Overview",
+				href: "/admin/claim-encounter/acceptance-analytics",
+			},
+			{
+				title: "Acceptance",
+				href: "/admin/claim-encounter/acceptance-analytics/acceptance",
+			},
+			{
+				title: "Rejections",
+				href: "/admin/claim-encounter/acceptance-analytics/rejections",
+			},
+			{
+				title: "Completeness",
+				href: "/admin/claim-encounter/acceptance-analytics/completeness",
+			},
+			{
+				title: "Trends",
+				href: "/admin/claim-encounter/acceptance-analytics/trends",
+			},
+		],
 	},
 	{
 		title: "Exceptions / Rejections",

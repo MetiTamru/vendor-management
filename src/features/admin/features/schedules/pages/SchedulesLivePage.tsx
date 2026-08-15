@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { Play, Search } from "lucide-react";
+import { Pencil, Play, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -28,24 +28,52 @@ import {
 	VendorCoreLiveChrome,
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { vendorCoreApi } from "@/lib/vendor-core";
 import {
+	IntakeJobFormDialog,
+	type IntakeJobFormValues,
+} from "@/features/admin/features/integration-intake/components/IntakeJobFormDialog";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import {
+	useCreateIntakeJob,
 	useInvalidateVendorCore,
+	useRunIntakeJob,
+	useUpdateIntakeJob,
+	useVendorCoreConnections,
 	useVendorCoreJobRuns,
 	useVendorCoreJobs,
 	useVendorCoreVendors,
 } from "@/lib/vendor-core/hooks";
+import type { IntakeJobDto } from "@/lib/vendor-core/types";
 import { vendorLabel } from "@/lib/vendor-core/types";
+
+function valuesToBody(values: IntakeJobFormValues): Record<string, unknown> {
+	return {
+		name: values.name,
+		vendor: values.vendor,
+		connection: values.connection,
+		file_type: values.file_type,
+		filename_pattern: values.filename_pattern,
+		schedule_cron: values.schedule_cron,
+		schedule_timezone: values.schedule_timezone,
+		status: values.status,
+	};
+}
 
 function SchedulesLiveBody() {
 	const invalidate = useInvalidateVendorCore();
 	const jobsQ = useVendorCoreJobs();
 	const vendorsQ = useVendorCoreVendors();
+	const connectionsQ = useVendorCoreConnections();
+	const createJob = useCreateIntakeJob();
+	const updateJob = useUpdateIntakeJob();
+	const runJob = useRunIntakeJob();
 	const [tab, setTab] = useState<"jobs" | "runs">("jobs");
 	const [stage, setStage] = useState("all");
 	const [search, setSearch] = useState("");
-	const [busyId, setBusyId] = useState<string | null>(null);
+	const [formOpen, setFormOpen] = useState(false);
+	const [editingJob, setEditingJob] = useState<IntakeJobDto | null>(null);
+	const [formError, setFormError] = useState<string | null>(null);
+	const [queuedByJob, setQueuedByJob] = useState<Record<string, string>>({});
 
 	const runsQ = useVendorCoreJobRuns(stage === "all" ? undefined : { stage });
 
@@ -87,15 +115,32 @@ function SchedulesLiveBody() {
 	const error = tab === "jobs" ? jobsQ.error?.message : runsQ.error?.message;
 
 	async function onRun(id: string) {
-		setBusyId(id);
 		try {
-			const result = await vendorCoreApi.runIntakeJob(id);
+			const result = await runJob.mutateAsync(id);
+			setQueuedByJob((current) => ({
+				...current,
+				[id]: result.task_id ?? "queued",
+			}));
 			toast.success(`Job queued (${result.task_id ?? "ok"})`);
-			invalidate();
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Run failed");
-		} finally {
-			setBusyId(null);
+		}
+	}
+
+	async function onSubmitJob(values: IntakeJobFormValues) {
+		setFormError(null);
+		try {
+			const body = valuesToBody(values);
+			if (editingJob) {
+				await updateJob.mutateAsync({ id: editingJob.id, body });
+				toast.success("Intake job updated");
+			} else {
+				await createJob.mutateAsync(body);
+				toast.success("Intake job created");
+			}
+			setFormOpen(false);
+		} catch (err) {
+			setFormError(err instanceof Error ? err.message : "Save failed");
 		}
 	}
 
@@ -161,7 +206,19 @@ function SchedulesLiveBody() {
 							))}
 						</SelectContent>
 					</Select>
-				) : null}
+				) : (
+					<Button
+						size="sm"
+						onClick={() => {
+							setEditingJob(null);
+							setFormError(null);
+							setFormOpen(true);
+						}}
+					>
+						<Plus />
+						Create job
+					</Button>
+				)}
 			</div>
 
 			{loading && !(tab === "jobs" ? jobsQ.data : runsQ.data) ? (
@@ -199,17 +256,40 @@ function SchedulesLiveBody() {
 										) : null}
 									</TableCell>
 									<TableCell>
-										<StatusBadge status={job.status} />
+										<div className="flex flex-col gap-1">
+											<StatusBadge status={job.status} />
+											{queuedByJob[job.id] ? (
+												<span className="text-[11px] text-muted-foreground">
+													Queued {queuedByJob[job.id]?.slice(0, 8)}
+												</span>
+											) : null}
+										</div>
 									</TableCell>
 									<TableCell className="text-right">
-										<Button
-											size="sm"
-											disabled={busyId === job.id}
-											onClick={() => void onRun(job.id)}
-										>
-											<Play />
-											Run
-										</Button>
+										<div className="flex justify-end gap-2">
+											<Button
+												size="sm"
+												variant="outline"
+												onClick={() => {
+													setEditingJob(job);
+													setFormError(null);
+													setFormOpen(true);
+												}}
+											>
+												<Pencil />
+												Edit
+											</Button>
+											<Button
+												size="sm"
+												disabled={
+													runJob.isPending && runJob.variables === job.id
+												}
+												onClick={() => void onRun(job.id)}
+											>
+												<Play />
+												Run
+											</Button>
+										</div>
 									</TableCell>
 								</TableRow>
 							))}
@@ -280,6 +360,17 @@ function SchedulesLiveBody() {
 					</Table>
 				</div>
 			)}
+
+			<IntakeJobFormDialog
+				open={formOpen}
+				onOpenChange={setFormOpen}
+				job={editingJob}
+				vendors={vendorsQ.data ?? []}
+				connections={connectionsQ.data ?? []}
+				saving={createJob.isPending || updateJob.isPending}
+				error={formError}
+				onSubmit={onSubmitJob}
+			/>
 		</VendorCoreLiveChrome>
 	);
 }

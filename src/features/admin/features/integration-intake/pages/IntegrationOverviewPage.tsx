@@ -1,23 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
-	Activity,
 	AlertTriangle,
 	Cable,
-	CheckCircle2,
 	Clock3,
 	FileStack,
-	Loader2,
+	Pencil,
 	Play,
-	RefreshCw,
+	Plus,
 	ServerCrash,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -26,21 +24,31 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { cn } from "@/lib/utils";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import {
-	type ConnectionDto,
-	type ErrorRecordDto,
-	type IntakeJobDto,
-	type IntakeJobRunDto,
-	type MonitoringDashboardDto,
-	clearTokens,
-	getStoredAccessToken,
-	getVendorCoreBaseUrl,
-	isVendorCoreLive,
-	vendorCoreApi,
-	vendorCoreLogin,
-} from "@/lib/vendor-core";
+	VendorCoreErrorBanner,
+	VendorCoreLiveChrome,
+	VendorCoreLoadingRow,
+} from "@/components/vendor-core/VendorCoreLiveChrome";
+import {
+	IntakeJobFormDialog,
+	type IntakeJobFormValues,
+} from "@/features/admin/features/integration-intake/components/IntakeJobFormDialog";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { isVendorCoreLive } from "@/lib/vendor-core/client";
+import {
+	useCreateIntakeJob,
+	useInvalidateVendorCore,
+	useRunIntakeJob,
+	useUpdateIntakeJob,
+	useVendorCoreConnections,
+	useVendorCoreErrors,
+	useVendorCoreJobRuns,
+	useVendorCoreJobs,
+	useVendorCoreMonitoring,
+	useVendorCoreVendors,
+} from "@/lib/vendor-core/hooks";
+import type { IntakeJobDto } from "@/lib/vendor-core/types";
 
 function StatCard({
 	title,
@@ -51,7 +59,7 @@ function StatCard({
 	title: string;
 	value: string | number;
 	hint?: string;
-	icon: typeof Activity;
+	icon: typeof Cable;
 }) {
 	return (
 		<Card>
@@ -62,304 +70,121 @@ function StatCard({
 			<CardContent>
 				<div className="text-2xl font-semibold tracking-tight">{value}</div>
 				{hint ? (
-					<p className="text-xs text-muted-foreground mt-1">{hint}</p>
+					<p className="mt-1 text-xs text-muted-foreground">{hint}</p>
 				) : null}
 			</CardContent>
 		</Card>
 	);
 }
 
-export function IntegrationOverviewPage() {
-	const live = isVendorCoreLive();
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [monitoring, setMonitoring] = useState<MonitoringDashboardDto | null>(
-		null
-	);
-	const [connections, setConnections] = useState<ConnectionDto[]>([]);
-	const [jobs, setJobs] = useState<IntakeJobDto[]>([]);
-	const [jobRuns, setJobRuns] = useState<IntakeJobRunDto[]>([]);
-	const [errors, setErrors] = useState<ErrorRecordDto[]>([]);
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
-	const [authed, setAuthed] = useState(false);
+function valuesToBody(values: IntakeJobFormValues): Record<string, unknown> {
+	return {
+		name: values.name,
+		vendor: values.vendor,
+		connection: values.connection,
+		file_type: values.file_type,
+		filename_pattern: values.filename_pattern,
+		schedule_cron: values.schedule_cron,
+		schedule_timezone: values.schedule_timezone,
+		status: values.status,
+	};
+}
 
-	const refresh = useCallback(async () => {
-		if (!live) return;
-		setLoading(true);
-		setError(null);
-		try {
-			const settled = await Promise.allSettled([
-				vendorCoreApi.getMonitoring(),
-				vendorCoreApi.listConnections(),
-				vendorCoreApi.listIntakeJobs(),
-				vendorCoreApi.listIntakeJobRuns(),
-				vendorCoreApi.listErrors({ status: "open" }),
-			]);
+function IntegrationOverviewBody() {
+	const invalidate = useInvalidateVendorCore();
+	const monitoringQ = useVendorCoreMonitoring();
+	const connectionsQ = useVendorCoreConnections();
+	const jobsQ = useVendorCoreJobs();
+	const runsQ = useVendorCoreJobRuns();
+	const errorsQ = useVendorCoreErrors("open");
+	const vendorsQ = useVendorCoreVendors();
+	const createJob = useCreateIntakeJob();
+	const updateJob = useUpdateIntakeJob();
+	const runJob = useRunIntakeJob();
 
-			const [mon, conns, jobPage, runsPage, errPage] = settled;
-			const failures: string[] = [];
+	const [formOpen, setFormOpen] = useState(false);
+	const [editingJob, setEditingJob] = useState<IntakeJobDto | null>(null);
+	const [formError, setFormError] = useState<string | null>(null);
+	const [queuedByJob, setQueuedByJob] = useState<Record<string, string>>({});
 
-			if (mon.status === "fulfilled") {
-				setMonitoring(mon.value);
-			} else {
-				failures.push(`monitoring: ${mon.reason?.message ?? mon.reason}`);
-			}
-			if (conns.status === "fulfilled") {
-				setConnections(conns.value.results ?? []);
-			} else {
-				setConnections([]);
-				failures.push(`connections: ${conns.reason?.message ?? conns.reason}`);
-			}
-			if (jobPage.status === "fulfilled") {
-				setJobs(jobPage.value.results ?? []);
-			} else {
-				setJobs([]);
-				failures.push(
-					`intake-jobs: ${jobPage.reason?.message ?? jobPage.reason}`
-				);
-			}
-			if (runsPage.status === "fulfilled") {
-				setJobRuns(runsPage.value.results ?? []);
-			} else {
-				setJobRuns([]);
-				failures.push(
-					`intake-job-runs: ${runsPage.reason?.message ?? runsPage.reason}`
-				);
-			}
-			if (errPage.status === "fulfilled") {
-				setErrors(errPage.value.results ?? []);
-			} else {
-				setErrors([]);
-				failures.push(`errors: ${errPage.reason?.message ?? errPage.reason}`);
-			}
+	const monitoring = monitoringQ.data ?? null;
+	const connections = connectionsQ.data ?? [];
+	const jobs = jobsQ.data ?? [];
+	const jobRuns = runsQ.data ?? [];
+	const errors = errorsQ.data ?? [];
+	const vendors = vendorsQ.data ?? [];
 
-			const authFailed = settled.some((r) => {
-				if (r.status !== "rejected") return false;
-				const reason = r.reason as { status?: number; message?: string };
-				if (reason?.status === 401 || reason?.status === 403) return true;
-				const message = String(reason?.message ?? reason).toLowerCase();
-				return /401|unauthor|credent/.test(message);
-			});
-			if (authFailed) {
-				setAuthed(false);
-				clearTokens();
-				setError("Authentication required — sign in with a Django user.");
-				return;
-			}
-
-			setAuthed(true);
-			if (failures.length && mon.status !== "fulfilled") {
-				setError(failures.join(" · "));
-			} else if (failures.length) {
-				// Partial success — keep dashboard usable
-				setError(`Some endpoints unavailable: ${failures.join(" · ")}`);
-			}
-		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load vendor-core data";
-			setError(message);
-			if (
-				message.toLowerCase().includes("401") ||
-				message.includes("credent")
-			) {
-				setAuthed(false);
-				clearTokens();
-			}
-		} finally {
-			setLoading(false);
-		}
-	}, [live]);
-
-	useEffect(() => {
-		if (!live) return;
-		if (getStoredAccessToken()) {
-			void refresh();
-		}
-	}, [live, refresh]);
+	const loading =
+		monitoringQ.isLoading ||
+		connectionsQ.isLoading ||
+		jobsQ.isLoading ||
+		runsQ.isLoading ||
+		errorsQ.isLoading;
+	const error =
+		monitoringQ.error?.message ||
+		connectionsQ.error?.message ||
+		jobsQ.error?.message ||
+		runsQ.error?.message ||
+		errorsQ.error?.message ||
+		null;
 
 	const stageTotal = useMemo(() => {
 		if (!monitoring) return 0;
 		return monitoring.inbound_file_stages.reduce((sum, s) => sum + s.count, 0);
 	}, [monitoring]);
 
-	async function onLogin(e: React.FormEvent) {
-		e.preventDefault();
-		setLoading(true);
-		setError(null);
+	function openCreate() {
+		setEditingJob(null);
+		setFormError(null);
+		setFormOpen(true);
+	}
+
+	function openEdit(job: IntakeJobDto) {
+		setEditingJob(job);
+		setFormError(null);
+		setFormOpen(true);
+	}
+
+	async function onSubmitJob(values: IntakeJobFormValues) {
+		setFormError(null);
 		try {
-			await vendorCoreLogin({ username, password });
-			await refresh();
+			const body = valuesToBody(values);
+			if (editingJob) {
+				await updateJob.mutateAsync({ id: editingJob.id, body });
+				toast.success("Intake job updated");
+			} else {
+				await createJob.mutateAsync(body);
+				toast.success("Intake job created");
+			}
+			setFormOpen(false);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Login failed");
-			setAuthed(false);
-		} finally {
-			setLoading(false);
+			setFormError(err instanceof Error ? err.message : "Save failed");
 		}
 	}
 
-	async function onTestConnection(id: string) {
-		setLoading(true);
+	async function onRun(id: string) {
 		try {
-			await vendorCoreApi.testConnection(id);
-			await refresh();
+			const result = await runJob.mutateAsync(id);
+			setQueuedByJob((current) => ({
+				...current,
+				[id]: result.task_id ?? "queued",
+			}));
+			toast.success(`Job queued (${result.task_id ?? "ok"})`);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Connection test failed");
-		} finally {
-			setLoading(false);
+			toast.error(err instanceof Error ? err.message : "Job run failed");
 		}
-	}
-
-	async function onRunJob(id: string) {
-		setLoading(true);
-		try {
-			await vendorCoreApi.runIntakeJob(id);
-			await refresh();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Job run failed");
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	async function onRetryError(id: string) {
-		setLoading(true);
-		try {
-			await vendorCoreApi.retryError(id);
-			await refresh();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Retry failed");
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	if (!live) {
-		return (
-			<div className="space-y-4 p-6">
-				<div>
-					<h1 className="text-2xl font-semibold tracking-tight">
-						Integration & File Intake
-					</h1>
-					<p className="text-muted-foreground mt-1 text-sm">
-						Connect this dashboard to{" "}
-						<code className="rounded bg-muted px-1">
-							vendor-management-core
-						</code>{" "}
-						to visualize connections, intake jobs, monitoring, and errors.
-					</p>
-				</div>
-				<Card>
-					<CardContent className="pt-6 text-sm text-muted-foreground space-y-2">
-						<p>
-							Set in <code>.env</code>:
-						</p>
-						<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
-							{`NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
-# Nest stays mocked; remote vendor-core enables live intake:
-NEXT_PUBLIC_USE_MOCK=false
-NEXT_PUBLIC_DEV_ADMIN=true`}
-						</pre>
-						<p>
-							Restart <code>pnpm dev</code>, open this page, and sign in with a
-							Django JWT user from{" "}
-							<a
-								className="underline"
-								href="https://api.vm.tillahealth.com/admin/"
-								target="_blank"
-								rel="noreferrer"
-							>
-								Django admin
-							</a>
-							.
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	if (!authed && !getStoredAccessToken()) {
-		return (
-			<div className="mx-auto flex max-w-md flex-col gap-4 p-6">
-				<div>
-					<h1 className="text-2xl font-semibold tracking-tight">
-						Vendor Core API
-					</h1>
-					<p className="text-muted-foreground mt-1 text-sm">
-						Sign in to {getVendorCoreBaseUrl()}
-					</p>
-				</div>
-				<form onSubmit={onLogin} className="space-y-4">
-					<Input
-						placeholder="Username"
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						autoComplete="username"
-						required
-					/>
-					<Input
-						type="password"
-						placeholder="Password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						autoComplete="current-password"
-						required
-					/>
-					{error ? <p className="text-sm text-destructive">{error}</p> : null}
-					<Button type="submit" disabled={loading} className="w-full">
-						{loading ? (
-							<>
-								<Loader2 className="animate-spin" /> Connecting…
-							</>
-						) : (
-							"Connect"
-						)}
-					</Button>
-				</form>
-			</div>
-		);
 	}
 
 	return (
-		<div className="space-y-6 p-6">
-			<div className="flex flex-wrap items-start justify-between gap-3">
-				<div>
-					<h1 className="text-2xl font-semibold tracking-tight">
-						Integration & File Intake
-					</h1>
-					<p className="text-muted-foreground mt-1 text-sm">
-						Live view of {getVendorCoreBaseUrl()}
-					</p>
-				</div>
-				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => void refresh()}
-						disabled={loading}
-					>
-						<RefreshCw className={cn(loading && "animate-spin")} />
-						Refresh
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => {
-							clearTokens();
-							setAuthed(false);
-							setMonitoring(null);
-						}}
-					>
-						Disconnect
-					</Button>
-				</div>
-			</div>
-
-			{error ? (
-				<div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-					{error}
-				</div>
+		<VendorCoreLiveChrome
+			title="Integration & File Intake"
+			subtitle="Live vendor-core connections, intake jobs, and processing"
+			onRefresh={() => void invalidate()}
+			refreshing={loading}
+		>
+			{error ? <VendorCoreErrorBanner message={error} /> : null}
+			{loading && !jobs.length && !connections.length ? (
+				<VendorCoreLoadingRow />
 			) : null}
 
 			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -434,6 +259,7 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 								{jobRuns.slice(0, 8).map((run) => {
 									const jobName =
 										jobs.find((j) => j.id === run.job_id)?.name ||
+										(typeof run.job === "object" ? run.job.name : undefined) ||
 										run.job_id.slice(0, 8);
 									return (
 										<TableRow key={run.id}>
@@ -472,7 +298,6 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 								<TableHead>Method</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Health</TableHead>
-								<TableHead className="text-right">Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -491,23 +316,12 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 											</span>
 										) : null}
 									</TableCell>
-									<TableCell className="text-right">
-										<Button
-											size="sm"
-											variant="outline"
-											onClick={() => void onTestConnection(c.id)}
-											disabled={loading}
-										>
-											<CheckCircle2 />
-											Test
-										</Button>
-									</TableCell>
 								</TableRow>
 							))}
 							{!connections.length ? (
 								<TableRow>
-									<TableCell colSpan={5} className="text-muted-foreground">
-										No connections — run <code>seed_phase1</code> on the API.
+									<TableCell colSpan={4} className="text-muted-foreground">
+										No connections configured.
 									</TableCell>
 								</TableRow>
 							) : null}
@@ -517,8 +331,12 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 			</Card>
 
 			<Card>
-				<CardHeader>
+				<CardHeader className="flex flex-row items-center justify-between space-y-0">
 					<CardTitle className="text-base">Intake jobs</CardTitle>
+					<Button size="sm" onClick={openCreate}>
+						<Plus />
+						Create job
+					</Button>
 				</CardHeader>
 				<CardContent className="overflow-x-auto">
 					<Table>
@@ -543,17 +361,36 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 										</span>
 									</TableCell>
 									<TableCell>
-										<StatusBadge status={job.status} />
+										<div className="flex flex-col gap-1">
+											<StatusBadge status={job.status} />
+											{queuedByJob[job.id] ? (
+												<span className="text-[11px] text-muted-foreground">
+													Queued {queuedByJob[job.id]?.slice(0, 8)}
+												</span>
+											) : null}
+										</div>
 									</TableCell>
 									<TableCell className="text-right">
-										<Button
-											size="sm"
-											onClick={() => void onRunJob(job.id)}
-											disabled={loading}
-										>
-											<Play />
-											Run
-										</Button>
+										<div className="flex justify-end gap-2">
+											<Button
+												size="sm"
+												variant="outline"
+												onClick={() => openEdit(job)}
+											>
+												<Pencil />
+												Edit
+											</Button>
+											<Button
+												size="sm"
+												onClick={() => void onRun(job.id)}
+												disabled={
+													runJob.isPending && runJob.variables === job.id
+												}
+											>
+												<Play />
+												Run
+											</Button>
+										</div>
 									</TableCell>
 								</TableRow>
 							))}
@@ -583,7 +420,6 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 								<TableHead>Category</TableHead>
 								<TableHead>Code</TableHead>
 								<TableHead>Message</TableHead>
-								<TableHead className="text-right">Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -596,25 +432,11 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 									<TableCell className="max-w-md truncate text-sm">
 										{err.business_explanation || err.technical_message}
 									</TableCell>
-									<TableCell className="text-right">
-										{err.retry_eligible ? (
-											<Button
-												size="sm"
-												variant="outline"
-												onClick={() => void onRetryError(err.id)}
-												disabled={loading}
-											>
-												Retry
-											</Button>
-										) : (
-											<span className="text-xs text-muted-foreground">—</span>
-										)}
-									</TableCell>
 								</TableRow>
 							))}
 							{!errors.length ? (
 								<TableRow>
-									<TableCell colSpan={4} className="text-muted-foreground">
+									<TableCell colSpan={3} className="text-muted-foreground">
 										No open errors.
 									</TableCell>
 								</TableRow>
@@ -623,6 +445,39 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 					</Table>
 				</CardContent>
 			</Card>
-		</div>
+
+			<IntakeJobFormDialog
+				open={formOpen}
+				onOpenChange={setFormOpen}
+				job={editingJob}
+				vendors={vendors}
+				connections={connections}
+				saving={createJob.isPending || updateJob.isPending}
+				error={formError}
+				onSubmit={onSubmitJob}
+			/>
+		</VendorCoreLiveChrome>
+	);
+}
+
+export function IntegrationOverviewPage() {
+	if (!isVendorCoreLive()) {
+		return (
+			<div className="space-y-4 p-6">
+				<h1 className="text-2xl font-semibold tracking-tight">
+					Integration & File Intake
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					Set <code>NEXT_PUBLIC_USE_MOCK=false</code> to load live vendor-core
+					data.
+				</p>
+			</div>
+		);
+	}
+
+	return (
+		<VendorCoreGate title="Integration & File Intake">
+			<IntegrationOverviewBody />
+		</VendorCoreGate>
 	);
 }

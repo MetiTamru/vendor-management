@@ -40,9 +40,15 @@ export function ClaimPageHeader({
 	);
 }
 
-export function ClaimKpiGrid({ items }: { items: ClaimKpiItem[] }) {
+export function ClaimKpiGrid({
+	items,
+	columns,
+}: {
+	items: ClaimKpiItem[];
+	columns?: 2 | 3 | 4 | 5 | 6 | 7;
+}) {
 	return (
-		<SummaryCardsGrid>
+		<SummaryCardsGrid columns={columns ?? (items.length <= 5 ? 5 : 6)}>
 			{items.map((k) => (
 				<SummaryCard
 					key={k.label}

@@ -1,6 +1,6 @@
 # Tilla VMS
 
-Admin-only enterprise **Vendor Management System**. Data and auth run on **mocks by default** — no NestJS backend required.
+Admin-only enterprise **Vendor Management System**. Live vendor-core data is the default (`NEXT_PUBLIC_USE_MOCK=false`). Fixture files stay in source for local demo mode.
 
 Open [http://localhost:3006/en](http://localhost:3006/en) for the dashboard.
 
@@ -19,6 +19,11 @@ pnpm dev -p 3006
 | `NEXT_PUBLIC_USE_MOCK` | `true` = fixtures on; `false` = live APIs (fixtures stay in source) |
 
 ```env
+# Live vendor-core (default)
+NEXT_PUBLIC_USE_MOCK=false
+NEXT_PUBLIC_DEV_ADMIN=true
+NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
+
 # Demo / local UI without backends
 NEXT_PUBLIC_USE_MOCK=true
 
@@ -26,10 +31,6 @@ NEXT_PUBLIC_USE_MOCK=true
 NEXT_PUBLIC_USE_MOCK=false
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_VENDOR_CORE_API_URL=http://localhost:8010
-
-# Staging vendor-core (Nest can stay mocked only if USE_MOCK=true)
-# Admin UI: https://api.vm.tillahealth.com/admin/
-NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
 ```
 
 Toggle mocks without deleting fixture files — set `NEXT_PUBLIC_USE_MOCK` and restart `pnpm dev`.

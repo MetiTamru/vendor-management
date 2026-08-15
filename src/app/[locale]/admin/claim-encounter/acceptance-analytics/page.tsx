@@ -1,5 +1,5 @@
-import { AcceptanceAnalyticsPage } from "@/features/admin/features/claim-encounter/pages/AcceptanceAnalyticsPage";
+import { AcceptanceOverviewPage } from "@/features/admin/features/claim-encounter/pages/AcceptanceSpecializedPages";
 
 export default function Page() {
-	return <AcceptanceAnalyticsPage />;
+	return <AcceptanceOverviewPage />;
 }

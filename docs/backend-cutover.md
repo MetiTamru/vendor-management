@@ -23,14 +23,15 @@ Django admin UI: [`/admin/`](https://api.vm.tillahealth.com/admin/) — do **not
 NestJS (`/api/auth/*`, `/api/admin/*`) is **not** on this host.
 
 ```env
-NEXT_PUBLIC_USE_MOCK=true
+NEXT_PUBLIC_USE_MOCK=false
+NEXT_PUBLIC_DEV_ADMIN=true
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
 ```
 
-A remote `NEXT_PUBLIC_VENDOR_CORE_API_URL` enables Integration Intake **and** the
-integration nav screens (Vendors, File monitoring/history, Processing status,
-Schedules, Errors, Audit) against Django while Nest/VMS stay mocked.
+This is the current dashboard default. Fixture files stay in source but are inactive.
+A remote `NEXT_PUBLIC_VENDOR_CORE_API_URL` powers Integration Intake, Processing Logs,
+Schedules, and the other vendor-core screens against Django. NestJS is not required.
 
 Live screens prompt for a Django JWT user (same credentials as Django admin).
 Browser calls go through the same-origin proxy at `/api/vendor-core/*` (avoids CORS).

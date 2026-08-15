@@ -18,6 +18,7 @@ import {
 	FileInput,
 	FileOutput,
 	FileSearch,
+	FileText,
 	FileWarning,
 	Files,
 	FolderKanban,
@@ -74,6 +75,7 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
 	"Executive Analytics": LineChart,
 	Vendors: Users,
+	Contracts: FileText,
 	Members: UserRound,
 	Providers: Stethoscope,
 	"Integration Intake": Cable,
@@ -137,6 +139,34 @@ function isActivePath(pathname: string, href: string) {
 	if (href === "/" || href === "/admin/claim-encounter") {
 		return pathname === href;
 	}
+	// Contracts overview: exact match so detail routes don't highlight Overview
+	if (href === "/admin/contracts") {
+		return pathname === "/admin/contracts";
+	}
+	// Acceptance overview is exact so child analytics pages highlight only themselves.
+	if (href === "/admin/claim-encounter/acceptance-analytics") {
+		return pathname === href;
+	}
+	// Contract Details hub + individual contract record pages
+	if (href === "/admin/contracts/details") {
+		if (
+			pathname === "/admin/contracts/details" ||
+			pathname.startsWith("/admin/contracts/details/")
+		) {
+			return true;
+		}
+		const match = pathname.match(/^\/admin\/contracts\/([^/]+)\/?$/);
+		if (!match?.[1]) return false;
+		const staticSegments = new Set([
+			"details",
+			"create",
+			"effective-dates",
+			"rate-fee-schedule",
+			"sla-terms",
+			"documents",
+		]);
+		return !staticSegments.has(match[1]);
+	}
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -153,12 +183,19 @@ function navLabel(
 }
 
 function isNavItemActive(pathname: string, item: SidebarNavItem) {
-	if (item.href && isActivePath(pathname, item.href)) return true;
-	return (
-		item.items?.some(
-			(child) => child.href && isActivePath(pathname, child.href)
-		) ?? false
-	);
+	if (item.items?.length) {
+		const childActive = item.items.some((child) =>
+			isNavItemActive(pathname, child)
+		);
+		if (childActive) return true;
+		// Keep parent group active for nested routes (e.g. /admin/contracts/create)
+		if (item.href) {
+			return pathname === item.href || pathname.startsWith(`${item.href}/`);
+		}
+		return false;
+	}
+	if (!item.href) return false;
+	return isActivePath(pathname, item.href);
 }
 
 function SidebarNavEntry({

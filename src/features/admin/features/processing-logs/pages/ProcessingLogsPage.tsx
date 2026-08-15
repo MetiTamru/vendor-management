@@ -48,8 +48,9 @@ import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { inboundFileToRun } from "@/features/admin/features/dashboard/live-file-runs";
 import {
 	type ProcessingLogRow,
+	enrichLiveFileRun,
 	processingEventsToLogs,
-	validationResultsToLogs,
+	validationResultsToIssues,
 } from "@/features/admin/features/file-management/live-processing";
 import {
 	FILE_RUNS,
@@ -403,17 +404,20 @@ function ProcessingLogsBody() {
 	const runIdFromPath = typeof params?.runId === "string" ? params.runId : null;
 	const runFilter = runIdFromPath ?? searchParams.get("run");
 	const filesQ = useVendorCoreInboundFiles();
-	const fileQ = useVendorCoreInboundFile(useLive && runFilter ? runFilter : "");
-	const eventsQ = useVendorCoreInboundFileEvents(
-		useLive && runFilter ? runFilter : ""
-	);
-	const validationQ = useVendorCoreValidationResults(
-		useLive && runFilter ? { inbound_file_id: runFilter } : undefined
-	);
 	const vendorsQ = useVendorCoreVendors();
 	const nameById = useMemo(
 		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
 		[vendorsQ.data]
+	);
+	const [pickedFileId, setPickedFileId] = useState<string | null>(null);
+	const selectedFileId = useLive
+		? (runFilter ?? pickedFileId ?? filesQ.data?.[0]?.id ?? "")
+		: "";
+	const fileQ = useVendorCoreInboundFile(selectedFileId);
+	const eventsQ = useVendorCoreInboundFileEvents(selectedFileId);
+	const validationQ = useVendorCoreValidationResults(
+		selectedFileId ? { inbound_file_id: selectedFileId } : undefined,
+		Boolean(selectedFileId)
 	);
 
 	const programRuns = FILE_RUNS.filter((r) => r.program === programFilter);
@@ -425,13 +429,23 @@ function ProcessingLogsBody() {
 
 	const liveRun = useMemo(() => {
 		if (!useLive) return undefined;
-		const id = runFilter ?? filesQ.data?.[0]?.id;
+		const id = selectedFileId;
 		if (!id) return undefined;
 		const file =
 			fileQ.data ?? filesQ.data?.find((candidate) => candidate.id === id);
 		if (!file) return undefined;
-		return inboundFileToRun(file, nameById);
-	}, [useLive, runFilter, fileQ.data, filesQ.data, nameById]);
+		return enrichLiveFileRun(
+			inboundFileToRun(file, nameById),
+			validationQ.data ?? []
+		);
+	}, [
+		useLive,
+		selectedFileId,
+		fileQ.data,
+		filesQ.data,
+		nameById,
+		validationQ.data,
+	]);
 
 	const run = useLive ? liveRun : mockRun;
 
@@ -448,17 +462,19 @@ function ProcessingLogsBody() {
 	const logDataSource = useMemo(() => {
 		if (!useLive) return "mock" as const;
 		if ((eventsQ.data?.length ?? 0) > 0) return "events" as const;
-		if ((validationQ.data?.length ?? 0) > 0) return "validation" as const;
 		return "empty" as const;
-	}, [useLive, eventsQ.data, validationQ.data]);
+	}, [useLive, eventsQ.data]);
 
 	const allLogs = useMemo(() => {
 		if (!run) return [];
 		if (!useLive) return logsForRun(run);
-		const eventLogs = processingEventsToLogs(eventsQ.data ?? []);
-		if (eventLogs.length > 0) return eventLogs;
-		return validationResultsToLogs(validationQ.data ?? []);
-	}, [run, useLive, eventsQ.data, validationQ.data]);
+		return processingEventsToLogs(eventsQ.data ?? []);
+	}, [run, useLive, eventsQ.data]);
+
+	const validationIssues = useMemo(
+		() => (useLive ? validationResultsToIssues(validationQ.data ?? []) : []),
+		[useLive, validationQ.data]
+	);
 
 	const [reviewed, setReviewed] = useState(false);
 	const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
@@ -479,18 +495,13 @@ function ProcessingLogsBody() {
 		if (!run) return;
 		setReviewed(run.reviewed);
 		const logs = useLive
-			? (() => {
-					const eventLogs = processingEventsToLogs(eventsQ.data ?? []);
-					return eventLogs.length > 0
-						? eventLogs
-						: validationResultsToLogs(validationQ.data ?? []);
-				})()
+			? processingEventsToLogs(eventsQ.data ?? [])
 			: logsForRun(run);
 		setSelectedLogId(
 			logs.find((l) => l.level === "error")?.id ?? logs[0]?.id ?? null
 		);
 		setPage(1);
-	}, [run, useLive, eventsQ.data, validationQ.data]);
+	}, [run, useLive, eventsQ.data]);
 
 	const filtered = useMemo(() => {
 		if (!run) return [];
@@ -544,9 +555,8 @@ function ProcessingLogsBody() {
 	if (
 		useLive &&
 		(filesQ.isLoading ||
-			(runFilter && fileQ.isLoading) ||
-			(runFilter && eventsQ.isLoading) ||
-			(runFilter && validationQ.isLoading)) &&
+			(selectedFileId && fileQ.isLoading) ||
+			(selectedFileId && eventsQ.isLoading)) &&
 		!run
 	) {
 		return (
@@ -710,6 +720,29 @@ function ProcessingLogsBody() {
 
 			{/* Metadata summary */}
 			<div className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
+				{useLive && (filesQ.data?.length ?? 0) > 0 ? (
+					<div className="mb-4 max-w-md space-y-1">
+						<Label className="text-[11px] font-medium text-muted-foreground">
+							Inbound file
+						</Label>
+						<Select
+							value={selectedFileId}
+							onValueChange={setPickedFileId}
+							disabled={Boolean(runIdFromPath)}
+						>
+							<SelectTrigger className="h-9 border-border/60 bg-card text-sm">
+								<SelectValue placeholder="Select an inbound file" />
+							</SelectTrigger>
+							<SelectContent>
+								{(filesQ.data ?? []).map((file) => (
+									<SelectItem key={file.id} value={file.id}>
+										{file.original_filename} · {file.stage}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				) : null}
 				<div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
 					<MetaField label="Vendor" value={run.vendor} />
 					<MetaField label="Account" value={run.account} />
@@ -772,28 +805,16 @@ function ProcessingLogsBody() {
 				</div>
 			) : null}
 
-			{useLive &&
-			!eventsQ.isLoading &&
-			!validationQ.isLoading &&
-			logDataSource === "validation" ? (
-				<div className="rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-					No processing events were returned for this file. Showing validation
-					results from the API instead.
+			{useLive && validationQ.error ? (
+				<div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+					Could not load validation results: {validationQ.error.message}
 				</div>
 			) : null}
 
-			{useLive &&
-			!eventsQ.isLoading &&
-			!validationQ.isLoading &&
-			logDataSource === "empty" ? (
+			{useLive && !eventsQ.isLoading && logDataSource === "empty" ? (
 				<div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-					No processing events or validation results exist for this inbound file
-					yet. Run{" "}
-					<code className="rounded bg-muted px-1 py-0.5 text-xs">
-						pnpm seed:inbound-processing
-					</code>{" "}
-					(after vendor-core seed endpoints are deployed), or wait for the
-					intake pipeline to record events.
+					No processing events exist for this inbound file yet. Validation
+					issues, if any, are listed separately.
 				</div>
 			) : null}
 
@@ -976,14 +997,14 @@ function ProcessingLogsBody() {
 											colSpan={5}
 											className="h-24 text-center text-sm text-muted-foreground"
 										>
-											{useLive && (eventsQ.isLoading || validationQ.isLoading)
+											{useLive && eventsQ.isLoading
 												? "Loading log entries from vendor-core…"
 												: useLive &&
 													  logDataSource === "empty" &&
 													  !query &&
 													  level === "all" &&
 													  section === "all"
-													? "No log entries returned from vendor-core for this file."
+													? "No processing events returned from vendor-core for this file."
 													: "No log entries match the current filters."}
 										</TableCell>
 									</TableRow>
@@ -1065,6 +1086,54 @@ function ProcessingLogsBody() {
 							/>
 						</CardContent>
 					</Card>
+
+					{useLive ? (
+						<Card className="gap-0 border-border/60 py-0 shadow-sm">
+							<CardHeader className="border-b border-border/40 px-4 py-3">
+								<CardTitle className="text-sm font-semibold text-primary">
+									Validation issues
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-0 px-4 py-2">
+								<DetailRow
+									label="Total"
+									value={validationQ.isLoading ? "…" : validationIssues.length}
+								/>
+								<DetailRow
+									label="Errors"
+									value={
+										validationIssues.filter(
+											(issue) => issue.severity === "error"
+										).length
+									}
+								/>
+								<DetailRow
+									label="Warnings"
+									value={
+										validationIssues.filter(
+											(issue) => issue.severity === "warning"
+										).length
+									}
+								/>
+								{validationIssues.slice(0, 4).map((issue) => (
+									<DetailRow
+										key={issue.id}
+										label={issue.code}
+										value={
+											<span className="line-clamp-2 text-left">
+												{issue.message}
+											</span>
+										}
+									/>
+								))}
+								{!validationQ.isLoading && validationIssues.length === 0 ? (
+									<p className="py-3 text-xs text-muted-foreground">
+										No validation results for this file.
+									</p>
+								) : null}
+							</CardContent>
+						</Card>
+					) : null}
 
 					<Card className="gap-0 border-border/60 py-0 shadow-sm">
 						<CardHeader className="border-b border-border/40 px-4 py-3">
@@ -1235,7 +1304,7 @@ function ProcessingLogsBody() {
 						className="h-9 gap-1.5 px-4"
 						disabled={reviewed}
 						onClick={() => {
-							markFileRunReviewed(run.id, true);
+							if (!useLive) markFileRunReviewed(run.id, true);
 							setReviewed(true);
 							toast.success("File run marked as reviewed.");
 						}}

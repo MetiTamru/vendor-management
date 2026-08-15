@@ -70,7 +70,7 @@ export function SummaryCard({
 export type SummaryCardsGridProps = {
 	children: ReactNode;
 	/** Max columns at xl breakpoint. Defaults to 6. */
-	columns?: 2 | 3 | 4 | 5 | 6;
+	columns?: 2 | 3 | 4 | 5 | 6 | 7;
 	className?: string;
 };
 
@@ -83,6 +83,7 @@ const GRID_COLS: Record<
 	4: "sm:grid-cols-2 lg:grid-cols-4",
 	5: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
 	6: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
+	7: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7",
 };
 
 export function SummaryCardsGrid({

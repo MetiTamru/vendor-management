@@ -2,10 +2,22 @@
 
 import { useMemo, useState } from "react";
 
-import { Plus } from "lucide-react";
+import {
+	AlertTriangle,
+	Banknote,
+	CheckCircle2,
+	Clock3,
+	FileText,
+	Plus,
+	ScrollText,
+	Search,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { SectionCard, TableShell } from "@/components/admin/SectionCard";
+import { SummaryCard, SummaryCardsGrid } from "@/components/admin/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -27,14 +39,24 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { useContractsList } from "@/features/shared/vms/queries";
+import type { ContractStatus } from "@/features/shared/vms/types";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+const STATUS_OPTIONS: ContractStatus[] = [
+	"draft",
+	"pending_approval",
+	"active",
+	"expired",
+	"terminated",
+];
 
 export function ContractsPage() {
 	const { contracts, isLoading, error } = useContractsList();
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
 	const filtered = useMemo(() => {
 		const query = search.toLowerCase().trim();
 		return contracts.filter(
@@ -43,9 +65,70 @@ export function ContractsPage() {
 				(!query ||
 					contract.number.toLowerCase().includes(query) ||
 					contract.title.toLowerCase().includes(query) ||
-					contract.vendorName.toLowerCase().includes(query))
+					contract.vendorName.toLowerCase().includes(query) ||
+					(contract.contractType ?? "").toLowerCase().includes(query))
 		);
 	}, [contracts, search, status]);
+
+	const summary = useMemo(() => {
+		const active = filtered.filter((c) => c.status === "active");
+		const pending = filtered.filter((c) => c.status === "pending_approval");
+		const expiringSoon = filtered.filter((c) => {
+			if (c.status !== "active") return false;
+			const end = new Date(c.endDate).getTime();
+			const in90 = Date.now() + 90 * 24 * 60 * 60 * 1000;
+			return end <= in90;
+		});
+		const totalValue = active.reduce((sum, c) => sum + c.value, 0);
+		const docsCount = filtered.reduce(
+			(sum, c) => sum + (c.documents?.length ?? 0),
+			0
+		);
+		const slaCoverage = filtered.filter(
+			(c) => (c.slaMetrics?.length ?? 0) > 0 || Boolean(c.slaSummary)
+		).length;
+		return {
+			total: filtered.length,
+			active: active.length,
+			pending: pending.length,
+			expiringSoon: expiringSoon.length,
+			totalValue,
+			docsCount,
+			slaCoverage,
+		};
+	}, [filtered]);
+
+	const renewalsDue = useMemo(
+		() =>
+			filtered
+				.filter((c) => {
+					if (c.status !== "active") return false;
+					const end = new Date(c.endDate).getTime();
+					return end <= Date.now() + 120 * 24 * 60 * 60 * 1000;
+				})
+				.sort(
+					(a, b) =>
+						new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+				)
+				.slice(0, 5),
+		[filtered]
+	);
+
+	const openApprovals = useMemo(
+		() => filtered.filter((c) => c.status === "pending_approval").slice(0, 5),
+		[filtered]
+	);
+
+	const recentActivity = useMemo(
+		() =>
+			[...filtered]
+				.sort(
+					(a, b) =>
+						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+				)
+				.slice(0, 6),
+		[filtered]
+	);
 
 	const allSelected =
 		filtered.length > 0 && filtered.every((row) => selectedIds.has(row.id));
@@ -65,40 +148,104 @@ export function ContractsPage() {
 	}
 
 	return (
-		<div className="container space-y-6 py-8">
-			<div className="flex flex-wrap items-start justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Contracts</h1>
-					<p className="text-sm text-muted-foreground">
-						Manage agreements, renewals, and approval status.
-					</p>
-				</div>
-				<Button asChild>
-					<Link href="/admin/contracts/create">
-						<Plus className="mr-2 size-4" /> Create contract
-					</Link>
-				</Button>
-			</div>
-			<div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card shadow-sm p-4">
-				<Input
-					className="max-w-sm"
-					placeholder="Search number, title, or vendor"
-					value={search}
-					onChange={(event) => setSearch(event.target.value)}
+		<div className="space-y-4">
+			<PageHeader
+				eyebrow="Contracts"
+				title="Contracts Overview"
+				description="Portfolio-level agreement health, renewals, approvals, and activity."
+				actions={
+					<Button asChild>
+						<Link href="/admin/contracts/create">
+							<Plus className="mr-2 size-4" />
+							Create contract
+						</Link>
+					</Button>
+				}
+			/>
+
+			<SummaryCardsGrid columns={7}>
+				<SummaryCard
+					label="Total contracts"
+					value={summary.total}
+					icon={ScrollText}
+					tone="text-primary bg-primary/10"
+					hint="Matching current filters"
 				/>
+				<SummaryCard
+					label="Active"
+					value={summary.active}
+					icon={CheckCircle2}
+					tone="text-emerald-700 bg-emerald-500/10"
+					hint="In force agreements"
+				/>
+				<SummaryCard
+					label="Pending approval"
+					value={summary.pending}
+					icon={Clock3}
+					tone="text-amber-700 bg-amber-500/10"
+					hint="Awaiting review"
+				/>
+				<SummaryCard
+					label="Expiring ≤ 90 days"
+					value={summary.expiringSoon}
+					icon={AlertTriangle}
+					tone="text-orange-700 bg-orange-500/10"
+					hint="Active terms ending soon"
+				/>
+				<SummaryCard
+					label="Active contract value"
+					value={formatMoney(summary.totalValue, "USD")}
+					icon={Banknote}
+					tone="text-sky-700 bg-sky-500/10"
+					hint="Sum of active agreements"
+				/>
+				<SummaryCard
+					label="Documents on file"
+					value={summary.docsCount}
+					icon={FileText}
+					tone="text-rose-700 bg-rose-500/10"
+					hint={
+						<Link
+							href="/admin/contracts/documents"
+							className="text-primary hover:underline"
+						>
+							View document inventory
+						</Link>
+					}
+				/>
+				<SummaryCard
+					label="With SLA terms"
+					value={summary.slaCoverage}
+					icon={ScrollText}
+					tone="text-violet-700 bg-violet-500/10"
+					hint={
+						<Link
+							href="/admin/contracts/sla-terms"
+							className="text-primary hover:underline"
+						>
+							View SLA inventory
+						</Link>
+					}
+				/>
+			</SummaryCardsGrid>
+
+			<div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+				<div className="relative min-w-[200px] max-w-sm flex-1">
+					<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						className="pl-9"
+						placeholder="Search number, title, vendor, or type"
+						value={search}
+						onChange={(event) => setSearch(event.target.value)}
+					/>
+				</div>
 				<Select value={status} onValueChange={setStatus}>
 					<SelectTrigger className="w-48">
 						<SelectValue placeholder="All statuses" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All statuses</SelectItem>
-						{[
-							"draft",
-							"pending_approval",
-							"active",
-							"expired",
-							"terminated",
-						].map((value) => (
+						{STATUS_OPTIONS.map((value) => (
 							<SelectItem key={value} value={value}>
 								{value.replaceAll("_", " ")}
 							</SelectItem>
@@ -106,6 +253,7 @@ export function ContractsPage() {
 					</SelectContent>
 				</Select>
 			</div>
+
 			<BulkActionsToolbar
 				selectedCount={selectedIds.size}
 				entityLabel="contract"
@@ -123,12 +271,13 @@ export function ContractsPage() {
 					setSelectedIds(new Set());
 				}}
 			/>
+
 			{isLoading ? (
-				<Skeleton className="h-72 w-full" />
+				<Skeleton className="h-72 w-full rounded-xl" />
 			) : error ? (
 				<p className="text-sm text-destructive">Unable to load contracts.</p>
 			) : (
-				<div className="rounded-xl border border-border bg-card shadow-sm">
+				<TableShell>
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -141,9 +290,12 @@ export function ContractsPage() {
 								</TableHead>
 								<TableHead>Contract</TableHead>
 								<TableHead>Vendor</TableHead>
+								<TableHead>Type</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Value</TableHead>
 								<TableHead>Term</TableHead>
+								<TableHead>Docs</TableHead>
+								<TableHead className="pr-4 text-right">Action</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -159,7 +311,7 @@ export function ContractsPage() {
 									<TableCell>
 										<Link
 											href={`/admin/contracts/${contract.id}`}
-											className="font-medium hover:underline"
+											className="font-medium text-foreground hover:underline"
 										>
 											{contract.number}
 										</Link>
@@ -167,23 +319,43 @@ export function ContractsPage() {
 											{contract.title}
 										</div>
 									</TableCell>
-									<TableCell>{contract.vendorName}</TableCell>
+									<TableCell>
+										<div className="text-sm">{contract.vendorName}</div>
+										{contract.vendorType ? (
+											<div className="text-xs text-muted-foreground">
+												{contract.vendorType}
+											</div>
+										) : null}
+									</TableCell>
+									<TableCell className="text-sm text-muted-foreground">
+										{contract.contractType ?? "—"}
+									</TableCell>
 									<TableCell>
 										<StatusBadge status={contract.status} />
 									</TableCell>
-									<TableCell>
+									<TableCell className="tabular-nums">
 										{formatMoney(contract.value, contract.currency)}
 									</TableCell>
-									<TableCell>
+									<TableCell className="text-sm text-muted-foreground">
 										{formatDate(contract.startDate)} –{" "}
 										{formatDate(contract.endDate)}
+									</TableCell>
+									<TableCell className="tabular-nums text-muted-foreground">
+										{contract.documents?.length ?? 0}
+									</TableCell>
+									<TableCell className="pr-4 text-right">
+										<Button asChild variant="outline" size="sm" className="h-8">
+											<Link href={`/admin/contracts/${contract.id}`}>
+												View detail
+											</Link>
+										</Button>
 									</TableCell>
 								</TableRow>
 							))}
 							{filtered.length === 0 && (
 								<TableRow>
 									<TableCell
-										colSpan={6}
+										colSpan={9}
 										className="h-24 text-center text-muted-foreground"
 									>
 										No contracts found.
@@ -192,8 +364,128 @@ export function ContractsPage() {
 							)}
 						</TableBody>
 					</Table>
-				</div>
+				</TableShell>
 			)}
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<SectionCard
+					title="Renewals due"
+					description="Active contracts ending within 120 days."
+					action={
+						<Link
+							href="/admin/contracts/effective-dates"
+							className="text-xs font-semibold text-primary hover:underline"
+						>
+							View dates
+						</Link>
+					}
+				>
+					{renewalsDue.length === 0 ? (
+						<p className="text-sm text-muted-foreground">
+							No renewals in the next 120 days.
+						</p>
+					) : (
+						<ul className="space-y-2.5">
+							{renewalsDue.map((c) => (
+								<li
+									key={c.id}
+									className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
+								>
+									<div className="min-w-0">
+										<Link
+											href={`/admin/contracts/${c.id}?tab=effective-dates`}
+											className="text-sm font-medium hover:underline"
+										>
+											{c.number}
+										</Link>
+										<p className="truncate text-xs text-muted-foreground">
+											{c.vendorName}
+										</p>
+									</div>
+									<span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+										{formatDate(c.endDate)}
+									</span>
+								</li>
+							))}
+						</ul>
+					)}
+				</SectionCard>
+
+				<SectionCard
+					title="Open approvals"
+					description="Contracts waiting for activation."
+				>
+					{openApprovals.length === 0 ? (
+						<p className="text-sm text-muted-foreground">
+							No contracts pending approval.
+						</p>
+					) : (
+						<ul className="space-y-2.5">
+							{openApprovals.map((c) => (
+								<li
+									key={c.id}
+									className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
+								>
+									<div className="min-w-0">
+										<Link
+											href={`/admin/contracts/${c.id}`}
+											className="text-sm font-medium hover:underline"
+										>
+											{c.number}
+										</Link>
+										<p className="truncate text-xs text-muted-foreground">
+											{c.title}
+										</p>
+									</div>
+									<StatusBadge status={c.status} />
+								</li>
+							))}
+						</ul>
+					)}
+				</SectionCard>
+
+				<SectionCard
+					title="Recent activity"
+					description="Latest contract updates."
+					action={
+						<Link
+							href="/admin/contracts/rate-fee-schedule"
+							className="text-xs font-semibold text-primary hover:underline"
+						>
+							Fee schedules
+						</Link>
+					}
+				>
+					<ul className="space-y-2.5">
+						{recentActivity.map((c) => (
+							<li
+								key={c.id}
+								className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
+							>
+								<div className="min-w-0">
+									<Link
+										href={`/admin/contracts/${c.id}`}
+										className="text-sm font-medium hover:underline"
+									>
+										{c.number}
+									</Link>
+									<p className="truncate text-xs text-muted-foreground">
+										{c.vendorName} · {c.contractType ?? "Agreement"}
+									</p>
+								</div>
+								<span className="shrink-0 text-[11px] text-muted-foreground">
+									{formatDate(c.updatedAt)}
+								</span>
+							</li>
+						))}
+						{recentActivity.length === 0 && (
+							<p className="text-sm text-muted-foreground">
+								No recent activity.
+							</p>
+						)}
+					</ul>
+				</SectionCard>
+			</div>
 		</div>
 	);
 }

@@ -60,6 +60,31 @@ export function ContractCreatePage() {
 				startDate: form.startDate,
 				endDate: form.endDate,
 				slaSummary: form.slaSummary || null,
+				contractType: "Standard",
+				paymentModel: "Contracted Rate",
+				paymentTerms: "Net 30",
+				vendorType: "Provider",
+				terms: [
+					{
+						id: "term-initial",
+						label: "Initial Term",
+						startDate: form.startDate,
+						endDate: form.endDate,
+						status: "upcoming",
+					},
+				],
+				rateSchedule: [],
+				slaMetrics: form.slaSummary
+					? [
+							{
+								id: "sla-summary",
+								name: "Agreed SLA",
+								target: form.slaSummary,
+								tone: "sky",
+							},
+						]
+					: [],
+				documents: [],
 			});
 			toast.success("Contract created.");
 			router.push(`/admin/contracts/${contract.id}`);

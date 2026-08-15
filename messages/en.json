@@ -57,6 +57,13 @@
 		"nav": {
 			"dashboard": "Dashboard",
 			"vendors": "Vendors",
+			"contracts": "Contracts",
+			"overview": "Overview",
+			"contractdetails": "Contract Details",
+			"effectivedates": "Effective Dates",
+			"ratefeeschedule": "Rate / Fee Schedule",
+			"slaterms": "SLA Terms",
+			"documents": "Documents",
 			"integrationintake": "Integration Intake",
 			"members": "Members",
 			"providers": "Providers",

@@ -138,6 +138,40 @@ export type ContractStatus =
 	| "expired"
 	| "terminated";
 
+export type ContractTermStatus = "completed" | "current" | "upcoming";
+
+export type ContractTermPeriod = {
+	id: string;
+	label: string;
+	startDate: string;
+	endDate: string;
+	status: ContractTermStatus;
+};
+
+export type ContractRateLine = {
+	id: string;
+	serviceCode: string;
+	description: string;
+	contractedRate: number;
+	unit: string;
+};
+
+export type ContractSlaMetric = {
+	id: string;
+	name: string;
+	target: string;
+	/** Visual accent for list icons: emerald | sky | amber | violet | rose */
+	tone?: "emerald" | "sky" | "amber" | "violet" | "rose";
+};
+
+export type ContractDocumentItem = {
+	id: string;
+	name: string;
+	type: string;
+	uploadedOn: string;
+	fileExtension?: string;
+};
+
 export type ContractModel = {
 	id: string;
 	number: string;
@@ -151,6 +185,19 @@ export type ContractModel = {
 	endDate: string;
 	slaSummary: string | null;
 	updatedAt: string;
+	/** Presentation fields used by the contract detail dashboard */
+	vendorType?: string;
+	contractType?: string;
+	paymentModel?: string;
+	paymentTerms?: string;
+	governingLaw?: string | null;
+	executedOn?: string | null;
+	accountManager?: string | null;
+	notes?: string | null;
+	terms?: ContractTermPeriod[];
+	rateSchedule?: ContractRateLine[];
+	slaMetrics?: ContractSlaMetric[];
+	documents?: ContractDocumentItem[];
 };
 
 export type RfxType = "RFI" | "RFP" | "RFQ";

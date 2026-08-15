@@ -73,6 +73,10 @@ const STATIC_LABELS: Record<string, string> = {
 	settings: "Settings",
 	compliance: "Compliance",
 	contracts: "Contracts",
+	details: "Contract Details",
+	"effective-dates": "Effective Dates",
+	"rate-fee-schedule": "Rate / Fee Schedule",
+	"sla-terms": "SLA Terms",
 	onboarding: "Onboarding",
 	sourcing: "Sourcing",
 	invoices: "Invoices",
@@ -96,6 +100,10 @@ const STATIC_LABELS: Record<string, string> = {
 	outbound: "Outbound Vendor File",
 	responses: "Responses",
 	"acceptance-analytics": "Acceptance Analytics",
+	acceptance: "Acceptance",
+	rejections: "Rejections",
+	completeness: "Completeness",
+	trends: "Trends",
 	exceptions: "Exceptions / Rejections",
 	regulatory: "Regulatory & Compliance",
 	"program-monitoring": "Program Monitoring",
@@ -241,6 +249,11 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 
 			if (prev === "claims") {
 				items.push({ label: "Claim Overview" });
+				continue;
+			}
+
+			if (prev === "exceptions") {
+				items.push({ label: "Error Diagnostic Detail" });
 				continue;
 			}
 

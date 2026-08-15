@@ -68,7 +68,7 @@ For local dev without Nest roles, set `NEXT_PUBLIC_DEV_ADMIN=true` to treat the 
 
 ### Mock mode
 
-Set `NEXT_PUBLIC_USE_MOCK=true` (default) for in-memory data and mock auth. Set `NEXT_PUBLIC_USE_MOCK=false` to use NestJS REST + Better Auth and the Django vendor-core intake API. See [`src/lib/mock-mode.ts`](../src/lib/mock-mode.ts).
+Set `NEXT_PUBLIC_USE_MOCK=false` (current default in `.env.example`) to use the Django vendor-core intake API. Set `NEXT_PUBLIC_USE_MOCK=true` for in-memory fixtures and mock auth. See [`src/lib/mock-mode.ts`](../src/lib/mock-mode.ts).
 
 ## Permissions (client ABAC)
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
@@ -209,16 +209,20 @@ export function useVendorCoreInboundFileEvents(inboundFileId: string) {
 	);
 }
 
-export function useVendorCoreValidationResults(params?: {
-	inbound_file_id?: string;
-	search?: string;
-}) {
+export function useVendorCoreValidationResults(
+	params?: {
+		inbound_file_id?: string;
+		search?: string;
+	},
+	enabled = true
+) {
 	return useAuthAwareQuery(
 		vendorCoreKeys.validationResults(params),
 		async () => {
 			const page = await vendorCoreApi.listValidationResults(params);
 			return page.results ?? [];
-		}
+		},
+		enabled
 	);
 }
 
@@ -258,4 +262,30 @@ export function useVendorCoreClaimLines(enabled = true) {
 export function useInvalidateVendorCore() {
 	const client = useQueryClient();
 	return () => client.invalidateQueries({ queryKey: vendorCoreKeys.all });
+}
+
+export function useCreateIntakeJob() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body: Record<string, unknown>) =>
+			vendorCoreApi.createIntakeJob(body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useUpdateIntakeJob() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+			vendorCoreApi.updateIntakeJob(id, body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useRunIntakeJob() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (id: string) => vendorCoreApi.runIntakeJob(id),
+		onSuccess: () => invalidate(),
+	});
 }

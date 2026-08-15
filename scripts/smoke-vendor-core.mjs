@@ -118,6 +118,12 @@ await check("inbound-files requires auth", async () => {
 	return "401 without token";
 });
 
+await check("intake-job-runs requires auth", async () => {
+	const { res } = await get("/api/v1/intake-job-runs/list/");
+	if (res.status !== 401) throw new Error(`expected 401, got ${res.status}`);
+	return "401 without token";
+});
+
 let access = null;
 let sampleInboundFileId = null;
 if (USER && PASS) {
@@ -147,6 +153,14 @@ if (USER && PASS) {
 		});
 		await check("intake-jobs with token", async () => {
 			const { res, body } = await get("/api/v1/intake-jobs/", auth);
+			if (!res.ok) {
+				throw new Error(`HTTP ${res.status}: ${body?.message ?? "failed"}`);
+			}
+			const count = body?.result?.count ?? body?.count ?? "?";
+			return `HTTP ${res.status}, count=${count}`;
+		});
+		await check("intake-job-runs with token", async () => {
+			const { res, body } = await get("/api/v1/intake-job-runs/list/", auth);
 			if (!res.ok) {
 				throw new Error(`HTTP ${res.status}: ${body?.message ?? "failed"}`);
 			}

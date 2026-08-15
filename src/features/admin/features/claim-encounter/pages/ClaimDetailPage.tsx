@@ -3,7 +3,15 @@
 import { useParams } from "next/navigation";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 
-import { ChevronDown, ChevronRight, Printer } from "lucide-react";
+import {
+	AlertTriangle,
+	ChevronDown,
+	ChevronRight,
+	ExternalLink,
+	FileText,
+	Printer,
+	WalletCards,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -40,7 +48,15 @@ import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 
-const MAIN_TABS = ["Overview", "Operations & Audit"] as const;
+const MAIN_TABS = [
+	"Claim Summary",
+	"Service Lines",
+	"Financials",
+	"Contract & Financials",
+	"History",
+	"Documents (2)",
+	"Notes",
+] as const;
 type MainTab = (typeof MAIN_TABS)[number];
 
 const RELATED_FILTERS = ["All", "Adjustments", "Voids", "Reversals"] as const;
@@ -288,6 +304,546 @@ function OverviewTab({ claim }: { claim: ClaimDetail }) {
 					</Table>
 				</div>
 			</Panel>
+		</div>
+	);
+}
+
+function ServiceLinesTab({ claim }: { claim: ClaimDetail }) {
+	return (
+		<div className="space-y-4">
+			<div>
+				<h2 className="text-base font-semibold">
+					Service Lines ({claim.serviceLines.length})
+				</h2>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Line-level charges, adjudication and payment status.
+				</p>
+			</div>
+			<Panel title="Claim Service Lines">
+				<Table>
+					<TableHeader>
+						<TableRow className="hover:bg-transparent">
+							<TableHead className="pl-0">Line</TableHead>
+							<TableHead>Procedure Code</TableHead>
+							<TableHead>Modifiers</TableHead>
+							<TableHead>Diagnosis Code</TableHead>
+							<TableHead className="text-right">Units</TableHead>
+							<TableHead className="text-right">Charge</TableHead>
+							<TableHead className="text-right">Allowed</TableHead>
+							<TableHead className="text-right">Paid</TableHead>
+							<TableHead className="pr-0">Status</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{claim.serviceLines.map((line, index) => (
+							<TableRow key={line.id}>
+								<TableCell className="py-3 pl-0">{index + 1}</TableCell>
+								<TableCell className="py-3 font-mono text-xs">
+									{line.code}
+								</TableCell>
+								<TableCell className="py-3">{line.modifier || "—"}</TableCell>
+								<TableCell className="py-3 font-mono text-xs">
+									{line.diagnosis}
+								</TableCell>
+								<TableCell className="py-3 text-right">{line.units}</TableCell>
+								<TableCell className="py-3 text-right tabular-nums">
+									{formatCurrency(line.charge)}
+								</TableCell>
+								<TableCell className="py-3 text-right tabular-nums">
+									{formatCurrency(line.allowed)}
+								</TableCell>
+								<TableCell className="py-3 text-right tabular-nums text-emerald-700">
+									{formatCurrency(line.paid)}
+								</TableCell>
+								<TableCell className="py-3 pr-0">
+									<StatusBadge status={line.status} />
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</Panel>
+		</div>
+	);
+}
+
+function FinancialsTab({ claim }: { claim: ClaimDetail }) {
+	const adjustments = claim.amountAllowed - claim.amountPaid;
+	return (
+		<div className="space-y-4">
+			<div>
+				<h2 className="text-base font-semibold">Financials</h2>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Claim payment, member responsibility and remittance summary.
+				</p>
+			</div>
+			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+				{[
+					["Billed Amount", claim.amountBilled],
+					["Allowed Amount", claim.amountAllowed],
+					["Paid Amount", claim.amountPaid],
+					["Member Responsibility", claim.patientResponsibility],
+				].map(([label, value]) => (
+					<div
+						key={label as string}
+						className="rounded-lg border border-border/60 bg-card p-4 shadow-sm"
+					>
+						<p className="text-xs text-muted-foreground">{label}</p>
+						<p className="mt-2 text-xl font-semibold tabular-nums">
+							{formatCurrency(value as number)}
+						</p>
+					</div>
+				))}
+			</div>
+			<div className="grid gap-4 xl:grid-cols-2">
+				<Panel title="Payment Summary">
+					<dl className="space-y-3 text-xs">
+						{[
+							["Payer", claim.payer],
+							["Plan", claim.payerPlan],
+							["Payment Date", claim.paidDate ?? "Pending"],
+							["Check / EFT", claim.checkEft ?? "—"],
+							["Total Adjustment", formatCurrency(adjustments)],
+							[
+								"Patient Responsibility",
+								formatCurrency(claim.patientResponsibility),
+							],
+						].map(([label, value]) => (
+							<div
+								key={label as string}
+								className="flex justify-between gap-3 border-b border-border/40 pb-2 last:border-0"
+							>
+								<dt className="text-muted-foreground">{label}</dt>
+								<dd className="font-medium">{value}</dd>
+							</div>
+						))}
+					</dl>
+				</Panel>
+				<Panel title="Remittance & Reconciliation">
+					<div className="space-y-3 text-xs">
+						<p className="rounded-md bg-emerald-500/10 p-3 text-emerald-800">
+							Payment reconciliation is complete. The remittance amount is
+							aligned to the adjudicated claim total.
+						</p>
+						<dl className="space-y-2">
+							{[
+								["Expected payment", formatCurrency(claim.amountPaid)],
+								["Remitted payment", formatCurrency(claim.amountPaid)],
+								["Variance", "$0.00"],
+							].map(([label, value]) => (
+								<div key={label} className="flex justify-between">
+									<dt className="text-muted-foreground">{label}</dt>
+									<dd className="font-medium">{value}</dd>
+								</div>
+							))}
+						</dl>
+					</div>
+				</Panel>
+			</div>
+		</div>
+	);
+}
+
+function DocumentsTab({ claim }: { claim: ClaimDetail }) {
+	return (
+		<div className="space-y-4">
+			<div>
+				<h2 className="text-base font-semibold">
+					Documents ({claim.attachments.length})
+				</h2>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Files and supporting documents attached to this claim.
+				</p>
+			</div>
+			<Panel title="Attached Documents">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead className="pl-0">File Name</TableHead>
+							<TableHead>Type</TableHead>
+							<TableHead>Uploaded By</TableHead>
+							<TableHead>Date</TableHead>
+							<TableHead className="pr-0 text-right">Action</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{claim.attachments.map((item) => (
+							<TableRow key={item.id}>
+								<TableCell className="py-3 pl-0 font-mono text-xs text-primary">
+									{item.fileName}
+								</TableCell>
+								<TableCell className="py-3">{item.type}</TableCell>
+								<TableCell className="py-3">{item.uploadedBy}</TableCell>
+								<TableCell className="py-3">{item.date}</TableCell>
+								<TableCell className="py-3 pr-0 text-right">
+									<Button
+										variant="outline"
+										size="sm"
+										className="h-7 text-xs"
+										onClick={() => toast.message(`Opening ${item.fileName}`)}
+									>
+										View
+									</Button>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</Panel>
+		</div>
+	);
+}
+
+function NotesTab({ claim }: { claim: ClaimDetail }) {
+	return (
+		<div className="space-y-4">
+			<div>
+				<h2 className="text-base font-semibold">Notes</h2>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Operational notes and claim communication history.
+				</p>
+			</div>
+			<Panel title={`Claim Notes (${claim.notes.length})`}>
+				<div className="space-y-3">
+					{claim.notes.map((note) => (
+						<div
+							key={note.id}
+							className="rounded-lg border border-border/60 bg-muted/20 p-3"
+						>
+							<div className="flex justify-between gap-3 text-xs">
+								<p className="font-medium">{note.addedBy}</p>
+								<p className="text-muted-foreground">{note.date}</p>
+							</div>
+							<p className="mt-2 text-sm">{note.text}</p>
+						</div>
+					))}
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => toast.success("Note composer opened")}
+					>
+						Add Note
+					</Button>
+				</div>
+			</Panel>
+		</div>
+	);
+}
+
+function ContractFinancialsTab({ claim }: { claim: ClaimDetail }) {
+	const contractedAmount = Math.round(claim.amountBilled * 0.67 * 100) / 100;
+	const allowedAmount = claim.amountAllowed;
+	const variance = Math.round((allowedAmount - contractedAmount) * 100) / 100;
+	const serviceRows = claim.serviceLines.slice(0, 4);
+
+	return (
+		<div className="space-y-4">
+			<div className="flex flex-wrap items-start justify-between gap-3">
+				<div>
+					<h2 className="text-base font-semibold">Contract &amp; Financials</h2>
+					<p className="mt-1 text-xs text-muted-foreground">
+						Compare claim amounts against applicable contract terms.
+					</p>
+				</div>
+				<Button asChild variant="outline" size="sm" className="h-8">
+					<Link href="/admin/contracts">
+						View Contract <ExternalLink className="ml-1.5 size-3.5" />
+					</Link>
+				</Button>
+			</div>
+
+			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+				{(
+					[
+						[
+							"Billed Amount",
+							formatCurrency(claim.amountBilled),
+							"bg-sky-500/15 text-sky-700",
+							FileText,
+						],
+						[
+							"Contracted Amount",
+							formatCurrency(contractedAmount),
+							"bg-emerald-500/15 text-emerald-700",
+							WalletCards,
+						],
+						[
+							"Allowed Amount",
+							formatCurrency(allowedAmount),
+							"bg-violet-500/15 text-violet-700",
+							WalletCards,
+						],
+						[
+							"Paid Amount",
+							formatCurrency(claim.amountPaid),
+							"bg-cyan-500/15 text-cyan-700",
+							WalletCards,
+						],
+						[
+							"Contract Variance",
+							`${variance >= 0 ? "+" : ""}${formatCurrency(variance)}`,
+							"bg-amber-500/15 text-amber-700",
+							AlertTriangle,
+						],
+						[
+							"Contract Status",
+							variance > 0 ? "Review" : "Compliant",
+							"bg-amber-500/15 text-amber-700",
+							AlertTriangle,
+						],
+					] as const
+				).map(([label, value, tone, Icon]) => {
+					const MetricIcon = Icon as typeof FileText;
+					return (
+						<div
+							key={label}
+							className="rounded-lg border border-border/60 bg-card px-3 py-3 shadow-sm"
+						>
+							<div className="flex items-center gap-2">
+								<span
+									className={cn(
+										"flex size-7 items-center justify-center rounded-md",
+										tone
+									)}
+								>
+									<MetricIcon className="size-3.5" />
+								</span>
+								<p className="text-[10px] font-medium text-muted-foreground">
+									{label}
+								</p>
+							</div>
+							<p
+								className={cn(
+									"mt-2 text-base font-semibold tabular-nums",
+									label === "Contract Variance" &&
+										variance > 0 &&
+										"text-amber-700"
+								)}
+							>
+								{value}
+							</p>
+							{label === "Contract Variance" ? (
+								<p className="mt-0.5 text-[10px] text-muted-foreground">
+									Potential variance
+								</p>
+							) : null}
+						</div>
+					);
+				})}
+			</div>
+
+			<div className="grid gap-4 xl:grid-cols-2">
+				<Panel title="Amount Comparison">
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="h-8 pl-0 text-[10px]">
+									Description
+								</TableHead>
+								<TableHead className="h-8 text-right text-[10px]">
+									Amount
+								</TableHead>
+								<TableHead className="h-8 text-right text-[10px]">
+									Difference from Contract
+								</TableHead>
+								<TableHead className="h-8 pr-0 text-right text-[10px]">
+									% Difference
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{[
+								[
+									"Billed Amount",
+									claim.amountBilled,
+									claim.amountBilled - contractedAmount,
+								],
+								["Contracted Amount", contractedAmount, 0],
+								["Allowed Amount", allowedAmount, variance],
+								[
+									"Paid Amount",
+									claim.amountPaid,
+									claim.amountPaid - contractedAmount,
+								],
+								["Member Responsibility", claim.patientResponsibility, 0],
+								[
+									"Plan Paid Amount",
+									claim.amountPaid,
+									claim.amountPaid - contractedAmount,
+								],
+							].map(([label, amount, difference]) => {
+								const diff = Number(difference);
+								const amountValue = Number(amount);
+								return (
+									<TableRow key={label as string} className="hover:bg-muted/20">
+										<TableCell className="py-2 pl-0 text-xs">{label}</TableCell>
+										<TableCell className="py-2 text-right text-xs tabular-nums">
+											{formatCurrency(amountValue)}
+										</TableCell>
+										<TableCell
+											className={cn(
+												"py-2 text-right text-xs tabular-nums",
+												diff > 0 && "text-red-700"
+											)}
+										>
+											{diff === 0
+												? "—"
+												: `${diff > 0 ? "+" : ""}${formatCurrency(diff)}`}
+										</TableCell>
+										<TableCell
+											className={cn(
+												"py-2 pr-0 text-right text-xs tabular-nums",
+												diff > 0 && "text-red-700"
+											)}
+										>
+											{diff === 0
+												? "—"
+												: `${diff > 0 ? "+" : ""}${Math.round((diff / contractedAmount) * 1000) / 10}%`}
+										</TableCell>
+									</TableRow>
+								);
+							})}
+						</TableBody>
+					</Table>
+					<p className="mt-3 text-[10px] text-muted-foreground">
+						Positive variance indicates amount is over the contracted amount.
+					</p>
+				</Panel>
+
+				<Panel title="Contract Information">
+					<dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-xs">
+						{[
+							["Contract ID", "ABC-2026-001"],
+							["Contract Name", "Professional Services Agreement"],
+							["Vendor", claim.vendor],
+							["Provider", claim.provider],
+							["Effective Dates", "01/01/2026 – 12/31/2026"],
+							["Rate Type", "Contracted Rate"],
+							["Payment Model", "Per Visit"],
+							["Fee Schedule", "Professional Services Fee Schedule 2026"],
+							[
+								"Applicable Rule",
+								"Use contracted rate for all covered services.",
+							],
+						].map(([label, value]) => (
+							<div key={label} className="contents">
+								<dt className="text-muted-foreground">{label}</dt>
+								<dd
+									className={cn(
+										"font-medium",
+										label === "Contract ID" && "text-primary"
+									)}
+								>
+									{value}
+								</dd>
+							</div>
+						))}
+					</dl>
+					<Button
+						asChild
+						variant="outline"
+						size="sm"
+						className="mt-4 h-8 text-xs"
+					>
+						<Link href="/admin/contracts/details">
+							View Contract Details <ExternalLink className="ml-1.5 size-3" />
+						</Link>
+					</Button>
+				</Panel>
+			</div>
+
+			<div className="grid gap-4 xl:grid-cols-2">
+				<Panel
+					title="Service vs Contract Summary"
+					footer={{
+						label: "View all service lines",
+						href: `/admin/claim-encounter/claims/${encodeURIComponent(claim.claimId)}`,
+					}}
+				>
+					<Table>
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="h-8 pl-0 text-[10px]">Service</TableHead>
+								<TableHead className="h-8 text-[10px]">Service Date</TableHead>
+								<TableHead className="h-8 text-right text-[10px]">
+									Billed
+								</TableHead>
+								<TableHead className="h-8 text-right text-[10px]">
+									Contracted
+								</TableHead>
+								<TableHead className="h-8 text-right text-[10px]">
+									Allowed
+								</TableHead>
+								<TableHead className="h-8 pr-0 text-right text-[10px]">
+									Variance
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{serviceRows.map((line) => {
+								const contracted = Math.round(line.charge * 0.67 * 100) / 100;
+								const lineVariance = line.allowed - contracted;
+								return (
+									<TableRow key={line.id} className="hover:bg-muted/20">
+										<TableCell className="py-2 pl-0 text-xs">
+											{line.code} – Service
+										</TableCell>
+										<TableCell className="py-2 text-xs">
+											{formatDos(claim.dateOfService)}
+										</TableCell>
+										<TableCell className="py-2 text-right text-xs">
+											{formatCurrency(line.charge)}
+										</TableCell>
+										<TableCell className="py-2 text-right text-xs">
+											{formatCurrency(contracted)}
+										</TableCell>
+										<TableCell className="py-2 text-right text-xs">
+											{formatCurrency(line.allowed)}
+										</TableCell>
+										<TableCell
+											className={cn(
+												"py-2 pr-0 text-right text-xs",
+												lineVariance > 0 && "text-red-700"
+											)}
+										>
+											{lineVariance > 0 ? "+" : ""}
+											{formatCurrency(lineVariance)}
+										</TableCell>
+									</TableRow>
+								);
+							})}
+						</TableBody>
+					</Table>
+				</Panel>
+				<Panel title="Variance Explanation">
+					<div className="flex gap-2 text-xs text-amber-700">
+						<AlertTriangle className="mt-0.5 size-4 shrink-0" />
+						<div>
+							<p className="font-medium">
+								The allowed amount exceeds the contracted amount by{" "}
+								{formatCurrency(Math.max(variance, 0))}.
+							</p>
+							<p className="mt-3 font-semibold text-foreground">
+								Potential Reasons
+							</p>
+							<ul className="mt-1 list-disc space-y-1 pl-4 text-muted-foreground">
+								<li>Contract exception or case rate adjustment</li>
+								<li>Fee schedule update not applied</li>
+								<li>Manual adjustment by payer</li>
+								<li>Bundled service override</li>
+							</ul>
+							<Button
+								variant="outline"
+								size="sm"
+								className="mt-4 h-8 text-xs"
+								onClick={() => toast.success("Resolution note added")}
+							>
+								Add Resolution Note
+							</Button>
+						</div>
+					</div>
+				</Panel>
+			</div>
 		</div>
 	);
 }
@@ -902,7 +1458,7 @@ function ClaimDetailBody({ useLive }: { useLive: boolean }) {
 		}
 		return getClaimDetail(params.claimId);
 	}, [useLive, claimLinesQ.data, params.claimId]);
-	const [tab, setTab] = useState<MainTab>("Operations & Audit");
+	const [tab, setTab] = useState<MainTab>("Claim Summary");
 
 	if (useLive && claimLinesQ.isLoading && !claim) {
 		return (
@@ -1110,11 +1666,15 @@ function ClaimDetailBody({ useLive }: { useLive: boolean }) {
 				</div>
 			</div>
 
-			{tab === "Overview" ? (
-				<OverviewTab claim={claim} />
-			) : (
-				<OperationsAuditTab claim={claim} />
-			)}
+			{tab === "Claim Summary" ? <OverviewTab claim={claim} /> : null}
+			{tab === "Service Lines" ? <ServiceLinesTab claim={claim} /> : null}
+			{tab === "Financials" ? <FinancialsTab claim={claim} /> : null}
+			{tab === "Contract & Financials" ? (
+				<ContractFinancialsTab claim={claim} />
+			) : null}
+			{tab === "History" ? <OperationsAuditTab claim={claim} /> : null}
+			{tab === "Documents (2)" ? <DocumentsTab claim={claim} /> : null}
+			{tab === "Notes" ? <NotesTab claim={claim} /> : null}
 		</div>
 	);
 }

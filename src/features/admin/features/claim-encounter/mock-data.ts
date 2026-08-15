@@ -107,6 +107,33 @@ export type ClaimException = {
 	claimId: string | null;
 	status: "open" | "in_progress" | "resolved";
 	detectedAt: string;
+	/** Diagnostic detail fields for the Error Diagnostic Detail panel */
+	category: string;
+	memberId: string;
+	memberName: string;
+	provider: string;
+	serviceLine: number;
+	dateOfService: string;
+	source: string;
+	whatFailed: string;
+	whyItMatters: string;
+	receivedValue: string;
+	expectedValue: string;
+	loopSegment: string;
+	element: string;
+	elementDescription: string;
+	usage: string;
+	maxUse: number;
+	ruleId: string;
+	ruleDescription: string;
+	recommendedAction: string;
+	ediSnippet: string;
+	responsibleParty: string;
+	assignedTo: string;
+	resolutionNotes: string;
+	attachmentsCount: number;
+	ediFixture: "837I" | "835";
+	fileName: string;
 };
 
 export type VendorPerformanceRow = {
@@ -304,6 +331,159 @@ export const CLAIM_RESPONSES: ClaimResponse[] = CLAIM_VENDOR_FILES.filter(
 	};
 });
 
+const MEMBER_SEED = [
+	{ id: "M2086605880", name: "John M. Doe" },
+	{ id: "M3097716991", name: "Sarah K. Ali" },
+	{ id: "M4108827002", name: "Robert L. Chen" },
+	{ id: "M5119938113", name: "Maria E. Santos" },
+];
+
+const PROVIDER_SEED = [
+	"Johns Hopkins Hospital",
+	"MedStar Washington Hospital",
+	"Children's National",
+	"GW Medical Faculty Associates",
+];
+
+const DIAGNOSTIC_BY_CODE: Record<
+	string,
+	{
+		category: string;
+		whatFailed: string;
+		whyItMatters: string;
+		receivedValue: string;
+		expectedValue: string;
+		loopSegment: string;
+		element: string;
+		elementDescription: string;
+		ruleId: string;
+		ruleDescription: string;
+		recommendedAction: string;
+		ediSnippet: string;
+	}
+> = {
+	"CLM-4010": {
+		category: "Eligibility / Member Error",
+		whatFailed: "Member ID is not valid for the reported program.",
+		whyItMatters:
+			"Downstream processing will reject the claim, delaying payment and requiring vendor resubmission.",
+		receivedValue: "MEM-UNKNOWN",
+		expectedValue: "Active member ID enrolled in the selected program",
+		loopSegment: "2010BA / NM1",
+		element: "NM1*IL*1",
+		elementDescription: "Subscriber Primary Identifier",
+		ruleId: "VAL-MEM-001",
+		ruleDescription:
+			"Subscriber identifier must resolve to an active member for the claim program and DOS.",
+		recommendedAction:
+			"Verify the member ID against enrollment files for the date of service and resubmit with a corrected identifier.",
+		ediSnippet: "NM1*IL*1*DOE*JOHN****MI*MEM-UNKNOWN~\nDMG*D8*19850412*M~",
+	},
+	"NM1-2100": {
+		category: "Provider Identification Error",
+		whatFailed: "Billing provider NPI is missing or mismatched.",
+		whyItMatters:
+			"Claims without a valid billing NPI cannot be accepted by MFC or Gainwell.",
+		receivedValue: "",
+		expectedValue: "10-digit NPI registered for the billing provider",
+		loopSegment: "2010AA / NM1",
+		element: "NM1*85*2",
+		elementDescription: "Billing Provider Identifier",
+		ruleId: "VAL-NPI-002",
+		ruleDescription:
+			"Billing provider NM1 must include a valid NPI that matches the enrolled provider record.",
+		recommendedAction:
+			"Correct the billing provider NPI in loop 2010AA and re-export the 837.",
+		ediSnippet: "NM1*85*2*PROVIDER NAME*****XX*~",
+	},
+	"CLM-4022": {
+		category: "Duplicate Claim",
+		whatFailed: "Duplicate claim submission detected for the same claim key.",
+		whyItMatters:
+			"Duplicate submissions inflate rejection volume and can block legitimate replacements.",
+		receivedValue: "CLM*DUPLICATE*",
+		expectedValue: "Unique claim control number or valid replacement claim",
+		loopSegment: "2300 / CLM",
+		element: "CLM01",
+		elementDescription: "Patient Control Number",
+		ruleId: "VAL-DUP-001",
+		ruleDescription:
+			"Patient control number + DOS + provider must be unique unless marked as a replacement.",
+		recommendedAction:
+			"Confirm whether this is a replacement claim; if so, set claim frequency code correctly, otherwise void the duplicate.",
+		ediSnippet: "CLM*CLM7245678910*250***11:B:1*Y*A*Y*Y~",
+	},
+	"DTP-4720": {
+		category: "Coverage / Date Error",
+		whatFailed: "Service date is outside the member coverage window.",
+		whyItMatters:
+			"Services outside eligibility dates will be denied by the payer.",
+		receivedValue: "20260726",
+		expectedValue: "DOS within active coverage period",
+		loopSegment: "2300 / DTP",
+		element: "DTP*472",
+		elementDescription: "Service Date",
+		ruleId: "VAL-DOS-001",
+		ruleDescription:
+			"Statement/service dates must fall within the member’s active eligibility span.",
+		recommendedAction:
+			"Confirm eligibility for the DOS and adjust the claim period or obtain coverage documentation.",
+		ediSnippet: "DTP*472*D8*20260726~",
+	},
+	"HI-ABK0": {
+		category: "Coding / Diagnosis Error",
+		whatFailed: "Diagnosis code is not valid for the reported date of service.",
+		whyItMatters:
+			"Invalid diagnosis codes cause claim rejection from downstream processing and incomplete clinical capture.",
+		receivedValue: "E11.XX",
+		expectedValue: "Valid ICD-10-CM diagnosis code effective for the DOS",
+		loopSegment: "2300 / HI",
+		element: "HI*ABK",
+		elementDescription: "Diagnosis Code",
+		ruleId: "VAL-DX-001",
+		ruleDescription:
+			"Principal diagnosis must be a complete, billable ICD-10-CM code valid on the date of service.",
+		recommendedAction:
+			"Review the diagnosis submitted against the ICD-10-CM code set for the DOS and replace E11.XX with a complete code (e.g. E11.9).",
+		ediSnippet: "HI*ABK:E11.XX*ABF:I10*ABF:E78.5~",
+	},
+	"SV2-1200": {
+		category: "Service Line Error",
+		whatFailed: "Service line units exceed the expected range.",
+		whyItMatters:
+			"Out-of-range units trigger medical necessity review and likely denial.",
+		receivedValue: "99",
+		expectedValue: "Units within program fee-schedule limits",
+		loopSegment: "2400 / SV2",
+		element: "SV204",
+		elementDescription: "Service Line Units",
+		ruleId: "VAL-UNIT-003",
+		ruleDescription:
+			"Reported units must be within the contracted maximum for the procedure and place of service.",
+		recommendedAction:
+			"Validate unit quantity against the order/authorization and correct SV2 before resubmission.",
+		ediSnippet: "SV2*HC:99213*150*UN*99~",
+	},
+	"CLM-4031": {
+		category: "Financial Balancing Error",
+		whatFailed: "Claim charge does not balance to service lines.",
+		whyItMatters:
+			"Unbalanced claims are rejected before adjudication and delay cash flow.",
+		receivedValue: "CLM02 ≠ Σ SV2",
+		expectedValue: "Claim total equal to sum of service line charges",
+		loopSegment: "2300 / CLM",
+		element: "CLM02",
+		elementDescription: "Total Claim Charge Amount",
+		ruleId: "VAL-BAL-001",
+		ruleDescription:
+			"CLM02 must equal the sum of all service line monetary amounts.",
+		recommendedAction:
+			"Recalculate line charges and update CLM02 to match the service line total.",
+		ediSnippet:
+			"CLM*CLM7245678910*500***11:B:1*Y*A*Y*Y~\nSV2*HC:99213*250*UN*1~",
+	},
+};
+
 export const CLAIM_EXCEPTIONS: ClaimException[] = CLAIM_VENDOR_FILES.filter(
 	(f) =>
 		f.reviewStatus === "rejected" ||
@@ -316,19 +496,55 @@ export const CLAIM_EXCEPTIONS: ClaimException[] = CLAIM_VENDOR_FILES.filter(
 		file.rejectReasons.length > 0
 			? file.rejectReasons
 			: [REJECT_REASON_CATALOG[i % REJECT_REASON_CATALOG.length]!];
-	return reasons.map((reason, ri) => ({
-		id: `ex-${file.id}-${ri}`,
-		exceptionId: `EX-${file.fileId}-${String(ri + 1).padStart(2, "0")}`,
-		fileId: file.fileId,
-		vendor: file.vendor,
-		program: file.program,
-		severity: (ri === 0 ? "error" : "warning") as "error" | "warning",
-		code: reason.code,
-		message: reason.description,
-		claimId: `CLM-${800000 + i * 10 + ri}`,
-		status: (["open", "in_progress", "resolved"] as const)[(i + ri) % 3]!,
-		detectedAt: file.reviewedAt ?? file.receivedAt,
-	}));
+	return reasons.map((reason, ri) => {
+		const diag =
+			DIAGNOSTIC_BY_CODE[reason.code] ?? DIAGNOSTIC_BY_CODE["HI-ABK0"]!;
+		const member = MEMBER_SEED[(i + ri) % MEMBER_SEED.length]!;
+		const provider = PROVIDER_SEED[(i + ri) % PROVIDER_SEED.length]!;
+		const dosDay = String(20 + ((i + ri) % 8)).padStart(2, "0");
+		return {
+			id: `ex-${file.id}-${ri}`,
+			exceptionId: `EX-${file.fileId}-${String(ri + 1).padStart(2, "0")}`,
+			fileId: file.fileId,
+			vendor: file.vendor,
+			program: file.program,
+			severity: (ri === 0 ? "error" : "warning") as "error" | "warning",
+			code: reason.code,
+			message: reason.description,
+			claimId: `CLM${7245678910 + i * 10 + ri}`,
+			status: (["open", "in_progress", "resolved"] as const)[(i + ri) % 3]!,
+			detectedAt: file.reviewedAt ?? file.receivedAt,
+			category: diag.category,
+			memberId: member.id,
+			memberName: member.name,
+			provider,
+			serviceLine: (ri % 3) + 1,
+			dateOfService: `2026-07-${dosDay}`,
+			source:
+				file.transactionType === "837"
+					? "837 Professional"
+					: file.transactionType,
+			whatFailed: diag.whatFailed,
+			whyItMatters: diag.whyItMatters,
+			receivedValue: diag.receivedValue || "(empty)",
+			expectedValue: diag.expectedValue,
+			loopSegment: diag.loopSegment,
+			element: diag.element,
+			elementDescription: diag.elementDescription,
+			usage: "Required",
+			maxUse: 12,
+			ruleId: diag.ruleId,
+			ruleDescription: diag.ruleDescription,
+			recommendedAction: diag.recommendedAction,
+			ediSnippet: diag.ediSnippet,
+			responsibleParty: ri % 2 === 0 ? "Provider" : "Vendor",
+			assignedTo: ri % 2 === 0 ? "Provider Team" : "Vendor Ops",
+			resolutionNotes: "",
+			attachmentsCount: 0,
+			ediFixture: file.ediFixture,
+			fileName: file.fileName,
+		};
+	});
 });
 
 export function filesForProgram(

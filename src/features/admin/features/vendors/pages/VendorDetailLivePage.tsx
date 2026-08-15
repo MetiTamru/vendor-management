@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 
 import { ArrowLeft, Play } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,7 +149,19 @@ function VendorDetailLiveBody({ id }: { id: string }) {
 													onClick={() => {
 														void vendorCoreApi
 															.runIntakeJob(job.id)
-															.then(() => invalidate());
+															.then((result) => {
+																invalidate();
+																toast.success(
+																	`Job queued (${result.task_id ?? "ok"})`
+																);
+															})
+															.catch((err: unknown) => {
+																toast.error(
+																	err instanceof Error
+																		? err.message
+																		: "Run failed"
+																);
+															});
 													}}
 												>
 													<Play />
