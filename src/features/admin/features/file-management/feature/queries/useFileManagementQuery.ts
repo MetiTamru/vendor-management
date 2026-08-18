@@ -35,7 +35,12 @@ export function useFileRunQuery(id: string | null | undefined) {
 	return useQuery({
 		queryKey: featureQueryKey(domain, "file-run", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: () => getFileRunById(String(id)),
+		queryFn: async () => {
+			if (!id) {
+				return null;
+			}
+			return getFileRunById(id);
+		},
 		staleTime: Infinity,
 	});
 }

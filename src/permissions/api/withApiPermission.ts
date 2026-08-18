@@ -1,9 +1,21 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { PolicyEngine } from "../abac/engine";
+import type { AttributeContext } from "../abac/types";
 
-export const withApiPermission = (handler: any) => {
-	return async (req: NextRequest, context: any) => {
+type ApiPermissionContext = {
+	user: AttributeContext["user"];
+} & Record<string, unknown>;
+
+type ApiPermissionHandler<TContext extends ApiPermissionContext> = (
+	req: NextRequest,
+	context: TContext
+) => Response | Promise<Response>;
+
+export const withApiPermission = <TContext extends ApiPermissionContext>(
+	handler: ApiPermissionHandler<TContext>
+) => {
+	return async (req: NextRequest, context: TContext): Promise<Response> => {
 		const user = context.user;
 		const pathname = req.nextUrl.pathname;
 		const method = req.method;

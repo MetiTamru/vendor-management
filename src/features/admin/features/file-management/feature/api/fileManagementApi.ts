@@ -31,8 +31,8 @@ export async function listFileRuns(): Promise<FileRun[]> {
 	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
 }
 
-export async function getFileRunById(id: string): Promise<FileRun | undefined> {
-	return withMockOrRemote(() => getFileRun(id), async () => undefined, undefined);
+export async function getFileRunById(id: string): Promise<FileRun | null> {
+	return withMockOrRemote(() => getFileRun(id) ?? null, async () => null, null);
 }
 
 export async function listInboundFiles(params?: {
