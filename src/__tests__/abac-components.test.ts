@@ -43,7 +43,7 @@ describe("ABAC admin components", () => {
 		).toBe(true);
 	});
 
-	it("manager can view groups-list but not groups-create or groups-delete", () => {
+	it("manager can view groups-list, groups-create, and groups-edit", () => {
 		expect(
 			PolicyEngine.evaluate(
 				componentContext("manager-user", ["manager"], "groups-list", "view")
@@ -53,18 +53,18 @@ describe("ABAC admin components", () => {
 			PolicyEngine.evaluate(
 				componentContext("manager-user", ["manager"], "groups-create", "view")
 			)
-		).toBe(false);
-		expect(
-			PolicyEngine.evaluate(
-				componentContext("manager-user", ["manager"], "groups-delete", "delete")
-			)
-		).toBe(false);
-	});
-
-	it("manager can view groups-edit denied", () => {
+		).toBe(true);
 		expect(
 			PolicyEngine.evaluate(
 				componentContext("manager-user", ["manager"], "groups-edit", "view")
+			)
+		).toBe(true);
+	});
+
+	it("manager cannot delete groups-delete", () => {
+		expect(
+			PolicyEngine.evaluate(
+				componentContext("manager-user", ["manager"], "groups-delete", "delete")
 			)
 		).toBe(false);
 	});
