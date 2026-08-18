@@ -18,6 +18,10 @@ node_modules.old.*
 /.next/
 /out/
 
+# cloudflare / opennext build output
+/.open-next/
+/cloudflare-env.d.ts
+
 # production
 /build
 
