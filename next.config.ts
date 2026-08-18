@@ -1,3 +1,4 @@
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import { NextConfig } from "next";
 
 import createNextIntlPlugin from "next-intl/plugin";
@@ -58,3 +59,9 @@ const nextConfig: NextConfig = {
 
 const withNextIntl = createNextIntlPlugin();
 export default withBundleAnalyzer(withNextIntl(nextConfig));
+
+// Older Next/OpenNext combinations can start workerd during `next build`,
+// so only enable the Cloudflare dev shim for local development.
+if (process.env.NODE_ENV === "development") {
+	initOpenNextCloudflareForDev();
+}
