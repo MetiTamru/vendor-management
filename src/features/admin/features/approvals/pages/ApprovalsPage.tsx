@@ -8,7 +8,7 @@ import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useApprovalMutation,
 	useApprovalsList,
-} from "@/features/shared/vms/queries";
+} from "../feature/queries/useApprovalsQuery";
 import type { ApprovalRequestModel } from "@/features/shared/vms/types";
 import { formatDate } from "@/features/shared/vms/utils";
 

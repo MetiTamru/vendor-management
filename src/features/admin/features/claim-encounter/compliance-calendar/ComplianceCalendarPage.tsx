@@ -48,7 +48,7 @@ import {
 	type CalendarDayEvent,
 	type ComplianceProgramKey,
 	buildMay2025Grid,
-} from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
+} from "@/features/admin/features/claim-encounter/compliance-calendar/feature/queries/useComplianceCalendarQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-4 pb-4";

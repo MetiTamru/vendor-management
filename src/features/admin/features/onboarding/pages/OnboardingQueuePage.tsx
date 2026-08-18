@@ -8,10 +8,11 @@ import { BulkActionsToolbar } from "@/components/admin/BulkActionsToolbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useOnboardingList } from "@/features/shared/vms/queries";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+import { useOnboardingList } from "../feature/queries/useOnboardingQuery";
 
 export function OnboardingQueuePage() {
 	const { cases, isLoading, error } = useOnboardingList();

@@ -1,61 +1,80 @@
-import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+import type {
+	InboundFileDto,
+	MonitoringDashboardDto,
+	ValidationResultDto,
+	VendorDto,
+} from "@/lib/vendor-core/types";
+
+import {
+	FILE_RUNS,
+	displayRunStatus,
+	getFileRun,
+	getValidationIssue,
+	markFileRunReviewed,
+	type FileRun,
+	type LogEntry,
+	type ProcessStatus,
+	type ValidationIssue,
+} from "../../mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
-import { fileManagementEndpoints } from "../../file-management-endpoints";
-import type {
-	ApiFileManagementDto,
-	FileManagementCreateDto,
-	FileManagementUpdateDto,
-} from "../dto/fileManagementDto";
+export {
+	displayRunStatus,
+	getFileRun,
+	getValidationIssue,
+	markFileRunReviewed,
+};
+export type { FileRun, LogEntry, ProcessStatus, ValidationIssue };
 
-export async function listFileManagement() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiFileManagementDto[]; count?: number }>(
-				fileManagementEndpoints.list()
-			)
-	);
+export async function listFileRuns(): Promise<FileRun[]> {
+	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
 }
 
-export async function getFileManagement(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiFileManagementDto>(fileManagementEndpoints.detail(id))
-	);
+export async function getFileRunById(id: string): Promise<FileRun | undefined> {
+	return withMockOrRemote(() => getFileRun(id), async () => undefined, undefined);
 }
 
-export async function createFileManagement(body: FileManagementCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiFileManagementDto>(fileManagementEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listInboundFiles(params?: {
+	stage?: string;
+	vendor_id?: string;
+}): Promise<InboundFileDto[]> {
+	const page = await vendorCoreApi.listInboundFiles(params);
+	return page.results ?? [];
 }
 
-export async function updateFileManagement(
-	id: string,
-	body: FileManagementUpdateDto
-) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiFileManagementDto>(fileManagementEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getInboundFile(id: string): Promise<InboundFileDto> {
+	return vendorCoreApi.getInboundFile(id);
 }
 
-export async function deleteFileManagement(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(fileManagementEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function listInboundFileVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
+}
+
+export async function getMonitoring(): Promise<MonitoringDashboardDto> {
+	return vendorCoreApi.getMonitoring();
+}
+
+export async function listValidationResults(params?: {
+	inbound_file_id?: string;
+	search?: string;
+}): Promise<ValidationResultDto[]> {
+	const page = await vendorCoreApi.listValidationResults(params);
+	return page.results ?? [];
+}
+
+export async function listInboundFileEvents(inboundFileId: string) {
+	return vendorCoreApi.listInboundFileEvents(inboundFileId);
+}
+
+export async function seedInboundFiles(body?: {
+	vendor_id?: string;
+	force?: boolean;
+}) {
+	return vendorCoreApi.seedInboundProcessing(body);
+}
+
+export async function reprocessInboundFile(id: string) {
+	return vendorCoreApi.reprocessInboundFile(id);
 }

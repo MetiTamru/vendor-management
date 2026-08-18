@@ -1,9 +1,3 @@
-import type { ApiRiskScoringRecordDto } from "../../shared/dto/riskScoringRecordDto";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
-export type ApiRiskScoringDto = ApiRiskScoringRecordDto;
-
-export type RiskScoringCreateDto = {
-	name: string;
-};
-
-export type RiskScoringUpdateDto = Partial<RiskScoringCreateDto>;
+export type RiskScoringDto = { program: ProgramFileType };

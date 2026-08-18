@@ -53,7 +53,7 @@ import {
 	getMember,
 	maskSsn,
 	memberAge,
-} from "@/features/admin/features/members/mock-data";
+} from "@/features/admin/features/members/feature/api/membersApi";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

@@ -1,58 +1,48 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
-
-import { vendorsEndpoints } from "../../vendors-endpoints";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
-	ApiVendorsDto,
-	VendorsCreateDto,
-	VendorsUpdateDto,
-} from "../dto/vendorsDto";
+	AccountDto,
+	ConnectionDto,
+	InboundFileDto,
+	IntakeJobDto,
+	VendorDto,
+} from "@/lib/vendor-core/types";
 
-export async function listVendors() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiVendorsDto[]; count?: number }>(
-				vendorsEndpoints.list()
-			)
-	);
+export async function listVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
 }
 
-export async function getVendors(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiVendorsDto>(vendorsEndpoints.detail(id))
-	);
+export async function getVendor(id: string): Promise<VendorDto> {
+	return vendorCoreApi.getVendor(id);
 }
 
-export async function createVendors(body: VendorsCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiVendorsDto>(vendorsEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
+export async function listVendorConnections(
+	vendorId?: string
+): Promise<ConnectionDto[]> {
+	const page = await vendorCoreApi.listConnections(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function updateVendors(id: string, body: VendorsUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiVendorsDto>(vendorsEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
+export async function listVendorJobs(vendorId?: string): Promise<IntakeJobDto[]> {
+	const page = await vendorCoreApi.listIntakeJobs(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function deleteVendors(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(vendorsEndpoints.delete(id), {
-				method: "DELETE",
-			})
+export async function listVendorAccounts(vendorId?: string): Promise<AccountDto[]> {
+	const page = await vendorCoreApi.listAccounts(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
+}
+
+export async function listVendorInboundFiles(params?: {
+	stage?: string;
+	vendor_id?: string;
+}): Promise<InboundFileDto[]> {
+	const page = await vendorCoreApi.listInboundFiles(params);
+	return page.results ?? [];
 }

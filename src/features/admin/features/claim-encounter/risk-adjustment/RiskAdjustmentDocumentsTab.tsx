@@ -59,7 +59,7 @@ import {
 	RA_DOCUMENT_KPIS,
 	RA_DOCUMENT_ROWS,
 	type RaDocumentRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 function FileIcon({ type }: { type: RaDocumentRow["fileType"] }) {

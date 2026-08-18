@@ -36,18 +36,16 @@ import {
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
+import { displayRunStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import {
-	FILE_RUNS,
-	displayRunStatus,
-} from "@/features/admin/features/file-management/mock-data";
-import { Link } from "@/i18n/navigation";
-import { isMockEnabled } from "@/lib/mock-mode";
-import { cn } from "@/lib/utils";
-import {
+	useFileHistoryFileRunsList,
 	useInvalidateVendorCore,
 	useVendorCoreInboundFiles,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/file-history/feature/queries/useFileHistoryQuery";
+import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const PIE_COLORS = ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#94a3b8"];
@@ -68,6 +66,7 @@ function FileHistoryDashboard() {
 	const invalidate = useInvalidateVendorCore();
 	const filesQ = useVendorCoreInboundFiles();
 	const vendorsQ = useVendorCoreVendors();
+	const { fileRuns } = useFileHistoryFileRunsList();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
@@ -81,8 +80,8 @@ function FileHistoryDashboard() {
 
 	const programRuns = useMemo(() => {
 		if (useLive) return inboundFilesToRuns(filesQ.data ?? [], nameById);
-		return FILE_RUNS.filter((run) => run.program === programFilter);
-	}, [useLive, filesQ.data, nameById, programFilter]);
+		return fileRuns.filter((run) => run.program === programFilter);
+	}, [useLive, filesQ.data, nameById, programFilter, fileRuns]);
 
 	const vendors = useMemo(
 		() => Array.from(new Set(programRuns.map((run) => run.vendor))).sort(),

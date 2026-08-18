@@ -1,9 +1,5 @@
-import type { ApiInvoicesRecordDto } from "../../shared/dto/invoicesRecordDto";
+import type { InvoiceModel } from "@/features/shared/vms/types";
 
-export type ApiInvoicesDto = ApiInvoicesRecordDto;
-
-export type InvoicesCreateDto = {
-	name: string;
-};
-
-export type InvoicesUpdateDto = Partial<InvoicesCreateDto>;
+export type ApiInvoicesDto = InvoiceModel;
+export type InvoicesCreateDto = Omit<InvoiceModel, "id" | "updatedAt">;
+export type InvoicesUpdateDto = Partial<InvoiceModel>;

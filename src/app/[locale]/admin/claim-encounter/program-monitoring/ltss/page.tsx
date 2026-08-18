@@ -1,7 +1,5 @@
-import { ComplianceProgramRoutePage } from "@/features/admin/features/claim-encounter/compliance-program/ComplianceProgramRoutePage";
+import { LtssOverviewPage } from "@/features/admin/features/claim-encounter/ltss/LtssOverviewPage";
 
 export default function Page() {
-	return (
-		<ComplianceProgramRoutePage slug="ltss" section="program_monitoring" />
-	);
+	return <LtssOverviewPage />;
 }

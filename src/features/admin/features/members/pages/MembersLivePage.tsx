@@ -22,7 +22,7 @@ import {
 import {
 	useInvalidateVendorCore,
 	useVendorCoreMemberCoverages,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import type { MemberCoverageDto } from "@/lib/vendor-core/types";
 import { vendorLabel } from "@/lib/vendor-core/types";
 

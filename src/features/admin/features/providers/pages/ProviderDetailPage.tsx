@@ -76,7 +76,7 @@ import {
 	getProvider,
 	initials,
 	providerAge,
-} from "@/features/admin/features/providers/mock-data";
+} from "@/features/admin/features/providers/feature/api/providersApi";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

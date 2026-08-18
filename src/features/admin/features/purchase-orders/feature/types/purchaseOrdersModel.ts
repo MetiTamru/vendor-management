@@ -1,9 +1,8 @@
-export type PurchaseOrdersModel = {
-	id: string;
-	name: string;
-};
+import type { PurchaseOrderModel } from "@/features/shared/vms/types";
+
+export type PurchaseOrdersModel = PurchaseOrderModel;
 
 export type PurchaseOrdersListResult = {
-	items: PurchaseOrdersModel[];
+	items: PurchaseOrderModel[];
 	total: number;
 };

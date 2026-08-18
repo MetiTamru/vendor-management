@@ -1,9 +1,5 @@
-import type { ApiOnboardingRecordDto } from "../../shared/dto/onboardingRecordDto";
+import type { OnboardingCaseModel } from "@/features/shared/vms/types";
 
-export type ApiOnboardingDto = ApiOnboardingRecordDto;
-
-export type OnboardingCreateDto = {
-	name: string;
-};
-
-export type OnboardingUpdateDto = Partial<OnboardingCreateDto>;
+export type ApiOnboardingDto = OnboardingCaseModel;
+export type OnboardingCreateDto = Omit<OnboardingCaseModel, "id" | "updatedAt">;
+export type OnboardingUpdateDto = Partial<OnboardingCaseModel>;

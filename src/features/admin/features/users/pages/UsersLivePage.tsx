@@ -32,7 +32,7 @@ import {
 	useInvalidateVendorCore,
 	useVendorCoreLoginEvents,
 	useVendorCoreUsers,
-} from "@/lib/vendor-core/hooks";
+} from "../feature/queries/useUsersQuery";
 import type { LoginEventDto } from "@/lib/vendor-core/types";
 
 function rolesForUser(u: {

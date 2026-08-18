@@ -7,12 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { formatDate, formatMoney } from "@/features/shared/vms/utils";
+import { Link } from "@/i18n/navigation";
+
 import {
 	useInvoice,
 	useUpdateInvoiceMutation,
-} from "@/features/shared/vms/queries";
-import { formatDate, formatMoney } from "@/features/shared/vms/utils";
-import { Link } from "@/i18n/navigation";
+} from "../feature/queries/useInvoicesQuery";
 
 export function InvoiceDetailPage() {
 	const params = useParams<{ invoiceId: string }>();

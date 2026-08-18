@@ -1,9 +1,5 @@
-import type { ApiPerformanceRecordDto } from "../../shared/dto/performanceRecordDto";
+import type { ScorecardModel } from "@/features/shared/vms/types";
 
-export type ApiPerformanceDto = ApiPerformanceRecordDto;
-
-export type PerformanceCreateDto = {
-	name: string;
-};
-
-export type PerformanceUpdateDto = Partial<PerformanceCreateDto>;
+export type ApiPerformanceDto = ScorecardModel;
+export type PerformanceCreateDto = Omit<ScorecardModel, "id" | "updatedAt">;
+export type PerformanceUpdateDto = Partial<ScorecardModel>;

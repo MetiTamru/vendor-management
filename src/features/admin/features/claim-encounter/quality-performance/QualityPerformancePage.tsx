@@ -71,7 +71,7 @@ import {
 	QUALITY_PERFORMANCE_KPIS,
 	QUALITY_QUICK_ACTIONS,
 	QUALITY_TOP_MEASURES,
-} from "@/features/admin/features/claim-encounter/quality-performance/mock-data";
+} from "@/features/admin/features/claim-encounter/quality-performance/feature/queries/useQualityPerformanceQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";

@@ -17,8 +17,10 @@ import { GroupsCreateButton } from "../components/GroupsCreateButton";
 import { GroupsEmptyState } from "../components/GroupsEmptyState";
 import { GroupsTable } from "../components/GroupsTable";
 import { useGroupSearch } from "../hooks/useGroupSearch";
-import { useDeleteGroupMutation } from "../service/mutations/group.mutation";
-import { useGroupsList } from "../service/queries/group.query";
+import {
+	useDeleteGroupMutation,
+	useGroupsList,
+} from "../feature/queries/useGroupsQuery";
 import { useGroupUiStore } from "../store/group.ui-store";
 
 export function GroupsPage() {

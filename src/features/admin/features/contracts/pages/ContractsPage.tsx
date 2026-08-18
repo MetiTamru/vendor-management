@@ -38,10 +38,11 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useContractsList } from "@/features/shared/vms/queries";
 import type { ContractStatus } from "@/features/shared/vms/types";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import { useContractsList } from "../feature/queries/useContractsQuery";
 
 const STATUS_OPTIONS: ContractStatus[] = [
 	"draft",

@@ -1,33 +1,60 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
 
-import { getUsers, listUsers } from "../api/usersApi";
-import { toUsersModel } from "../mappers/usersMappers";
+import {
+	listVendorCoreLoginEvents,
+	listVendorCoreUsers,
+} from "../api/usersApi";
+import { useUsersList } from "../../service/queries/user.query";
+
+const domain = "users";
+
+export { useUsersList };
+
+export function useVendorCoreUsersQuery() {
+	return useVendorCoreFeatureQuery(domain, "vendor-core-list", listVendorCoreUsers);
+}
+
+export function useVendorCoreLoginEventsQuery(
+	scope: "all" | "me" | string = "all"
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"login-events",
+		() => listVendorCoreLoginEvents(scope),
+		true,
+		[scope]
+	);
+}
+
+export const useVendorCoreUsers = useVendorCoreUsersQuery;
+export const useVendorCoreLoginEvents = useVendorCoreLoginEventsQuery;
+export { useInvalidateVendorCore };
 
 export function useUsersQuery() {
-	return useQuery({
-		queryKey: ["admin", "users", "list"],
-		queryFn: async () => {
-			const res = await listUsers();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toUsersModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
-	});
+	const { users, isInitialLoading, error, refetch } = useUsersList();
+	return {
+		data: { items: users, total: users.length },
+		isLoading: isInitialLoading,
+		isError: Boolean(error),
+		error,
+		refetch,
+	};
 }
 
 export function useUsersDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "users", "detail", id ?? ""],
+	const { users, isInitialLoading, error, refetch } = useUsersList();
+	const user = id ? users.find((item) => item.id === id) : undefined;
+	return {
+		data: user,
+		isLoading: isInitialLoading,
+		isError: Boolean(error),
+		error,
+		refetch,
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getUsers(String(id));
-			return toUsersModel(row);
-		},
-		retry: false,
-	});
+	};
 }

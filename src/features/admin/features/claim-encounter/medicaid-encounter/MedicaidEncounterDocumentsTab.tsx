@@ -67,8 +67,8 @@ import {
 	type MedicaidDocumentFileKind,
 	type MedicaidDocumentRow,
 	filterMedicaidDocuments,
-} from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
-import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/medicaid-encounter/feature/queries/useMedicaidEncounterQuery";
+import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 

@@ -72,7 +72,7 @@ import {
 	type ExecutiveAlertSeverity,
 	type ExecutiveDomain,
 	executiveStatusPillClass,
-} from "@/features/admin/features/claim-encounter/executive-analytics/mock-data";
+} from "@/features/admin/features/claim-encounter/executive-analytics/feature/queries/useExecutiveAnalyticsQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-4 pb-4";

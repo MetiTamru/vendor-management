@@ -1,9 +1,8 @@
-export type ApprovalsModel = {
-	id: string;
-	name: string;
-};
+import type { ApprovalRequestModel } from "@/features/shared/vms/types";
+
+export type ApprovalsModel = ApprovalRequestModel;
 
 export type ApprovalsListResult = {
-	items: ApprovalsModel[];
+	items: ApprovalRequestModel[];
 	total: number;
 };

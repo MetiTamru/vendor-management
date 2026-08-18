@@ -1,58 +1,33 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { DocumentModel } from "@/features/shared/vms/types";
 
-import { documentsEndpoints } from "../../documents-endpoints";
 import type {
-	ApiDocumentsDto,
 	DocumentsCreateDto,
 	DocumentsUpdateDto,
 } from "../dto/documentsDto";
 
-export async function listDocuments() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiDocumentsDto[]; count?: number }>(
-				documentsEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getDocuments(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiDocumentsDto>(documentsEndpoints.detail(id))
-	);
+export async function listDocuments(): Promise<DocumentModel[]> {
+	return vmsApi.listDocuments();
 }
 
-export async function createDocuments(body: DocumentsCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiDocumentsDto>(documentsEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getDocuments(id: string): Promise<DocumentModel> {
+	return requireRecord(await vmsApi.getDocument(id));
 }
 
-export async function updateDocuments(id: string, body: DocumentsUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiDocumentsDto>(documentsEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function createDocuments(
+	input: DocumentsCreateDto
+): Promise<DocumentModel> {
+	return vmsApi.addDocument(input);
 }
 
-export async function deleteDocuments(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(documentsEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function updateDocuments(
+	id: string,
+	patch: DocumentsUpdateDto
+): Promise<DocumentModel> {
+	return requireRecord(await vmsApi.updateDocument(id, patch));
 }

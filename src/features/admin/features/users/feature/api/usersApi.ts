@@ -1,4 +1,6 @@
 import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+import type { CoreUserDto, LoginEventDto } from "@/lib/vendor-core/types";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { usersEndpoints } from "../../users-endpoints";
@@ -55,4 +57,24 @@ export async function deleteUsers(id: string) {
 				method: "DELETE",
 			})
 	);
+}
+
+export async function listVendorCoreUsers(): Promise<CoreUserDto[]> {
+	const page = await vendorCoreApi.listUsers();
+	return page.results ?? [];
+}
+
+export async function listVendorCoreLoginEvents(
+	scope: "all" | "me" | string = "all"
+): Promise<LoginEventDto[]> {
+	if (scope === "me") {
+		const page = await vendorCoreApi.listMyLoginEvents();
+		return page.results ?? [];
+	}
+	if (scope !== "all") {
+		const page = await vendorCoreApi.listUserLoginEvents(scope);
+		return page.results ?? [];
+	}
+	const page = await vendorCoreApi.listLoginEvents();
+	return page.results ?? [];
 }

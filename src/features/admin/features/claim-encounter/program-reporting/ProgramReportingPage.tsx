@@ -44,7 +44,7 @@ import { MedicarePartDTab } from "@/features/admin/features/claim-encounter/medi
 import {
 	MEDICAID_REPORTING_TABS,
 	MEDICARE_REPORTING_TABS,
-} from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import { MedicareComplianceTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/MedicareComplianceTab";
 import { MedicareRiskAdjustmentTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/MedicareRiskAdjustmentTab";
 import { ProgramReportingAuditTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/ProgramReportingAuditTab";

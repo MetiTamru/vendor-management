@@ -1,9 +1,5 @@
-import type { ApiSourcingRecordDto } from "../../shared/dto/sourcingRecordDto";
+import type { RfxModel } from "@/features/shared/vms/types";
 
-export type ApiSourcingDto = ApiSourcingRecordDto;
-
-export type SourcingCreateDto = {
-	name: string;
-};
-
-export type SourcingUpdateDto = Partial<SourcingCreateDto>;
+export type ApiSourcingDto = RfxModel;
+export type SourcingCreateDto = Omit<RfxModel, "id" | "updatedAt" | "bidCount">;
+export type SourcingUpdateDto = Partial<RfxModel>;

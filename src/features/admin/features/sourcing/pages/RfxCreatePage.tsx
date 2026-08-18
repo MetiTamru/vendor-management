@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 
 import { toast } from "sonner";
 
@@ -14,12 +14,11 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-	useCreateRfxMutation,
-	useVendorsList,
-} from "@/features/shared/vms/queries";
+import { useVendorsList } from "@/features/shared/vms/queries";
 import type { RfxType } from "@/features/shared/vms/types";
 import { useRouter } from "@/i18n/navigation";
+
+import { useCreateRfxMutation } from "../feature/queries/useSourcingQuery";
 
 export function RfxCreatePage() {
 	const router = useRouter();

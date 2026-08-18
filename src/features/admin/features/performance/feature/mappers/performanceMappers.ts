@@ -1,21 +1,8 @@
-import type {
-	PerformanceCreateDto,
-	PerformanceUpdateDto,
-} from "../dto/performanceDto";
-import type { PerformanceModel } from "../types/performanceModel";
+import type { ScorecardModel } from "@/features/shared/vms/types";
 
-export { toPerformanceModel } from "../../shared/mappers/performanceMappers";
+import type { ApiPerformanceDto } from "../dto/performanceDto";
 
-export function toPerformanceCreateDto(
-	model: Pick<PerformanceModel, "name">
-): PerformanceCreateDto {
-	return { name: model.name };
-}
-
-export function toPerformanceUpdateDto(
-	model: Partial<Pick<PerformanceModel, "name">>
-): PerformanceUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toPerformanceModel(dto: ApiPerformanceDto): ScorecardModel {
+	return dto;
 }

@@ -1,21 +1,8 @@
-import type {
-	ContractsCreateDto,
-	ContractsUpdateDto,
-} from "../dto/contractsDto";
-import type { ContractsModel } from "../types/contractsModel";
+import type { ContractModel } from "@/features/shared/vms/types";
 
-export { toContractsModel } from "../../shared/mappers/contractsMappers";
+import type { ApiContractsDto } from "../dto/contractsDto";
 
-export function toContractsCreateDto(
-	model: Pick<ContractsModel, "name">
-): ContractsCreateDto {
-	return { name: model.name };
-}
-
-export function toContractsUpdateDto(
-	model: Partial<Pick<ContractsModel, "name">>
-): ContractsUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toContractsModel(dto: ApiContractsDto): ContractModel {
+	return dto;
 }

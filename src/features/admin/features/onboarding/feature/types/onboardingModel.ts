@@ -1,9 +1,8 @@
-export type OnboardingModel = {
-	id: string;
-	name: string;
-};
+import type { OnboardingCaseModel } from "@/features/shared/vms/types";
+
+export type OnboardingModel = OnboardingCaseModel;
 
 export type OnboardingListResult = {
-	items: OnboardingModel[];
+	items: OnboardingCaseModel[];
 	total: number;
 };

@@ -1,58 +1,33 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { ContractModel } from "@/features/shared/vms/types";
 
-import { contractsEndpoints } from "../../contracts-endpoints";
 import type {
-	ApiContractsDto,
 	ContractsCreateDto,
 	ContractsUpdateDto,
 } from "../dto/contractsDto";
 
-export async function listContracts() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiContractsDto[]; count?: number }>(
-				contractsEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getContracts(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiContractsDto>(contractsEndpoints.detail(id))
-	);
+export async function listContracts(): Promise<ContractModel[]> {
+	return vmsApi.listContracts();
 }
 
-export async function createContracts(body: ContractsCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiContractsDto>(contractsEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getContracts(id: string): Promise<ContractModel> {
+	return requireRecord(await vmsApi.getContract(id));
 }
 
-export async function updateContracts(id: string, body: ContractsUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiContractsDto>(contractsEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function createContracts(
+	input: ContractsCreateDto
+): Promise<ContractModel> {
+	return vmsApi.createContract(input);
 }
 
-export async function deleteContracts(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(contractsEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function updateContracts(
+	id: string,
+	patch: ContractsUpdateDto
+): Promise<ContractModel> {
+	return requireRecord(await vmsApi.updateContract(id, patch));
 }

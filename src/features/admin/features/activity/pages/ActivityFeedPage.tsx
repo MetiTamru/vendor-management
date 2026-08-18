@@ -27,10 +27,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	FILE_RUNS,
-	displayRunStatus,
-} from "@/features/admin/features/file-management/mock-data";
+import type { FileRun } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
+import { displayRunStatus } from "@/features/admin/features/activity/feature/api/activityApi";
+import { useActivityFileRunsList } from "@/features/admin/features/activity/feature/queries/useActivityQuery";
 import {
 	VENDOR_ALERTS,
 	vendorIdForRun,
@@ -80,10 +79,13 @@ function typeLabel(type: EventType) {
 	return type.replaceAll("_", " ");
 }
 
-function buildTimelineEvents(program: ProgramFileType): TimelineEvent[] {
+function buildTimelineEvents(
+	program: ProgramFileType,
+	fileRuns: FileRun[]
+): TimelineEvent[] {
 	const events: TimelineEvent[] = [];
 
-	for (const run of FILE_RUNS.filter((r) => r.program === program)) {
+	for (const run of fileRuns.filter((r) => r.program === program)) {
 		const vendorId = vendorIdForRun(run);
 
 		if (run.receivedAt) {
@@ -176,6 +178,7 @@ function buildTimelineEvents(program: ProgramFileType): TimelineEvent[] {
 
 export function ActivityFeedPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const { fileRuns } = useActivityFileRunsList();
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [eventType, setEventType] = useState("all");
@@ -185,8 +188,8 @@ export function ActivityFeedPage() {
 
 	const events = useMemo(() => {
 		void refreshKey;
-		return buildTimelineEvents(programFilter);
-	}, [refreshKey, programFilter]);
+		return buildTimelineEvents(programFilter, fileRuns);
+	}, [refreshKey, programFilter, fileRuns]);
 
 	const vendors = useMemo(
 		() => Array.from(new Set(events.map((event) => event.vendor))).sort(),

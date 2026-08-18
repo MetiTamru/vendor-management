@@ -58,7 +58,7 @@ import {
 	CODING_VALIDATION_KPIS,
 	CODING_VALIDATION_ROWS,
 	type CodingValidationRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 function validationStatusTone(status: CodingValidationRow["status"]) {

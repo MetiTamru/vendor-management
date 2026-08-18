@@ -1,36 +1,58 @@
 "use client";
 
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
 import {
-	getProcessingStatus,
-	listProcessingStatus,
+	getProcessingStatusMonitoring,
+	listProcessingStatusFileRuns,
+	listProcessingStatusValidationResults,
 } from "../api/processingStatusApi";
-import { toProcessingStatusModel } from "../mappers/processingStatusMappers";
 
-export function useProcessingStatusQuery() {
+const domain = "processing-status";
+
+export function useProcessingStatusFileRunsQuery() {
 	return useQuery({
-		queryKey: ["admin", "processing-status", "list"],
-		queryFn: async () => {
-			const res = await listProcessingStatus();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toProcessingStatusModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "file-runs"),
+		queryFn: listProcessingStatusFileRuns,
+		staleTime: Infinity,
 	});
 }
 
-export function useProcessingStatusDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "processing-status", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getProcessingStatus(String(id));
-			return toProcessingStatusModel(row);
-		},
-		retry: false,
-	});
+export function useProcessingStatusMonitoringQuery() {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"monitoring",
+		getProcessingStatusMonitoring
+	);
 }
+
+export function useProcessingStatusValidationResultsQuery(
+	params?: { inbound_file_id?: string; search?: string },
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"validation-results",
+		() => listProcessingStatusValidationResults(params),
+		enabled,
+		[params ?? {}]
+	);
+}
+
+export function useProcessingStatusFileRunsList() {
+	const query = useProcessingStatusFileRunsQuery();
+	return { ...query, fileRuns: query.data ?? [] };
+}
+
+export const useVendorCoreMonitoring = useProcessingStatusMonitoringQuery;
+export const useVendorCoreValidationResults = useProcessingStatusValidationResultsQuery;
+
+export { useInvalidateVendorCore };
+
+export const useProcessingStatusQuery = useProcessingStatusFileRunsQuery;
+export const useProcessingStatusDetailQuery = useProcessingStatusFileRunsQuery;

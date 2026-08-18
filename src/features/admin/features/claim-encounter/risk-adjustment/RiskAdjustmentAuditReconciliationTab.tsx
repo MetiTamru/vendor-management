@@ -62,7 +62,7 @@ import {
 	RA_AUDIT_KPIS,
 	RA_AUDIT_ROWS,
 	type RaAuditRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 function auditStatusTone(status: RaAuditRow["status"]) {

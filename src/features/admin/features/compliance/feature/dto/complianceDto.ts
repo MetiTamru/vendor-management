@@ -1,9 +1,5 @@
-import type { ApiComplianceRecordDto } from "../../shared/dto/complianceRecordDto";
+import type { CertificateModel } from "@/features/shared/vms/types";
 
-export type ApiComplianceDto = ApiComplianceRecordDto;
-
-export type ComplianceCreateDto = {
-	name: string;
-};
-
-export type ComplianceUpdateDto = Partial<ComplianceCreateDto>;
+export type ApiComplianceDto = CertificateModel;
+export type ComplianceCreateDto = Omit<CertificateModel, "id" | "updatedAt">;
+export type ComplianceUpdateDto = Partial<CertificateModel>;

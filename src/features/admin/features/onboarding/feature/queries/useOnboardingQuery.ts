@@ -1,33 +1,57 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getOnboarding, listOnboarding } from "../api/onboardingApi";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
+import {
+	getOnboarding,
+	listOnboarding,
+	updateOnboarding,
+} from "../api/onboardingApi";
+import type { OnboardingUpdateDto } from "../dto/onboardingDto";
 import { toOnboardingModel } from "../mappers/onboardingMappers";
+
+const domain = "onboarding";
 
 export function useOnboardingQuery() {
 	return useQuery({
-		queryKey: ["admin", "onboarding", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listOnboarding();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toOnboardingModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listOnboarding()).map(toOnboardingModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
 export function useOnboardingDetailQuery(id: string | null | undefined) {
 	return useQuery({
-		queryKey: ["admin", "onboarding", "detail", id ?? ""],
+		queryKey: featureQueryKey(domain, "detail", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getOnboarding(String(id));
-			return toOnboardingModel(row);
-		},
-		retry: false,
+		queryFn: async () => toOnboardingModel(await getOnboarding(String(id))),
 	});
+}
+
+export function useUpdateOnboardingMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, patch }: { id: string; patch: OnboardingUpdateDto }) =>
+			updateOnboarding(id, patch),
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) });
+			queryClient.invalidateQueries({
+				queryKey: featureQueryKey(domain, "detail", variables.id),
+			});
+		},
+	});
+}
+
+export function useOnboardingList() {
+	const query = useOnboardingQuery();
+	return { ...query, cases: query.data?.items ?? [] };
+}
+
+export function useOnboardingCase(id: string | null | undefined) {
+	const query = useOnboardingDetailQuery(id);
+	return { ...query, caseItem: query.data };
 }

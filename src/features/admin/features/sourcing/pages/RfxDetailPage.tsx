@@ -22,15 +22,16 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCreateContractMutation } from "@/features/admin/features/contracts/feature/queries/useContractsQuery";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import {
-	useBidsList,
-	useCreateContractMutation,
-	useRfx,
-	useUpdateRfxMutation,
-} from "@/features/shared/vms/queries";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import {
+	useBidsList,
+	useRfx,
+	useUpdateRfxMutation,
+} from "../feature/queries/useSourcingQuery";
 
 export function RfxDetailPage() {
 	const params = useParams<{ rfxId: string }>();

@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { ReportTabPanel } from "@/features/admin/features/reports/ReportTabPanel";
-import { REPORT_TABS } from "@/features/admin/features/reports/mock-data";
+import { useReportTabsList } from "@/features/admin/features/reports/feature/queries/useReportsQuery";
 import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS = cn(
@@ -13,6 +13,8 @@ const TAB_TRIGGER_CLASS = cn(
 );
 
 export function ReportsPage() {
+	const { tabs } = useReportTabsList();
+
 	return (
 		<div className="space-y-4">
 			<ClaimPageHeader
@@ -24,7 +26,7 @@ export function ReportsPage() {
 				<div className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-sm">
 					<div className="border-b border-primary/15 px-4 pt-3">
 						<TabsList className="inline-flex h-auto max-w-full flex-wrap justify-start gap-1 rounded-lg bg-muted/40 p-1">
-							{REPORT_TABS.map((tab) => (
+							{tabs.map((tab) => (
 								<TabsTrigger
 									key={tab.id}
 									value={tab.id}
@@ -37,7 +39,7 @@ export function ReportsPage() {
 					</div>
 
 					<div className="p-4">
-						{REPORT_TABS.map((tab) => (
+						{tabs.map((tab) => (
 							<TabsContent key={tab.id} value={tab.id} className="mt-0">
 								<ReportTabPanel tabId={tab.id} />
 							</TabsContent>

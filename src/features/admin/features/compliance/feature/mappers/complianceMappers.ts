@@ -1,21 +1,8 @@
-import type {
-	ComplianceCreateDto,
-	ComplianceUpdateDto,
-} from "../dto/complianceDto";
-import type { ComplianceModel } from "../types/complianceModel";
+import type { CertificateModel } from "@/features/shared/vms/types";
 
-export { toComplianceModel } from "../../shared/mappers/complianceMappers";
+import type { ApiComplianceDto } from "../dto/complianceDto";
 
-export function toComplianceCreateDto(
-	model: Pick<ComplianceModel, "name">
-): ComplianceCreateDto {
-	return { name: model.name };
-}
-
-export function toComplianceUpdateDto(
-	model: Partial<Pick<ComplianceModel, "name">>
-): ComplianceUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toComplianceModel(dto: ApiComplianceDto): CertificateModel {
+	return dto;
 }

@@ -1,9 +1,5 @@
-import type { ApiCategoriesRecordDto } from "../../shared/dto/categoriesRecordDto";
+import type { VendorCategoryModel } from "@/features/shared/vms/types";
 
-export type ApiCategoriesDto = ApiCategoriesRecordDto;
-
-export type CategoriesCreateDto = {
-	name: string;
-};
-
-export type CategoriesUpdateDto = Partial<CategoriesCreateDto>;
+export type ApiCategoriesDto = VendorCategoryModel;
+export type CategoriesCreateDto = Omit<VendorCategoryModel, "id" | "vendorCount">;
+export type CategoriesUpdateDto = Partial<VendorCategoryModel>;

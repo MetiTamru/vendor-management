@@ -58,7 +58,7 @@ import {
 	FINDING_SEVERITY_STYLES,
 	type ProgramAuditData,
 	getAuditData,
-} from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 

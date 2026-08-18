@@ -2,7 +2,7 @@ import type { ProgramFileType } from "@/features/admin/features/claim-encounter/
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 
 import type { ComplianceProgramPageConfig } from "./config";
-import type { ComplianceProgramRow } from "./mock-data";
+import type { ComplianceProgramRow } from "./feature/types/compliance-programModel";
 
 function hashSlug(slug: string) {
 	let n = 0;

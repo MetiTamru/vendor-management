@@ -54,7 +54,7 @@ import {
 	MEMBER_OPPORTUNITY_KPIS,
 	MEMBER_OPPORTUNITY_ROWS,
 	type MemberOpportunityRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

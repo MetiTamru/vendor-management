@@ -33,22 +33,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	FILE_RUNS,
-	displayRunStatus,
-} from "@/features/admin/features/file-management/mock-data";
+import { displayRunStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
-type VendorSlaRow = {
-	vendor: string;
-	total: number;
-	onTime: number;
-	atRisk: number;
-	breached: number;
-	score: number;
-};
+import { useSlaMonitoringQuery } from "../feature/queries/useSlaMonitoringQuery";
 
 export function SlaMonitoringPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
@@ -56,9 +46,10 @@ export function SlaMonitoringPage() {
 	const [vendor, setVendor] = useState("all");
 	const [status, setStatus] = useState("all");
 
+	const { data: dashboard, refetch } = useSlaMonitoringQuery(programFilter);
 	const programRuns = useMemo(
-		() => FILE_RUNS.filter((run) => run.program === programFilter),
-		[programFilter]
+		() => dashboard?.events ?? [],
+		[dashboard?.events]
 	);
 
 	const vendors = useMemo(
@@ -79,57 +70,21 @@ export function SlaMonitoringPage() {
 		});
 	}, [programRuns, search, status, vendor]);
 
-	const summary = useMemo(() => {
-		const monitored = filteredRuns.length;
-		const onTime = filteredRuns.filter(
-			(run) => (run.latencyMinutes ?? 0) <= 0
-		).length;
-		const atRisk = filteredRuns.filter(
-			(run) =>
-				(run.latencyMinutes ?? 0) > 0 &&
-				(run.latencyMinutes ?? 0) <= run.slaMinutes
-		).length;
-		const breached = filteredRuns.filter(
-			(run) => (run.latencyMinutes ?? 0) > run.slaMinutes
-		).length;
-		const avgLatency = monitored
-			? Math.round(
-					filteredRuns.reduce(
-						(sum, run) => sum + (run.latencyMinutes ?? 0),
-						0
-					) / monitored
-				)
-			: 0;
-		const attainment = monitored ? Math.round((onTime / monitored) * 100) : 0;
-		return { monitored, onTime, atRisk, breached, avgLatency, attainment };
-	}, [filteredRuns]);
+	const summary = dashboard?.summary ?? {
+		monitored: 0,
+		onTime: 0,
+		atRisk: 0,
+		breached: 0,
+		avgLatency: 0,
+		attainment: 0,
+	};
 
-	const vendorScores = useMemo<VendorSlaRow[]>(() => {
-		const grouped = new Map<string, VendorSlaRow>();
-		for (const run of filteredRuns) {
-			if (!grouped.has(run.vendor)) {
-				grouped.set(run.vendor, {
-					vendor: run.vendor,
-					total: 0,
-					onTime: 0,
-					atRisk: 0,
-					breached: 0,
-					score: 0,
-				});
-			}
-			const row = grouped.get(run.vendor)!;
-			row.total += 1;
-			if ((run.latencyMinutes ?? 0) <= 0) row.onTime += 1;
-			else if ((run.latencyMinutes ?? 0) <= run.slaMinutes) row.atRisk += 1;
-			else row.breached += 1;
-		}
-		return Array.from(grouped.values())
-			.map((row) => ({
-				...row,
-				score: row.total ? Math.round((row.onTime / row.total) * 100) : 0,
-			}))
-			.sort((a, b) => a.score - b.score);
-	}, [filteredRuns]);
+	const vendorScores = useMemo(() => {
+		const allowed = new Set(filteredRuns.map((run) => run.vendor));
+		return (dashboard?.vendorScores ?? []).filter((row) =>
+			allowed.has(row.vendor)
+		);
+	}, [dashboard?.vendorScores, filteredRuns]);
 
 	const watchlist = filteredRuns
 		.filter((run) => (run.latencyMinutes ?? 0) > 0)
@@ -157,7 +112,12 @@ export function SlaMonitoringPage() {
 					<Button asChild size="sm" className="h-9">
 						<Link href="/admin/file-monitoring">Open File Monitoring</Link>
 					</Button>
-					<Button variant="outline" size="sm" className="h-9">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={() => refetch()}
+					>
 						<RefreshCw className="mr-1.5 size-3.5" />
 						Refresh
 					</Button>

@@ -35,20 +35,20 @@ import {
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { providersToSummaries } from "@/features/admin/features/providers/live-providers";
 import {
-	PROVIDER_SUMMARIES,
 	type ProviderStatus,
 	type ProviderSummary,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
-} from "@/features/admin/features/providers/mock-data";
+} from "@/features/admin/features/providers/feature/api/providersApi";
+import {
+	useInvalidateVendorCore,
+	useProviderSummariesList,
+	useVendorCoreProviders,
+} from "@/features/admin/features/providers/feature/queries/useProvidersQuery";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import {
-	useInvalidateVendorCore,
-	useVendorCoreProviders,
-} from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: ProviderStatus }) {
@@ -86,6 +86,7 @@ function ProvidersBody({ useLive }: { useLive: boolean }) {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const invalidate = useInvalidateVendorCore();
 	const providersQ = useVendorCoreProviders(useLive);
+	const { providers: mockSummaries } = useProviderSummariesList();
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
 	const [specialty, setSpecialty] = useState("all");
@@ -101,8 +102,8 @@ function ProvidersBody({ useLive }: { useLive: boolean }) {
 				programFilter as ProviderSummary["program"]
 			);
 		}
-		return PROVIDER_SUMMARIES.filter((p) => p.program === programFilter);
-	}, [useLive, providersQ.data, programFilter]);
+		return mockSummaries.filter((p) => p.program === programFilter);
+	}, [useLive, providersQ.data, programFilter, mockSummaries]);
 
 	const specialties = useMemo(
 		() => Array.from(new Set(programScoped.map((p) => p.specialty))).sort(),

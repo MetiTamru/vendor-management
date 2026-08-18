@@ -241,6 +241,42 @@ export type ProviderRosterDto = {
 	updated_at?: string;
 };
 
+/** GET /api/v1/eligibility-files/list/ — 834 eligibility file shells. */
+export type EligibilityFileDto = {
+	id: string;
+	reference_id?: string;
+	vendor_id?: string | null;
+	vendor?: string | VendorRef | null;
+	original_filename?: string;
+	received_at?: string;
+	member_count?: number;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export function normalizeEligibilityFile(
+	raw: Record<string, unknown>
+): EligibilityFileDto {
+	return {
+		...(raw as unknown as EligibilityFileDto),
+		id: String(raw.id ?? ""),
+		vendor_id:
+			typeof raw.vendor_id === "string"
+				? raw.vendor_id
+				: typeof raw.vendor === "object" &&
+					  raw.vendor &&
+					  "id" in (raw.vendor as object)
+					? String((raw.vendor as VendorRef).id)
+					: typeof raw.vendor === "string"
+						? raw.vendor
+						: null,
+		member_count:
+			typeof raw.member_count === "number"
+				? raw.member_count
+				: Number(raw.member_count ?? 0) || 0,
+	};
+}
+
 export type ClaimLineDto = {
 	id: string;
 	reference_id?: string;

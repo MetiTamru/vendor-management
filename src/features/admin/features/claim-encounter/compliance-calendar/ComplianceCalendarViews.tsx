@@ -13,7 +13,7 @@ import {
 	complianceStatusPillClass,
 	getScheduleForWeek,
 	getScheduleListGroups,
-} from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
+} from "@/features/admin/features/claim-encounter/compliance-calendar/feature/queries/useComplianceCalendarQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

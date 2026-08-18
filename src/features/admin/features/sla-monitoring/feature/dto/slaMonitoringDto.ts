@@ -1,9 +1,3 @@
-import type { ApiSlaMonitoringRecordDto } from "../../shared/dto/slaMonitoringRecordDto";
+import type { ProgramFileType } from "@/types/UI/system.types";
 
-export type ApiSlaMonitoringDto = ApiSlaMonitoringRecordDto;
-
-export type SlaMonitoringCreateDto = {
-	name: string;
-};
-
-export type SlaMonitoringUpdateDto = Partial<SlaMonitoringCreateDto>;
+export type SlaMonitoringDto = { program: ProgramFileType };

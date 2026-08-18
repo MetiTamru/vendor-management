@@ -67,7 +67,7 @@ import {
 	type ReAlertTone,
 	reSeverityPillClass,
 	reStatusPillClass,
-} from "@/features/admin/features/claim-encounter/executive-analytics/risk-exceptions-mock";
+} from "@/features/admin/features/claim-encounter/executive-analytics/feature/queries/useExecutiveAnalyticsQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-4 pb-4";

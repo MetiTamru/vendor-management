@@ -1,33 +1,29 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useRolesList } from "../../service/queries/role.query";
 
-import { getRoles, listRoles } from "../api/rolesApi";
-import { toRolesModel } from "../mappers/rolesMappers";
+export { useRolesList };
 
 export function useRolesQuery() {
-	return useQuery({
-		queryKey: ["admin", "roles", "list"],
-		queryFn: async () => {
-			const res = await listRoles();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toRolesModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
-	});
+	const { roles, isInitialLoading, error, refetch } = useRolesList();
+	return {
+		data: { items: roles, total: roles.length },
+		isLoading: isInitialLoading,
+		isError: Boolean(error),
+		error,
+		refetch,
+	};
 }
 
 export function useRolesDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "roles", "detail", id ?? ""],
+	const { roles, isInitialLoading, error, refetch } = useRolesList();
+	const role = id ? roles.find((item) => item.id === id) : undefined;
+	return {
+		data: role,
+		isLoading: isInitialLoading,
+		isError: Boolean(error),
+		error,
+		refetch,
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getRoles(String(id));
-			return toRolesModel(row);
-		},
-		retry: false,
-	});
+	};
 }

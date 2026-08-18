@@ -9,9 +9,9 @@ import { flushGroupSyncQueue } from "@/lib/offline/sync-worker";
 export const NetworkContext = createContext({ isOnline: true });
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {
-	const [isOnline, setIsOnline] = useState(
-		typeof navigator !== "undefined" ? navigator.onLine : true
-	);
+	// Always start online so SSR HTML matches the first client render.
+	// navigator.onLine is only read after mount.
+	const [isOnline, setIsOnline] = useState(true);
 
 	useEffect(() => {
 		const handleOnline = () => {

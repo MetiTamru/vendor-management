@@ -1,33 +1,55 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureMutation,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
 
-import { getMembers, listMembers } from "../api/membersApi";
-import { toMembersModel } from "../mappers/membersMappers";
+import {
+	listMemberCoverages,
+	listMemberSummaries,
+	listMemberVendors,
+	seedMemberCoverages,
+} from "../api/membersApi";
 
-export function useMembersQuery() {
-	return useQuery({
-		queryKey: ["admin", "members", "list"],
-		queryFn: async () => {
-			const res = await listMembers();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toMembersModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+const domain = "members";
+
+export function useMemberSummariesQuery() {
+	return useVendorCoreFeatureQuery(domain, "summaries", listMemberSummaries);
+}
+
+export function useMemberCoveragesQuery() {
+	return useVendorCoreFeatureQuery(domain, "coverages", listMemberCoverages);
+}
+
+export function useMemberVendorsQuery() {
+	return useVendorCoreFeatureQuery(domain, "vendors", listMemberVendors);
+}
+
+export function useSeedMemberCoveragesMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof seedMemberCoverages>>,
+		{ vendor_id?: string; force?: boolean } | undefined
+	>(domain, {
+		mutationFn: (body) => seedMemberCoverages(body),
 	});
 }
 
-export function useMembersDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "members", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getMembers(String(id));
-			return toMembersModel(row);
-		},
-		retry: false,
-	});
+export function useMemberSummariesList() {
+	const query = useMemberSummariesQuery();
+	return { ...query, members: query.data ?? [] };
 }
+
+export function useMemberCoveragesList() {
+	const query = useMemberCoveragesQuery();
+	return { ...query, coverages: query.data ?? [] };
+}
+
+export const useVendorCoreMemberCoverages = useMemberCoveragesQuery;
+export const useVendorCoreVendors = useMemberVendorsQuery;
+
+export { useInvalidateVendorCore };
+
+export const useMembersQuery = useMemberSummariesQuery;
+export const useMembersDetailQuery = useMemberCoveragesQuery;

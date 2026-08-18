@@ -1,61 +1,16 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { ScorecardModel } from "@/features/shared/vms/types";
 
-import { performanceEndpoints } from "../../performance-endpoints";
-import type {
-	ApiPerformanceDto,
-	PerformanceCreateDto,
-	PerformanceUpdateDto,
-} from "../dto/performanceDto";
-
-export async function listPerformance() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiPerformanceDto[]; count?: number }>(
-				performanceEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null | undefined): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getPerformance(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiPerformanceDto>(performanceEndpoints.detail(id))
-	);
+export async function listPerformance(): Promise<ScorecardModel[]> {
+	return vmsApi.listScorecards();
 }
 
-export async function createPerformance(body: PerformanceCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiPerformanceDto>(performanceEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function updatePerformance(
-	id: string,
-	body: PerformanceUpdateDto
-) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiPerformanceDto>(performanceEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deletePerformance(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(performanceEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function getPerformance(id: string): Promise<ScorecardModel> {
+	const items = await listPerformance();
+	return requireRecord(items.find((item) => item.id === id));
 }

@@ -63,7 +63,7 @@ import {
 	MEDICAID_FINDING_SEVERITY_STYLES,
 	MEDICAID_RECENT_AUDIT_ACTIVITIES,
 	MEDICAID_TOP_AUDIT_FINDINGS,
-} from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/medicaid-encounter/feature/queries/useMedicaidEncounterQuery";
 import { cn } from "@/lib/utils";
 
 const AUDIT_PAGE_STACK = "space-y-5";

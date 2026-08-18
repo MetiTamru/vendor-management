@@ -32,11 +32,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	FILE_RUNS,
-	type ProcessStatus,
-	displayRunStatus,
-} from "@/features/admin/features/file-management/mock-data";
+import { displayRunStatus } from "@/features/admin/features/schedules/feature/api/schedulesApi";
+import { useScheduleFileRunsList } from "@/features/admin/features/schedules/feature/queries/useSchedulesQuery";
+import type { ProcessStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import { SchedulesLivePage } from "@/features/admin/features/schedules/pages/SchedulesLivePage";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -75,14 +73,15 @@ export function SchedulesPage() {
 
 function SchedulesMockPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const { fileRuns } = useScheduleFileRunsList();
 	const [search, setSearch] = useState("");
 	const [vendor, setVendor] = useState("all");
 	const [frequency, setFrequency] = useState("all");
 	const [status, setStatus] = useState("all");
 
 	const programRuns = useMemo(
-		() => FILE_RUNS.filter((run) => run.program === programFilter),
-		[programFilter]
+		() => fileRuns.filter((run) => run.program === programFilter),
+		[fileRuns, programFilter]
 	);
 
 	const vendors = useMemo(

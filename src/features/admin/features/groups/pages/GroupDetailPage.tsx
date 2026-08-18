@@ -10,7 +10,7 @@ import { GroupDetailCard } from "../components/GroupDetailCard";
 import { GroupHeader } from "../components/GroupHeader";
 import { GroupMembersSection } from "../components/GroupMembersSection";
 import { useGroupTabs } from "../hooks/useGroupTabs";
-import { useGroup } from "../service/queries/group.query";
+import { useGroup } from "../feature/queries/useGroupsQuery";
 
 type GroupDetailPageProps = {
 	groupId: string;

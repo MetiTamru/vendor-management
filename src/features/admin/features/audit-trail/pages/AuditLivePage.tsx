@@ -23,7 +23,7 @@ import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreAudit,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/audit-trail/feature/queries/useAuditTrailQuery";
 
 function AuditLiveBody() {
 	const invalidate = useInvalidateVendorCore();

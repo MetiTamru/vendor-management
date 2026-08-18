@@ -1,9 +1,8 @@
-export type PerformanceModel = {
-	id: string;
-	name: string;
-};
+import type { ScorecardModel } from "@/features/shared/vms/types";
+
+export type PerformanceModel = ScorecardModel;
 
 export type PerformanceListResult = {
-	items: PerformanceModel[];
+	items: ScorecardModel[];
 	total: number;
 };

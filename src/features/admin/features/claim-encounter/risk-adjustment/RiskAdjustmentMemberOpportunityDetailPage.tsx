@@ -49,7 +49,7 @@ import {
 	RA_TABLE_HEAD,
 	RaStatusPill,
 } from "@/features/admin/features/claim-encounter/risk-adjustment/RiskAdjustmentShared";
-import type { MemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+import type { MemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

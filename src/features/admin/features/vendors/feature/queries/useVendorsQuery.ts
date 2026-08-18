@@ -1,33 +1,96 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
 
-import { getVendors, listVendors } from "../api/vendorsApi";
-import { toVendorsModel } from "../mappers/vendorsMappers";
+import {
+	getVendor,
+	listVendorAccounts,
+	listVendorConnections,
+	listVendorInboundFiles,
+	listVendorJobs,
+	listVendors,
+} from "../api/vendorsApi";
+
+const domain = "vendors";
 
 export function useVendorsQuery() {
-	return useQuery({
-		queryKey: ["admin", "vendors", "list"],
-		queryFn: async () => {
-			const res = await listVendors();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toVendorsModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
-	});
+	return useVendorCoreFeatureQuery(domain, "list", listVendors);
 }
 
-export function useVendorsDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "vendors", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getVendors(String(id));
-			return toVendorsModel(row);
-		},
-		retry: false,
-	});
+export function useVendorDetailQuery(id: string | null | undefined) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"detail",
+		() => getVendor(String(id)),
+		Boolean(id),
+		[id ?? ""]
+	);
 }
+
+export function useVendorConnectionsQuery(vendorId?: string) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"connections",
+		() => listVendorConnections(vendorId),
+		true,
+		[vendorId ?? "all"]
+	);
+}
+
+export function useVendorJobsQuery(vendorId?: string) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"jobs",
+		() => listVendorJobs(vendorId),
+		true,
+		[vendorId ?? "all"]
+	);
+}
+
+export function useVendorAccountsQuery(vendorId?: string) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"accounts",
+		() => listVendorAccounts(vendorId),
+		true,
+		[vendorId ?? "all"]
+	);
+}
+
+export function useVendorInboundFilesQuery(params?: {
+	stage?: string;
+	vendor_id?: string;
+}) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"inbound-files",
+		() => listVendorInboundFiles(params),
+		true,
+		[params ?? {}]
+	);
+}
+
+export function useVendorsList() {
+	const query = useVendorsQuery();
+	return { ...query, vendors: query.data ?? [] };
+}
+
+export function useVendor(id: string | null | undefined) {
+	const query = useVendorDetailQuery(id);
+	return { ...query, vendor: query.data };
+}
+
+/** Convenience aliases matching legacy vendor-core hook names. */
+export const useVendorCoreVendors = useVendorsQuery;
+export const useVendorCoreVendor = useVendorDetailQuery;
+export const useVendorCoreConnections = useVendorConnectionsQuery;
+export const useVendorCoreJobs = useVendorJobsQuery;
+export const useVendorCoreAccounts = useVendorAccountsQuery;
+export const useVendorCoreInboundFiles = useVendorInboundFilesQuery;
+
+export const useVendorsDetailQuery = useVendorDetailQuery;
+
+export { useInvalidateVendorCore };

@@ -75,7 +75,7 @@ import {
 	type CmsEdgeTabId,
 	PRIORITY_DOT,
 	REPORT_STATUS_STYLES,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";

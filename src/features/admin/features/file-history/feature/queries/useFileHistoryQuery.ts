@@ -1,33 +1,54 @@
 "use client";
 
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
-import { getFileHistory, listFileHistory } from "../api/fileHistoryApi";
-import { toFileHistoryModel } from "../mappers/fileHistoryMappers";
+import {
+	listFileHistoryFileRuns,
+	listFileHistoryInboundFiles,
+	listFileHistoryVendors,
+} from "../api/fileHistoryApi";
 
-export function useFileHistoryQuery() {
+const domain = "file-history";
+
+export function useFileHistoryFileRunsQuery() {
 	return useQuery({
-		queryKey: ["admin", "file-history", "list"],
-		queryFn: async () => {
-			const res = await listFileHistory();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toFileHistoryModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "file-runs"),
+		queryFn: listFileHistoryFileRuns,
+		staleTime: Infinity,
 	});
 }
 
-export function useFileHistoryDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "file-history", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getFileHistory(String(id));
-			return toFileHistoryModel(row);
-		},
-		retry: false,
-	});
+export function useFileHistoryInboundFilesQuery(params?: {
+	stage?: string;
+	vendor_id?: string;
+}) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"inbound-files",
+		() => listFileHistoryInboundFiles(params),
+		true,
+		[params ?? {}]
+	);
 }
+
+export function useFileHistoryVendorsQuery() {
+	return useVendorCoreFeatureQuery(domain, "vendors", listFileHistoryVendors);
+}
+
+export function useFileHistoryFileRunsList() {
+	const query = useFileHistoryFileRunsQuery();
+	return { ...query, fileRuns: query.data ?? [] };
+}
+
+export const useVendorCoreInboundFiles = useFileHistoryInboundFilesQuery;
+export const useVendorCoreVendors = useFileHistoryVendorsQuery;
+
+export { useInvalidateVendorCore };
+
+export const useFileHistoryQuery = useFileHistoryFileRunsQuery;
+export const useFileHistoryDetailQuery = useFileHistoryFileRunsQuery;

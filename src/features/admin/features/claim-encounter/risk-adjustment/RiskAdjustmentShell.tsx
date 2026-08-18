@@ -31,7 +31,7 @@ import {
 	RISK_ADJUSTMENT_TAB_META,
 	RISK_ADJUSTMENT_TAB_SLUGS,
 	type RiskAdjustmentTab,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

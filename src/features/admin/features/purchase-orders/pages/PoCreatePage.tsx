@@ -13,12 +13,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	useCreatePoMutation,
-	useVendorsList,
-} from "@/features/shared/vms/queries";
+import { useVendorsList } from "@/features/shared/vms/queries";
 import { formatMoney } from "@/features/shared/vms/utils";
 import { useRouter } from "@/i18n/navigation";
+
+import { useCreatePoMutation } from "../feature/queries/usePurchaseOrdersQuery";
 
 export function PoCreatePage() {
 	const router = useRouter();

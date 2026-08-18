@@ -6,6 +6,7 @@ import type {
 	ConnectionDto,
 	CoreUserDto,
 	CredentialDto,
+	EligibilityFileDto,
 	ErrorRecordDto,
 	InboundFileDto,
 	IntakeJobDto,
@@ -25,6 +26,7 @@ import {
 	normalizeAccount,
 	normalizeClaimLine,
 	normalizeConnection,
+	normalizeEligibilityFile,
 	normalizeErrorRecord,
 	normalizeInboundFile,
 	normalizeJob,
@@ -251,11 +253,54 @@ export const vendorCoreApi = {
 		} satisfies PaginatedResult<AccountDto>;
 	},
 
-	listCredentials: () =>
-		vendorCoreFetch<PaginatedResult<CredentialDto>>(
-			vendorCoreEndpoints.credentialsList,
-			{ params: pageParams() }
-		),
+	listCredentials: async () => {
+		const results = await listAllPages(async ({ limit, offset }) => {
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.credentialsList, {
+				params: pageParams({ limit, offset }),
+			});
+			return mapPage(page, (raw) => raw as unknown as CredentialDto);
+		});
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<CredentialDto>;
+	},
+
+	listEligibilityFiles: async () => {
+		const results = await listAllPages(async ({ limit, offset }) => {
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.eligibilityFilesList, {
+				params: pageParams({ limit, offset }),
+			});
+			return mapPage(page, normalizeEligibilityFile);
+		});
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<EligibilityFileDto>;
+	},
+
+	createEligibilityFile: (body: {
+		vendor_id?: string;
+		original_filename?: string;
+		received_at?: string;
+		member_count?: number;
+	}) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.eligibilityFilesCreate,
+			{ method: "POST", body: JSON.stringify(body) }
+		).then(normalizeEligibilityFile),
 
 	listConnections: async (params?: {
 		method?: string;
@@ -363,17 +408,6 @@ export const vendorCoreApi = {
 			results,
 		} satisfies PaginatedResult<MemberCoverageDto>;
 	},
-
-	createEligibilityFile: (body: {
-		vendor_id?: string;
-		original_filename?: string;
-		received_at?: string;
-		member_count?: number;
-	}) =>
-		vendorCoreFetch<Record<string, unknown>>(
-			vendorCoreEndpoints.eligibilityFilesCreate,
-			{ method: "POST", body: JSON.stringify(body) }
-		),
 
 	createMemberCoverage: (body: {
 		eligibility_file_id: string;

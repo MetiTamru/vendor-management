@@ -18,9 +18,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { usePurchaseOrdersList } from "@/features/shared/vms/queries";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import { usePurchaseOrdersList } from "../feature/queries/usePurchaseOrdersQuery";
 
 export function PurchaseOrdersPage() {
 	const { orders, isLoading, error } = usePurchaseOrdersList();

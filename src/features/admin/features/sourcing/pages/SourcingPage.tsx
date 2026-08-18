@@ -13,7 +13,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useRfxList } from "@/features/shared/vms/queries";
+import { useRfxList } from "../feature/queries/useSourcingQuery";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
 

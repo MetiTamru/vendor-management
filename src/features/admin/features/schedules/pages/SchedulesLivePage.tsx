@@ -42,7 +42,7 @@ import {
 	useVendorCoreJobRuns,
 	useVendorCoreJobs,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/schedules/feature/queries/useSchedulesQuery";
 import type { IntakeJobDto } from "@/lib/vendor-core/types";
 import { vendorLabel } from "@/lib/vendor-core/types";
 

@@ -56,7 +56,7 @@ import {
 	OVERVIEW_RESPONSE_STATUS_STYLES,
 	OVERVIEW_SUBMISSION_STATUS_STYLES,
 	type TimelineStageState,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { cn } from "@/lib/utils";
 
 const OVERVIEW_PAGE_STACK = "space-y-7";

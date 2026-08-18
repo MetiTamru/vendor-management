@@ -36,23 +36,23 @@ import {
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
 import {
-	MEMBER_SUMMARIES,
 	type MemberStatus,
 	displayName,
 	formatCurrency,
 	formatDate,
 	maskSsn,
-} from "@/features/admin/features/members/mock-data";
+} from "@/features/admin/features/members/feature/api/membersApi";
+import {
+	useInvalidateVendorCore,
+	useMemberSummariesList,
+	useVendorCoreMemberCoverages,
+	useVendorCoreVendors,
+} from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { vendorCoreApi } from "@/lib/vendor-core";
-import {
-	useInvalidateVendorCore,
-	useVendorCoreMemberCoverages,
-	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function StatusPill({ status }: { status: MemberStatus }) {
@@ -91,6 +91,7 @@ function MembersDirectoryPage() {
 	const invalidate = useInvalidateVendorCore();
 	const coveragesQ = useVendorCoreMemberCoverages();
 	const vendorsQ = useVendorCoreVendors();
+	const { members: mockSummaries } = useMemberSummariesList();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
@@ -104,10 +105,10 @@ function MembersDirectoryPage() {
 
 	const programScoped = useMemo(() => {
 		if (!useLive) {
-			return MEMBER_SUMMARIES.filter((m) => m.program === programFilter);
+			return mockSummaries.filter((m) => m.program === programFilter);
 		}
 		return memberCoveragesToSummaries(coveragesQ.data ?? []);
-	}, [useLive, coveragesQ.data, programFilter]);
+	}, [useLive, coveragesQ.data, programFilter, mockSummaries]);
 
 	const plans = useMemo(
 		() => Array.from(new Set(programScoped.map((m) => m.planName))).sort(),

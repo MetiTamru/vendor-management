@@ -61,7 +61,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
-import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import type { ProcessStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
+import { useDashboardFileRunsList } from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
 import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
 import {
 	PROCESSING_TREND,
@@ -79,7 +80,7 @@ import { cn } from "@/lib/utils";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreInboundFiles,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 import {
 	DASHBOARD_WIDGET_LABELS,
@@ -90,7 +91,7 @@ import {
 function ActivityStatus({
 	status,
 }: {
-	status: (typeof FILE_RUNS)[0]["status"];
+	status: ProcessStatus;
 }) {
 	const bucket = runBucket(status);
 	if (bucket === "success") {
@@ -129,6 +130,7 @@ export function DashboardPage() {
 	const { vendors, isLoading, error, refetch } = useVendorsList();
 	const live = !isMockEnabled();
 	const filesQ = useVendorCoreInboundFiles();
+	const { fileRuns: mockFileRuns } = useDashboardFileRunsList();
 	const invalidateVendorCore = useInvalidateVendorCore();
 	const { enabledWidgets, toggleWidget, resetWidgets, isEnabled } =
 		useDashboardWidgetsStore();
@@ -150,8 +152,8 @@ export function DashboardPage() {
 		if (live) {
 			return inboundFilesToRuns(filesQ.data ?? [], nameById);
 		}
-		return FILE_RUNS;
-	}, [live, filesQ.data, nameById]);
+		return mockFileRuns;
+	}, [live, filesQ.data, nameById, mockFileRuns]);
 
 	const filteredRuns = useMemo(() => {
 		return allRuns.filter((run) => {

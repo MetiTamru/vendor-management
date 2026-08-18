@@ -32,7 +32,7 @@ import {
 	MEDICARE_COMPLIANCE_ATTESTATIONS,
 	MEDICARE_COMPLIANCE_KPIS,
 	MEDICARE_COMPLIANCE_REQUIREMENTS,
-} from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";

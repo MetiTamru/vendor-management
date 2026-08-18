@@ -73,7 +73,7 @@ import {
 	useVendorCoreInboundFiles,
 	useVendorCoreJobs,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
 	return <StatusBadge status={status} />;

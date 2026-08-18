@@ -1,33 +1,73 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getContracts, listContracts } from "../api/contractsApi";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
+import {
+	createContracts,
+	getContracts,
+	listContracts,
+	updateContracts,
+} from "../api/contractsApi";
+import type {
+	ContractsCreateDto,
+	ContractsUpdateDto,
+} from "../dto/contractsDto";
 import { toContractsModel } from "../mappers/contractsMappers";
+
+const domain = "contracts";
 
 export function useContractsQuery() {
 	return useQuery({
-		queryKey: ["admin", "contracts", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listContracts();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toContractsModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listContracts()).map(toContractsModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
 export function useContractsDetailQuery(id: string | null | undefined) {
 	return useQuery({
-		queryKey: ["admin", "contracts", "detail", id ?? ""],
+		queryKey: featureQueryKey(domain, "detail", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getContracts(String(id));
-			return toContractsModel(row);
-		},
-		retry: false,
+		queryFn: async () => toContractsModel(await getContracts(String(id))),
 	});
 }
+
+export function useCreateContractsMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (input: ContractsCreateDto) => createContracts(input),
+		onSuccess: () =>
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) }),
+	});
+}
+
+export function useUpdateContractsMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, patch }: { id: string; patch: ContractsUpdateDto }) =>
+			updateContracts(id, patch),
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) });
+			queryClient.invalidateQueries({
+				queryKey: featureQueryKey(domain, "detail", variables.id),
+			});
+		},
+	});
+}
+
+export function useContractsList() {
+	const query = useContractsQuery();
+	return { ...query, contracts: query.data?.items ?? [] };
+}
+
+export function useContract(id: string | null | undefined) {
+	const query = useContractsDetailQuery(id);
+	return { ...query, contract: query.data };
+}
+
+export const useCreateContractMutation = useCreateContractsMutation;
+export const useUpdateContractMutation = useUpdateContractsMutation;

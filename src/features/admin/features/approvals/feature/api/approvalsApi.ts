@@ -1,58 +1,23 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { ApprovalRequestModel } from "@/features/shared/vms/types";
 
-import { approvalsEndpoints } from "../../approvals-endpoints";
-import type {
-	ApiApprovalsDto,
-	ApprovalsCreateDto,
-	ApprovalsUpdateDto,
-} from "../dto/approvalsDto";
-
-export async function listApprovals() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiApprovalsDto[]; count?: number }>(
-				approvalsEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null | undefined): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getApprovals(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiApprovalsDto>(approvalsEndpoints.detail(id))
-	);
+export async function listApprovals(): Promise<ApprovalRequestModel[]> {
+	return vmsApi.listApprovals();
 }
 
-export async function createApprovals(body: ApprovalsCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiApprovalsDto>(approvalsEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getApprovals(id: string): Promise<ApprovalRequestModel> {
+	const items = await listApprovals();
+	return requireRecord(items.find((item) => item.id === id));
 }
 
-export async function updateApprovals(id: string, body: ApprovalsUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiApprovalsDto>(approvalsEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deleteApprovals(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(approvalsEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function updateApprovals(
+	id: string,
+	status: ApprovalRequestModel["status"]
+): Promise<ApprovalRequestModel> {
+	return requireRecord(await vmsApi.updateApproval(id, status));
 }

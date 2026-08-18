@@ -37,7 +37,7 @@ import { analyticsForPage } from "@/features/admin/features/claim-encounter/comp
 import {
 	rowsForComplianceProgramPage,
 	statsForRows,
-} from "@/features/admin/features/claim-encounter/compliance-program/mock-data";
+} from "@/features/admin/features/claim-encounter/compliance-program/feature/queries/useComplianceProgramQuery";
 import {
 	ClaimKpiGrid,
 	ClaimPageHeader,

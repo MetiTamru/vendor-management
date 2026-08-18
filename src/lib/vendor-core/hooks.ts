@@ -36,6 +36,8 @@ export const vendorCoreKeys = {
 	providers: () => [...vendorCoreKeys.all, "providers"] as const,
 	providerRosters: () => [...vendorCoreKeys.all, "provider-rosters"] as const,
 	claimLines: () => [...vendorCoreKeys.all, "claim-lines"] as const,
+	credentials: () => [...vendorCoreKeys.all, "credentials"] as const,
+	eligibilityFiles: () => [...vendorCoreKeys.all, "eligibility-files"] as const,
 };
 
 function useAuthAwareQuery<T>(
@@ -259,6 +261,28 @@ export function useVendorCoreClaimLines(enabled = true) {
 	);
 }
 
+export function useVendorCoreCredentials(enabled = true) {
+	return useAuthAwareQuery(
+		vendorCoreKeys.credentials(),
+		async () => {
+			const page = await vendorCoreApi.listCredentials();
+			return page.results ?? [];
+		},
+		enabled
+	);
+}
+
+export function useVendorCoreEligibilityFiles(enabled = true) {
+	return useAuthAwareQuery(
+		vendorCoreKeys.eligibilityFiles(),
+		async () => {
+			const page = await vendorCoreApi.listEligibilityFiles();
+			return page.results ?? [];
+		},
+		enabled
+	);
+}
+
 export function useInvalidateVendorCore() {
 	const client = useQueryClient();
 	return () => client.invalidateQueries({ queryKey: vendorCoreKeys.all });
@@ -286,6 +310,92 @@ export function useRunIntakeJob() {
 	const invalidate = useInvalidateVendorCore();
 	return useMutation({
 		mutationFn: (id: string) => vendorCoreApi.runIntakeJob(id),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useCreateCredential() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body: {
+			name: string;
+			kind: string;
+			secret_ref: string;
+			metadata?: Record<string, unknown>;
+		}) => vendorCoreApi.createCredential(body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useCreateRoutingRule() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body: Record<string, unknown>) =>
+			vendorCoreApi.createRoutingRule(body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useCreateEligibilityFile() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body: {
+			vendor_id?: string;
+			original_filename?: string;
+			received_at?: string;
+			member_count?: number;
+		}) => vendorCoreApi.createEligibilityFile(body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useCreateClaimLine() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body: Record<string, unknown>) =>
+			vendorCoreApi.createClaimLine(body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useUpdateClaimLine() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+			vendorCoreApi.updateClaimLine(id, body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useDeleteClaimLine() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (id: string) => vendorCoreApi.deleteClaimLine(id),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useHardDeleteClaimLine() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (id: string) => vendorCoreApi.hardDeleteClaimLine(id),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useRestoreClaimLine() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (id: string) => vendorCoreApi.restoreClaimLine(id),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useSeedClaimLines() {
+	const invalidate = useInvalidateVendorCore();
+	return useMutation({
+		mutationFn: (body?: { vendor_id?: string; force?: boolean }) =>
+			vendorCoreApi.seedClaimLines(body),
 		onSuccess: () => invalidate(),
 	});
 }

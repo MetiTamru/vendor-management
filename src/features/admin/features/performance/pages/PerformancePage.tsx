@@ -9,7 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useScorecardsList } from "@/features/shared/vms/queries";
+import { useScorecardsList } from "../feature/queries/usePerformanceQuery";
 import { formatDate } from "@/features/shared/vms/utils";
 
 function scoreColor(score: number) {

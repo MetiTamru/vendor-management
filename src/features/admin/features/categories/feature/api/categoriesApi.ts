@@ -1,58 +1,16 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { VendorCategoryModel } from "@/features/shared/vms/types";
 
-import { categoriesEndpoints } from "../../categories-endpoints";
-import type {
-	ApiCategoriesDto,
-	CategoriesCreateDto,
-	CategoriesUpdateDto,
-} from "../dto/categoriesDto";
-
-export async function listCategories() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiCategoriesDto[]; count?: number }>(
-				categoriesEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null | undefined): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getCategories(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiCategoriesDto>(categoriesEndpoints.detail(id))
-	);
+export async function listCategories(): Promise<VendorCategoryModel[]> {
+	return vmsApi.listCategories();
 }
 
-export async function createCategories(body: CategoriesCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiCategoriesDto>(categoriesEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function updateCategories(id: string, body: CategoriesUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiCategoriesDto>(categoriesEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deleteCategories(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(categoriesEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function getCategories(id: string): Promise<VendorCategoryModel> {
+	const items = await listCategories();
+	return requireRecord(items.find((item) => item.id === id));
 }

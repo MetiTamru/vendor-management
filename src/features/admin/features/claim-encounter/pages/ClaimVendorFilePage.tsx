@@ -44,7 +44,7 @@ import {
 	type ClaimVendorFile,
 	displayClaimStatus,
 	filesForProgram,
-} from "@/features/admin/features/claim-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";

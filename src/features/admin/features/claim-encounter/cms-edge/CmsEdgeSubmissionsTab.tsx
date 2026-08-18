@@ -50,7 +50,7 @@ import {
 	CMS_EDGE_SUBMISSION_NOTES,
 	SUBMISSION_CMS_RESPONSE_STYLES,
 	SUBMISSION_STATUS_STYLES,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 

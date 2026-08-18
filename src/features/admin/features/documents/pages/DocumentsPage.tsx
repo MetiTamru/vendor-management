@@ -50,11 +50,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useDocumentsList } from "@/features/shared/vms/queries";
 import type { DocumentType } from "@/features/shared/vms/types";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+import { useDocumentsList } from "../feature/queries/useDocumentsQuery";
 
 const DOCUMENT_TYPES: DocumentType[] = [
 	"tax_certificate",

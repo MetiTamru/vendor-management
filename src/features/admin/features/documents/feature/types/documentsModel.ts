@@ -1,9 +1,8 @@
-export type DocumentsModel = {
-	id: string;
-	name: string;
-};
+import type { DocumentModel } from "@/features/shared/vms/types";
+
+export type DocumentsModel = DocumentModel;
 
 export type DocumentsListResult = {
-	items: DocumentsModel[];
+	items: DocumentModel[];
 	total: number;
 };

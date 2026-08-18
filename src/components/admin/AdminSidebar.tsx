@@ -14,29 +14,41 @@ import {
 	ClipboardCheck,
 	ClipboardList,
 	Database,
+	Download,
 	FileBarChart2,
 	FileInput,
 	FileOutput,
 	FileSearch,
+	FileSpreadsheet,
 	FileText,
 	FileWarning,
 	Files,
 	FolderKanban,
+	GitBranch,
 	GitCompare,
 	HeartPulse,
 	History,
 	Home,
 	Hospital,
+	KeyRound,
 	LifeBuoy,
 	LineChart,
+	Megaphone,
 	MessageSquareReply,
 	Radio,
+	Receipt,
 	Scale,
 	ScrollText,
 	Settings,
+	Shield,
 	ShieldCheck,
+	ShoppingCart,
 	Stethoscope,
+	Tags,
 	Timer,
+	TrendingUp,
+	UserPlus,
+	UsersRound,
 	UserRound,
 	Users,
 	Workflow,
@@ -78,7 +90,23 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Contracts: FileText,
 	Members: UserRound,
 	Providers: Stethoscope,
+	"Eligibility Files": FileSpreadsheet,
+	"Provider Rosters": ClipboardList,
+	Onboarding: UserPlus,
+	Categories: Tags,
+	Sourcing: Megaphone,
+	Documents: FileText,
+	Compliance: Shield,
+	Performance: TrendingUp,
+	"Purchase Orders": ShoppingCart,
+	Invoices: Receipt,
+	Approvals: CheckCircle2,
+	Groups: UsersRound,
+	Roles: KeyRound,
+	"Export Center": Download,
 	"Integration Intake": Cable,
+	Credentials: KeyRound,
+	"Routing Rules": GitBranch,
 	"File Monitoring": FolderKanban,
 	"Processing Status": FileSearch,
 	"File History": History,
@@ -121,6 +149,9 @@ const NAV_ICONS: Record<string, typeof Home> = {
 const VENDOR_SECTION_ORDER = [
 	"top",
 	"master_data",
+	"procurement",
+	"governance",
+	"finance",
 	"integration_file_operations",
 	"operations",
 	"administration",
@@ -219,8 +250,8 @@ function SidebarNavEntry({
 					<CollapsibleTrigger asChild>
 						<SidebarMenuButton tooltip={label} isActive={active}>
 							<Icon />
-							<span>{label}</span>
-							<ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+							<span className="min-w-0 flex-1 leading-snug">{label}</span>
+							<ChevronRight className="ml-auto size-4 shrink-0 self-start mt-0.5 transition-transform group-data-[state=open]/collapsible:rotate-90" />
 						</SidebarMenuButton>
 					</CollapsibleTrigger>
 					<CollapsibleContent>
@@ -233,7 +264,9 @@ function SidebarNavEntry({
 									<SidebarMenuSubItem key={child.href}>
 										<SidebarMenuSubButton asChild isActive={childActive}>
 											<Link href={child.href}>
-												<span>{childLabel}</span>
+												<span className="min-w-0 flex-1 leading-snug">
+													{childLabel}
+												</span>
 											</Link>
 										</SidebarMenuSubButton>
 									</SidebarMenuSubItem>
@@ -260,12 +293,12 @@ function SidebarNavEntry({
 				{isExternal ? (
 					<a href={item.href}>
 						<Icon />
-						<span>{label}</span>
+						<span className="min-w-0 flex-1 leading-snug">{label}</span>
 					</a>
 				) : (
 					<Link href={item.href}>
 						<Icon />
-						<span>{label}</span>
+						<span className="min-w-0 flex-1 leading-snug">{label}</span>
 					</Link>
 				)}
 			</SidebarMenuButton>
@@ -332,7 +365,9 @@ export function AdminSidebar() {
 									section !== "top" &&
 									section !== "claim_encounter" &&
 									section !== "regulatory_compliance" &&
-									section !== "program_monitoring" ? (
+									section !== "program_monitoring" &&
+									section !== "governance" &&
+									section !== "finance" ? (
 										<SidebarSeparator className="mx-2 mt-2" />
 									) : null}
 								</SidebarGroup>

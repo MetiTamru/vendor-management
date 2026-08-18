@@ -18,11 +18,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useContractsList } from "@/features/shared/vms/queries";
 import type { ContractTermStatus } from "@/features/shared/vms/types";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+import { useContractsList } from "../feature/queries/useContractsQuery";
 
 const TERM_STATUS_CLASS: Record<ContractTermStatus, string> = {
 	completed:

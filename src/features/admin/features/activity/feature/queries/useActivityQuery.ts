@@ -1,33 +1,24 @@
 "use client";
 
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
-import { getActivity, listActivity } from "../api/activityApi";
-import { toActivityModel } from "../mappers/activityMappers";
+import { listActivityFileRuns } from "../api/activityApi";
 
-export function useActivityQuery() {
+const domain = "activity";
+
+export function useActivityFileRunsQuery() {
 	return useQuery({
-		queryKey: ["admin", "activity", "list"],
-		queryFn: async () => {
-			const res = await listActivity();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toActivityModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "file-runs"),
+		queryFn: listActivityFileRuns,
+		staleTime: Infinity,
 	});
 }
 
-export function useActivityDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "activity", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getActivity(String(id));
-			return toActivityModel(row);
-		},
-		retry: false,
-	});
+export function useActivityFileRunsList() {
+	const query = useActivityFileRunsQuery();
+	return { ...query, fileRuns: query.data ?? [] };
 }
+
+export const useActivityQuery = useActivityFileRunsQuery;
+export const useActivityDetailQuery = useActivityFileRunsQuery;

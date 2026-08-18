@@ -1,9 +1,8 @@
-export type ComplianceModel = {
-	id: string;
-	name: string;
-};
+import type { CertificateModel } from "@/features/shared/vms/types";
+
+export type ComplianceModel = CertificateModel;
 
 export type ComplianceListResult = {
-	items: ComplianceModel[];
+	items: CertificateModel[];
 	total: number;
 };

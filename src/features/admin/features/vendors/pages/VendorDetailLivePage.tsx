@@ -30,7 +30,7 @@ import {
 	useVendorCoreConnections,
 	useVendorCoreJobs,
 	useVendorCoreVendor,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 
 function VendorDetailLiveBody({ id }: { id: string }) {
 	const invalidate = useInvalidateVendorCore();

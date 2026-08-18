@@ -9,7 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCategoriesList } from "@/features/shared/vms/queries";
+import { useCategoriesList } from "../feature/queries/useCategoriesQuery";
 
 export function CategoriesPage() {
 	const { categories, isLoading, error } = useCategoriesList();

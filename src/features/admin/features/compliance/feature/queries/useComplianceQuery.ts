@@ -2,32 +2,26 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getCompliance, listCompliance } from "../api/complianceApi";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
+import { listCompliance } from "../api/complianceApi";
 import { toComplianceModel } from "../mappers/complianceMappers";
+
+const domain = "compliance";
 
 export function useComplianceQuery() {
 	return useQuery({
-		queryKey: ["admin", "compliance", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listCompliance();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toComplianceModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listCompliance()).map(toComplianceModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
-export function useComplianceDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "compliance", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getCompliance(String(id));
-			return toComplianceModel(row);
-		},
-		retry: false,
-	});
+export function useCertificatesList() {
+	const query = useComplianceQuery();
+	return { ...query, certificates: query.data?.items ?? [] };
 }
+
+export const useComplianceDetailQuery = useComplianceQuery;

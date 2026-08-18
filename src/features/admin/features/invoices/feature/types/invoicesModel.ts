@@ -1,9 +1,8 @@
-export type InvoicesModel = {
-	id: string;
-	name: string;
-};
+import type { InvoiceModel } from "@/features/shared/vms/types";
+
+export type InvoicesModel = InvoiceModel;
 
 export type InvoicesListResult = {
-	items: InvoicesModel[];
+	items: InvoiceModel[];
 	total: number;
 };

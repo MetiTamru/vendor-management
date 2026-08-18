@@ -1,33 +1,70 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getInvoices, listInvoices } from "../api/invoicesApi";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
+import {
+	createInvoices,
+	getInvoices,
+	listInvoices,
+	updateInvoices,
+} from "../api/invoicesApi";
+import type { InvoicesCreateDto, InvoicesUpdateDto } from "../dto/invoicesDto";
 import { toInvoicesModel } from "../mappers/invoicesMappers";
+
+const domain = "invoices";
 
 export function useInvoicesQuery() {
 	return useQuery({
-		queryKey: ["admin", "invoices", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listInvoices();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toInvoicesModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listInvoices()).map(toInvoicesModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
 export function useInvoicesDetailQuery(id: string | null | undefined) {
 	return useQuery({
-		queryKey: ["admin", "invoices", "detail", id ?? ""],
+		queryKey: featureQueryKey(domain, "detail", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getInvoices(String(id));
-			return toInvoicesModel(row);
-		},
-		retry: false,
+		queryFn: async () => toInvoicesModel(await getInvoices(String(id))),
 	});
 }
+
+export function useCreateInvoicesMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (input: InvoicesCreateDto) => createInvoices(input),
+		onSuccess: () =>
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) }),
+	});
+}
+
+export function useUpdateInvoicesMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, patch }: { id: string; patch: InvoicesUpdateDto }) =>
+			updateInvoices(id, patch),
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) });
+			queryClient.invalidateQueries({
+				queryKey: featureQueryKey(domain, "detail", variables.id),
+			});
+		},
+	});
+}
+
+export function useInvoicesList() {
+	const query = useInvoicesQuery();
+	return { ...query, invoices: query.data?.items ?? [] };
+}
+
+export function useInvoice(id: string | null | undefined) {
+	const query = useInvoicesDetailQuery(id);
+	return { ...query, invoice: query.data };
+}
+
+export const useCreateInvoiceMutation = useCreateInvoicesMutation;
+export const useUpdateInvoiceMutation = useUpdateInvoicesMutation;

@@ -47,7 +47,7 @@ import {
 	useVendorCoreJobs,
 	useVendorCoreMonitoring,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/integration-intake/feature/queries/useIntegrationIntakeQuery";
 import type { IntakeJobDto } from "@/lib/vendor-core/types";
 
 function StatCard({

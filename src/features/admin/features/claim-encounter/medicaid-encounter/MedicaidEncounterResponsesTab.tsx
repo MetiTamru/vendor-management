@@ -65,9 +65,9 @@ import {
 	MEDICAID_RESPONSE_SUMMARY_TREND,
 	MEDICAID_TOP_ERROR_REASONS,
 	MEDICAID_WARNING_STATUS_STYLES,
-} from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/medicaid-encounter/feature/queries/useMedicaidEncounterQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
-import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+import { getProgramScale } from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import type { ProgramType } from "@/features/admin/features/claim-encounter/program-reporting/types";
 import { cn } from "@/lib/utils";
 

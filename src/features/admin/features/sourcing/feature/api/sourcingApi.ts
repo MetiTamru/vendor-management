@@ -1,58 +1,34 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { BidModel, RfxModel } from "@/features/shared/vms/types";
 
-import { sourcingEndpoints } from "../../sourcing-endpoints";
-import type {
-	ApiSourcingDto,
-	SourcingCreateDto,
-	SourcingUpdateDto,
-} from "../dto/sourcingDto";
+import type { SourcingCreateDto, SourcingUpdateDto } from "../dto/sourcingDto";
 
-export async function listSourcing() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiSourcingDto[]; count?: number }>(
-				sourcingEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getSourcing(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiSourcingDto>(sourcingEndpoints.detail(id))
-	);
+export async function listSourcing(): Promise<RfxModel[]> {
+	return vmsApi.listRfx();
 }
 
-export async function createSourcing(body: SourcingCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiSourcingDto>(sourcingEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getSourcing(id: string): Promise<RfxModel> {
+	return requireRecord(await vmsApi.getRfx(id));
 }
 
-export async function updateSourcing(id: string, body: SourcingUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiSourcingDto>(sourcingEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listSourcingBids(rfxId?: string): Promise<BidModel[]> {
+	return vmsApi.listBids(rfxId);
 }
 
-export async function deleteSourcing(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(sourcingEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function createSourcing(
+	input: SourcingCreateDto
+): Promise<RfxModel> {
+	return vmsApi.createRfx(input);
+}
+
+export async function updateSourcing(
+	id: string,
+	patch: SourcingUpdateDto
+): Promise<RfxModel> {
+	return requireRecord(await vmsApi.updateRfx(id, patch));
 }

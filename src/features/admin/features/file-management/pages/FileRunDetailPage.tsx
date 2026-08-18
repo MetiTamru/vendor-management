@@ -54,18 +54,18 @@ import {
 	useVendorCoreInboundFiles,
 	useVendorCoreValidationResults,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/file-management/feature/queries/useFileManagementQuery";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import {
-	FILE_RUNS,
 	type FileRun,
 	type ProcessStatus,
 	type ValidationIssue,
 	displayRunStatus,
 	getFileRun,
 	markFileRunReviewed,
-} from "../mock-data";
+} from "../feature/api/fileManagementApi";
+import { useFileRunsList } from "../feature/queries/useFileManagementQuery";
 
 function downloadTextFile(
 	filename: string,
@@ -180,6 +180,7 @@ function FileRunDetailBody() {
 	);
 	const filesQ = useVendorCoreInboundFiles();
 	const vendorsQ = useVendorCoreVendors();
+	const { fileRuns } = useFileRunsList();
 	const nameById = useMemo(
 		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
 		[vendorsQ.data]
@@ -194,9 +195,9 @@ function FileRunDetailBody() {
 	}, [useLive, params.runId, fileQ.data, validationQ.data, nameById]);
 
 	const liveRuns = useMemo(() => {
-		if (!useLive) return FILE_RUNS;
+		if (!useLive) return fileRuns;
 		return inboundFilesToRuns(filesQ.data ?? [], nameById);
-	}, [useLive, filesQ.data, nameById]);
+	}, [useLive, filesQ.data, nameById, fileRuns]);
 
 	const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 	const [reviewed, setReviewed] = useState(false);

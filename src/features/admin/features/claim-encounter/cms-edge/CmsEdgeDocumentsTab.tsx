@@ -71,7 +71,7 @@ import {
 	type DocumentFileKind,
 	RETENTION_ALERT_STYLES,
 	filterDocumentLibrary,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { cn } from "@/lib/utils";
 
 function PanelLink({ children }: { children: ReactNode }) {

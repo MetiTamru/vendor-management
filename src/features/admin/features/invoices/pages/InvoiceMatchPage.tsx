@@ -5,12 +5,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import type { InvoiceStatus } from "@/features/shared/vms/types";
+import { formatMoney } from "@/features/shared/vms/utils";
+
 import {
 	useInvoicesList,
 	useUpdateInvoiceMutation,
-} from "@/features/shared/vms/queries";
-import type { InvoiceStatus } from "@/features/shared/vms/types";
-import { formatMoney } from "@/features/shared/vms/utils";
+} from "../feature/queries/useInvoicesQuery";
 
 export function InvoiceMatchPage() {
 	const { invoices, isLoading } = useInvoicesList();

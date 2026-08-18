@@ -28,6 +28,6 @@ export {
 	loadEdiByPath,
 	fixtureKeyForTransaction,
 	type EdiFixtureKey,
-} from "./fixtures";
+} from "./feature/queries/useEdiQuery";
 export { EdiViewer, EdiViewerLoader } from "./EdiViewer";
 export { EdiViewerDialog } from "./EdiViewerDialog";

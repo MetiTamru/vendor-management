@@ -1,58 +1,58 @@
-import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+import type { MemberCoverageDto, VendorDto } from "@/lib/vendor-core/types";
+
+import {
+	MEMBER_SUMMARIES,
+	getMember,
+} from "../../mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
-import { membersEndpoints } from "../../members-endpoints";
-import type {
-	ApiMembersDto,
-	MembersCreateDto,
-	MembersUpdateDto,
-} from "../dto/membersDto";
+export {
+	displayName,
+	formatCurrency,
+	formatDate,
+	getMember,
+	maskSsn,
+	memberAge,
+} from "../../mock-data";
+export type {
+	ClaimStatus,
+	EligibilityStatus,
+	ExceptionStatus,
+	MemberDetail,
+	MemberStatus,
+	MemberSummary,
+} from "../../mock-data";
 
-export async function listMembers() {
+export async function listMemberSummaries() {
 	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiMembersDto[]; count?: number }>(
-				membersEndpoints.list()
-			)
+		() => MEMBER_SUMMARIES,
+		async () => [] as typeof MEMBER_SUMMARIES,
+		[]
 	);
 }
 
-export async function getMembers(id: string) {
+export async function getMemberDetail(idOrMemberId: string) {
 	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiMembersDto>(membersEndpoints.detail(id))
+		() => getMember(idOrMemberId),
+		async () => undefined,
+		undefined
 	);
 }
 
-export async function createMembers(body: MembersCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiMembersDto>(membersEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listMemberCoverages(): Promise<MemberCoverageDto[]> {
+	const page = await vendorCoreApi.listMemberCoverages();
+	return page.results ?? [];
 }
 
-export async function updateMembers(id: string, body: MembersUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiMembersDto>(membersEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listMemberVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
 }
 
-export async function deleteMembers(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(membersEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function seedMemberCoverages(body?: {
+	vendor_id?: string;
+	force?: boolean;
+}) {
+	return vendorCoreApi.seedMemberCoverages(body);
 }

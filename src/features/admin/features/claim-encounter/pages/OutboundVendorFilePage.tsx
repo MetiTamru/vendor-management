@@ -77,7 +77,7 @@ import {
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-} from "@/features/admin/features/claim-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";

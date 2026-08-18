@@ -59,7 +59,7 @@ import {
 	RISK_ADJUSTMENT_PROGRAM_INFO,
 	RISK_ADJUSTMENT_RAF_TREND,
 	RISK_ADJUSTMENT_SUBMISSIONS,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-3";

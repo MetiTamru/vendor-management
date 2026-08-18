@@ -1,18 +1,8 @@
-import type { InvoicesCreateDto, InvoicesUpdateDto } from "../dto/invoicesDto";
-import type { InvoicesModel } from "../types/invoicesModel";
+import type { InvoiceModel } from "@/features/shared/vms/types";
 
-export { toInvoicesModel } from "../../shared/mappers/invoicesMappers";
+import type { ApiInvoicesDto } from "../dto/invoicesDto";
 
-export function toInvoicesCreateDto(
-	model: Pick<InvoicesModel, "name">
-): InvoicesCreateDto {
-	return { name: model.name };
-}
-
-export function toInvoicesUpdateDto(
-	model: Partial<Pick<InvoicesModel, "name">>
-): InvoicesUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toInvoicesModel(dto: ApiInvoicesDto): InvoiceModel {
+	return dto;
 }

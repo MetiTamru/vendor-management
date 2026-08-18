@@ -1,21 +1,8 @@
-import type {
-	ApprovalsCreateDto,
-	ApprovalsUpdateDto,
-} from "../dto/approvalsDto";
-import type { ApprovalsModel } from "../types/approvalsModel";
+import type { ApprovalRequestModel } from "@/features/shared/vms/types";
 
-export { toApprovalsModel } from "../../shared/mappers/approvalsMappers";
+import type { ApiApprovalsDto } from "../dto/approvalsDto";
 
-export function toApprovalsCreateDto(
-	model: Pick<ApprovalsModel, "name">
-): ApprovalsCreateDto {
-	return { name: model.name };
-}
-
-export function toApprovalsUpdateDto(
-	model: Partial<Pick<ApprovalsModel, "name">>
-): ApprovalsUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toApprovalsModel(dto: ApiApprovalsDto): ApprovalRequestModel {
+	return dto;
 }

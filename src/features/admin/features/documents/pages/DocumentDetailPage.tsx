@@ -32,14 +32,15 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { formatDate } from "@/features/shared/vms/utils";
+import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
+
 import {
 	useDocument,
 	useDocumentsList,
 	useUpdateDocumentMutation,
-} from "@/features/shared/vms/queries";
-import { formatDate } from "@/features/shared/vms/utils";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
+} from "../feature/queries/useDocumentsQuery";
 
 function MetaItem({ label, value }: { label: string; value: ReactNode }) {
 	return (

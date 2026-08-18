@@ -26,7 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 import { SettingsTable } from "../components/SettingsTable";
-import { useSettingsList } from "../service/queries/setting.query";
+import { useSettingsList } from "../feature/queries/useSettingsQuery";
 
 export function SettingsPage() {
 	const t = useTranslations("Settings");

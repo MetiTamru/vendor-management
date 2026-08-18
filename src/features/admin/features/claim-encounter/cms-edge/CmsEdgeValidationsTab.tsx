@@ -70,7 +70,7 @@ import {
 	RECORD_SEVERITY_STYLES,
 	RESOLUTION_STATUS_DOT,
 	type RecordResolutionStatus,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 

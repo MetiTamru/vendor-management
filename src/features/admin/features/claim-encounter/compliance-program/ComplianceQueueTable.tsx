@@ -22,7 +22,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import type { ComplianceProgramPageConfig } from "@/features/admin/features/claim-encounter/compliance-program/config";
-import type { ComplianceProgramRow } from "@/features/admin/features/claim-encounter/compliance-program/mock-data";
+import type { ComplianceProgramRow } from "@/features/admin/features/claim-encounter/compliance-program/feature/queries/useComplianceProgramQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 

@@ -1,67 +1,68 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
-
-import { integrationIntakeEndpoints } from "../../integration-intake-endpoints";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
-	ApiIntegrationIntakeDto,
-	IntegrationIntakeCreateDto,
-	IntegrationIntakeUpdateDto,
-} from "../dto/integrationIntakeDto";
+	ConnectionDto,
+	ErrorRecordDto,
+	IntakeJobDto,
+	IntakeJobRunDto,
+	MonitoringDashboardDto,
+	VendorDto,
+} from "@/lib/vendor-core/types";
 
-export async function listIntegrationIntake() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiIntegrationIntakeDto[]; count?: number }>(
-				integrationIntakeEndpoints.list()
-			)
-	);
+export async function getIntegrationMonitoring(): Promise<MonitoringDashboardDto> {
+	return vendorCoreApi.getMonitoring();
 }
 
-export async function getIntegrationIntake(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.detail(id))
+export async function listIntegrationConnections(
+	vendorId?: string
+): Promise<ConnectionDto[]> {
+	const page = await vendorCoreApi.listConnections(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function createIntegrationIntake(
-	body: IntegrationIntakeCreateDto
-) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiIntegrationIntakeDto>(integrationIntakeEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
+export async function listIntegrationJobs(
+	vendorId?: string
+): Promise<IntakeJobDto[]> {
+	const page = await vendorCoreApi.listIntakeJobs(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function updateIntegrationIntake(
+export async function listIntegrationJobRuns(params?: {
+	job_id?: string;
+	stage?: string;
+}): Promise<IntakeJobRunDto[]> {
+	const page = await vendorCoreApi.listIntakeJobRuns(params);
+	return page.results ?? [];
+}
+
+export async function listIntegrationErrors(
+	status?: string
+): Promise<ErrorRecordDto[]> {
+	const page = await vendorCoreApi.listErrors(
+		status && status !== "all" ? { status } : undefined
+	);
+	return page.results ?? [];
+}
+
+export async function listIntegrationVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
+}
+
+export async function createIntegrationIntakeJob(body: Record<string, unknown>) {
+	return vendorCoreApi.createIntakeJob(body);
+}
+
+export async function updateIntegrationIntakeJob(
 	id: string,
-	body: IntegrationIntakeUpdateDto
+	body: Record<string, unknown>
 ) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiIntegrationIntakeDto>(
-				integrationIntakeEndpoints.update(id),
-				{
-					method: "PATCH",
-					body: JSON.stringify(body),
-				}
-			)
-	);
+	return vendorCoreApi.updateIntakeJob(id, body);
 }
 
-export async function deleteIntegrationIntake(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(integrationIntakeEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function runIntegrationIntakeJob(id: string) {
+	return vendorCoreApi.runIntakeJob(id);
 }

@@ -1,9 +1,8 @@
-import type { ApiPurchaseOrdersRecordDto } from "../../shared/dto/purchaseOrdersRecordDto";
+import type { PurchaseOrderModel } from "@/features/shared/vms/types";
 
-export type ApiPurchaseOrdersDto = ApiPurchaseOrdersRecordDto;
-
-export type PurchaseOrdersCreateDto = {
-	name: string;
-};
-
-export type PurchaseOrdersUpdateDto = Partial<PurchaseOrdersCreateDto>;
+export type ApiPurchaseOrdersDto = PurchaseOrderModel;
+export type PurchaseOrdersCreateDto = Omit<
+	PurchaseOrderModel,
+	"id" | "updatedAt" | "acknowledgedAt"
+>;
+export type PurchaseOrdersUpdateDto = Partial<PurchaseOrderModel>;

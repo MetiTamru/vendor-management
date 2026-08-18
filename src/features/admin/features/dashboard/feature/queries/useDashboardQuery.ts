@@ -1,33 +1,48 @@
 "use client";
 
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
-import { getDashboard, listDashboard } from "../api/dashboardApi";
-import { toDashboardModel } from "../mappers/dashboardMappers";
+import {
+	listDashboardFileRuns,
+	listDashboardInboundFiles,
+} from "../api/dashboardApi";
 
-export function useDashboardQuery() {
+const domain = "dashboard";
+
+export function useDashboardFileRunsQuery() {
 	return useQuery({
-		queryKey: ["admin", "dashboard", "list"],
-		queryFn: async () => {
-			const res = await listDashboard();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toDashboardModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "file-runs"),
+		queryFn: listDashboardFileRuns,
+		staleTime: Infinity,
 	});
 }
 
-export function useDashboardDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "dashboard", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getDashboard(String(id));
-			return toDashboardModel(row);
-		},
-		retry: false,
-	});
+export function useDashboardInboundFilesQuery(params?: {
+	stage?: string;
+	vendor_id?: string;
+}) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"inbound-files",
+		() => listDashboardInboundFiles(params),
+		true,
+		[params ?? {}]
+	);
 }
+
+export function useDashboardFileRunsList() {
+	const query = useDashboardFileRunsQuery();
+	return { ...query, fileRuns: query.data ?? [] };
+}
+
+export const useVendorCoreInboundFiles = useDashboardInboundFilesQuery;
+
+export { useInvalidateVendorCore };
+
+export const useDashboardQuery = useDashboardFileRunsQuery;
+export const useDashboardDetailQuery = useDashboardFileRunsQuery;

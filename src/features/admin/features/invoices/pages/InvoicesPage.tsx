@@ -17,9 +17,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useInvoicesList } from "@/features/shared/vms/queries";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import { useInvoicesList } from "../feature/queries/useInvoicesQuery";
 
 export function InvoicesPage() {
 	const { invoices, isLoading, error } = useInvoicesList();

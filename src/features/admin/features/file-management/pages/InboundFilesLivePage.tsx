@@ -37,7 +37,7 @@ import {
 	useVendorCoreInboundFiles,
 	useVendorCoreMonitoring,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/file-management/feature/queries/useFileManagementQuery";
 import { vendorLabel } from "@/lib/vendor-core/types";
 
 function formatBytes(n: number) {

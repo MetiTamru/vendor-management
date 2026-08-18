@@ -15,7 +15,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { CLAIM_EXCEPTIONS } from "@/features/admin/features/claim-encounter/mock-data";
+import { useClaimExceptionsQuery } from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,8 @@ function DetailCard({
 
 export function ExceptionDetailPage() {
 	const { exceptionId } = useParams<{ exceptionId: string }>();
-	const exception = CLAIM_EXCEPTIONS.find(
+	const exceptionsQ = useClaimExceptionsQuery();
+	const exception = (exceptionsQ.data ?? []).find(
 		(row) => row.id === decodeURIComponent(exceptionId)
 	);
 

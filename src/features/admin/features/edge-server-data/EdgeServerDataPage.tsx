@@ -11,7 +11,7 @@ import {
 import {
 	EDGE_SERVER_TABS,
 	type EdgeServerTabId,
-} from "@/features/admin/features/edge-server-data/mock-data";
+} from "@/features/admin/features/edge-server-data/feature/queries/useEdgeServerDataQuery";
 import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS = cn(

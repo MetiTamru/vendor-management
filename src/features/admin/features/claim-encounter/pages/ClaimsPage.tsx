@@ -48,19 +48,23 @@ import { usePagedRows } from "@/features/admin/features/claim-encounter/componen
 import { EdiViewerDialog } from "@/features/admin/features/claim-encounter/edi";
 import { claimLineDtosToClaimLines } from "@/features/admin/features/claim-encounter/live-claims";
 import {
-	CLAIM_LINES,
 	type ClaimLine,
 	SHOWCASE_CLAIM_DETAIL,
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-} from "@/features/admin/features/claim-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
+import {
+	useDeleteClaimLine,
+	useMockClaimLinesQuery,
+	useSeedClaimLines,
+	useVendorCoreClaimLines,
+} from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const MEMBER_NAMES = [
@@ -237,6 +241,9 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 	const router = useRouter();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const claimLinesQ = useVendorCoreClaimLines(useLive);
+	const mockClaimLinesQ = useMockClaimLinesQuery();
+	const seedClaimLines = useSeedClaimLines();
+	const deleteClaimLine = useDeleteClaimLine();
 
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [quickSearch, setQuickSearch] = useState("");
@@ -277,9 +284,9 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 			return lines.map((c, i) => enrichClaim(c, i));
 		}
 
-		const rows = CLAIM_LINES.filter((c) => c.program === programFilter).map(
-			(c, i) => enrichClaim(c, i)
-		);
+		const rows = (mockClaimLinesQ.data ?? [])
+			.filter((c) => c.program === programFilter)
+			.map((c, i) => enrichClaim(c, i));
 
 		const showcase: ClaimWorkbenchRow = {
 			id: SHOWCASE_CLAIM_DETAIL.id,
@@ -323,7 +330,7 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 			return [showcase, ...rows];
 		}
 		return rows;
-	}, [useLive, claimLinesQ.data, programFilter]);
+	}, [useLive, claimLinesQ.data, mockClaimLinesQ.data, programFilter]);
 
 	function openClaimDetail(row: ClaimWorkbenchRow) {
 		router.push(
@@ -551,21 +558,66 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem
-									onClick={() => toast.message("Bulk accept is mock-only")}
-								>
-									Bulk accept
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => toast.message("Bulk reject is mock-only")}
-								>
-									Bulk reject
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => toast.message("Assign reviewer is mock-only")}
-								>
-									Assign reviewer
-								</DropdownMenuItem>
+								{useLive ? (
+									<>
+										<DropdownMenuItem
+											onClick={async () => {
+												try {
+													await seedClaimLines.mutateAsync({});
+													toast.success("Claim lines seeded.");
+												} catch (err) {
+													toast.error(
+														err instanceof Error ? err.message : "Seed failed."
+													);
+												}
+											}}
+										>
+											Seed claim lines
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											disabled={!selectedId || deleteClaimLine.isPending}
+											onClick={async () => {
+												if (!selectedId) {
+													toast.message("Select a claim row first.");
+													return;
+												}
+												try {
+													await deleteClaimLine.mutateAsync(selectedId);
+													toast.success("Claim line soft-deleted.");
+													setSelectedId(null);
+												} catch (err) {
+													toast.error(
+														err instanceof Error
+															? err.message
+															: "Delete failed."
+													);
+												}
+											}}
+										>
+											Soft-delete selected
+										</DropdownMenuItem>
+									</>
+								) : (
+									<>
+										<DropdownMenuItem
+											onClick={() => toast.message("Bulk accept is mock-only")}
+										>
+											Bulk accept
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => toast.message("Bulk reject is mock-only")}
+										>
+											Bulk reject
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() =>
+												toast.message("Assign reviewer is mock-only")
+											}
+										>
+											Assign reviewer
+										</DropdownMenuItem>
+									</>
+								)}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
@@ -1035,6 +1087,24 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 													>
 														View EDI
 													</DropdownMenuItem>
+													{useLive ? (
+														<DropdownMenuItem
+															onClick={async () => {
+																try {
+																	await deleteClaimLine.mutateAsync(row.id);
+																	toast.success("Claim line soft-deleted.");
+																} catch (err) {
+																	toast.error(
+																		err instanceof Error
+																			? err.message
+																			: "Delete failed."
+																	);
+																}
+															}}
+														>
+															Soft delete
+														</DropdownMenuItem>
+													) : null}
 													<DropdownMenuItem
 														onClick={() =>
 															toast.message("Copy claim ID", {

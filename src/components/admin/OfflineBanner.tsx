@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -9,8 +9,15 @@ import { NetworkContext } from "@/providers/network-provider";
 export function OfflineBanner() {
 	const { isOnline } = useContext(NetworkContext);
 	const t = useTranslations("Admin");
+	const [mounted, setMounted] = useState(false);
 
-	if (isOnline) {
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	// Avoid hydration mismatch: only show after client mount once network
+	// state has been synced from navigator.onLine.
+	if (!mounted || isOnline) {
 		return null;
 	}
 

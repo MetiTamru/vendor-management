@@ -49,7 +49,7 @@ import {
 	HCC_SUMMARY_ROWS,
 	type HccMemberRow,
 	type HccSummaryRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 function categoryToneClass(tone: HccSummaryRow["categoryTone"]) {

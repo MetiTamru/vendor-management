@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Save } from "lucide-react";
 import { toast } from "sonner";
@@ -37,10 +37,10 @@ import {
 	type BaselineGridValues,
 	type BaselineMarketType,
 	type BaselineSegmentId,
-	SAVED_BASELINE_RECORDS,
 	emptyBaselineGrid,
 	isNumericBaselineInput,
-} from "@/features/admin/features/master-data-entry/mock-data";
+	useMasterDataEntryList,
+} from "@/features/admin/features/master-data-entry/feature/queries/useMasterDataEntryQuery";
 import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS = cn(
@@ -258,7 +258,7 @@ function AddNewBaselinePanel() {
 }
 
 function ViewBaselinePanel() {
-	const rows = useMemo(() => SAVED_BASELINE_RECORDS, []);
+	const { baselines: rows } = useMasterDataEntryList();
 
 	return (
 		<div className="space-y-4">

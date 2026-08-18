@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Download, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -30,19 +30,18 @@ import { formatCount } from "@/features/admin/features/claim-encounter/mock-data
 import {
 	type EdgeServerRow,
 	type EdgeServerTabId,
-	HHS_MASTER_DATA_ROWS,
 	PUBLISHED_DATE_OPTIONS,
 	QUARTERLY_BASELINE_DATES,
 	QUARTERLY_BENEFIT_YEARS,
 	QUARTERLY_EXTRACTION_DATES,
 	QUARTERLY_HIOS_IDS,
 	type QuarterlyBaselineFilters,
-	filterHhsMasterDataRows,
-	mockEdgeServerRows,
-	mockQuarterlyBaselineRows,
-	mockThresholdReportRows,
 	publishedDateLabel,
-} from "@/features/admin/features/edge-server-data/mock-data";
+	useHhsMasterDataList,
+	usePublishedDateReportList,
+	useQuarterlyBaselineList,
+	useThresholdReportList,
+} from "@/features/admin/features/edge-server-data/feature/queries/useEdgeServerDataQuery";
 import { cn } from "@/lib/utils";
 
 function RequiredLabel({ children }: { children: React.ReactNode }) {
@@ -152,23 +151,9 @@ function EdgeServerResultsTable({
 	);
 }
 
-function resolvePublishedDateRows(
-	tabId: EdgeServerTabId,
-	publishedDate: string
-) {
-	if (tabId === "threshold-report") {
-		return mockThresholdReportRows(publishedDate);
-	}
-	return mockEdgeServerRows(tabId, publishedDate);
-}
-
 export function ThresholdReportPanel() {
 	const [publishedDate, setPublishedDate] = useState("2025-03-14");
-
-	const rows = useMemo(
-		() => (publishedDate ? mockThresholdReportRows(publishedDate) : []),
-		[publishedDate]
-	);
+	const { rows } = useThresholdReportList(publishedDate);
 
 	return (
 		<div className="space-y-4">
@@ -212,11 +197,7 @@ export function ThresholdReportPanel() {
 
 export function PublishedDateEdgePanel({ tabId }: { tabId: EdgeServerTabId }) {
 	const [publishedDate, setPublishedDate] = useState("");
-
-	const rows = useMemo(
-		() => (publishedDate ? resolvePublishedDateRows(tabId, publishedDate) : []),
-		[tabId, publishedDate]
-	);
+	const { rows } = usePublishedDateReportList(tabId, publishedDate);
 
 	return (
 		<div className="space-y-4">
@@ -274,18 +255,7 @@ export function QuarterlyBaselineReportPanel() {
 	);
 	const [applied, setApplied] = useState<QuarterlyBaselineFilters | null>(null);
 	const [searched, setSearched] = useState(false);
-
-	const rows = useMemo(
-		() =>
-			applied &&
-			applied.benefitYear !== "all" &&
-			applied.hiosId !== "all" &&
-			applied.baselineDate !== "all" &&
-			applied.hhsExtractionDate !== "all"
-				? mockQuarterlyBaselineRows(applied)
-				: [],
-		[applied]
-	);
+	const { rows } = useQuarterlyBaselineList(applied);
 
 	return (
 		<div className="space-y-0 overflow-hidden rounded-xl border border-border/70">
@@ -455,11 +425,7 @@ export function QuarterlyBaselineReportPanel() {
 export function HhsMasterDataUpdatesPanel() {
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<Set<string>>(new Set());
-
-	const rows = useMemo(
-		() => filterHhsMasterDataRows(HHS_MASTER_DATA_ROWS, search),
-		[search]
-	);
+	const { rows } = useHhsMasterDataList(search);
 
 	const allSelected =
 		rows.length > 0 && rows.every((row) => selected.has(row.id));

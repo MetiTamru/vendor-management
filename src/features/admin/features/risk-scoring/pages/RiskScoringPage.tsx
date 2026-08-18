@@ -31,94 +31,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
-import {
-	VENDOR_ALERTS,
-	VENDOR_DIRECTORY,
-	VENDOR_INTEGRATION,
-	VENDOR_TREND_BY_ID,
-	type VendorListHealth,
-	getVendorIntegration,
-	runBucket,
-	runsForVendor,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
-import type { ProgramFileType } from "@/types/UI/system.types";
 
-type RiskLevel = "high" | "medium" | "low";
-
-type RiskRow = {
-	id: string;
-	name: string;
-	vendorCode: string;
-	vendorType: string;
-	health: VendorListHealth;
-	slaPercent: number;
-	alertsCount: number;
-	errors: number;
-	failedRuns: number;
-	warningRuns: number;
-	riskScore: number;
-	riskLevel: RiskLevel;
-	trend: number[];
-	mark: string;
-	avatarBg: string;
-};
-
-function riskLevelFor(score: number): RiskLevel {
-	if (score >= 70) return "high";
-	if (score >= 40) return "medium";
-	return "low";
-}
-
-function computeRiskScore(input: {
-	health: VendorListHealth;
-	slaPercent: number;
-	alertsCount: number;
-	failedRuns: number;
-	warningRuns: number;
-	totalRuns: number;
-}): number {
-	const healthRisk =
-		input.health === "critical" ? 70 : input.health === "warning" ? 35 : 0;
-	const alertRisk = Math.min(40, input.alertsCount * 12);
-	const failWarningRatio = input.totalRuns
-		? (input.failedRuns + input.warningRuns) / input.totalRuns
-		: 0;
-	const runRisk = failWarningRatio * 100;
-	const slaRisk = Math.max(0, 100 - input.slaPercent);
-	return Math.round(
-		Math.min(
-			100,
-			Math.max(
-				0,
-				healthRisk * 0.35 + alertRisk * 0.25 + runRisk * 0.25 + slaRisk * 0.15
-			)
-		)
-	);
-}
-
-function mockTrend(seed: number, riskScore: number): number[] {
-	const base = Math.max(10, riskScore - 12);
-	return Array.from({ length: 7 }, (_, i) => {
-		const wobble = ((seed * 17 + i * 13) % 11) - 5;
-		return Math.min(100, Math.max(0, Math.round(base + wobble + i * 1.2)));
-	});
-}
-
-function trendFromRuns(
-	vendorId: string,
-	riskScore: number,
-	seed: number
-): number[] {
-	const series = VENDOR_TREND_BY_ID[vendorId];
-	if (!series) return mockTrend(seed, riskScore);
-	return series.map((day) =>
-		Math.min(100, Math.round(day.failed * 28 + day.warnings * 12 + 8))
-	);
-}
+import { useRiskScoringQuery } from "../feature/queries/useRiskScoringQuery";
+import type {
+	RiskLevel,
+	VendorHealthModel,
+} from "../feature/types/riskScoringModel";
 
 function RiskBadge({ level }: { level: RiskLevel }) {
 	if (level === "high") {
@@ -142,7 +63,7 @@ function RiskBadge({ level }: { level: RiskLevel }) {
 	);
 }
 
-function HealthDot({ health }: { health: VendorListHealth }) {
+function HealthDot({ health }: { health: VendorHealthModel }) {
 	const label =
 		health === "healthy"
 			? "Healthy"
@@ -184,67 +105,15 @@ function scoreBarTone(level: RiskLevel) {
 	return "bg-emerald-500";
 }
 
-function buildRiskRows(program: ProgramFileType): RiskRow[] {
-	return VENDOR_DIRECTORY.map((vendor, index) => {
-		const integration =
-			VENDOR_INTEGRATION[vendor.id] ?? getVendorIntegration(vendor.id);
-		const alertsCount = VENDOR_ALERTS.filter(
-			(alert) =>
-				alert.vendorId === vendor.id &&
-				(alert.severity === "error" || alert.severity === "warning")
-		).length;
-		const mappedRuns = runsForVendor(vendor.id, program);
-		const nameMatchedRuns = FILE_RUNS.filter(
-			(run) =>
-				run.program === program &&
-				(run.vendor.toLowerCase() === vendor.name.toLowerCase() ||
-					run.vendor.toLowerCase().startsWith(vendor.name.toLowerCase()))
-		);
-		const runs = mappedRuns.length > 0 ? mappedRuns : nameMatchedRuns;
-		const failedRuns = runs.filter(
-			(r) => runBucket(r.status) === "failed"
-		).length;
-		const warningRuns = runs.filter(
-			(r) => runBucket(r.status) === "warning"
-		).length;
-		const errors = runs.reduce((sum, run) => sum + run.errorCount, 0);
-		const riskScore = computeRiskScore({
-			health: vendor.health,
-			slaPercent: integration.slaPercent,
-			alertsCount: Math.max(alertsCount, integration.alertsCount),
-			failedRuns,
-			warningRuns,
-			totalRuns: runs.length,
-		});
-		const riskLevel = riskLevelFor(riskScore);
-		return {
-			id: vendor.id,
-			name: vendor.name,
-			vendorCode: vendor.vendorCode,
-			vendorType: vendor.vendorType,
-			health: vendor.health,
-			slaPercent: integration.slaPercent,
-			alertsCount: Math.max(alertsCount, integration.alertsCount),
-			errors,
-			failedRuns,
-			warningRuns,
-			riskScore,
-			riskLevel,
-			trend: trendFromRuns(vendor.id, riskScore, index + 1),
-			mark: vendor.mark,
-			avatarBg: vendor.avatarBg,
-		};
-	}).sort((a, b) => b.riskScore - a.riskScore);
-}
-
 export function RiskScoringPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [search, setSearch] = useState("");
 	const [riskFilter, setRiskFilter] = useState("all");
 
-	const rows = useMemo(() => buildRiskRows(programFilter), [programFilter]);
+	const { data: dashboard } = useRiskScoringQuery(programFilter);
 
 	const filtered = useMemo(() => {
+		const rows = dashboard?.items ?? [];
 		const q = search.trim().toLowerCase();
 		return rows.filter((row) => {
 			if (riskFilter !== "all" && row.riskLevel !== riskFilter) return false;
@@ -254,7 +123,7 @@ export function RiskScoringPage() {
 				.toLowerCase()
 				.includes(q);
 		});
-	}, [rows, search, riskFilter]);
+	}, [dashboard?.items, search, riskFilter]);
 
 	const summary = useMemo(() => {
 		const high = filtered.filter((r) => r.riskLevel === "high").length;

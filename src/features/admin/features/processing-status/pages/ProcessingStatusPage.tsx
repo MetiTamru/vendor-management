@@ -46,10 +46,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	FILE_RUNS,
-	displayRunStatus,
-} from "@/features/admin/features/file-management/mock-data";
+import { displayRunStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
+import { useProcessingStatusFileRunsList } from "@/features/admin/features/processing-status/feature/queries/useProcessingStatusQuery";
 import { ProcessingStatusLivePage } from "@/features/admin/features/processing-status/pages/ProcessingStatusLivePage";
 import {
 	PROCESSING_TREND,
@@ -79,6 +77,7 @@ export function ProcessingStatusPage() {
 
 function ProcessingStatusMockPage() {
 	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const { fileRuns } = useProcessingStatusFileRunsList();
 	const [search, setSearch] = useState("");
 	const [vendorFilter, setVendorFilter] = useState("all");
 	const [statusFilter, setStatusFilter] = useState("all");
@@ -86,8 +85,8 @@ function ProcessingStatusMockPage() {
 	const [ediTypeFilter, setEdiTypeFilter] = useState("all");
 
 	const programRuns = useMemo(
-		() => FILE_RUNS.filter((run) => run.program === programFilter),
-		[programFilter]
+		() => fileRuns.filter((run) => run.program === programFilter),
+		[fileRuns, programFilter]
 	);
 
 	const vendors = useMemo(

@@ -14,8 +14,10 @@ import {
 	formValuesToUpdateCommand,
 	groupModelToFormValues,
 } from "../service/mappers/group-form.mapper";
-import { useUpdateGroupMutation } from "../service/mutations/group.mutation";
-import { useGroup } from "../service/queries/group.query";
+import {
+	useGroup,
+	useUpdateGroupMutation,
+} from "../feature/queries/useGroupsQuery";
 import type { GroupBusinessValues } from "../validation/group-business.schema";
 
 type GroupEditPageProps = {

@@ -1,33 +1,24 @@
 "use client";
 
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
-import { getNotifications, listNotifications } from "../api/notificationsApi";
-import { toNotificationsModel } from "../mappers/notificationsMappers";
+import { listNotificationFileRuns } from "../api/notificationsApi";
 
-export function useNotificationsQuery() {
+const domain = "notifications";
+
+export function useNotificationFileRunsQuery() {
 	return useQuery({
-		queryKey: ["admin", "notifications", "list"],
-		queryFn: async () => {
-			const res = await listNotifications();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toNotificationsModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "file-runs"),
+		queryFn: listNotificationFileRuns,
+		staleTime: Infinity,
 	});
 }
 
-export function useNotificationsDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "notifications", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getNotifications(String(id));
-			return toNotificationsModel(row);
-		},
-		retry: false,
-	});
+export function useNotificationFileRunsList() {
+	const query = useNotificationFileRunsQuery();
+	return { ...query, fileRuns: query.data ?? [] };
 }
+
+export const useNotificationsQuery = useNotificationFileRunsQuery;
+export const useNotificationsDetailQuery = useNotificationFileRunsQuery;

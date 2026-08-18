@@ -26,7 +26,7 @@ import {
 	useVendorCoreConnections,
 	useVendorCoreJobs,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 
 function VendorsLiveBody() {
 	const router = useRouter();

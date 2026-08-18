@@ -1,18 +1,8 @@
-import type { SourcingCreateDto, SourcingUpdateDto } from "../dto/sourcingDto";
-import type { SourcingModel } from "../types/sourcingModel";
+import type { RfxModel } from "@/features/shared/vms/types";
 
-export { toSourcingModel } from "../../shared/mappers/sourcingMappers";
+import type { ApiSourcingDto } from "../dto/sourcingDto";
 
-export function toSourcingCreateDto(
-	model: Pick<SourcingModel, "name">
-): SourcingCreateDto {
-	return { name: model.name };
-}
-
-export function toSourcingUpdateDto(
-	model: Partial<Pick<SourcingModel, "name">>
-): SourcingUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toSourcingModel(dto: ApiSourcingDto): RfxModel {
+	return dto;
 }

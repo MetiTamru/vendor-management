@@ -1,33 +1,79 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getSourcing, listSourcing } from "../api/sourcingApi";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
+import {
+	createSourcing,
+	getSourcing,
+	listSourcing,
+	listSourcingBids,
+	updateSourcing,
+} from "../api/sourcingApi";
+import type { SourcingCreateDto, SourcingUpdateDto } from "../dto/sourcingDto";
 import { toSourcingModel } from "../mappers/sourcingMappers";
+
+const domain = "sourcing";
 
 export function useSourcingQuery() {
 	return useQuery({
-		queryKey: ["admin", "sourcing", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listSourcing();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toSourcingModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listSourcing()).map(toSourcingModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
 export function useSourcingDetailQuery(id: string | null | undefined) {
 	return useQuery({
-		queryKey: ["admin", "sourcing", "detail", id ?? ""],
+		queryKey: featureQueryKey(domain, "detail", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getSourcing(String(id));
-			return toSourcingModel(row);
-		},
-		retry: false,
+		queryFn: async () => toSourcingModel(await getSourcing(String(id))),
 	});
 }
+
+export function useCreateSourcingMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (input: SourcingCreateDto) => createSourcing(input),
+		onSuccess: () =>
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) }),
+	});
+}
+
+export function useUpdateSourcingMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, patch }: { id: string; patch: SourcingUpdateDto }) =>
+			updateSourcing(id, patch),
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) });
+			queryClient.invalidateQueries({
+				queryKey: featureQueryKey(domain, "detail", variables.id),
+			});
+		},
+	});
+}
+
+export function useRfxList() {
+	const query = useSourcingQuery();
+	return { ...query, events: query.data?.items ?? [] };
+}
+
+export function useRfx(id: string | null | undefined) {
+	const query = useSourcingDetailQuery(id);
+	return { ...query, rfx: query.data ?? null };
+}
+
+export function useBidsList(rfxId?: string) {
+	const query = useQuery({
+		queryKey: featureQueryKey(domain, "bids", rfxId ?? "all"),
+		queryFn: () => listSourcingBids(rfxId),
+	});
+	return { ...query, bids: query.data ?? [] };
+}
+
+export const useCreateRfxMutation = useCreateSourcingMutation;
+export const useUpdateRfxMutation = useUpdateSourcingMutation;

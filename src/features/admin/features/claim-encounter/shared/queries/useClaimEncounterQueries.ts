@@ -1,6 +1,8 @@
 "use client";
 
-export {
-	useClaimEncounterQuery,
-	useClaimEncounterDetailQuery,
-} from "../../feature/queries/useClaimEncounterQuery";
+import { useMockClaimLinesQuery } from "../../feature/queries/useClaimEncounterQuery";
+
+export const useClaimEncounterQuery = useMockClaimLinesQuery;
+export function useClaimEncounterDetailQuery(_id: string) {
+	return useMockClaimLinesQuery();
+}

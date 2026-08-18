@@ -58,7 +58,7 @@ import {
 	MEDICAID_REPORTS_BY_TYPE,
 	MEDICAID_SUMMARY_BY_TYPE,
 	MEDICAID_TOP_REJECTIONS,
-} from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/medicaid-encounter/feature/queries/useMedicaidEncounterQuery";
 import { cn } from "@/lib/utils";
 
 function PanelLink({ children }: { children: ReactNode }) {

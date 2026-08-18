@@ -36,7 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import { displayRunStatus, getValidationIssue } from "../mock-data";
+import { displayRunStatus, getValidationIssue } from "../feature/api/fileManagementApi";
 
 function SummaryItem({
 	label,

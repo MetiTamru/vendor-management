@@ -10,7 +10,7 @@ import { isMockEnabled } from "@/lib/mock-mode";
 import { isVendorCoreLive } from "@/lib/vendor-core";
 
 import { UsersTable } from "../components/UsersTable";
-import { useUsersList } from "../service/queries/user.query";
+import { useUsersList } from "../feature/queries/useUsersQuery";
 import { UsersLivePage } from "./UsersLivePage";
 
 export function UsersPage() {

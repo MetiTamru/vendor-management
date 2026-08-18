@@ -38,7 +38,7 @@ import {
 	type TrackFileFilters,
 	type TrackedFileRow,
 	filterIssuerHhsFiles,
-} from "@/features/admin/features/claim-encounter/file-management/mock-data";
+} from "@/features/admin/features/claim-encounter/file-management/feature/queries/useFileManagementQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 

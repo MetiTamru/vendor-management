@@ -1,33 +1,38 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreFeatureMutation,
+	useVendorCoreFeatureQuery,
+} from "@/features/admin/shared/vendor-core-feature-query";
 
-import { getProviders, listProviders } from "../api/providersApi";
-import { toProvidersModel } from "../mappers/providersMappers";
+import { listProviderSummaries, listProviders, seedProviders } from "../api/providersApi";
 
-export function useProvidersQuery() {
-	return useQuery({
-		queryKey: ["admin", "providers", "list"],
-		queryFn: async () => {
-			const res = await listProviders();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toProvidersModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+const domain = "providers";
+
+export function useProviderSummariesQuery() {
+	return useVendorCoreFeatureQuery(domain, "summaries", listProviderSummaries);
+}
+
+export function useProvidersQuery(enabled = true) {
+	return useVendorCoreFeatureQuery(domain, "list", listProviders, enabled);
+}
+
+export function useSeedProvidersMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof seedProviders>>,
+		{ force?: boolean } | undefined
+	>(domain, {
+		mutationFn: (body) => seedProviders(body),
 	});
 }
 
-export function useProvidersDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "providers", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getProviders(String(id));
-			return toProvidersModel(row);
-		},
-		retry: false,
-	});
+export function useProviderSummariesList() {
+	const query = useProviderSummariesQuery();
+	return { ...query, providers: query.data ?? [] };
 }
+
+export const useVendorCoreProviders = useProvidersQuery;
+export const useProvidersDetailQuery = useProvidersQuery;
+
+export { useInvalidateVendorCore };

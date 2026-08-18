@@ -1,9 +1,8 @@
-export type CategoriesModel = {
-	id: string;
-	name: string;
-};
+import type { VendorCategoryModel } from "@/features/shared/vms/types";
+
+export type CategoriesModel = VendorCategoryModel;
 
 export type CategoriesListResult = {
-	items: CategoriesModel[];
+	items: VendorCategoryModel[];
 	total: number;
 };

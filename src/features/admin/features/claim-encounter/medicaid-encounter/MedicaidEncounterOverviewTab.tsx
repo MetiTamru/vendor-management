@@ -60,7 +60,7 @@ import {
 	MEDICAID_OVERVIEW_RECENT_SUBMISSIONS,
 	MEDICAID_OVERVIEW_REJECTION_DONUT,
 	MEDICAID_SUBMISSION_STATUS_STYLES,
-} from "@/features/admin/features/claim-encounter/medicaid-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/medicaid-encounter/feature/queries/useMedicaidEncounterQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 

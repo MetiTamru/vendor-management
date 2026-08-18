@@ -1,9 +1,5 @@
-import type { ApiContractsRecordDto } from "../../shared/dto/contractsRecordDto";
+import type { ContractModel } from "@/features/shared/vms/types";
 
-export type ApiContractsDto = ApiContractsRecordDto;
-
-export type ContractsCreateDto = {
-	name: string;
-};
-
-export type ContractsUpdateDto = Partial<ContractsCreateDto>;
+export type ApiContractsDto = ContractModel;
+export type ContractsCreateDto = Omit<ContractModel, "id" | "updatedAt">;
+export type ContractsUpdateDto = Partial<ContractModel>;

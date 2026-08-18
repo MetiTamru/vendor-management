@@ -62,7 +62,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
-import { FILE_RUNS, type FileRun, displayRunStatus } from "../mock-data";
+import { type FileRun, displayRunStatus } from "../feature/api/fileManagementApi";
+import { useFileRunsList } from "../feature/queries/useFileManagementQuery";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
 
 type SelectMode = "vendor" | "filetype" | "failed";
@@ -144,6 +145,7 @@ export function FileSelectPage() {
 	const router = useRouter();
 	const vendorFromUrl = searchParams.get("vendor");
 	const { vendors } = useVendorsList();
+	const { fileRuns } = useFileRunsList();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 	const [mode, setMode] = useState<SelectMode>("vendor");
 	const [vendorFilter, setVendorFilter] = useState("all");
@@ -197,7 +199,7 @@ export function FileSelectPage() {
 
 	const fileTypes = useMemo(() => {
 		const map = new Map<string, FileRun[]>();
-		for (const run of FILE_RUNS.filter((r) => r.program === programFilter)) {
+		for (const run of fileRuns.filter((r) => r.program === programFilter)) {
 			const list = map.get(run.fileType) ?? [];
 			list.push(run);
 			map.set(run.fileType, list);
@@ -207,7 +209,7 @@ export function FileSelectPage() {
 			runs,
 			summary: summarizeRuns(runs),
 		}));
-	}, [programFilter]);
+	}, [programFilter, fileRuns]);
 
 	const activeFileType = selectedFileType ?? fileTypes[0]?.type ?? null;
 	const activeFileTypeRuns =
@@ -215,7 +217,7 @@ export function FileSelectPage() {
 
 	const failedRuns = useMemo(
 		() =>
-			FILE_RUNS.filter((r) => {
+			fileRuns.filter((r) => {
 				if (r.program !== programFilter) return false;
 				const bucket = runBucket(r.status);
 				if (bucket !== "failed" && bucket !== "warning") return false;
@@ -230,7 +232,7 @@ export function FileSelectPage() {
 					r.runId.toLowerCase().includes(q)
 				);
 			}),
-		[vendorFilter, search, programFilter]
+		[vendorFilter, search, programFilter, fileRuns]
 	);
 
 	const tabs: { id: SelectMode; label: string }[] = [

@@ -1,21 +1,8 @@
-import type {
-	CategoriesCreateDto,
-	CategoriesUpdateDto,
-} from "../dto/categoriesDto";
-import type { CategoriesModel } from "../types/categoriesModel";
+import type { VendorCategoryModel } from "@/features/shared/vms/types";
 
-export { toCategoriesModel } from "../../shared/mappers/categoriesMappers";
+import type { ApiCategoriesDto } from "../dto/categoriesDto";
 
-export function toCategoriesCreateDto(
-	model: Pick<CategoriesModel, "name">
-): CategoriesCreateDto {
-	return { name: model.name };
-}
-
-export function toCategoriesUpdateDto(
-	model: Partial<Pick<CategoriesModel, "name">>
-): CategoriesUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toCategoriesModel(dto: ApiCategoriesDto): VendorCategoryModel {
+	return dto;
 }

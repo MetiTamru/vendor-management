@@ -29,12 +29,12 @@ import {
 	CMS_EDGE_STATUS_PILL_CLASS,
 	CmsEdgeSectionPanel,
 } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
-import type { ObligationDetail } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
+import type { ObligationDetail } from "@/features/admin/features/claim-encounter/compliance-calendar/feature/queries/useComplianceCalendarQuery";
 import {
 	COMPLIANCE_PROGRAM_LABELS,
 	complianceProgramPillClass,
 	complianceStatusPillClass,
-} from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
+} from "@/features/admin/features/claim-encounter/compliance-calendar/feature/queries/useComplianceCalendarQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

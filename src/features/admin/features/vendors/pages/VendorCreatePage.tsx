@@ -11,7 +11,7 @@ import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { useCreateVendorMutation } from "@/features/shared/vms/queries";
 import { useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
-import { useInvalidateVendorCore } from "@/lib/vendor-core/hooks";
+import { useInvalidateVendorCore } from "@/features/admin/shared/vendor-core-feature-query";
 
 export function VendorCreatePage() {
 	if (!isMockEnabled()) {

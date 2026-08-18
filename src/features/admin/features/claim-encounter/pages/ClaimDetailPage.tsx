@@ -41,12 +41,12 @@ import {
 	exportRowsAsCsv,
 	formatCurrency,
 	getClaimDetail,
-} from "@/features/admin/features/claim-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import { useVendorCoreClaimLines } from "@/lib/vendor-core/hooks";
+import { useVendorCoreClaimLines } from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
 
 const MAIN_TABS = [
 	"Claim Summary",

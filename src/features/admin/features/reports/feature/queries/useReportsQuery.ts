@@ -1,33 +1,24 @@
 "use client";
 
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
 
-import { getReports, listReports } from "../api/reportsApi";
-import { toReportsModel } from "../mappers/reportsMappers";
+import { listReportTabs } from "../api/reportsApi";
 
-export function useReportsQuery() {
+const domain = "reports";
+
+export function useReportTabsQuery() {
 	return useQuery({
-		queryKey: ["admin", "reports", "list"],
-		queryFn: async () => {
-			const res = await listReports();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toReportsModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
+		queryKey: featureQueryKey(domain, "tabs"),
+		queryFn: listReportTabs,
+		staleTime: Infinity,
 	});
 }
 
-export function useReportsDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "reports", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getReports(String(id));
-			return toReportsModel(row);
-		},
-		retry: false,
-	});
+export function useReportTabsList() {
+	const query = useReportTabsQuery();
+	return { ...query, tabs: query.data ?? [] };
 }
+
+export const useReportsQuery = useReportTabsQuery;
+export const useReportsDetailQuery = useReportTabsQuery;

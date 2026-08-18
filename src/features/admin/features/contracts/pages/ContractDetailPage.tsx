@@ -37,10 +37,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import {
-	useContract,
-	useUpdateContractMutation,
-} from "@/features/shared/vms/queries";
 import type {
 	ContractDocumentItem,
 	ContractModel,
@@ -52,6 +48,11 @@ import type {
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+import {
+	useContract,
+	useUpdateContractMutation,
+} from "../feature/queries/useContractsQuery";
 
 const TABS = [
 	"Contract Details",

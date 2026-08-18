@@ -1,9 +1,5 @@
-import type { ApiApprovalsRecordDto } from "../../shared/dto/approvalsRecordDto";
+import type { ApprovalRequestModel } from "@/features/shared/vms/types";
 
-export type ApiApprovalsDto = ApiApprovalsRecordDto;
-
-export type ApprovalsCreateDto = {
-	name: string;
-};
-
-export type ApprovalsUpdateDto = Partial<ApprovalsCreateDto>;
+export type ApiApprovalsDto = ApprovalRequestModel;
+export type ApprovalsCreateDto = Omit<ApprovalRequestModel, "id" | "requestedAt">;
+export type ApprovalsUpdateDto = Pick<ApprovalRequestModel, "status">;

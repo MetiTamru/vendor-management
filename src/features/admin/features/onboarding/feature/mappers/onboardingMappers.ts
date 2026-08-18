@@ -1,21 +1,8 @@
-import type {
-	OnboardingCreateDto,
-	OnboardingUpdateDto,
-} from "../dto/onboardingDto";
-import type { OnboardingModel } from "../types/onboardingModel";
+import type { OnboardingCaseModel } from "@/features/shared/vms/types";
 
-export { toOnboardingModel } from "../../shared/mappers/onboardingMappers";
+import type { ApiOnboardingDto } from "../dto/onboardingDto";
 
-export function toOnboardingCreateDto(
-	model: Pick<OnboardingModel, "name">
-): OnboardingCreateDto {
-	return { name: model.name };
-}
-
-export function toOnboardingUpdateDto(
-	model: Partial<Pick<OnboardingModel, "name">>
-): OnboardingUpdateDto {
-	return {
-		...(model.name != null ? { name: model.name } : {}),
-	};
+/** VMS records already use the frontend model shape. */
+export function toOnboardingModel(dto: ApiOnboardingDto): OnboardingCaseModel {
+	return dto;
 }

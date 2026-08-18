@@ -1,61 +1,35 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { PurchaseOrderModel } from "@/features/shared/vms/types";
 
-import { purchaseOrdersEndpoints } from "../../purchase-orders-endpoints";
 import type {
-	ApiPurchaseOrdersDto,
 	PurchaseOrdersCreateDto,
 	PurchaseOrdersUpdateDto,
 } from "../dto/purchaseOrdersDto";
 
-export async function listPurchaseOrders() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiPurchaseOrdersDto[]; count?: number }>(
-				purchaseOrdersEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getPurchaseOrders(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.detail(id))
-	);
+export async function listPurchaseOrders(): Promise<PurchaseOrderModel[]> {
+	return vmsApi.listPurchaseOrders();
 }
 
-export async function createPurchaseOrders(body: PurchaseOrdersCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getPurchaseOrders(
+	id: string
+): Promise<PurchaseOrderModel> {
+	return requireRecord(await vmsApi.getPurchaseOrder(id));
+}
+
+export async function createPurchaseOrders(
+	input: PurchaseOrdersCreateDto
+): Promise<PurchaseOrderModel> {
+	return vmsApi.createPurchaseOrder(input);
 }
 
 export async function updatePurchaseOrders(
 	id: string,
-	body: PurchaseOrdersUpdateDto
-) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiPurchaseOrdersDto>(purchaseOrdersEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deletePurchaseOrders(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(purchaseOrdersEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+	patch: PurchaseOrdersUpdateDto
+): Promise<PurchaseOrderModel> {
+	return requireRecord(await vmsApi.updatePurchaseOrder(id, patch));
 }

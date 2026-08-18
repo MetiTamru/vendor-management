@@ -53,23 +53,23 @@ import {
 	validationResultsToIssues,
 } from "@/features/admin/features/file-management/live-processing";
 import {
-	FILE_RUNS,
 	type FileRun,
 	type LogEntry,
 	displayRunStatus,
 	getFileRun,
 	markFileRunReviewed,
-} from "@/features/admin/features/file-management/mock-data";
-import { Link } from "@/i18n/navigation";
-import { isMockEnabled } from "@/lib/mock-mode";
-import { cn } from "@/lib/utils";
+} from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import {
+	useProcessingLogFileRunsList,
 	useVendorCoreInboundFile,
 	useVendorCoreInboundFileEvents,
 	useVendorCoreInboundFiles,
 	useVendorCoreValidationResults,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/processing-logs/feature/queries/useProcessingLogsQuery";
+import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type LogSource = "File Receiver" | "Parser" | "Validation" | "Processor";
@@ -405,6 +405,7 @@ function ProcessingLogsBody() {
 	const runFilter = runIdFromPath ?? searchParams.get("run");
 	const filesQ = useVendorCoreInboundFiles();
 	const vendorsQ = useVendorCoreVendors();
+	const { fileRuns } = useProcessingLogFileRunsList();
 	const nameById = useMemo(
 		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
 		[vendorsQ.data]
@@ -420,12 +421,12 @@ function ProcessingLogsBody() {
 		Boolean(selectedFileId)
 	);
 
-	const programRuns = FILE_RUNS.filter((r) => r.program === programFilter);
+	const programRuns = fileRuns.filter((r) => r.program === programFilter);
 	const mockRun =
 		(runFilter ? getFileRun(runFilter) : undefined) ??
 		programRuns.find((r) => r.status === "failed") ??
 		programRuns[0] ??
-		FILE_RUNS[0]!;
+		fileRuns[0]!;
 
 	const liveRun = useMemo(() => {
 		if (!useLive) return undefined;

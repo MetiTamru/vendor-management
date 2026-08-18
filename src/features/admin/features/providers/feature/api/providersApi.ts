@@ -1,58 +1,53 @@
-import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+
+import {
+	PROVIDER_DETAILS,
+	PROVIDER_SUMMARIES,
+	getProvider,
+} from "../../mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
-import { providersEndpoints } from "../../providers-endpoints";
-import type {
-	ApiProvidersDto,
-	ProvidersCreateDto,
-	ProvidersUpdateDto,
-} from "../dto/providersDto";
+export {
+	displayProviderName,
+	formatCompact,
+	formatCurrency,
+	formatDate,
+	getProvider,
+	initials,
+	providerAge,
+} from "../../mock-data";
+export type {
+	ClaimActivityStatus,
+	CredentialStatus,
+	ExceptionStatus,
+	FeedStatus,
+	NetworkStatus,
+	ProviderDetail,
+	ProviderStatus,
+	ProviderSummary,
+} from "../../mock-data";
+
+export async function listProviderSummaries() {
+	return withMockOrRemote(
+		() => PROVIDER_SUMMARIES,
+		async () => [] as typeof PROVIDER_SUMMARIES,
+		[]
+	);
+}
+
+export async function getProviderDetail(idOrNpi: string) {
+	return withMockOrRemote(
+		() => getProvider(idOrNpi),
+		async () => undefined,
+		undefined
+	);
+}
 
 export async function listProviders() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiProvidersDto[]; count?: number }>(
-				providersEndpoints.list()
-			)
-	);
+	const page = await vendorCoreApi.listProviders();
+	return page.results ?? [];
 }
 
-export async function getProviders(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiProvidersDto>(providersEndpoints.detail(id))
-	);
-}
-
-export async function createProviders(body: ProvidersCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiProvidersDto>(providersEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function updateProviders(id: string, body: ProvidersUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiProvidersDto>(providersEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deleteProviders(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(providersEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function seedProviders(body?: { force?: boolean }) {
+	return vendorCoreApi.seedProviders(body);
 }

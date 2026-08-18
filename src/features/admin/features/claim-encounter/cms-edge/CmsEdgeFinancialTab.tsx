@@ -66,7 +66,7 @@ import {
 	CMS_EDGE_FM_TREND,
 	FM_COMPLETED_STYLE,
 	formatCurrencyPrecise,
-} from "@/features/admin/features/claim-encounter/cms-edge/mock-data";
+} from "@/features/admin/features/claim-encounter/cms-edge/feature/queries/useCmsEdgeQuery";
 import { cn } from "@/lib/utils";
 
 function PanelLink({ children }: { children: ReactNode }) {

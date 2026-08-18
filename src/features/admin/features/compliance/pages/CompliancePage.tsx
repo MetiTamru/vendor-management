@@ -2,9 +2,10 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useCertificatesList } from "@/features/shared/vms/queries";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import { useCertificatesList } from "../feature/queries/useComplianceQuery";
 
 export function CompliancePage() {
 	const { certificates, isLoading, error } = useCertificatesList();

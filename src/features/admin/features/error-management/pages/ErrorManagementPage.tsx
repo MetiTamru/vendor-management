@@ -29,21 +29,21 @@ import {
 	validationResultsToErrorRows,
 } from "@/features/admin/features/error-management/live-errors";
 import {
-	FILE_RUNS,
 	type FileRun,
 	type ValidationIssue,
-} from "@/features/admin/features/file-management/mock-data";
-import { Link } from "@/i18n/navigation";
-import { isMockEnabled } from "@/lib/mock-mode";
-import { cn } from "@/lib/utils";
-import { vendorCoreApi } from "@/lib/vendor-core";
+} from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import {
+	useErrorManagementFileRunsList,
 	useInvalidateVendorCore,
 	useVendorCoreErrors,
 	useVendorCoreInboundFiles,
 	useVendorCoreValidationResults,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/error-management/feature/queries/useErrorManagementQuery";
+import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
+import { vendorCoreApi } from "@/lib/vendor-core";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function severityTone(severity: ValidationIssue["severity"]) {
@@ -116,6 +116,7 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 	const validationQ = useVendorCoreValidationResults(useLive ? {} : undefined);
 	const filesQ = useVendorCoreInboundFiles();
 	const vendorsQ = useVendorCoreVendors();
+	const { fileRuns } = useErrorManagementFileRunsList();
 	const [severity, setSeverity] = useState("all");
 	const [query, setQuery] = useState("");
 	const [page, setPage] = useState(1);
@@ -135,7 +136,7 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 	const rows = useMemo(() => {
 		if (!useLive) {
 			return buildErrors(
-				FILE_RUNS.filter((run) => run.program === programFilter)
+				fileRuns.filter((run) => run.program === programFilter)
 			);
 		}
 		const errorRows = errorRecordsToRows(errorsQ.data ?? [], {
@@ -154,6 +155,7 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 		nameById,
 		fileById,
 		programFilter,
+		fileRuns,
 	]);
 
 	const filtered = useMemo(() => {
@@ -464,7 +466,7 @@ function ErrorManagementBody({ useLive }: { useLive: boolean }) {
 							{pageRows.map((row) => {
 								const run = useLive
 									? undefined
-									: FILE_RUNS.find((item) => item.runId === row.runId);
+									: fileRuns.find((item) => item.runId === row.runId);
 								const openHref = useLive
 									? row.inboundFileId
 										? `/admin/file-monitoring/${row.inboundFileId}`

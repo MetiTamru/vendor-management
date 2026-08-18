@@ -1,58 +1,61 @@
-import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+import type {
+	ConnectionDto,
+	IntakeJobDto,
+	IntakeJobRunDto,
+	VendorDto,
+} from "@/lib/vendor-core/types";
+
+import { FILE_RUNS, displayRunStatus, type FileRun, type ProcessStatus } from "../../../file-management/mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
-import { schedulesEndpoints } from "../../schedules-endpoints";
-import type {
-	ApiSchedulesDto,
-	SchedulesCreateDto,
-	SchedulesUpdateDto,
-} from "../dto/schedulesDto";
+export { displayRunStatus };
+export type { FileRun, ProcessStatus };
 
-export async function listSchedules() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiSchedulesDto[]; count?: number }>(
-				schedulesEndpoints.list()
-			)
-	);
+export async function listScheduleFileRuns(): Promise<FileRun[]> {
+	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
 }
 
-export async function getSchedules(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiSchedulesDto>(schedulesEndpoints.detail(id))
+export async function listIntakeJobs(vendorId?: string): Promise<IntakeJobDto[]> {
+	const page = await vendorCoreApi.listIntakeJobs(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function createSchedules(body: SchedulesCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiSchedulesDto>(schedulesEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listScheduleVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
 }
 
-export async function updateSchedules(id: string, body: SchedulesUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiSchedulesDto>(schedulesEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
+export async function listScheduleConnections(
+	vendorId?: string
+): Promise<ConnectionDto[]> {
+	const page = await vendorCoreApi.listConnections(
+		vendorId ? { vendor_id: vendorId } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function deleteSchedules(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(schedulesEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function listIntakeJobRuns(params?: {
+	job_id?: string;
+	stage?: string;
+}): Promise<IntakeJobRunDto[]> {
+	const page = await vendorCoreApi.listIntakeJobRuns(params);
+	return page.results ?? [];
+}
+
+export async function createIntakeJob(body: Record<string, unknown>) {
+	return vendorCoreApi.createIntakeJob(body);
+}
+
+export async function updateIntakeJob(
+	id: string,
+	body: Record<string, unknown>
+) {
+	return vendorCoreApi.updateIntakeJob(id, body);
+}
+
+export async function runIntakeJob(id: string) {
+	return vendorCoreApi.runIntakeJob(id);
 }

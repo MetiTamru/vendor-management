@@ -58,10 +58,11 @@ import {
 	useInvalidateVendorCore,
 	useVendorCoreInboundFiles,
 	useVendorCoreVendors,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/file-management/feature/queries/useFileManagementQuery";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
-import { FILE_RUNS, type FileRun } from "../mock-data";
+import { type FileRun, getFileRun } from "../feature/api/fileManagementApi";
+import { useFileRunsList } from "../feature/queries/useFileManagementQuery";
 import { VendorAvatarBadge, getVendorAvatar } from "../vendor-avatars";
 
 type VendorHealth = {
@@ -305,15 +306,17 @@ function FileManagementDashboard() {
 	const [page, setPage] = useState(1);
 	const pageSize = 8;
 
+	const { fileRuns } = useFileRunsList();
+
 	const nameById = useMemo(
 		() => new Map((vendorsQ.data ?? []).map((v) => [v.id, v.name])),
 		[vendorsQ.data]
 	);
 
 	const allRuns: FileRun[] = useMemo(() => {
-		if (!useLive) return FILE_RUNS;
+		if (!useLive) return fileRuns;
 		return inboundFilesToRuns(filesQ.data ?? [], nameById);
-	}, [useLive, filesQ.data, nameById]);
+	}, [useLive, filesQ.data, nameById, fileRuns]);
 
 	const vendorHealthRows: VendorHealth[] = useMemo(() => {
 		if (!useLive) return VENDOR_HEALTH;

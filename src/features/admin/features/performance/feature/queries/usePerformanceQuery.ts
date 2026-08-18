@@ -2,32 +2,34 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+
 import { getPerformance, listPerformance } from "../api/performanceApi";
 import { toPerformanceModel } from "../mappers/performanceMappers";
 
+const domain = "performance";
+
 export function usePerformanceQuery() {
 	return useQuery({
-		queryKey: ["admin", "performance", "list"],
+		queryKey: featureQueryKey(domain, "list"),
 		queryFn: async () => {
-			const res = await listPerformance();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toPerformanceModel(row, index)),
-				total: res.count ?? rows.length,
-			};
+			const items = (await listPerformance()).map(toPerformanceModel);
+			return { items, total: items.length };
 		},
-		retry: false,
 	});
 }
 
 export function usePerformanceDetailQuery(id: string | null | undefined) {
 	return useQuery({
-		queryKey: ["admin", "performance", "detail", id ?? ""],
+		queryKey: featureQueryKey(domain, "detail", id ?? ""),
 		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getPerformance(String(id));
-			return toPerformanceModel(row);
-		},
-		retry: false,
+		queryFn: async () => toPerformanceModel(await getPerformance(String(id))),
 	});
 }
+
+export function useScorecardsList() {
+	const query = usePerformanceQuery();
+	return { ...query, scorecards: query.data?.items ?? [] };
+}
+
+export const usePerformanceList = useScorecardsList;

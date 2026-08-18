@@ -32,7 +32,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
+import { useNotificationFileRunsList } from "@/features/admin/features/notifications/feature/queries/useNotificationsQuery";
 import { VENDOR_ALERTS } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -63,6 +63,7 @@ function severityTone(severity: NotificationRow["severity"]) {
 }
 
 export function NotificationsPage() {
+	const { fileRuns } = useNotificationFileRunsList();
 	const [search, setSearch] = useState("");
 	const [severity, setSeverity] = useState("all");
 	const [channel, setChannel] = useState("all");
@@ -125,10 +126,9 @@ export function NotificationsPage() {
 	}, [filteredNotifications]);
 
 	const programFilter = useAdminModuleStore((s) => s.fileType);
-	const recentRuns = FILE_RUNS.filter((r) => r.program === programFilter).slice(
-		0,
-		4
-	);
+	const recentRuns = fileRuns
+		.filter((r) => r.program === programFilter)
+		.slice(0, 4);
 
 	function clearFilters() {
 		setSearch("");

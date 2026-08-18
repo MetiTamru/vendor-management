@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,10 +29,9 @@ import {
 	ERROR_CORRECTION_ISSUER_NAMES,
 	ERROR_CORRECTION_PROCESS_TYPES,
 	type ErrorSummaryFilters,
-	MOCK_ERROR_REVIEW_ROWS,
-	MOCK_ERROR_SUMMARY_ROWS,
-	filterErrorSummaryRows,
-} from "@/features/admin/features/error-correction/mock-data";
+	useErrorReviewList,
+	useErrorSummaryList,
+} from "@/features/admin/features/error-correction/feature/queries/useErrorCorrectionQuery";
 import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS = cn(
@@ -81,12 +80,7 @@ function ErrorSummaryPanel() {
 	);
 	const [applied, setApplied] = useState<ErrorSummaryFilters | null>(null);
 	const [searched, setSearched] = useState(false);
-
-	const filteredRows = useMemo(
-		() =>
-			applied ? filterErrorSummaryRows(MOCK_ERROR_SUMMARY_ROWS, applied) : [],
-		[applied]
-	);
+	const { errorSummary: filteredRows } = useErrorSummaryList(applied);
 
 	const canSearch =
 		draft.fileType !== "all" &&
@@ -313,6 +307,7 @@ function ErrorSummaryPanel() {
 }
 
 function ErrorReviewPanel() {
+	const { errorReviews } = useErrorReviewList();
 	return (
 		<div className="overflow-hidden rounded-xl border border-border/70">
 			<div className="border-b border-amber-200/80 bg-amber-50/80 px-4 py-2 text-sm font-semibold">
@@ -355,7 +350,7 @@ function ErrorReviewPanel() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{MOCK_ERROR_REVIEW_ROWS.map((row) => (
+									{errorReviews.map((row) => (
 										<TableRow key={row.id} className="hover:bg-muted/30">
 											<TableCell className="px-2 py-1.5 pl-3 font-mono text-[11px]">
 												{row.errorCode}

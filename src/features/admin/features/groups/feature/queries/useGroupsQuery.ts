@@ -1,33 +1,36 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import {
+	useCreateGroupMutation,
+	useDeleteGroupMutation,
+	useUpdateGroupMutation,
+} from "../../service/mutations/group.mutation";
+import { useGroup, useGroupsList } from "../../service/queries/group.query";
 
-import { getGroups, listGroups } from "../api/groupsApi";
-import { toGroupsModel } from "../mappers/groupsMappers";
+export {
+	useGroupsList,
+	useGroup,
+	useCreateGroupMutation,
+	useUpdateGroupMutation,
+	useDeleteGroupMutation,
+};
 
 export function useGroupsQuery() {
-	return useQuery({
-		queryKey: ["admin", "groups", "list"],
-		queryFn: async () => {
-			const res = await listGroups();
-			const rows = res.results ?? [];
-			return {
-				items: rows.map((row, index) => toGroupsModel(row, index)),
-				total: res.count ?? rows.length,
-			};
-		},
-		retry: false,
-	});
+	const { groups, isInitialLoading, error, refetch } = useGroupsList();
+	return {
+		data: { items: groups, total: groups.length },
+		isLoading: isInitialLoading,
+		isError: Boolean(error),
+		error,
+		refetch,
+	};
 }
 
 export function useGroupsDetailQuery(id: string | null | undefined) {
-	return useQuery({
-		queryKey: ["admin", "groups", "detail", id ?? ""],
-		enabled: Boolean(id),
-		queryFn: async () => {
-			const row = await getGroups(String(id));
-			return toGroupsModel(row);
-		},
-		retry: false,
-	});
+	const result = useGroup(id ?? undefined);
+	return {
+		...result,
+		data: result.group,
+		isError: Boolean(result.error),
+	};
 }

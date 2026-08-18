@@ -58,7 +58,7 @@ import {
 	RA_SUBMISSION_KPIS,
 	RA_SUBMISSION_ROWS,
 	type RaSubmissionRow,
-} from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
+} from "@/features/admin/features/claim-encounter/risk-adjustment/feature/queries/useRiskAdjustmentQuery";
 import { cn } from "@/lib/utils";
 
 function submissionStatusTone(status: RaSubmissionRow["status"]) {

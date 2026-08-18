@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { RolesTable } from "../components/RolesTable";
-import { useRolesList } from "../service/queries/role.query";
+import { useRolesList } from "../feature/queries/useRolesQuery";
 
 export function RolesPage() {
 	const t = useTranslations("Roles");

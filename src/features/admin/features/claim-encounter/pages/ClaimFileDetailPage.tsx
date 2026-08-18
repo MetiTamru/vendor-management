@@ -23,7 +23,7 @@ import {
 	formatCount,
 	formatCurrency,
 	getVendorFile,
-} from "@/features/admin/features/claim-encounter/mock-data";
+} from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 

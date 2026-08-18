@@ -1,5 +1,5 @@
 import type { ComplianceProgramPageConfig } from "./config";
-import type { ComplianceProgramRow } from "./mock-data";
+import type { ComplianceProgramRow } from "./feature/types/compliance-programModel";
 
 export type ComplianceFilterChip = {
 	key: string;

@@ -65,7 +65,7 @@ import {
 	rqAlertStatusPillClass,
 	rqObligationPillClass,
 	rqSeverityPillClass,
-} from "@/features/admin/features/claim-encounter/executive-analytics/regulatory-quality-mock";
+} from "@/features/admin/features/claim-encounter/executive-analytics/feature/queries/useExecutiveAnalyticsQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-4 pb-4";

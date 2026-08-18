@@ -1,61 +1,44 @@
-import { apiClient } from "@/lib/api/client";
+import { vendorCoreApi } from "@/lib/vendor-core/api";
+import type {
+	ErrorRecordDto,
+	InboundFileDto,
+	ValidationResultDto,
+	VendorDto,
+} from "@/lib/vendor-core/types";
+
+import { FILE_RUNS, type FileRun } from "../../../file-management/mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
-import { errorManagementEndpoints } from "../../error-management-endpoints";
-import type {
-	ApiErrorManagementDto,
-	ErrorManagementCreateDto,
-	ErrorManagementUpdateDto,
-} from "../dto/errorManagementDto";
-
-export async function listErrorManagement() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiErrorManagementDto[]; count?: number }>(
-				errorManagementEndpoints.list()
-			)
-	);
+export async function listErrorManagementFileRuns(): Promise<FileRun[]> {
+	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
 }
 
-export async function getErrorManagement(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiErrorManagementDto>(errorManagementEndpoints.detail(id))
+export async function listErrorRecords(
+	status?: string
+): Promise<ErrorRecordDto[]> {
+	const page = await vendorCoreApi.listErrors(
+		status && status !== "all" ? { status } : undefined
 	);
+	return page.results ?? [];
 }
 
-export async function createErrorManagement(body: ErrorManagementCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiErrorManagementDto>(errorManagementEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listErrorValidationResults(params?: {
+	inbound_file_id?: string;
+	search?: string;
+}): Promise<ValidationResultDto[]> {
+	const page = await vendorCoreApi.listValidationResults(params);
+	return page.results ?? [];
 }
 
-export async function updateErrorManagement(
-	id: string,
-	body: ErrorManagementUpdateDto
-) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiErrorManagementDto>(errorManagementEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
+export async function listErrorInboundFiles(params?: {
+	stage?: string;
+	vendor_id?: string;
+}): Promise<InboundFileDto[]> {
+	const page = await vendorCoreApi.listInboundFiles(params);
+	return page.results ?? [];
 }
 
-export async function deleteErrorManagement(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(errorManagementEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function listErrorVendors(): Promise<VendorDto[]> {
+	const page = await vendorCoreApi.listVendors();
+	return page.results ?? [];
 }

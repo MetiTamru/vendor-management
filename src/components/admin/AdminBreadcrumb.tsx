@@ -26,6 +26,7 @@ import {
 	getVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { getMeasureDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
+import { getLtssAuthDetail } from "@/features/admin/features/claim-encounter/ltss/auth-detail-data";
 import { getMemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import {
 	getFileRun,
@@ -51,6 +52,10 @@ const STATIC_LABELS: Record<string, string> = {
 	vendors: "Vendors",
 	members: "Members",
 	providers: "Providers",
+	"eligibility-files": "Eligibility Files",
+	"provider-rosters": "Provider Rosters",
+	credentials: "Credentials",
+	"routing-rules": "Routing Rules",
 	create: "Create",
 	invite: "Invite",
 	"file-monitoring": "File Monitoring",
@@ -120,6 +125,7 @@ const STATIC_LABELS: Record<string, string> = {
 	"hedis-quality": "Quality Performance",
 	overview: "Overview",
 	"measure-library": "Measure Library",
+	"measure-comparison": "Measure Comparison & Readiness",
 	"gap-closure": "Gap Closure",
 	"provider-performance": "Provider Performance",
 	"performance-trends": "Performance Trends",
@@ -295,6 +301,17 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 				items.push({
 					label: measure
 						? `${measure.id} — ${measure.name}`
+						: formatSegment(segment),
+					href: i < trail.length - 1 ? path : undefined,
+				});
+				continue;
+			}
+
+			if (prev === "ltss") {
+				const auth = getLtssAuthDetail(segment);
+				items.push({
+					label: auth
+						? `${auth.authNumber} — ${auth.member.name}`
 						: formatSegment(segment),
 					href: i < trail.length - 1 ? path : undefined,
 				});

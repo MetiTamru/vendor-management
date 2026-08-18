@@ -1,58 +1,24 @@
-import { apiClient } from "@/lib/api/client";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import { vmsApi } from "@/features/shared/vms/api";
+import type { OnboardingCaseModel } from "@/features/shared/vms/types";
 
-import { onboardingEndpoints } from "../../onboarding-endpoints";
-import type {
-	ApiOnboardingDto,
-	OnboardingCreateDto,
-	OnboardingUpdateDto,
-} from "../dto/onboardingDto";
+import type { OnboardingUpdateDto } from "../dto/onboardingDto";
 
-export async function listOnboarding() {
-	return withMockOrRemote(
-		() => ({ results: [], count: 0 }),
-		() =>
-			apiClient<{ results?: ApiOnboardingDto[]; count?: number }>(
-				onboardingEndpoints.list()
-			)
-	);
+function requireRecord<T>(record: T | null): T {
+	if (!record) throw new Error("VMS record was not found");
+	return record;
 }
 
-export async function getOnboarding(id: string) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() => apiClient<ApiOnboardingDto>(onboardingEndpoints.detail(id))
-	);
+export async function listOnboarding(): Promise<OnboardingCaseModel[]> {
+	return vmsApi.listOnboarding();
 }
 
-export async function createOnboarding(body: OnboardingCreateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiOnboardingDto>(onboardingEndpoints.create(), {
-				method: "POST",
-				body: JSON.stringify(body),
-			})
-	);
+export async function getOnboarding(id: string): Promise<OnboardingCaseModel> {
+	return requireRecord(await vmsApi.getOnboarding(id));
 }
 
-export async function updateOnboarding(id: string, body: OnboardingUpdateDto) {
-	return withMockOrRemote(
-		() => ({ id: "mock" }) as never,
-		() =>
-			apiClient<ApiOnboardingDto>(onboardingEndpoints.update(id), {
-				method: "PATCH",
-				body: JSON.stringify(body),
-			})
-	);
-}
-
-export async function deleteOnboarding(id: string) {
-	return withMockOrRemote(
-		() => undefined,
-		() =>
-			apiClient<void>(onboardingEndpoints.delete(id), {
-				method: "DELETE",
-			})
-	);
+export async function updateOnboarding(
+	id: string,
+	patch: OnboardingUpdateDto
+): Promise<OnboardingCaseModel> {
+	return requireRecord(await vmsApi.updateOnboarding(id, patch));
 }

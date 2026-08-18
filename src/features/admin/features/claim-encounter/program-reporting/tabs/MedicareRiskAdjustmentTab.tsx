@@ -31,7 +31,7 @@ import { formatCount } from "@/features/admin/features/claim-encounter/mock-data
 import {
 	MEDICARE_RISK_ADJUSTMENT_HCC_CATEGORIES,
 	MEDICARE_RISK_ADJUSTMENT_KPIS,
-} from "@/features/admin/features/claim-encounter/program-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import { cn } from "@/lib/utils";
 
 const PAGE_STACK = "space-y-5";

@@ -26,7 +26,7 @@ import {
 	useInvalidateVendorCore,
 	useVendorCoreMonitoring,
 	useVendorCoreValidationResults,
-} from "@/lib/vendor-core/hooks";
+} from "@/features/admin/features/processing-status/feature/queries/useProcessingStatusQuery";
 
 function ProcessingStatusLiveBody() {
 	const invalidate = useInvalidateVendorCore();

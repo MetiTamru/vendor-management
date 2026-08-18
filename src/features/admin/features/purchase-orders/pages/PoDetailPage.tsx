@@ -15,12 +15,13 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { formatDate, formatMoney } from "@/features/shared/vms/utils";
+import { Link } from "@/i18n/navigation";
+
 import {
 	usePurchaseOrder,
 	useUpdatePoMutation,
-} from "@/features/shared/vms/queries";
-import { formatDate, formatMoney } from "@/features/shared/vms/utils";
-import { Link } from "@/i18n/navigation";
+} from "../feature/queries/usePurchaseOrdersQuery";
 
 export function PoDetailPage() {
 	const params = useParams<{ poId: string }>();

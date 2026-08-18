@@ -63,7 +63,7 @@ import {
 	MEDICARE_PART_D_SUBMISSION_STATUS_STYLES,
 	MEDICARE_PART_D_VALIDATION_ERRORS,
 	type MedicarePartDErrorSeverity,
-} from "@/features/admin/features/claim-encounter/medicare-reporting/mock-data";
+} from "@/features/admin/features/claim-encounter/medicare-reporting/feature/queries/useMedicareReportingQuery";
 import { formatCount } from "@/features/admin/features/claim-encounter/mock-data";
 import { cn } from "@/lib/utils";
 
