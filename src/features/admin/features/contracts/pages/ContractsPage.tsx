@@ -7,9 +7,7 @@ import {
 	Banknote,
 	CheckCircle2,
 	Clock3,
-	FileText,
 	Plus,
-	ScrollText,
 	Search,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -52,8 +50,14 @@ const STATUS_OPTIONS: ContractStatus[] = [
 	"terminated",
 ];
 
-export function ContractsPage() {
-	const { contracts, isLoading, error } = useContractsList();
+export function ContractsPage({
+	vendorId,
+	embedded,
+}: {
+	vendorId?: string;
+	embedded?: boolean;
+} = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -149,29 +153,34 @@ export function ContractsPage() {
 	}
 
 	return (
-		<div className="space-y-4">
-			<PageHeader
-				eyebrow="Contracts"
-				title="Contracts Overview"
-				description="Portfolio-level agreement health, renewals, approvals, and activity."
-				actions={
-					<Button asChild>
+		<div className="space-y-3">
+			{embedded ? null : (
+				<PageHeader
+					eyebrow="Contracts"
+					title="Contracts Overview"
+					description="Portfolio-level agreement health, renewals, approvals, and activity."
+					actions={
+						<Button asChild>
+							<Link href="/admin/contracts/create">
+								<Plus className="mr-2 size-4" />
+								Create contract
+							</Link>
+						</Button>
+					}
+				/>
+			)}
+			{embedded ? (
+				<div className="flex justify-end">
+					<Button asChild size="sm">
 						<Link href="/admin/contracts/create">
 							<Plus className="mr-2 size-4" />
 							Create contract
 						</Link>
 					</Button>
-				}
-			/>
+				</div>
+			) : null}
 
-			<SummaryCardsGrid columns={7}>
-				<SummaryCard
-					label="Total contracts"
-					value={summary.total}
-					icon={ScrollText}
-					tone="text-primary bg-primary/10"
-					hint="Matching current filters"
-				/>
+			<SummaryCardsGrid columns={4}>
 				<SummaryCard
 					label="Active"
 					value={summary.active}
@@ -194,54 +203,26 @@ export function ContractsPage() {
 					hint="Active terms ending soon"
 				/>
 				<SummaryCard
-					label="Active contract value"
+					label="Active value"
 					value={formatMoney(summary.totalValue, "USD")}
 					icon={Banknote}
 					tone="text-sky-700 bg-sky-500/10"
 					hint="Sum of active agreements"
 				/>
-				<SummaryCard
-					label="Documents on file"
-					value={summary.docsCount}
-					icon={FileText}
-					tone="text-rose-700 bg-rose-500/10"
-					hint={
-						<Link
-							href="/admin/contracts/documents"
-							className="text-primary hover:underline"
-						>
-							View document inventory
-						</Link>
-					}
-				/>
-				<SummaryCard
-					label="With SLA terms"
-					value={summary.slaCoverage}
-					icon={ScrollText}
-					tone="text-violet-700 bg-violet-500/10"
-					hint={
-						<Link
-							href="/admin/contracts/sla-terms"
-							className="text-primary hover:underline"
-						>
-							View SLA inventory
-						</Link>
-					}
-				/>
 			</SummaryCardsGrid>
 
-			<div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-				<div className="relative min-w-[200px] max-w-sm flex-1">
-					<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+			<div className="flex flex-wrap gap-2 rounded-lg border border-border bg-card px-3 py-2.5 shadow-sm">
+				<div className="relative min-w-[180px] max-w-sm flex-1">
+					<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
 					<Input
-						className="pl-9"
+						className="h-8 pl-8 text-sm"
 						placeholder="Search number, title, vendor, or type"
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 					/>
 				</div>
 				<Select value={status} onValueChange={setStatus}>
-					<SelectTrigger className="w-48">
+					<SelectTrigger className="h-8 w-44 text-sm">
 						<SelectValue placeholder="All statuses" />
 					</SelectTrigger>
 					<SelectContent>
@@ -368,7 +349,7 @@ export function ContractsPage() {
 				</TableShell>
 			)}
 
-			<div className="grid gap-5 lg:grid-cols-3">
+			<div className="grid gap-3 lg:grid-cols-3">
 				<SectionCard
 					title="Renewals due"
 					description="Active contracts ending within 120 days."
@@ -386,12 +367,12 @@ export function ContractsPage() {
 							No renewals in the next 120 days.
 						</p>
 					) : (
-						<ul className="space-y-2.5">
-							{renewalsDue.map((c) => (
-								<li
-									key={c.id}
-									className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
-								>
+						<ul className="space-y-1.5">
+						{renewalsDue.map((c) => (
+							<li
+								key={c.id}
+								className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+							>
 									<div className="min-w-0">
 										<Link
 											href={`/admin/contracts/${c.id}?tab=effective-dates`}
@@ -421,12 +402,12 @@ export function ContractsPage() {
 							No contracts pending approval.
 						</p>
 					) : (
-						<ul className="space-y-2.5">
-							{openApprovals.map((c) => (
-								<li
-									key={c.id}
-									className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
-								>
+						<ul className="space-y-1.5">
+						{openApprovals.map((c) => (
+							<li
+								key={c.id}
+								className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+							>
 									<div className="min-w-0">
 										<Link
 											href={`/admin/contracts/${c.id}`}
@@ -457,12 +438,12 @@ export function ContractsPage() {
 						</Link>
 					}
 				>
-					<ul className="space-y-2.5">
-						{recentActivity.map((c) => (
-							<li
-								key={c.id}
-								className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
-							>
+				<ul className="space-y-1.5">
+					{recentActivity.map((c) => (
+						<li
+							key={c.id}
+							className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+						>
 								<div className="min-w-0">
 									<Link
 										href={`/admin/contracts/${c.id}`}

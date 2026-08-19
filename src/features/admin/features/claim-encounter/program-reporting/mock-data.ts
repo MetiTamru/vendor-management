@@ -5,7 +5,6 @@ export const MEDICARE_REPORTING_TABS = [
 	"Submissions",
 	"Responses",
 	"Validation",
-	"Risk Adjustment",
 	"Part D",
 	"Compliance",
 	"Audit",

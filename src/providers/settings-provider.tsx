@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
+import { ThemeSync } from "@/components/shared/ThemeSync";
 import { useSettingsStore } from "@/stores/settings-store";
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -41,9 +42,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 		<NextThemesProvider
 			attribute="class"
 			defaultTheme={theme}
-			enableSystem={theme === "system"}
+			enableSystem
 			disableTransitionOnChange
 		>
+			<ThemeSync />
 			{children}
 		</NextThemesProvider>
 	);

@@ -67,9 +67,9 @@ import {
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { AuditTrailView } from "@/features/admin/features/audit-trail/components/AuditTrailView";
+import { useContractsList } from "@/features/admin/features/contracts/feature/queries/useContractsQuery";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
-	useContractsList,
 	useUpdateVendorMutation,
 	useVendor,
 } from "@/features/shared/vms/queries";
@@ -86,6 +86,7 @@ import {
 	vendorModelToActionsTarget,
 } from "../components/VendorActionsMenu";
 import { VendorConfigurationTab } from "../components/VendorConfigurationTab";
+import { VendorContractsTab } from "../components/VendorContractsTab";
 import { VendorNotesTab } from "../components/VendorNotesTab";
 import { VendorOperationsTab } from "../components/VendorOperationsTab";
 import {
@@ -101,7 +102,7 @@ const TABS = [
 	"Operations",
 	"Configuration",
 	"Accounts",
-	"Contacts",
+	"Contracts",
 	"Audit Trail",
 	"Notes",
 ] as const;
@@ -390,7 +391,7 @@ function VendorDetailView() {
 
 	const tabCounts: Partial<Record<Tab, number>> = {
 		Accounts: accounts.length || integration.accountsCount,
-		Contacts: vendor.contacts.length,
+		Contracts: contracts.length,
 	};
 
 	return (
@@ -1079,75 +1080,7 @@ function VendorDetailView() {
 				/>
 			)}
 
-			{tab === "Contacts" && (
-				<section className="min-w-0 space-y-3">
-					<div className="rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
-						<h2 className="text-lg font-semibold tracking-tight text-foreground">
-							Contacts
-						</h2>
-						<p className="mt-0.5 text-sm text-muted-foreground">
-							People associated with this vendor relationship.
-						</p>
-					</div>
-					<div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-						<div className="border-b border-border bg-sky-500/10 px-4 py-2.5">
-							<p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-800">
-								Contact directory
-							</p>
-						</div>
-						<Table className="text-xs">
-							<TableHeader>
-								<TableRow className="hover:bg-transparent">
-									<TableHead className="pl-4 sm:pl-6">Name</TableHead>
-									<TableHead>Role</TableHead>
-									<TableHead>Email</TableHead>
-									<TableHead>Phone</TableHead>
-									<TableHead className="pr-4 text-right sm:pr-6">
-										Actions
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{vendor.contacts.length === 0 ? (
-									<TableRow>
-										<TableCell
-											colSpan={5}
-											className="h-20 text-center text-muted-foreground"
-										>
-											No contacts on file.
-										</TableCell>
-									</TableRow>
-								) : (
-									vendor.contacts.map((contact) => (
-										<TableRow key={contact.id} className="hover:bg-muted/30">
-											<TableCell className="pl-4 font-semibold sm:pl-6">
-												{contact.name}
-												{contact.isPrimary && (
-													<span className="ml-2 inline-flex items-center rounded-md border border-emerald-200/80 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-900">
-														Primary
-													</span>
-												)}
-											</TableCell>
-											<TableCell className="font-medium">
-												{contact.role}
-											</TableCell>
-											<TableCell>{contact.email}</TableCell>
-											<TableCell className="text-muted-foreground">
-												{contact.phone ?? "—"}
-											</TableCell>
-											<TableCell className="pr-4 text-right sm:pr-6">
-												<Button variant="ghost" size="icon" className="size-8">
-													<MoreHorizontal className="size-4" />
-												</Button>
-											</TableCell>
-										</TableRow>
-									))
-								)}
-							</TableBody>
-						</Table>
-					</div>
-				</section>
-			)}
+			{tab === "Contracts" && <VendorContractsTab vendorId={vendor.id} />}
 
 			{tab === "Notes" && (
 				<VendorNotesTab

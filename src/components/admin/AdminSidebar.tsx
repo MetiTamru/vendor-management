@@ -149,9 +149,6 @@ const NAV_ICONS: Record<string, typeof Home> = {
 const VENDOR_SECTION_ORDER = [
 	"top",
 	"master_data",
-	"procurement",
-	"governance",
-	"finance",
 	"integration_file_operations",
 	"operations",
 	"administration",
@@ -365,9 +362,7 @@ export function AdminSidebar() {
 									section !== "top" &&
 									section !== "claim_encounter" &&
 									section !== "regulatory_compliance" &&
-									section !== "program_monitoring" &&
-									section !== "governance" &&
-									section !== "finance" ? (
+									section !== "program_monitoring" ? (
 										<SidebarSeparator className="mx-2 mt-2" />
 									) : null}
 								</SidebarGroup>

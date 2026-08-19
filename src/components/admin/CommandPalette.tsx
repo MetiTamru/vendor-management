@@ -31,12 +31,6 @@ const EXTRA_PAGES = [
 	{ title: "Automations", href: "/admin/automations" },
 	{ title: "Vendor Comparison", href: "/admin/vendor-comparison" },
 	{ title: "Export Center", href: "/admin/exports" },
-	{ title: "Users", href: "/admin/users" },
-	{ title: "Groups", href: "/admin/groups" },
-	{ title: "Documents", href: "/admin/documents" },
-	{ title: "Invoices", href: "/admin/invoices" },
-	{ title: "Purchase Orders", href: "/admin/purchase-orders" },
-	{ title: "Contracts", href: "/admin/contracts" },
 ];
 
 export function CommandPalette() {

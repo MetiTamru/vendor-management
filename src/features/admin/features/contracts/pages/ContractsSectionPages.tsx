@@ -32,8 +32,20 @@ const TERM_STATUS_CLASS: Record<ContractTermStatus, string> = {
 	upcoming: "bg-muted text-muted-foreground ring-1 ring-inset ring-border",
 };
 
-export function ContractsEffectiveDatesPage() {
-	const { contracts, isLoading, error } = useContractsList();
+export type ContractsEmbeddedProps = {
+	vendorId?: string;
+	embedded?: boolean;
+};
+
+function contractsShellClass(embedded?: boolean) {
+	return embedded ? "space-y-3" : "container space-y-4 py-6";
+}
+
+export function ContractsEffectiveDatesPage({
+	vendorId,
+	embedded,
+}: ContractsEmbeddedProps = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 
 	const rows = useMemo(
 		() =>
@@ -68,37 +80,33 @@ export function ContractsEffectiveDatesPage() {
 	}, [rows]);
 
 	return (
-		<div className="container space-y-6 py-8">
-			<PageHeader
-				title="Effective Dates"
-				description="Term periods and renewal windows across all contracts."
+		<div className={contractsShellClass(embedded)}>
+			{embedded ? null : (
+				<PageHeader
+					title="Effective Dates"
+					description="Term periods and renewal windows across all contracts."
+				/>
+			)}
+		<SummaryCardsGrid columns={3}>
+			<SummaryCard
+				label="Current"
+				value={summary.current}
+				icon={CalendarDays}
+				tone="text-sky-700 bg-sky-500/10"
 			/>
-			<SummaryCardsGrid columns={4}>
-				<SummaryCard
-					label="Term periods"
-					value={summary.total}
-					icon={CalendarDays}
-					tone="text-primary bg-primary/10"
-				/>
-				<SummaryCard
-					label="Current"
-					value={summary.current}
-					icon={CalendarDays}
-					tone="text-sky-700 bg-sky-500/10"
-				/>
-				<SummaryCard
-					label="Upcoming"
-					value={summary.upcoming}
-					icon={CalendarDays}
-					tone="text-amber-700 bg-amber-500/10"
-				/>
-				<SummaryCard
-					label="Completed"
-					value={summary.completed}
-					icon={CalendarDays}
-					tone="text-emerald-700 bg-emerald-500/10"
-				/>
-			</SummaryCardsGrid>
+			<SummaryCard
+				label="Upcoming"
+				value={summary.upcoming}
+				icon={CalendarDays}
+				tone="text-amber-700 bg-amber-500/10"
+			/>
+			<SummaryCard
+				label="Completed"
+				value={summary.completed}
+				icon={CalendarDays}
+				tone="text-emerald-700 bg-emerald-500/10"
+			/>
+		</SummaryCardsGrid>
 
 			{isLoading ? (
 				<Skeleton className="h-72 w-full rounded-xl" />
@@ -168,8 +176,11 @@ export function ContractsEffectiveDatesPage() {
 	);
 }
 
-export function ContractsRateFeeSchedulePage() {
-	const { contracts, isLoading, error } = useContractsList();
+export function ContractsRateFeeSchedulePage({
+	vendorId,
+	embedded,
+}: ContractsEmbeddedProps = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 
 	const rows = useMemo(
 		() =>
@@ -199,11 +210,13 @@ export function ContractsRateFeeSchedulePage() {
 	}, [rows]);
 
 	return (
-		<div className="container space-y-6 py-8">
-			<PageHeader
-				title="Rate / Fee Schedule"
-				description="Contracted service rates across the vendor portfolio."
-			/>
+		<div className={contractsShellClass(embedded)}>
+			{embedded ? null : (
+				<PageHeader
+					title="Rate / Fee Schedule"
+					description="Contracted service rates across the vendor portfolio."
+				/>
+			)}
 			<SummaryCardsGrid columns={3}>
 				<SummaryCard
 					label="Rate lines"
@@ -287,8 +300,11 @@ export function ContractsRateFeeSchedulePage() {
 	);
 }
 
-export function ContractsSlaTermsPage() {
-	const { contracts, isLoading, error } = useContractsList();
+export function ContractsSlaTermsPage({
+	vendorId,
+	embedded,
+}: ContractsEmbeddedProps = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 
 	const rows = useMemo(
 		() =>
@@ -313,11 +329,13 @@ export function ContractsSlaTermsPage() {
 	);
 
 	return (
-		<div className="container space-y-6 py-8">
-			<PageHeader
-				title="SLA Terms"
-				description="Service-level commitments across active and pending contracts."
-			/>
+		<div className={contractsShellClass(embedded)}>
+			{embedded ? null : (
+				<PageHeader
+					title="SLA Terms"
+					description="Service-level commitments across active and pending contracts."
+				/>
+			)}
 			<SummaryCardsGrid columns={2}>
 				<SummaryCard
 					label="SLA metrics"
@@ -388,8 +406,11 @@ export function ContractsSlaTermsPage() {
 	);
 }
 
-export function ContractsDocumentsPage() {
-	const { contracts, isLoading, error } = useContractsList();
+export function ContractsDocumentsPage({
+	vendorId,
+	embedded,
+}: ContractsEmbeddedProps = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 
 	const rows = useMemo(
 		() =>
@@ -405,44 +426,36 @@ export function ContractsDocumentsPage() {
 		[contracts]
 	);
 
-	const summary = useMemo(() => {
-		const byType = rows.reduce<Record<string, number>>((acc, doc) => {
-			acc[doc.type] = (acc[doc.type] ?? 0) + 1;
-			return acc;
-		}, {});
-		return {
+	const summary = useMemo(
+		() => ({
 			total: rows.length,
 			contracts: new Set(rows.map((r) => r.contractId)).size,
-			types: Object.keys(byType).length,
-		};
-	}, [rows]);
+		}),
+		[rows]
+	);
 
 	return (
-		<div className="container space-y-6 py-8">
-			<PageHeader
-				title="Contract Documents"
-				description="Executed agreements, exhibits, and supporting files."
+		<div className={contractsShellClass(embedded)}>
+			{embedded ? null : (
+				<PageHeader
+					title="Contract Documents"
+					description="Executed agreements, exhibits, and supporting files."
+				/>
+			)}
+		<SummaryCardsGrid columns={2}>
+			<SummaryCard
+				label="Documents on file"
+				value={summary.total}
+				icon={FileText}
+				tone="text-rose-700 bg-rose-500/10"
 			/>
-			<SummaryCardsGrid columns={3}>
-				<SummaryCard
-					label="Documents"
-					value={summary.total}
-					icon={FileText}
-					tone="text-rose-700 bg-rose-500/10"
-				/>
-				<SummaryCard
-					label="Contracts with docs"
-					value={summary.contracts}
-					icon={FileText}
-					tone="text-primary bg-primary/10"
-				/>
-				<SummaryCard
-					label="Document types"
-					value={summary.types}
-					icon={FileText}
-					tone="text-sky-700 bg-sky-500/10"
-				/>
-			</SummaryCardsGrid>
+			<SummaryCard
+				label="Contracts with docs"
+				value={summary.contracts}
+				icon={FileText}
+				tone="text-primary bg-primary/10"
+			/>
+		</SummaryCardsGrid>
 
 			{isLoading ? (
 				<Skeleton className="h-72 w-full rounded-xl" />
@@ -510,16 +523,21 @@ export function ContractsDocumentsPage() {
 	);
 }
 
-export function ContractsDetailsHubPage() {
-	const { contracts, isLoading, error } = useContractsList();
+export function ContractsDetailsHubPage({
+	vendorId,
+	embedded,
+}: ContractsEmbeddedProps = {}) {
+	const { contracts, isLoading, error } = useContractsList(vendorId);
 
 	return (
-		<div className="container space-y-6 py-8">
-			<PageHeader
-				eyebrow="Contracts"
-				title="Contract Details"
-				description="Open a contract to review summary, terms, rates, SLA, and documents."
-			/>
+		<div className={contractsShellClass(embedded)}>
+			{embedded ? null : (
+				<PageHeader
+					eyebrow="Contracts"
+					title="Contract Details"
+					description="Open a contract to review summary, terms, rates, SLA, and documents."
+				/>
+			)}
 
 			{isLoading ? (
 				<Skeleton className="h-72 w-full rounded-xl" />

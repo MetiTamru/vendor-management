@@ -59,9 +59,13 @@ export function useUpdateContractsMutation() {
 	});
 }
 
-export function useContractsList() {
+export function useContractsList(vendorId?: string) {
 	const query = useContractsQuery();
-	return { ...query, contracts: query.data?.items ?? [] };
+	const items = query.data?.items ?? [];
+	const contracts = vendorId
+		? items.filter((contract) => contract.vendorId === vendorId)
+		: items;
+	return { ...query, contracts };
 }
 
 export function useContract(id: string | null | undefined) {

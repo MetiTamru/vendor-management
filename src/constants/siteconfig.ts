@@ -20,39 +20,6 @@ const vendorManagementNav: SidebarNavItem[] = [
 		module: "vendor_management",
 	},
 	{
-		title: "Contracts",
-		href: "/admin/contracts",
-		permission: "vendors-list",
-		section: "master_data",
-		module: "vendor_management",
-		items: [
-			{
-				title: "Overview",
-				href: "/admin/contracts",
-			},
-			{
-				title: "Contract Details",
-				href: "/admin/contracts/details",
-			},
-			{
-				title: "Effective Dates",
-				href: "/admin/contracts/effective-dates",
-			},
-			{
-				title: "Rate / Fee Schedule",
-				href: "/admin/contracts/rate-fee-schedule",
-			},
-			{
-				title: "SLA Terms",
-				href: "/admin/contracts/sla-terms",
-			},
-			{
-				title: "Documents",
-				href: "/admin/contracts/documents",
-			},
-		],
-	},
-	{
 		title: "Members",
 		href: "/admin/members",
 		permission: "vendors-list",
@@ -66,104 +33,10 @@ const vendorManagementNav: SidebarNavItem[] = [
 		section: "master_data",
 		module: "vendor_management",
 	},
-	{
-		title: "Eligibility Files",
-		href: "/admin/eligibility-files",
-		permission: "vendors-list",
-		section: "master_data",
-		module: "vendor_management",
-	},
-	{
-		title: "Provider Rosters",
-		href: "/admin/provider-rosters",
-		permission: "vendors-list",
-		section: "master_data",
-		module: "vendor_management",
-	},
-	// Procurement
-	{
-		title: "Onboarding",
-		href: "/admin/onboarding",
-		permission: "onboarding-list",
-		section: "procurement",
-		module: "vendor_management",
-	},
-	{
-		title: "Categories",
-		href: "/admin/categories",
-		permission: "categories-list",
-		section: "procurement",
-		module: "vendor_management",
-	},
-	{
-		title: "Sourcing",
-		href: "/admin/sourcing",
-		permission: "sourcing-list",
-		section: "procurement",
-		module: "vendor_management",
-	},
-	// Governance
-	{
-		title: "Documents",
-		href: "/admin/documents",
-		permission: "documents-list",
-		section: "governance",
-		module: "vendor_management",
-	},
-	{
-		title: "Compliance",
-		href: "/admin/compliance",
-		permission: "compliance-view",
-		section: "governance",
-		module: "vendor_management",
-	},
-	{
-		title: "Performance",
-		href: "/admin/performance",
-		permission: "performance-view",
-		section: "governance",
-		module: "vendor_management",
-	},
-	// Finance
-	{
-		title: "Purchase Orders",
-		href: "/admin/purchase-orders",
-		permission: "purchase-orders-list",
-		section: "finance",
-		module: "vendor_management",
-	},
-	{
-		title: "Invoices",
-		href: "/admin/invoices",
-		permission: "invoices-list",
-		section: "finance",
-		module: "vendor_management",
-	},
-	{
-		title: "Approvals",
-		href: "/admin/approvals",
-		permission: "approvals-list",
-		section: "finance",
-		module: "vendor_management",
-	},
 	// Integration & File Operations
 	{
 		title: "Integration Intake",
 		href: "/admin/integration",
-		permission: "file-management-view",
-		section: "integration_file_operations",
-		module: "vendor_management",
-	},
-	{
-		title: "Credentials",
-		href: "/admin/credentials",
-		permission: "file-management-view",
-		section: "integration_file_operations",
-		module: "vendor_management",
-	},
-	{
-		title: "Routing Rules",
-		href: "/admin/routing-rules",
 		permission: "file-management-view",
 		section: "integration_file_operations",
 		module: "vendor_management",
@@ -261,27 +134,6 @@ const vendorManagementNav: SidebarNavItem[] = [
 		module: "vendor_management",
 	},
 	// Administration
-	{
-		title: "Users",
-		href: "/admin/users",
-		permission: "dashboard-view",
-		section: "administration",
-		module: "vendor_management",
-	},
-	{
-		title: "Groups",
-		href: "/admin/groups",
-		permission: "groups-list",
-		section: "administration",
-		module: "vendor_management",
-	},
-	{
-		title: "Roles",
-		href: "/admin/roles",
-		permission: "roles-list",
-		section: "administration",
-		module: "vendor_management",
-	},
 	{
 		title: "Audit Trail",
 		href: "/admin/audit-trail",
@@ -410,24 +262,8 @@ const claimEncounterNav: SidebarNavItem[] = [
 		module: "claim_encounter",
 		items: [
 			{
-				title: "Overview",
-				href: "/admin/claim-encounter/acceptance-analytics",
-			},
-			{
-				title: "Acceptance",
-				href: "/admin/claim-encounter/acceptance-analytics/acceptance",
-			},
-			{
-				title: "Rejections",
-				href: "/admin/claim-encounter/acceptance-analytics/rejections",
-			},
-			{
 				title: "Completeness",
 				href: "/admin/claim-encounter/acceptance-analytics/completeness",
-			},
-			{
-				title: "Trends",
-				href: "/admin/claim-encounter/acceptance-analytics/trends",
 			},
 		],
 	},

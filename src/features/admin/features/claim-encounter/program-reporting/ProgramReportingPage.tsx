@@ -16,7 +16,6 @@ import {
 	LayoutDashboard,
 	type LucideIcon,
 	Pill,
-	Scale,
 	Send,
 	Shield,
 	SlidersHorizontal,
@@ -46,7 +45,6 @@ import {
 	MEDICARE_REPORTING_TABS,
 } from "@/features/admin/features/claim-encounter/program-reporting/feature/queries/useProgramReportingQuery";
 import { MedicareComplianceTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/MedicareComplianceTab";
-import { MedicareRiskAdjustmentTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/MedicareRiskAdjustmentTab";
 import { ProgramReportingAuditTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/ProgramReportingAuditTab";
 import { ProgramReportingOverviewTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/ProgramReportingOverviewTab";
 import { ProgramReportingSubmissionsTab } from "@/features/admin/features/claim-encounter/program-reporting/tabs/ProgramReportingSubmissionsTab";
@@ -64,7 +62,7 @@ type SharedTabId =
 
 type MedicaidTabId = SharedTabId | "acceptance-analytics" | "exceptions";
 
-type MedicareTabId = SharedTabId | "risk-adjustment" | "part-d" | "compliance";
+type MedicareTabId = SharedTabId | "part-d" | "compliance";
 
 type TabId = MedicaidTabId | MedicareTabId;
 
@@ -90,7 +88,6 @@ const MEDICARE_TAB_IDS: Record<
 	Submissions: "submissions",
 	Responses: "responses",
 	Validation: "validation",
-	"Risk Adjustment": "risk-adjustment",
 	"Part D": "part-d",
 	Compliance: "compliance",
 	Audit: "audit",
@@ -113,7 +110,6 @@ const MEDICARE_TAB_ICONS: Record<MedicareTabId, LucideIcon> = {
 	submissions: Send,
 	responses: Inbox,
 	validation: FileCheck,
-	"risk-adjustment": Scale,
 	"part-d": Pill,
 	compliance: ClipboardCheck,
 	audit: Shield,
@@ -239,11 +235,6 @@ const MEDICARE_TAB_META: Record<
 	validation: {
 		title: "Medicare Reporting – Validation",
 		description: SHARED_TAB_META.validation.description.medicare,
-	},
-	"risk-adjustment": {
-		title: "Medicare Reporting – Risk Adjustment",
-		description:
-			"Summarize HCC capture, suspected gaps, and chart-review queues for risk adjustment programs.",
 	},
 	"part-d": {
 		title: "Medicare Part D Reporting",
@@ -431,9 +422,6 @@ export function ProgramReportingPage({
 									<SelectContent>
 										<SelectItem value="all">All Report Types</SelectItem>
 										<SelectItem value="encounter">Encounter Data</SelectItem>
-										<SelectItem value="risk-adjustment">
-											Risk Adjustment
-										</SelectItem>
 										<SelectItem value="part-d">Part D (PDE)</SelectItem>
 									</SelectContent>
 								</Select>
@@ -582,9 +570,6 @@ export function ProgramReportingPage({
 						</>
 					) : (
 						<>
-							<TabsContent value="risk-adjustment" className="mt-0 space-y-0">
-								<MedicareRiskAdjustmentTab />
-							</TabsContent>
 							<TabsContent value="part-d" className="mt-0 space-y-0">
 								<MedicarePartDTab />
 							</TabsContent>
