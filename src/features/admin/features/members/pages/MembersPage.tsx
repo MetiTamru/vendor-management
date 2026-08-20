@@ -141,7 +141,11 @@ function MembersDirectoryPage() {
 	const accountGroups = useMemo(
 		() =>
 			Array.from(
-				new Set(programScoped.map((m) => m.accountGroup).filter(Boolean))
+				new Set(
+					programScoped
+						.map((m) => m.accountGroup)
+						.filter((g): g is string => Boolean(g))
+				)
 			).sort(),
 		[programScoped]
 	);
