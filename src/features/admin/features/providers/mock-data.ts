@@ -334,41 +334,55 @@ function buildSummaries(): ProviderSummary[] {
 	});
 }
 
-const _PROVIDER_SUMMARIES: ProviderSummary[] = isMockEnabled()
-	? buildSummaries()
-	: [];
+let _providerSummariesCache: ProviderSummary[] | null = null;
 
-// Match mockup hero provider
-if (isMockEnabled() && _PROVIDER_SUMMARIES[0]) {
-	const john = _PROVIDER_SUMMARIES[0]!;
-	john.name = "John Smith";
-	john.credentials = "MD";
-	john.specialty = "Internal Medicine";
-	john.subspecialty = "Primary Care";
-	john.npi = "1234567890";
-	john.taxId = "12-3456789";
-	john.upin = "A12345";
-	john.medicaidId = "DC-MD-88421";
-	john.status = "active";
-	john.program = "DHCF";
-	john.providerType = "Individual";
-	john.gender = "Male";
-	john.dob = "1972-04-18";
-	john.yearsInPractice = 18;
-	john.practiceName = "Smith Medical Group, LLC";
-	john.practiceAddress = "1842 K Street NW, Suite 400, Washington, DC 20006";
-	john.practicePhone = "(202) 555-0198";
-	john.enrollmentStatus = "enrolled";
-	john.enrollmentEffective = "2022-01-15";
-	john.claims12m = 8432;
-	john.encounters12m = 7103;
-	john.billed12m = 4238512.45;
-	john.paid12m = 3204551.32;
-	john.rejectionRate = 6.72;
-	john.netPayment12m = 2856422.18;
+export function getProviderSummaries(): ProviderSummary[] {
+	if (!isMockEnabled()) return [];
+	if (!_providerSummariesCache) {
+		_providerSummariesCache = buildSummaries();
+		const john = _providerSummariesCache[0];
+		if (john) {
+			john.name = "John Smith";
+			john.credentials = "MD";
+			john.specialty = "Internal Medicine";
+			john.subspecialty = "Primary Care";
+			john.npi = "1234567890";
+			john.taxId = "12-3456789";
+			john.upin = "A12345";
+			john.medicaidId = "DC-MD-88421";
+			john.status = "active";
+			john.program = "DHCF";
+			john.providerType = "Individual";
+			john.gender = "Male";
+			john.dob = "1972-04-18";
+			john.yearsInPractice = 18;
+			john.practiceName = "Smith Medical Group, LLC";
+			john.practiceAddress = "1842 K Street NW, Suite 400, Washington, DC 20006";
+			john.practicePhone = "(202) 555-0188";
+			john.enrollmentStatus = "enrolled";
+			john.enrollmentEffective = "2024-01-01";
+			john.claims12m = 842;
+			john.encounters12m = 1260;
+			john.billed12m = 1_842_000;
+			john.paid12m = 1_640_000;
+			john.rejectionRate = 2.4;
+			john.netPayment12m = 1_459_600;
+		}
+	}
+	return _providerSummariesCache;
 }
 
-export const PROVIDER_SUMMARIES: ProviderSummary[] = _PROVIDER_SUMMARIES;
+let _providerDetailsCache: Record<string, ProviderDetail> | null = null;
+
+function getProviderDetailsMap(): Record<string, ProviderDetail> {
+	if (!isMockEnabled()) return {};
+	if (!_providerDetailsCache) {
+		_providerDetailsCache = Object.fromEntries(
+			getProviderSummaries().map((s) => [s.id, detailFor(s)])
+		);
+	}
+	return _providerDetailsCache;
+}
 
 function detailFor(summary: ProviderSummary): ProviderDetail {
 	const isJohn = summary.id === "prov-1";
@@ -851,9 +865,8 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 	};
 }
 
-export const PROVIDER_DETAILS: Record<string, ProviderDetail> = fixtureRecord(
-	Object.fromEntries(PROVIDER_SUMMARIES.map((s) => [s.id, detailFor(s)]))
-);
+/** Lazy detail map — use {@link getProvider} for lookups. */
+export const PROVIDER_DETAILS: Record<string, ProviderDetail> = fixtureRecord({});
 
 export function displayProviderName(
 	p: Pick<ProviderSummary, "name" | "credentials">
@@ -864,12 +877,13 @@ export function displayProviderName(
 export function getProvider(idOrNpi: string): ProviderDetail | undefined {
 	if (!isMockEnabled()) return undefined;
 	const decoded = decodeURIComponent(idOrNpi);
-	const byId = PROVIDER_DETAILS[decoded];
+	const details = getProviderDetailsMap();
+	const byId = details[decoded];
 	if (byId) return byId;
-	const summary = PROVIDER_SUMMARIES.find(
+	const summary = getProviderSummaries().find(
 		(p) => p.id === decoded || p.npi === decoded
 	);
-	return summary ? PROVIDER_DETAILS[summary.id] : undefined;
+	return summary ? details[summary.id] : undefined;
 }
 
 export function formatCurrency(value: number) {

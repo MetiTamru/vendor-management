@@ -5,17 +5,25 @@ import {
 	useVendorCoreFeatureMutation,
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
+import { isMockEnabled } from "@/lib/mock-mode";
 
 import { listProviderSummaries, listProviders, seedProviders } from "../api/providersApi";
+import { getProviderSummaries } from "../../mock-data";
 
 const domain = "providers";
+const liveOnly = !isMockEnabled();
 
 export function useProviderSummariesQuery() {
 	return useVendorCoreFeatureQuery(domain, "summaries", listProviderSummaries);
 }
 
 export function useProvidersQuery(enabled = true) {
-	return useVendorCoreFeatureQuery(domain, "list", listProviders, enabled);
+	return useVendorCoreFeatureQuery(
+		domain,
+		"list",
+		listProviders,
+		enabled && liveOnly
+	);
 }
 
 export function useSeedProvidersMutation() {
@@ -29,7 +37,10 @@ export function useSeedProvidersMutation() {
 
 export function useProviderSummariesList() {
 	const query = useProviderSummariesQuery();
-	return { ...query, providers: query.data ?? [] };
+	const providers = isMockEnabled()
+		? getProviderSummaries()
+		: (query.data ?? []);
+	return { ...query, providers };
 }
 
 export const useVendorCoreProviders = useProvidersQuery;

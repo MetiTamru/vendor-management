@@ -11,6 +11,8 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	Download,
+	Eye,
+	EyeOff,
 	History,
 	Info,
 	Languages,
@@ -199,6 +201,39 @@ function MetaField({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
+function HeaderField({
+	label,
+	value,
+	accent,
+	mono,
+}: {
+	label: string;
+	value: ReactNode;
+	accent?: boolean;
+	mono?: boolean;
+}) {
+	return (
+		<div className="min-w-0 space-y-0.5">
+			<p className="text-[11px] font-medium leading-none text-slate-500">
+				{label}
+			</p>
+			<div
+				className={cn(
+					"text-sm font-semibold leading-tight text-slate-900",
+					accent && "text-primary",
+					mono && "font-mono tabular-nums"
+				)}
+			>
+				{value ?? "—"}
+			</div>
+		</div>
+	);
+}
+
+function HeaderDivider() {
+	return <div className="hidden h-auto w-px shrink-0 self-stretch bg-slate-200 xl:block" />;
+}
+
 function MetricStrip({
 	title,
 	items,
@@ -293,6 +328,7 @@ export function MemberDetailPage({
 	const [claimsPane, setClaimsPane] = useState<"claims" | "encounters">(
 		"claims"
 	);
+	const [showSsn, setShowSsn] = useState(false);
 
 	if (!member) {
 		return (
@@ -373,77 +409,210 @@ export function MemberDetailPage({
 			</div>
 
 			{/* Identity header */}
-			<section className="rounded-xl border border-primary/15 bg-gradient-to-br from-primary/[0.06] via-card to-sky-500/[0.05] p-5 shadow-sm">
-				<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-					<div className="flex min-w-0 gap-4">
-						<div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
-							<UserRound className="size-8" />
+			<section className="overflow-hidden rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+				<div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:gap-0">
+					{/* Identity + IDs */}
+					<div className="flex min-w-0 gap-3 xl:pr-5">
+						<div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+							<UserRound className="size-7" />
 						</div>
-						<div className="min-w-0 space-y-2">
-							<div className="flex flex-wrap items-center gap-2.5">
-								<h1 className="text-2xl font-semibold tracking-tight">
+						<div className="min-w-0 space-y-2.5">
+							<div className="flex flex-wrap items-center gap-2">
+								<h1 className="text-lg font-bold tracking-wide text-slate-900 uppercase">
 									{name}
 								</h1>
-								<MemberStatusPill status={member.status} />
-							</div>
-							<div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
-								<span>
-									Member ID{" "}
-									<span className="font-mono font-medium text-foreground">
-										{member.memberId}
-									</span>
-								</span>
-								<span>
-									DOB{" "}
-									<span className="font-medium tabular-nums text-foreground">
-										{formatDate(member.dob)}
-									</span>
-								</span>
-								<span>
-									Gender{" "}
-									<span className="font-medium text-foreground">
-										{member.gender}
-									</span>
-								</span>
-								<span>
-									SSN{" "}
-									<span className="font-mono font-medium text-foreground">
-										{maskSsn(member.ssnLast4)}
-									</span>
+								<span
+									className={cn(
+										"inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
+										member.status === "active" &&
+											"bg-emerald-100 text-emerald-800",
+										member.status === "pending" &&
+											"bg-amber-100 text-amber-900",
+										member.status === "inactive" &&
+											"bg-slate-100 text-slate-700",
+										member.status === "termed" && "bg-red-100 text-red-800"
+									)}
+								>
+									{member.status === "active"
+										? "Active"
+										: member.status === "pending"
+											? "Pending"
+											: member.status === "inactive"
+												? "Inactive"
+												: "Termed"}
 								</span>
 							</div>
-							<div className="flex flex-col gap-1.5 pt-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5">
-								<span className="inline-flex items-center gap-2">
-									<Phone className="size-3.5 shrink-0" />
-									{member.phone}
-								</span>
-								<span className="inline-flex items-center gap-2">
-									<Mail className="size-3.5 shrink-0" />
-									<span className="break-all">{member.email}</span>
-								</span>
-								<span className="inline-flex items-start gap-2">
-									<MapPin className="mt-0.5 size-3.5 shrink-0" />
-									<span>
-										{member.addressLine1}
-										{member.addressLine2
-											? `, ${member.addressLine2}`
-											: ""}, {member.city}, {member.state} {member.zip}
-									</span>
-								</span>
+							<div className="grid gap-x-5 gap-y-2 sm:grid-cols-3">
+								<HeaderField
+									label="Cardholder ID"
+									value={member.memberId}
+									accent
+									mono
+								/>
+								<HeaderField
+									label="Person Code"
+									value={member.personCode ?? "01"}
+									mono
+								/>
+								<HeaderField
+									label="Relationship Code"
+									value={member.relationshipCode ?? "18"}
+									mono
+								/>
+								<div className="min-w-0 space-y-0.5 sm:col-span-1">
+									<p className="text-[11px] font-medium leading-none text-slate-500">
+										Relationship
+									</p>
+									<div className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+										<Users className="size-3.5 shrink-0 text-slate-400" />
+										{member.memberType ?? "Subscriber"}
+									</div>
+								</div>
+								<HeaderField
+									label="External ID"
+									value={member.externalId ?? "—"}
+									mono
+								/>
 							</div>
 						</div>
 					</div>
 
-					<div className="grid shrink-0 gap-4 rounded-lg bg-muted/30 p-4 sm:grid-cols-2 lg:w-[360px]">
-						<MetaField label="Current plan" value={member.planName} />
-						<MetaField
-							label="Program"
-							value={`${member.planType} · ${member.program}`}
+					<HeaderDivider />
+
+					{/* DOB + SSN */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField
+							label="Date of Birth"
+							value={
+								<span className="tabular-nums">
+									{formatDate(member.dob)}
+									{memberAge(member.dob) != null
+										? ` (${memberAge(member.dob)})`
+										: ""}
+								</span>
+							}
 						/>
-						<MetaField label="PCP" value={member.pcpName} />
-						<MetaField
-							label="PCP NPI"
-							value={<span className="font-mono text-sm">{member.pcpNpi}</span>}
+						<div className="min-w-0 space-y-0.5">
+							<p className="text-[11px] font-medium leading-none text-slate-500">
+								SSN
+							</p>
+							<div className="flex items-center gap-1.5">
+								<span className="font-mono text-sm font-semibold tabular-nums text-slate-900">
+									{showSsn
+										? `123-45-${member.ssnLast4}`
+										: maskSsn(member.ssnLast4)}
+								</span>
+								<button
+									type="button"
+									aria-label={showSsn ? "Hide SSN" : "Show SSN"}
+									onClick={() => setShowSsn((v) => !v)}
+									className="rounded p-0.5 text-primary hover:bg-primary/5"
+								>
+									{showSsn ? (
+										<EyeOff className="size-3.5" />
+									) : (
+										<Eye className="size-3.5" />
+									)}
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Gender + Alternate ID */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField label="Gender" value={member.gender} />
+						<HeaderField
+							label="Alternate ID"
+							value={member.alternateId ?? "—"}
+							mono
+						/>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Account / Group */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField
+							label="Account / Group"
+							value={member.groupId ?? "—"}
+							accent
+						/>
+						<HeaderField
+							label="Group Name"
+							value={member.groupName ?? member.accountGroup ?? "—"}
+						/>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Plan */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField
+							label="Current Plan"
+							value={member.planName}
+							accent
+						/>
+						<HeaderField
+							label="Coverage Level"
+							value={member.coverageLevel ?? "—"}
+						/>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Employment */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField
+							label="Employee Type"
+							value={member.employeeType ?? member.accountStatus ?? "—"}
+						/>
+						<HeaderField
+							label="Effective Date"
+							value={formatDate(
+								member.statusEffectiveDate ?? member.coverageStart
+							)}
+						/>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Eligibility */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
+						<HeaderField
+							label="Eligibility Status"
+							value={
+								member.eligibilityStatus === "eligible"
+									? "Eligible"
+									: member.eligibilityStatus === "termed"
+										? "Termed"
+										: member.eligibilityStatus === "pending"
+											? "Pending"
+											: "Ineligible"
+							}
+						/>
+						<HeaderField
+							label="Term Date"
+							value={
+								member.statusTermDate
+									? formatDate(member.statusTermDate)
+									: "—"
+							}
+						/>
+					</div>
+
+					<HeaderDivider />
+
+					{/* Source */}
+					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:pl-5">
+						<HeaderField
+							label="Source"
+							value={member.sourceSystem ?? member.vendorSource}
+						/>
+						<HeaderField
+							label="Last Updated"
+							value={member.lastEligibilityUpdate ?? member.dataAsOf}
 						/>
 					</div>
 				</div>

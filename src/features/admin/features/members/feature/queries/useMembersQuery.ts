@@ -6,25 +6,39 @@ import {
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
 
+import { isMockEnabled } from "@/lib/mock-mode";
+
 import {
 	listMemberCoverages,
 	listMemberSummaries,
 	listMemberVendors,
 	seedMemberCoverages,
 } from "../api/membersApi";
+import { getMemberSummaries } from "../../mock-data";
 
 const domain = "members";
+const liveOnly = !isMockEnabled();
 
 export function useMemberSummariesQuery() {
 	return useVendorCoreFeatureQuery(domain, "summaries", listMemberSummaries);
 }
 
 export function useMemberCoveragesQuery() {
-	return useVendorCoreFeatureQuery(domain, "coverages", listMemberCoverages);
+	return useVendorCoreFeatureQuery(
+		domain,
+		"coverages",
+		listMemberCoverages,
+		liveOnly
+	);
 }
 
 export function useMemberVendorsQuery() {
-	return useVendorCoreFeatureQuery(domain, "vendors", listMemberVendors);
+	return useVendorCoreFeatureQuery(
+		domain,
+		"vendors",
+		listMemberVendors,
+		liveOnly
+	);
 }
 
 export function useSeedMemberCoveragesMutation() {
@@ -38,7 +52,10 @@ export function useSeedMemberCoveragesMutation() {
 
 export function useMemberSummariesList() {
 	const query = useMemberSummariesQuery();
-	return { ...query, members: query.data ?? [] };
+	const members = isMockEnabled()
+		? getMemberSummaries()
+		: (query.data ?? []);
+	return { ...query, members };
 }
 
 export function useMemberCoveragesList() {

@@ -14,11 +14,11 @@ import {
 import { getModuleSidebarNav } from "@/constants/siteconfig";
 import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
 import {
-	MEMBER_SUMMARIES,
+	getMemberSummaries,
 	displayName,
 } from "@/features/admin/features/members/mock-data";
 import {
-	PROVIDER_SUMMARIES,
+	getProviderSummaries,
 	displayProviderName,
 } from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
@@ -65,6 +65,22 @@ export function CommandPalette() {
 		[fileType]
 	);
 
+	const memberResults = useMemo(
+		() =>
+			getMemberSummaries()
+				.filter((m) => m.program === fileType)
+				.slice(0, 20),
+		[fileType]
+	);
+
+	const providerResults = useMemo(
+		() =>
+			getProviderSummaries()
+				.filter((p) => p.program === fileType)
+				.slice(0, 20),
+		[fileType]
+	);
+
 	function go(href: string) {
 		setOpen(false);
 		router.push(href);
@@ -107,9 +123,7 @@ export function CommandPalette() {
 						</CommandGroup>
 						<CommandSeparator />
 						<CommandGroup heading="Members">
-							{MEMBER_SUMMARIES.filter((m) => m.program === fileType)
-								.slice(0, 20)
-								.map((member) => (
+							{memberResults.map((member) => (
 									<CommandItem
 										key={member.id}
 										value={`member ${displayName(member)} ${member.memberId}`}
@@ -123,9 +137,7 @@ export function CommandPalette() {
 						</CommandGroup>
 						<CommandSeparator />
 						<CommandGroup heading="Providers">
-							{PROVIDER_SUMMARIES.filter((p) => p.program === fileType)
-								.slice(0, 20)
-								.map((provider) => (
+							{providerResults.map((provider) => (
 									<CommandItem
 										key={provider.id}
 										value={`provider ${displayProviderName(provider)} ${provider.npi}`}

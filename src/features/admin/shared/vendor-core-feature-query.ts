@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import { useVendorCoreSession } from "@/components/vendor-core/VendorCoreGate";
+import { isMockEnabled } from "@/lib/mock-mode";
 import { VendorCoreApiError } from "@/lib/vendor-core/client";
 
 import { featureQueryKey } from "./feature-contract";
@@ -20,11 +21,12 @@ export function useVendorCoreFeatureQuery<T>(
 	extraKeyParts: unknown[] = []
 ) {
 	const session = useVendorCoreSession();
+	const mock = isMockEnabled();
 
 	/* eslint-disable @tanstack/query/exhaustive-deps -- wrapper: stable keys from callers */
 	return useQuery({
 		queryKey: featureQueryKey(domain, scope, ...extraKeyParts),
-		enabled: session.live && session.authed && enabled,
+		enabled: enabled && (mock || (session.live && session.authed)),
 		queryFn: async () => {
 			try {
 				return await queryFn();

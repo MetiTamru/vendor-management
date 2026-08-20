@@ -1,9 +1,9 @@
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 
 import {
-	PROVIDER_DETAILS,
-	PROVIDER_SUMMARIES,
 	getProvider,
+	getProviderSummaries,
+	type ProviderSummary,
 } from "../../mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
@@ -29,8 +29,8 @@ export type {
 
 export async function listProviderSummaries() {
 	return withMockOrRemote(
-		() => PROVIDER_SUMMARIES,
-		async () => [] as typeof PROVIDER_SUMMARIES,
+		() => getProviderSummaries(),
+		async () => [] as ProviderSummary[],
 		[]
 	);
 }

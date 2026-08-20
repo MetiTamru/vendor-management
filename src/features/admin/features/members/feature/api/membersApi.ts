@@ -2,8 +2,9 @@ import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { MemberCoverageDto, VendorDto } from "@/lib/vendor-core/types";
 
 import {
-	MEMBER_SUMMARIES,
 	getMember,
+	getMemberSummaries,
+	type MemberSummary,
 } from "../../mock-data";
 import { withMockOrRemote } from "@/lib/mock-mode";
 
@@ -26,8 +27,8 @@ export type {
 
 export async function listMemberSummaries() {
 	return withMockOrRemote(
-		() => MEMBER_SUMMARIES,
-		async () => [] as typeof MEMBER_SUMMARIES,
+		() => getMemberSummaries(),
+		async () => [] as MemberSummary[],
 		[]
 	);
 }
