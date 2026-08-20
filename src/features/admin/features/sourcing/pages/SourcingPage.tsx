@@ -13,9 +13,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useRfxList } from "../feature/queries/useSourcingQuery";
 import { formatDate, formatMoney } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+
+import { useRfxList } from "../feature/queries/useSourcingQuery";
 
 export function SourcingPage() {
 	const { events, isLoading, error } = useRfxList();

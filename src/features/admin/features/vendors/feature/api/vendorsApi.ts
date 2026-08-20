@@ -25,14 +25,18 @@ export async function listVendorConnections(
 	return page.results ?? [];
 }
 
-export async function listVendorJobs(vendorId?: string): Promise<IntakeJobDto[]> {
+export async function listVendorJobs(
+	vendorId?: string
+): Promise<IntakeJobDto[]> {
 	const page = await vendorCoreApi.listIntakeJobs(
 		vendorId ? { vendor_id: vendorId } : undefined
 	);
 	return page.results ?? [];
 }
 
-export async function listVendorAccounts(vendorId?: string): Promise<AccountDto[]> {
+export async function listVendorAccounts(
+	vendorId?: string
+): Promise<AccountDto[]> {
 	const page = await vendorCoreApi.listAccounts(
 		vendorId ? { vendor_id: vendorId } : undefined
 	);

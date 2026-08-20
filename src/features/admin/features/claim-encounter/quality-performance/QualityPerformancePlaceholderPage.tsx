@@ -1,7 +1,8 @@
 "use client";
 
-import { Construction } from "lucide-react";
 import { notFound } from "next/navigation";
+
+import { Construction } from "lucide-react";
 
 import { CmsEdgeSectionPanel } from "@/features/admin/features/claim-encounter/cms-edge/CmsEdgeShared";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
@@ -14,7 +15,8 @@ export function QualityPerformancePlaceholderPage({
 }: {
 	slug: QualityPerformancePlaceholderSlug;
 }) {
-	const { data, isLoading, isError } = useQualityPerformancePlaceholderQuery(slug);
+	const { data, isLoading, isError } =
+		useQualityPerformancePlaceholderQuery(slug);
 
 	if (isLoading) {
 		return (

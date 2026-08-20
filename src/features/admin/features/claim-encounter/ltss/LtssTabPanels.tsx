@@ -19,13 +19,6 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import {
-	LTSS_AUTHORIZATIONS,
-	LTSS_EXCEPTIONS,
-	LTSS_SUBMISSIONS,
-	LTSS_UTILIZATION,
-	LTSS_VENDORS,
-} from "./feature/queries/useLtssQuery";
-import {
 	LTSS_TABLE_CELL,
 	LTSS_TABLE_HEAD,
 	PanelCard,
@@ -38,6 +31,13 @@ import {
 	formatCount,
 } from "./LtssShared";
 import { LTSS_LIST_HREF } from "./auth-detail-data";
+import {
+	LTSS_AUTHORIZATIONS,
+	LTSS_EXCEPTIONS,
+	LTSS_SUBMISSIONS,
+	LTSS_UTILIZATION,
+	LTSS_VENDORS,
+} from "./feature/queries/useLtssQuery";
 
 const PAGE_SIZE = 5;
 
@@ -128,7 +128,9 @@ export function AuthorizationsTab() {
 							<TableHead className={LTSS_TABLE_HEAD}>
 								Authorization Period
 							</TableHead>
-							<TableHead className={LTSS_TABLE_HEAD}>Authorized Units</TableHead>
+							<TableHead className={LTSS_TABLE_HEAD}>
+								Authorized Units
+							</TableHead>
 							<TableHead className={LTSS_TABLE_HEAD}>Used Units</TableHead>
 							<TableHead className={LTSS_TABLE_HEAD}>Remaining Units</TableHead>
 							<TableHead className={LTSS_TABLE_HEAD}>Status</TableHead>

@@ -24,12 +24,12 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import {
+	type ComponentStatus,
 	MCR_KPIS,
 	MCR_MEASURE_LIBRARY_HREF,
 	MCR_READINESS_BY_DOMAIN,
 	MCR_READINESS_ROWS,
 	MCR_READINESS_SUMMARY,
-	type ComponentStatus,
 	type ReadinessStatus,
 } from "./feature/queries/useMeasureComparisonQuery";
 
@@ -57,8 +57,7 @@ function ReadinessStatusPill({ status }: { status: ReadinessStatus }) {
 			"bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
 		"At Risk":
 			"bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-		"Not Ready":
-			"bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
+		"Not Ready": "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
 	};
 	return (
 		<span
@@ -89,9 +88,7 @@ function ComponentIcon({ status }: { status: ComponentStatus }) {
 			/>
 		);
 	}
-	return (
-		<XCircle className="mx-auto size-4 text-red-600" aria-label="Fail" />
-	);
+	return <XCircle className="mx-auto size-4 text-red-600" aria-label="Fail" />;
 }
 
 export function ReadinessOverviewSection() {
@@ -205,12 +202,18 @@ export function ReadinessOverviewSection() {
 												"submissionConfig",
 											] as const
 										).map((key) => (
-											<TableCell key={key} className={cn(TABLE_CELL, "text-center")}>
+											<TableCell
+												key={key}
+												className={cn(TABLE_CELL, "text-center")}
+											>
 												<ComponentIcon status={row.components[key]} />
 											</TableCell>
 										))}
 										<TableCell
-											className={cn(TABLE_CELL, "whitespace-nowrap text-muted-foreground")}
+											className={cn(
+												TABLE_CELL,
+												"whitespace-nowrap text-muted-foreground"
+											)}
 										>
 											{row.lastUpdated}
 										</TableCell>
@@ -235,8 +238,8 @@ export function ReadinessOverviewSection() {
 					<div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-[11px] text-muted-foreground">
 						<p className="inline-flex max-w-3xl items-start gap-1.5">
 							<Info className="mt-0.5 size-3.5 shrink-0 text-sky-600" />
-							Percentiles are based on NCQA Quality Compass® national
-							benchmarks where available, otherwise internal plan benchmarks.
+							Percentiles are based on NCQA Quality Compass® national benchmarks
+							where available, otherwise internal plan benchmarks.
 						</p>
 						<button
 							type="button"

@@ -39,6 +39,7 @@ import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/compo
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
+import { ReadinessOverviewSection } from "./ReadinessOverviewSection";
 import {
 	MCR_COMPLIANCE_DISTRIBUTION,
 	MCR_FILTERS,
@@ -48,7 +49,6 @@ import {
 	MCR_TOP_GAPS,
 	type MeasureTrend,
 } from "./feature/queries/useMeasureComparisonQuery";
-import { ReadinessOverviewSection } from "./ReadinessOverviewSection";
 
 const PAGE_STACK = "space-y-4";
 const TABLE_HEAD =
@@ -85,7 +85,9 @@ function TrendIcon({ trend }: { trend: MeasureTrend }) {
 }
 
 function FilterBar() {
-	const [year, setYear] = useState<string>(MCR_FILTERS.measurementYears[0].value);
+	const [year, setYear] = useState<string>(
+		MCR_FILTERS.measurementYears[0].value
+	);
 	const [plan, setPlan] = useState<string>(MCR_FILTERS.plans[0].value);
 	const [lob, setLob] = useState<string>(MCR_FILTERS.linesOfBusiness[0].value);
 	const [measureSet, setMeasureSet] = useState<string>(

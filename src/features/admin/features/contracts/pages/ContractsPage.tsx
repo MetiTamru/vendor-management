@@ -368,11 +368,11 @@ export function ContractsPage({
 						</p>
 					) : (
 						<ul className="space-y-1.5">
-						{renewalsDue.map((c) => (
-							<li
-								key={c.id}
-								className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
-							>
+							{renewalsDue.map((c) => (
+								<li
+									key={c.id}
+									className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+								>
 									<div className="min-w-0">
 										<Link
 											href={`/admin/contracts/${c.id}?tab=effective-dates`}
@@ -403,11 +403,11 @@ export function ContractsPage({
 						</p>
 					) : (
 						<ul className="space-y-1.5">
-						{openApprovals.map((c) => (
-							<li
-								key={c.id}
-								className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
-							>
+							{openApprovals.map((c) => (
+								<li
+									key={c.id}
+									className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+								>
 									<div className="min-w-0">
 										<Link
 											href={`/admin/contracts/${c.id}`}
@@ -438,12 +438,12 @@ export function ContractsPage({
 						</Link>
 					}
 				>
-				<ul className="space-y-1.5">
-					{recentActivity.map((c) => (
-						<li
-							key={c.id}
-							className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
-						>
+					<ul className="space-y-1.5">
+						{recentActivity.map((c) => (
+							<li
+								key={c.id}
+								className="flex items-start justify-between gap-2 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1.5"
+							>
 								<div className="min-w-0">
 									<Link
 										href={`/admin/contracts/${c.id}`}

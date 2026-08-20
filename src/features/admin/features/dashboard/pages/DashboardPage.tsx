@@ -60,9 +60,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useDashboardFileRunsList } from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreInboundFiles,
+} from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
 import { inboundFilesToRuns } from "@/features/admin/features/dashboard/live-file-runs";
 import type { ProcessStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
-import { useDashboardFileRunsList } from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
 import { VendorAvatarBadge } from "@/features/admin/features/file-management/vendor-avatars";
 import {
 	PROCESSING_TREND,
@@ -77,10 +81,6 @@ import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import {
-	useInvalidateVendorCore,
-	useVendorCoreInboundFiles,
-} from "@/features/admin/features/dashboard/feature/queries/useDashboardQuery";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 import {
 	DASHBOARD_WIDGET_LABELS,
@@ -88,11 +88,7 @@ import {
 	useDashboardWidgetsStore,
 } from "@/stores/dashboard-widgets-store";
 
-function ActivityStatus({
-	status,
-}: {
-	status: ProcessStatus;
-}) {
+function ActivityStatus({ status }: { status: ProcessStatus }) {
 	const bucket = runBucket(status);
 	if (bucket === "success") {
 		return (

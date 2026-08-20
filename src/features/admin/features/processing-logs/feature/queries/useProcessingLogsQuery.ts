@@ -1,16 +1,15 @@
 "use client";
 
-import {
-	useVendorCoreFeatureQuery,
-} from "@/features/admin/shared/vendor-core-feature-query";
-import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { useQuery } from "@tanstack/react-query";
+
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
+import { useVendorCoreFeatureQuery } from "@/features/admin/shared/vendor-core-feature-query";
 
 import {
 	getProcessingLogInboundFile,
+	listProcessingLogFileRuns,
 	listProcessingLogInboundFileEvents,
 	listProcessingLogInboundFiles,
-	listProcessingLogFileRuns,
 	listProcessingLogValidationResults,
 	listProcessingLogVendors,
 } from "../api/processingLogsApi";
@@ -38,7 +37,9 @@ export function useProcessingLogInboundFilesQuery(params?: {
 	);
 }
 
-export function useProcessingLogInboundFileQuery(id: string | null | undefined) {
+export function useProcessingLogInboundFileQuery(
+	id: string | null | undefined
+) {
 	return useVendorCoreFeatureQuery(
 		domain,
 		"inbound-file",
@@ -82,8 +83,10 @@ export function useProcessingLogFileRunsList() {
 
 export const useVendorCoreInboundFiles = useProcessingLogInboundFilesQuery;
 export const useVendorCoreInboundFile = useProcessingLogInboundFileQuery;
-export const useVendorCoreInboundFileEvents = useProcessingLogInboundFileEventsQuery;
-export const useVendorCoreValidationResults = useProcessingLogValidationResultsQuery;
+export const useVendorCoreInboundFileEvents =
+	useProcessingLogInboundFileEventsQuery;
+export const useVendorCoreValidationResults =
+	useProcessingLogValidationResultsQuery;
 export const useVendorCoreVendors = useProcessingLogVendorsQuery;
 
 export const useProcessingLogsQuery = useProcessingLogFileRunsQuery;

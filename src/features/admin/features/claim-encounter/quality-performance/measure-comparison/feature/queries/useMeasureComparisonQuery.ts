@@ -5,9 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
+	getKpis,
 	listMeasures,
 	listReadinessRows,
-	getKpis
 } from "../api/measure-comparisonApi";
 
 const domain = "quality-performance-measure-comparison";

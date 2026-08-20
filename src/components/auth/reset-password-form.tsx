@@ -1,18 +1,10 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	ArrowRight,
-	Eye,
-	EyeOff,
-	Loader2,
-	Lock,
-	Mail,
-	User,
-} from "lucide-react";
-import { useLocale } from "next-intl";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -33,15 +25,17 @@ import {
 } from "@/components/ui/form";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
-import { clearDevSignedOutCookie } from "@/lib/auth/dev-session";
-import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { AUTH_PATHS } from "@/lib/auth/paths";
-import { isNestApiEnabled } from "@/lib/mock-mode";
 
-const signUpSchema = z
+type ResetAuthClient = typeof authClient & {
+	resetPassword: (input: {
+		newPassword: string;
+		token: string;
+	}) => Promise<{ error?: { message?: string } | null }>;
+};
+
+const resetSchema = z
 	.object({
-		name: z.string().min(2, "Enter your name"),
-		email: z.string().email("Enter a valid email"),
 		password: z.string().min(8, "At least 8 characters"),
 		confirmPassword: z.string(),
 	})
@@ -50,51 +44,43 @@ const signUpSchema = z
 		path: ["confirmPassword"],
 	});
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+type ResetFormValues = z.infer<typeof resetSchema>;
 
 const labelClass = authLabelClass;
 
-export function SignUpForm() {
-	const locale = useLocale();
+export function ResetPasswordForm() {
+	const searchParams = useSearchParams();
+	const token = searchParams.get("token");
 	const [isLoading, setIsLoading] = useState(false);
+	const [done, setDone] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-	const mockAuth = isMockAuthEnabled();
-	const nestLogin = isNestApiEnabled();
 
-	const form = useForm<SignUpFormValues>({
-		resolver: zodResolver(signUpSchema),
-		defaultValues: {
-			name: "",
-			email: "",
-			password: "",
-			confirmPassword: "",
-		},
+	const form = useForm<ResetFormValues>({
+		resolver: zodResolver(resetSchema),
+		defaultValues: { password: "", confirmPassword: "" },
 	});
 
-	async function onSubmit(values: SignUpFormValues) {
+	async function onSubmit(values: ResetFormValues) {
+		if (!token) {
+			toast.error("This reset link is missing a token");
+			return;
+		}
+
 		setIsLoading(true);
 		try {
-			if (mockAuth && !nestLogin) {
-				clearDevSignedOutCookie();
-				toast.success("Account ready");
-				window.location.assign(`/${locale}`);
-				return;
-			}
-
-			const result = await authClient.signUp.email({
-				name: values.name,
-				email: values.email,
-				password: values.password,
+			const client = authClient as ResetAuthClient;
+			const result = await client.resetPassword({
+				newPassword: values.password,
+				token,
 			});
 
 			if (result.error) {
-				toast.error(result.error.message ?? "Sign up failed");
+				toast.error(result.error.message ?? "Reset failed");
 				return;
 			}
 
-			clearDevSignedOutCookie();
-			toast.success("Account created");
-			window.location.assign(`/${locale}`);
+			setDone(true);
+			toast.success("Password updated");
 		} catch {
 			toast.error("Something went wrong");
 		} finally {
@@ -102,52 +88,52 @@ export function SignUpForm() {
 		}
 	}
 
+	if (done) {
+		return (
+			<div className="space-y-6">
+				<p className="text-sm leading-relaxed text-muted-foreground">
+					Your password is updated. Sign in with the new one.
+				</p>
+				<Button asChild className={authPrimaryButtonClass}>
+					<Link href={AUTH_PATHS.login}>
+						Sign in
+						<ArrowRight className="size-4" />
+					</Link>
+				</Button>
+			</div>
+		);
+	}
+
+	if (!token) {
+		return (
+			<div className="space-y-6">
+				<p className="text-sm leading-relaxed text-muted-foreground">
+					This reset link is invalid or incomplete. Request a new one.
+				</p>
+				<div className="flex flex-col gap-3">
+					<Button asChild className={authPrimaryButtonClass}>
+						<Link href={AUTH_PATHS.forgotPassword}>Request new link</Link>
+					</Button>
+					<Link
+						href={AUTH_PATHS.login}
+						className="text-center text-[13px] font-semibold text-primary underline-offset-4 hover:underline"
+					>
+						Back to sign in
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
 				<FormField
 					control={form.control}
-					name="name"
-					render={({ field }) => (
-						<FormItem className="gap-1.5">
-							<FormLabel className={labelClass}>Name</FormLabel>
-							<FormControl>
-								<AuthTextInput
-									icon={User}
-									placeholder="Alex Morgan"
-									autoComplete="name"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="email"
-					render={({ field }) => (
-						<FormItem className="gap-1.5">
-							<FormLabel className={labelClass}>Email</FormLabel>
-							<FormControl>
-								<AuthTextInput
-									icon={Mail}
-									type="email"
-									placeholder="you@company.com"
-									autoComplete="email"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
 					name="password"
 					render={({ field }) => (
 						<FormItem className="gap-1.5">
-							<FormLabel className={labelClass}>Password</FormLabel>
+							<FormLabel className={labelClass}>New password</FormLabel>
 							<FormControl>
 								<AuthTextInput
 									icon={Lock}
@@ -205,23 +191,22 @@ export function SignUpForm() {
 					{isLoading ? (
 						<>
 							<Loader2 className="size-4 animate-spin" />
-							Creating…
+							Updating…
 						</>
 					) : (
 						<>
-							Create account
+							Update password
 							<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
 						</>
 					)}
 				</Button>
 
 				<p className="pt-2 text-center text-[13px] text-muted-foreground">
-					Have an account?{" "}
 					<Link
 						href={AUTH_PATHS.login}
 						className="font-semibold text-primary underline-offset-4 hover:underline"
 					>
-						Sign in
+						Back to sign in
 					</Link>
 				</p>
 			</form>

@@ -14,12 +14,12 @@ import {
 import { getModuleSidebarNav } from "@/constants/siteconfig";
 import { FILE_RUNS } from "@/features/admin/features/file-management/mock-data";
 import {
-	getMemberSummaries,
 	displayName,
+	getMemberSummaries,
 } from "@/features/admin/features/members/mock-data";
 import {
-	getProviderSummaries,
 	displayProviderName,
+	getProviderSummaries,
 } from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { useRouter } from "@/i18n/navigation";
@@ -124,30 +124,30 @@ export function CommandPalette() {
 						<CommandSeparator />
 						<CommandGroup heading="Members">
 							{memberResults.map((member) => (
-									<CommandItem
-										key={member.id}
-										value={`member ${displayName(member)} ${member.memberId}`}
-										onSelect={() => go(`/admin/members/${member.id}`)}
-									>
-										<span className="truncate">
-											{displayName(member)} · {member.memberId}
-										</span>
-									</CommandItem>
-								))}
+								<CommandItem
+									key={member.id}
+									value={`member ${displayName(member)} ${member.memberId}`}
+									onSelect={() => go(`/admin/members/${member.id}`)}
+								>
+									<span className="truncate">
+										{displayName(member)} · {member.memberId}
+									</span>
+								</CommandItem>
+							))}
 						</CommandGroup>
 						<CommandSeparator />
 						<CommandGroup heading="Providers">
 							{providerResults.map((provider) => (
-									<CommandItem
-										key={provider.id}
-										value={`provider ${displayProviderName(provider)} ${provider.npi}`}
-										onSelect={() => go(`/admin/providers/${provider.id}`)}
-									>
-										<span className="truncate">
-											{displayProviderName(provider)} · {provider.npi}
-										</span>
-									</CommandItem>
-								))}
+								<CommandItem
+									key={provider.id}
+									value={`provider ${displayProviderName(provider)} ${provider.npi}`}
+									onSelect={() => go(`/admin/providers/${provider.id}`)}
+								>
+									<span className="truncate">
+										{displayProviderName(provider)} · {provider.npi}
+									</span>
+								</CommandItem>
+							))}
 						</CommandGroup>
 						<CommandSeparator />
 						<CommandGroup heading="File runs">

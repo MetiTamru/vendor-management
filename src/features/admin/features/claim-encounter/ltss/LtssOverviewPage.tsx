@@ -12,14 +12,6 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import {
-	LTSS_DRILLDOWN_EXAMPLES,
-	LTSS_KPI,
-	LTSS_KPI_ICONS,
-	LTSS_QUALITY_HREF,
-	LTSS_TABS,
-	type LtssTabId,
-} from "./feature/queries/useLtssQuery";
-import {
 	LTSS_PAGE_STACK,
 	LTSS_TAB_TRIGGER_CLASS,
 	TrendHint,
@@ -32,6 +24,14 @@ import {
 	UtilizationTab,
 	VendorsTab,
 } from "./LtssTabPanels";
+import {
+	LTSS_DRILLDOWN_EXAMPLES,
+	LTSS_KPI,
+	LTSS_KPI_ICONS,
+	LTSS_QUALITY_HREF,
+	LTSS_TABS,
+	type LtssTabId,
+} from "./feature/queries/useLtssQuery";
 
 function KpiRow() {
 	const MembersIcon = LTSS_KPI_ICONS.members;
@@ -199,7 +199,9 @@ function ProgramMonitoringSidebar({
 							onClick={() => onSelect(tab.id)}
 							className={cn(
 								"flex w-full items-start gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors",
-								selected ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-muted/60"
+								selected
+									? "bg-primary/5 ring-1 ring-primary/20"
+									: "hover:bg-muted/60"
 							)}
 						>
 							<span

@@ -33,7 +33,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import { providersToSummaries } from "@/features/admin/features/providers/live-providers";
 import {
 	type ProviderStatus,
 	type ProviderSummary,
@@ -46,6 +45,7 @@ import {
 	useProviderSummariesList,
 	useVendorCoreProviders,
 } from "@/features/admin/features/providers/feature/queries/useProvidersQuery";
+import { providersToSummaries } from "@/features/admin/features/providers/live-providers";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";

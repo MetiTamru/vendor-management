@@ -21,9 +21,6 @@ import {
 	VendorCoreLiveChrome,
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { Link } from "@/i18n/navigation";
-import { vendorCoreApi } from "@/lib/vendor-core";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreAccounts,
@@ -31,6 +28,9 @@ import {
 	useVendorCoreJobs,
 	useVendorCoreVendor,
 } from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { Link } from "@/i18n/navigation";
+import { vendorCoreApi } from "@/lib/vendor-core";
 
 function VendorDetailLiveBody({ id }: { id: string }) {
 	const invalidate = useInvalidateVendorCore();

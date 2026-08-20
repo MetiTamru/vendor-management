@@ -52,7 +52,9 @@ export async function listIntegrationVendors(): Promise<VendorDto[]> {
 	return page.results ?? [];
 }
 
-export async function createIntegrationIntakeJob(body: Record<string, unknown>) {
+export async function createIntegrationIntakeJob(
+	body: Record<string, unknown>
+) {
 	return vendorCoreApi.createIntakeJob(body);
 }
 

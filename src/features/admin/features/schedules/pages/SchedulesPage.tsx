@@ -32,9 +32,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import type { ProcessStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import { displayRunStatus } from "@/features/admin/features/schedules/feature/api/schedulesApi";
 import { useScheduleFileRunsList } from "@/features/admin/features/schedules/feature/queries/useSchedulesQuery";
-import type { ProcessStatus } from "@/features/admin/features/file-management/feature/api/fileManagementApi";
 import { SchedulesLivePage } from "@/features/admin/features/schedules/pages/SchedulesLivePage";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";

@@ -290,5 +290,4 @@ export function getLtssAuthDetail(authId: string): AuthDetail | undefined {
 	return row ? buildFallbackDetail(row) : undefined;
 }
 
-export const LTSS_LIST_HREF =
-	"/admin/claim-encounter/program-monitoring/ltss";
+export const LTSS_LIST_HREF = "/admin/claim-encounter/program-monitoring/ltss";

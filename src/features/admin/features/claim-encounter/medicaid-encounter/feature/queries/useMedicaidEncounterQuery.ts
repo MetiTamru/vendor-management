@@ -7,7 +7,7 @@ import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import {
 	listDocumentLibrary,
 	listExceptionDetails,
-	listResponseFiles
+	listResponseFiles,
 } from "../api/medicaid-encounterApi";
 
 const domain = "medicaid-encounter";

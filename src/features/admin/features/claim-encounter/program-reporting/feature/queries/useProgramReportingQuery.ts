@@ -3,10 +3,10 @@
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
-	getOverviewData,
 	getAuditData,
+	getOverviewData,
 	getProgramScale,
-	getSubmissionsData
+	getSubmissionsData,
 } from "../api/program-reportingApi";
 
 const domain = "program-reporting";

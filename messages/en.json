@@ -31,14 +31,16 @@
 		"contact": "Contact"
 	},
 	"Auth": {
-		"loginTitle": "Welcome back",
-		"loginDescription": "Sign in to continue to Vendor Management",
-		"signUpTitle": "Create your account",
-		"signUpDescription": "Set up access for your organization",
-		"forgotTitle": "Reset your password",
-		"forgotDescription": "Enter your work email and we'll send reset instructions",
+		"loginTitle": "Sign in",
+		"loginDescription": "Access your workspace",
+		"signUpTitle": "Create account",
+		"signUpDescription": "Join your organization",
+		"forgotTitle": "Reset password",
+		"forgotDescription": "We'll email a reset link",
+		"resetTitle": "New password",
+		"resetDescription": "Choose a password for your account",
 		"inviteTitle": "Accept invitation",
-		"inviteDescription": "Set your password to join as a supplier"
+		"inviteDescription": "Set a password to join as a supplier"
 	},
 	"Admin": {
 		"title": "Vendor Management",

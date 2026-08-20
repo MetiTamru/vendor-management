@@ -30,11 +30,13 @@
 	},
 	"Auth": {
 		"loginTitle": "ግባ",
-		"loginDescription": "መለያዎን ለመጠቀም መረጃዎን ያስገቡ",
+		"loginDescription": "ወደ ስራ ቦታዎ ይግቡ",
 		"signUpTitle": "መለያ ፍጠር",
-		"signUpDescription": "ለመጀመር ዝርዝሮችዎን ያስገቡ",
+		"signUpDescription": "ድርጅትዎን ይቀላቀሉ",
 		"forgotTitle": "የይለፍ ቃል ዳግም አስጀምር",
-		"forgotDescription": "የይለፍ ቃል ለመቀየር መመሪያዎችን እንልክልዎታለን",
+		"forgotDescription": "የማስተካከያ አገናኝ እንልካለን",
+		"resetTitle": "አዲስ የይለፍ ቃል",
+		"resetDescription": "ለመለያዎ አዲስ የይለፍ ቃል ይምረጡ",
 		"inviteTitle": "ግብዣ ተቀበል",
 		"inviteDescription": "እንደ አቅራቢ ለመቀላቀል የይለፍ ቃል ያዘጋጁ"
 	},

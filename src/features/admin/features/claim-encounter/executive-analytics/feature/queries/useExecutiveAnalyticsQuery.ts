@@ -5,10 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
-	listDomains,
 	listAlerts,
+	listDomains,
 	listRegulatoryQualityMeasures,
-	listRiskExceptions
+	listRiskExceptions,
 } from "../api/executive-analyticsApi";
 
 const domain = "executive-analytics";

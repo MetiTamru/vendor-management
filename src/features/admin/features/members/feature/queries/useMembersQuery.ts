@@ -5,16 +5,15 @@ import {
 	useVendorCoreFeatureMutation,
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
-
 import { isMockEnabled } from "@/lib/mock-mode";
 
+import { getMemberSummaries } from "../../mock-data";
 import {
 	listMemberCoverages,
 	listMemberSummaries,
 	listMemberVendors,
 	seedMemberCoverages,
 } from "../api/membersApi";
-import { getMemberSummaries } from "../../mock-data";
 
 const domain = "members";
 const liveOnly = !isMockEnabled();
@@ -52,9 +51,7 @@ export function useSeedMemberCoveragesMutation() {
 
 export function useMemberSummariesList() {
 	const query = useMemberSummariesQuery();
-	const members = isMockEnabled()
-		? getMemberSummaries()
-		: (query.data ?? []);
+	const members = isMockEnabled() ? getMemberSummaries() : (query.data ?? []);
 	return { ...query, members };
 }
 

@@ -48,9 +48,9 @@ import {
 	Timer,
 	TrendingUp,
 	UserPlus,
-	UsersRound,
 	UserRound,
 	Users,
+	UsersRound,
 	Workflow,
 } from "lucide-react";
 import { useTranslations } from "next-intl";

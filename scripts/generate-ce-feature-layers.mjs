@@ -22,7 +22,16 @@ function baseName(id) {
 	return id.split("/").pop();
 }
 
-function writeLayer({ id, pascal, mockRel, domain, listHooks, reExports, apiFns, extraImports = [] }) {
+function writeLayer({
+	id,
+	pascal,
+	mockRel,
+	domain,
+	listHooks,
+	reExports,
+	apiFns,
+	extraImports = [],
+}) {
 	const name = baseName(id);
 	const dir = path.join(ROOT, id, "feature");
 
@@ -43,7 +52,11 @@ function writeLayer({ id, pascal, mockRel, domain, listHooks, reExports, apiFns,
 			typeLines.push(imp);
 		}
 	}
-	typeLines.push(``, `export type ${pascal}ListResult<T> = FeatureListResult<T>;`, ``);
+	typeLines.push(
+		``,
+		`export type ${pascal}ListResult<T> = FeatureListResult<T>;`,
+		``
+	);
 	write(path.join(dir, "types", `${name}Model.ts`), typeLines.join("\n"));
 
 	write(
@@ -156,7 +169,11 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "ltss",
 		listHooks: [
-			{ hook: "Authorizations", api: "listAuthorizations", prop: "authorizations" },
+			{
+				hook: "Authorizations",
+				api: "listAuthorizations",
+				prop: "authorizations",
+			},
 			{ hook: "Utilization", api: "listUtilization", prop: "utilization" },
 			{ hook: "Vendors", api: "listVendors", prop: "vendors" },
 			{ hook: "Exceptions", api: "listExceptions", prop: "exceptions" },
@@ -187,11 +204,23 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "cms-edge",
 		listHooks: [
-			{ hook: "AuditRequests", api: "listAuditRequests", prop: "auditRequests" },
+			{
+				hook: "AuditRequests",
+				api: "listAuditRequests",
+				prop: "auditRequests",
+			},
 			{ hook: "AuditReports", api: "listAuditReports", prop: "auditReports" },
-			{ hook: "SubmissionHistory", api: "listSubmissionHistory", prop: "submissionHistory" },
+			{
+				hook: "SubmissionHistory",
+				api: "listSubmissionHistory",
+				prop: "submissionHistory",
+			},
 			{ hook: "CmsResponses", api: "listCmsResponses", prop: "cmsResponses" },
-			{ hook: "DocumentLibrary", api: "listDocumentLibrary", prop: "documentLibrary" },
+			{
+				hook: "DocumentLibrary",
+				api: "listDocumentLibrary",
+				prop: "documentLibrary",
+			},
 		],
 		reExports: [
 			"CMS_EDGE_TABS",
@@ -284,8 +313,16 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "quality-performance",
 		listHooks: [
-			{ hook: "OpenGapsByMeasure", api: "listOpenGapsByMeasure", prop: "openGapsByMeasure" },
-			{ hook: "GapClosureActivity", api: "listGapClosureActivity", prop: "gapClosureActivity" },
+			{
+				hook: "OpenGapsByMeasure",
+				api: "listOpenGapsByMeasure",
+				prop: "openGapsByMeasure",
+			},
+			{
+				hook: "GapClosureActivity",
+				api: "listGapClosureActivity",
+				prop: "gapClosureActivity",
+			},
 		],
 		reExports: [
 			"QUALITY_PERFORMANCE_KPIS",
@@ -311,7 +348,11 @@ const layers = [
 		domain: "quality-performance-measure-comparison",
 		listHooks: [
 			{ hook: "Measures", api: "listMeasures", prop: "measures" },
-			{ hook: "ReadinessRows", api: "listReadinessRows", prop: "readinessRows" },
+			{
+				hook: "ReadinessRows",
+				api: "listReadinessRows",
+				prop: "readinessRows",
+			},
 		],
 		reExports: [
 			"MCR_FILTERS",
@@ -341,9 +382,21 @@ const layers = [
 		domain: "risk-adjustment",
 		listHooks: [
 			{ hook: "HccSummary", api: "listHccSummary", prop: "hccSummary" },
-			{ hook: "MemberOpportunities", api: "listMemberOpportunities", prop: "memberOpportunities" },
-			{ hook: "CodingValidation", api: "listCodingValidation", prop: "codingValidation" },
-			{ hook: "RaSubmissions", api: "listRaSubmissions", prop: "raSubmissions" },
+			{
+				hook: "MemberOpportunities",
+				api: "listMemberOpportunities",
+				prop: "memberOpportunities",
+			},
+			{
+				hook: "CodingValidation",
+				api: "listCodingValidation",
+				prop: "codingValidation",
+			},
+			{
+				hook: "RaSubmissions",
+				api: "listRaSubmissions",
+				prop: "raSubmissions",
+			},
 			{ hook: "RaAudits", api: "listRaAudits", prop: "raAudits" },
 			{ hook: "RaDocuments", api: "listRaDocuments", prop: "raDocuments" },
 		],
@@ -430,7 +483,11 @@ const layers = [
 		domain: "compliance-calendar",
 		listHooks: [
 			{ hook: "Obligations", api: "listObligations", prop: "obligations" },
-			{ hook: "UpcomingDeadlines", api: "listUpcomingDeadlines", prop: "upcomingDeadlines" },
+			{
+				hook: "UpcomingDeadlines",
+				api: "listUpcomingDeadlines",
+				prop: "upcomingDeadlines",
+			},
 		],
 		reExports: [
 			"COMPLIANCE_PROGRAM_COLORS",
@@ -479,7 +536,11 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "compliance-program",
 		listHooks: [],
-		reExports: ["ComplianceProgramRow", "rowsForComplianceProgramPage", "statsForRows"],
+		reExports: [
+			"ComplianceProgramRow",
+			"rowsForComplianceProgramPage",
+			"statsForRows",
+		],
 		apiFns: [
 			["rowsForComplianceProgramPage", "rowsForComplianceProgramPage", "fn"],
 			["statsForRows", "statsForRows", "fn"],
@@ -541,7 +602,12 @@ const layers = [
 		apiFns: [
 			["listDomains", "EXECUTIVE_DOMAINS"],
 			["listAlerts", "EXECUTIVE_ALERTS"],
-			["listRegulatoryQualityMeasures", "RQ_QUALITY_MEASURES", undefined, "regulatoryMock"],
+			[
+				"listRegulatoryQualityMeasures",
+				"RQ_QUALITY_MEASURES",
+				undefined,
+				"regulatoryMock",
+			],
 			["listRiskExceptions", "RE_TOP_EXCEPTIONS", undefined, "riskMock"],
 		],
 	},
@@ -581,9 +647,21 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "medicaid-encounter",
 		listHooks: [
-			{ hook: "DocumentLibrary", api: "listDocumentLibrary", prop: "documentLibrary" },
-			{ hook: "ExceptionDetails", api: "listExceptionDetails", prop: "exceptionDetails" },
-			{ hook: "ResponseFiles", api: "listResponseFiles", prop: "responseFiles" },
+			{
+				hook: "DocumentLibrary",
+				api: "listDocumentLibrary",
+				prop: "documentLibrary",
+			},
+			{
+				hook: "ExceptionDetails",
+				api: "listExceptionDetails",
+				prop: "exceptionDetails",
+			},
+			{
+				hook: "ResponseFiles",
+				api: "listResponseFiles",
+				prop: "responseFiles",
+			},
 		],
 		reExports: [
 			"MEDICAID_ENCOUNTER_KPIS",
@@ -662,7 +740,11 @@ const layers = [
 		mockRel: "../../mock-data",
 		domain: "medicare-reporting",
 		listHooks: [
-			{ hook: "PartDSubmissions", api: "listPartDSubmissions", prop: "partDSubmissions" },
+			{
+				hook: "PartDSubmissions",
+				api: "listPartDSubmissions",
+				prop: "partDSubmissions",
+			},
 		],
 		reExports: [
 			"MEDICARE_REPORTING_TABS",
@@ -690,7 +772,11 @@ const layers = [
 		mockRel: "../../fixtures",
 		domain: "claim-encounter-edi",
 		listHooks: [],
-		reExports: ["EDI_FIXTURE_PATHS", "EdiFixtureKey", "fixtureKeyForTransaction"],
+		reExports: [
+			"EDI_FIXTURE_PATHS",
+			"EdiFixtureKey",
+			"fixtureKeyForTransaction",
+		],
 		apiFns: [
 			["loadEdiFixture", "loadEdiFixture", "async-fn"],
 			["loadEdiByPath", "loadEdiByPath", "async-fn"],
@@ -703,7 +789,10 @@ for (const layer of layers) {
 	if (layer.id === "program-reporting") {
 		const name = baseName(layer.id);
 		const dir = path.join(ROOT, layer.id, "feature");
-		write(path.join(dir, "dto", `${name}Dto.ts`), `export type * from "${layer.mockRel}";\n`);
+		write(
+			path.join(dir, "dto", `${name}Dto.ts`),
+			`export type * from "${layer.mockRel}";\n`
+		);
 		write(
 			path.join(dir, "types", `${name}Model.ts`),
 			`import type { FeatureListResult } from "@/features/admin/shared/feature-contract";
@@ -714,7 +803,10 @@ export type { ProgramType } from "../../types";
 export type ${layer.pascal}ListResult<T> = FeatureListResult<T>;
 `
 		);
-		write(path.join(dir, "mappers", `${name}Mappers.ts`), `export * from "${layer.mockRel}";\n`);
+		write(
+			path.join(dir, "mappers", `${name}Mappers.ts`),
+			`export * from "${layer.mockRel}";\n`
+		);
 		const apiBodies = layer.apiFns.map(([fnName, mockRef, kind]) => {
 			if (kind === "fn") {
 				return `
@@ -738,7 +830,9 @@ ${apiBodies.join("\n")}
 		const reExportLines = layer.reExports.map(
 			(sym) => `export { ${sym} } from "../types/${name}Model";`
 		);
-		reExportLines.push(`export type { ProgramType } from "../types/${name}Model";`);
+		reExportLines.push(
+			`export type { ProgramType } from "../types/${name}Model";`
+		);
 		write(
 			path.join(dir, "queries", `use${layer.pascal}Query.ts`),
 			`"use client";

@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api/client";
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { CoreUserDto, LoginEventDto } from "@/lib/vendor-core/types";
-import { withMockOrRemote } from "@/lib/mock-mode";
 
 import { usersEndpoints } from "../../users-endpoints";
 import type {

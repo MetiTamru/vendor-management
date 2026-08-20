@@ -8,8 +8,8 @@ import { useRouter } from "@/i18n/navigation";
 import { getMutationErrorMessage } from "@/lib/api/errors";
 
 import { GroupForm } from "../components/GroupForm";
-import { formValuesToCreateCommand } from "../service/mappers/group-form.mapper";
 import { useCreateGroupMutation } from "../feature/queries/useGroupsQuery";
+import { formValuesToCreateCommand } from "../service/mappers/group-form.mapper";
 import type { GroupBusinessValues } from "../validation/group-business.schema";
 
 export function GroupCreatePage() {

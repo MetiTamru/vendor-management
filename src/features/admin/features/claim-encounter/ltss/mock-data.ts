@@ -62,7 +62,12 @@ export const LTSS_TABS: {
 	},
 ];
 
-export type AuthStatus = "Active" | "Near Limit" | "Exception" | "Pending" | "Closed";
+export type AuthStatus =
+	| "Active"
+	| "Near Limit"
+	| "Exception"
+	| "Pending"
+	| "Closed";
 
 export type AuthorizationRow = {
 	id: string;

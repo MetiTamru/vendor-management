@@ -357,7 +357,8 @@ export function getProviderSummaries(): ProviderSummary[] {
 			john.dob = "1972-04-18";
 			john.yearsInPractice = 18;
 			john.practiceName = "Smith Medical Group, LLC";
-			john.practiceAddress = "1842 K Street NW, Suite 400, Washington, DC 20006";
+			john.practiceAddress =
+				"1842 K Street NW, Suite 400, Washington, DC 20006";
 			john.practicePhone = "(202) 555-0188";
 			john.enrollmentStatus = "enrolled";
 			john.enrollmentEffective = "2024-01-01";
@@ -866,7 +867,9 @@ function detailFor(summary: ProviderSummary): ProviderDetail {
 }
 
 /** Lazy detail map — use {@link getProvider} for lookups. */
-export const PROVIDER_DETAILS: Record<string, ProviderDetail> = fixtureRecord({});
+export const PROVIDER_DETAILS: Record<string, ProviderDetail> = fixtureRecord(
+	{}
+);
 
 export function displayProviderName(
 	p: Pick<ProviderSummary, "name" | "credentials">

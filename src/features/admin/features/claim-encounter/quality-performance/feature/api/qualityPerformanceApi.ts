@@ -9,8 +9,9 @@ export async function getQualityPerformancePlaceholder(
 ): Promise<ApiQualityPerformancePlaceholderDto | null> {
 	return withMockOrRemote(
 		() =>
-			QUALITY_PERFORMANCE_PLACEHOLDER_PAGES.find((page) => page.slug === slug) ??
-			null,
+			QUALITY_PERFORMANCE_PLACEHOLDER_PAGES.find(
+				(page) => page.slug === slug
+			) ?? null,
 		async () => null
 	);
 }

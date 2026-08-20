@@ -54,6 +54,14 @@ import {
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { VendorActionsMenu } from "@/features/admin/features/vendors/components/VendorActionsMenu";
+import {
+	useInvalidateVendorCore,
+	useVendorCoreAccounts,
+	useVendorCoreConnections,
+	useVendorCoreInboundFiles,
+	useVendorCoreJobs,
+	useVendorCoreVendors,
+} from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 import { liveVendorsToDirectoryRows } from "@/features/admin/features/vendors/live-directory";
 import {
 	VENDOR_DIRECTORY,
@@ -66,14 +74,6 @@ import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import {
-	useInvalidateVendorCore,
-	useVendorCoreAccounts,
-	useVendorCoreConnections,
-	useVendorCoreInboundFiles,
-	useVendorCoreJobs,
-	useVendorCoreVendors,
-} from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
 	return <StatusBadge status={status} />;

@@ -1,3 +1,4 @@
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
 	ConnectionDto,
@@ -6,17 +7,27 @@ import type {
 	VendorDto,
 } from "@/lib/vendor-core/types";
 
-import { FILE_RUNS, displayRunStatus, type FileRun, type ProcessStatus } from "../../../file-management/mock-data";
-import { withMockOrRemote } from "@/lib/mock-mode";
+import {
+	FILE_RUNS,
+	type FileRun,
+	type ProcessStatus,
+	displayRunStatus,
+} from "../../../file-management/mock-data";
 
 export { displayRunStatus };
 export type { FileRun, ProcessStatus };
 
 export async function listScheduleFileRuns(): Promise<FileRun[]> {
-	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
+	return withMockOrRemote(
+		() => FILE_RUNS,
+		async () => [],
+		[]
+	);
 }
 
-export async function listIntakeJobs(vendorId?: string): Promise<IntakeJobDto[]> {
+export async function listIntakeJobs(
+	vendorId?: string
+): Promise<IntakeJobDto[]> {
 	const page = await vendorCoreApi.listIntakeJobs(
 		vendorId ? { vendor_id: vendorId } : undefined
 	);

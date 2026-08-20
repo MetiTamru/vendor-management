@@ -16,11 +16,11 @@ import { GroupStatsCards } from "../components/GroupStatsCards";
 import { GroupsCreateButton } from "../components/GroupsCreateButton";
 import { GroupsEmptyState } from "../components/GroupsEmptyState";
 import { GroupsTable } from "../components/GroupsTable";
-import { useGroupSearch } from "../hooks/useGroupSearch";
 import {
 	useDeleteGroupMutation,
 	useGroupsList,
 } from "../feature/queries/useGroupsQuery";
+import { useGroupSearch } from "../hooks/useGroupSearch";
 import { useGroupUiStore } from "../store/group.ui-store";
 
 export function GroupsPage() {

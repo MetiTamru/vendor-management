@@ -21,7 +21,11 @@ import {
 const domain = "integration-intake";
 
 export function useIntegrationMonitoringQuery() {
-	return useVendorCoreFeatureQuery(domain, "monitoring", getIntegrationMonitoring);
+	return useVendorCoreFeatureQuery(
+		domain,
+		"monitoring",
+		getIntegrationMonitoring
+	);
 }
 
 export function useIntegrationConnectionsQuery(vendorId?: string) {

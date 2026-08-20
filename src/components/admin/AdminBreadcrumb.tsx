@@ -20,13 +20,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { siteConfig } from "@/constants/siteconfig";
 import { getObligationDetail } from "@/features/admin/features/claim-encounter/compliance-calendar/mock-data";
+import { getLtssAuthDetail } from "@/features/admin/features/claim-encounter/ltss/auth-detail-data";
 import {
 	getClaimResponse,
 	getSubmissionBatch,
 	getVendorFile,
 } from "@/features/admin/features/claim-encounter/mock-data";
 import { getMeasureDetail } from "@/features/admin/features/claim-encounter/quality-performance/measure-library/mock-data";
-import { getLtssAuthDetail } from "@/features/admin/features/claim-encounter/ltss/auth-detail-data";
 import { getMemberOpportunityDetail } from "@/features/admin/features/claim-encounter/risk-adjustment/mock-data";
 import {
 	getFileRun,

@@ -14,7 +14,11 @@ export function ComplianceProgramRoutePage({
 	slug: string;
 	section: ComplianceProgramSection;
 }) {
-	const { data: config, isLoading, isError } = useComplianceProgramPageQuery(slug);
+	const {
+		data: config,
+		isLoading,
+		isError,
+	} = useComplianceProgramPageQuery(slug);
 
 	if (isLoading) {
 		return (

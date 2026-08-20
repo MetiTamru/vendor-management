@@ -9,6 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+
 import { useCategoriesList } from "../feature/queries/useCategoriesQuery";
 
 export function CategoriesPage() {

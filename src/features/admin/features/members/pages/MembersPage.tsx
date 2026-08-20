@@ -32,7 +32,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
 import {
 	type MemberStatus,
 	displayName,
@@ -45,6 +44,7 @@ import {
 	useVendorCoreMemberCoverages,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
@@ -86,7 +86,9 @@ function StatusPill({ status }: { status: MemberStatus }) {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
 	return (
-		<label className="text-[11px] font-semibold text-muted-foreground">{children}</label>
+		<label className="text-[11px] font-semibold text-muted-foreground">
+			{children}
+		</label>
 	);
 }
 
@@ -162,7 +164,10 @@ function MembersDirectoryPage() {
 
 	const filtered = useMemo(() => {
 		return programScoped.filter((m) => {
-			if (memberId && !m.memberId.toLowerCase().includes(memberId.toLowerCase()))
+			if (
+				memberId &&
+				!m.memberId.toLowerCase().includes(memberId.toLowerCase())
+			)
 				return false;
 			if (
 				alternateId &&
@@ -174,11 +179,15 @@ function MembersDirectoryPage() {
 				!m.firstName.toLowerCase().includes(firstName.toLowerCase())
 			)
 				return false;
-			if (lastName && !m.lastName.toLowerCase().includes(lastName.toLowerCase()))
+			if (
+				lastName &&
+				!m.lastName.toLowerCase().includes(lastName.toLowerCase())
+			)
 				return false;
 			if (dob && m.dob !== dob) return false;
 			if (gender !== "all" && m.gender !== gender) return false;
-			if (accountGroup !== "all" && m.accountGroup !== accountGroup) return false;
+			if (accountGroup !== "all" && m.accountGroup !== accountGroup)
+				return false;
 			if (plan !== "all" && m.planName !== plan) return false;
 			if (
 				eligibilityStatus !== "all" &&
@@ -198,7 +207,8 @@ function MembersDirectoryPage() {
 			}
 			if (effectiveFrom && (m.coverageEffectiveDate ?? "") < effectiveFrom)
 				return false;
-			if (effectiveTo && (m.coverageEffectiveDate ?? "") > effectiveTo) return false;
+			if (effectiveTo && (m.coverageEffectiveDate ?? "") > effectiveTo)
+				return false;
 			return true;
 		});
 	}, [
@@ -301,14 +311,20 @@ function MembersDirectoryPage() {
 			<section className="rounded-xl border border-border bg-card p-4 shadow-sm">
 				<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
 					<div>
-						<h1 className="text-xl font-semibold text-foreground">Member Search</h1>
+						<h1 className="text-xl font-semibold text-foreground">
+							Member Search
+						</h1>
 						<p className="text-sm text-muted-foreground">
 							Search and view member information across all sources.
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-2">
 						{useLive && programScoped.length === 0 ? (
-							<Button size="sm" onClick={() => void handleSeed()} disabled={seeding}>
+							<Button
+								size="sm"
+								onClick={() => void handleSeed()}
+								disabled={seeding}
+							>
 								{seeding ? "Seeding..." : "Seed demo coverages"}
 							</Button>
 						) : null}
@@ -320,7 +336,11 @@ function MembersDirectoryPage() {
 						>
 							Clear
 						</Button>
-						<Button variant="outline" size="sm" className="border-primary/30 text-primary">
+						<Button
+							variant="outline"
+							size="sm"
+							className="border-primary/30 text-primary"
+						>
 							Save Search
 						</Button>
 						<Button size="sm" className="bg-primary text-primary-foreground">
@@ -544,7 +564,10 @@ function MembersDirectoryPage() {
 					>
 						More Filters
 						<ChevronDown
-							className={cn("ml-1 size-4 transition-transform", showMoreFilters && "rotate-180")}
+							className={cn(
+								"ml-1 size-4 transition-transform",
+								showMoreFilters && "rotate-180"
+							)}
 						/>
 					</button>
 					<div className="flex items-center gap-2">
@@ -569,15 +592,17 @@ function MembersDirectoryPage() {
 
 				{showMoreFilters ? (
 					<div className="mt-3 rounded-lg border border-dashed border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-						Additional advanced filters can be added here later. The current view
-						matches the provided search design and is wired to mock data.
+						Additional advanced filters can be added here later. The current
+						view matches the provided search design and is wired to mock data.
 					</div>
 				) : null}
 			</section>
 
 			<section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 				<div className="border-b border-border bg-muted/40 px-4 py-3">
-					<p className="text-sm font-semibold text-foreground">Search Results</p>
+					<p className="text-sm font-semibold text-foreground">
+						Search Results
+					</p>
 					<p className="text-xs text-muted-foreground">
 						{filtered.length} members found in {programFilter}
 					</p>
@@ -659,7 +684,10 @@ function MembersDirectoryPage() {
 							))}
 							{pageRows.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+									<TableCell
+										colSpan={10}
+										className="h-24 text-center text-muted-foreground"
+									>
 										No members match the current filters.
 									</TableCell>
 								</TableRow>
@@ -677,7 +705,10 @@ function MembersDirectoryPage() {
 						<span className="font-medium text-foreground">
 							{Math.min(safePage * pageSize, filtered.length)}
 						</span>{" "}
-						of <span className="font-medium text-foreground">{filtered.length}</span>
+						of{" "}
+						<span className="font-medium text-foreground">
+							{filtered.length}
+						</span>
 					</p>
 					<div className="flex items-center gap-2">
 						<Button

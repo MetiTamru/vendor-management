@@ -9,8 +9,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useScorecardsList } from "../feature/queries/usePerformanceQuery";
 import { formatDate } from "@/features/shared/vms/utils";
+
+import { useScorecardsList } from "../feature/queries/usePerformanceQuery";
 
 function scoreColor(score: number) {
 	if (score >= 90) return "text-emerald-600 dark:text-emerald-400";

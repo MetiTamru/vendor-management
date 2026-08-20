@@ -5,12 +5,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import type { ApprovalRequestModel } from "@/features/shared/vms/types";
+import { formatDate } from "@/features/shared/vms/utils";
+
 import {
 	useApprovalMutation,
 	useApprovalsList,
 } from "../feature/queries/useApprovalsQuery";
-import type { ApprovalRequestModel } from "@/features/shared/vms/types";
-import { formatDate } from "@/features/shared/vms/utils";
 
 export function ApprovalsPage() {
 	const { approvals, isLoading, error } = useApprovalsList();

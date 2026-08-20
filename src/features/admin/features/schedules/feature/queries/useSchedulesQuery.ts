@@ -1,12 +1,13 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreFeatureMutation,
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
-import { featureQueryKey } from "@/features/admin/shared/feature-contract";
-import { useQuery } from "@tanstack/react-query";
 
 import {
 	createIntakeJob,

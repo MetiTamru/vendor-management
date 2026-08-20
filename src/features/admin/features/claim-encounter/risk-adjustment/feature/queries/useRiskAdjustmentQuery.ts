@@ -5,13 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
+	getMemberOpportunityDetail,
+	listCodingValidation,
 	listHccSummary,
 	listMemberOpportunities,
-	listCodingValidation,
-	listRaSubmissions,
 	listRaAudits,
 	listRaDocuments,
-	getMemberOpportunityDetail
+	listRaSubmissions,
 } from "../api/risk-adjustmentApi";
 
 const domain = "risk-adjustment";

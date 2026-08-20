@@ -5,12 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
+	getKpis,
 	listAuthorizations,
-	listUtilization,
-	listVendors,
 	listExceptions,
 	listSubmissions,
-	getKpis
+	listUtilization,
+	listVendors,
 } from "../api/ltssApi";
 
 const domain = "ltss";

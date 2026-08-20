@@ -34,8 +34,6 @@ import {
 	IntakeJobFormDialog,
 	type IntakeJobFormValues,
 } from "@/features/admin/features/integration-intake/components/IntakeJobFormDialog";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { isVendorCoreLive } from "@/lib/vendor-core/client";
 import {
 	useCreateIntakeJob,
 	useInvalidateVendorCore,
@@ -48,6 +46,8 @@ import {
 	useVendorCoreMonitoring,
 	useVendorCoreVendors,
 } from "@/features/admin/features/integration-intake/feature/queries/useIntegrationIntakeQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { isVendorCoreLive } from "@/lib/vendor-core/client";
 import type { IntakeJobDto } from "@/lib/vendor-core/types";
 
 function StatCard({

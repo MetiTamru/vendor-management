@@ -244,7 +244,9 @@ function HeaderField({
 }
 
 function HeaderDivider() {
-	return <div className="hidden h-auto w-px shrink-0 self-stretch bg-border xl:block" />;
+	return (
+		<div className="hidden h-auto w-px shrink-0 self-stretch bg-border xl:block" />
+	);
 }
 
 function MetricStrip({
@@ -443,7 +445,8 @@ export function MemberDetailPage({
 											"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
 										member.status === "inactive" &&
 											"bg-muted text-muted-foreground",
-										member.status === "termed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
+										member.status === "termed" &&
+											"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 									)}
 								>
 									{member.status === "active"
@@ -562,11 +565,7 @@ export function MemberDetailPage({
 
 					{/* Plan */}
 					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField
-							label="Current Plan"
-							value={member.planName}
-							accent
-						/>
+						<HeaderField label="Current Plan" value={member.planName} accent />
 						<HeaderField
 							label="Coverage Level"
 							value={member.coverageLevel ?? "—"}
@@ -608,9 +607,7 @@ export function MemberDetailPage({
 						<HeaderField
 							label="Term Date"
 							value={
-								member.statusTermDate
-									? formatDate(member.statusTermDate)
-									: "—"
+								member.statusTermDate ? formatDate(member.statusTermDate) : "—"
 							}
 						/>
 					</div>
@@ -1062,7 +1059,8 @@ export function MemberDetailPage({
 															"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
 														v.status === "warning" &&
 															"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-														v.status === "failed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
+														v.status === "failed" &&
+															"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 													)}
 												>
 													{v.status}
@@ -1143,9 +1141,12 @@ function FeedStatusPill({
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "success" && "bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-				status === "warning" && "bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-				status === "failed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
+				status === "success" &&
+					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+				status === "warning" &&
+					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "failed" &&
+					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 			)}
 		>
 			{status}

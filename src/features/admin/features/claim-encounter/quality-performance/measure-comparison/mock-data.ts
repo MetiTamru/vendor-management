@@ -189,7 +189,11 @@ export const MCR_TOP_GAPS = [
 export const MCR_MEASURE_LIBRARY_HREF =
 	"/admin/claim-encounter/regulatory/quality-performance/measure-library";
 
-export type ReadinessStatus = "Ready" | "Needs Review" | "At Risk" | "Not Ready";
+export type ReadinessStatus =
+	| "Ready"
+	| "Needs Review"
+	| "At Risk"
+	| "Not Ready";
 export type ComponentStatus = "pass" | "warn" | "fail";
 
 export type ReadinessRow = {

@@ -19,14 +19,14 @@ import {
 	VendorCoreLiveChrome,
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { useRouter } from "@/i18n/navigation";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreConnections,
 	useVendorCoreJobs,
 	useVendorCoreVendors,
 } from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { useRouter } from "@/i18n/navigation";
 
 function VendorsLiveBody() {
 	const router = useRouter();

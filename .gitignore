@@ -49,3 +49,6 @@ next-env.d.ts
 
 backups/
 
+# local project docs
+/docs/
+

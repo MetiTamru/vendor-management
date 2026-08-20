@@ -1,20 +1,20 @@
-import { featureQueryKey } from "@/features/admin/shared/feature-contract";
-import { toContractsModel } from "@/features/admin/features/contracts/feature/mappers/contractsMappers";
-import { toSourcingModel } from "@/features/admin/features/sourcing/feature/mappers/sourcingMappers";
-import { toInvoicesModel } from "@/features/admin/features/invoices/feature/mappers/invoicesMappers";
-import { toPurchaseOrdersModel } from "@/features/admin/features/purchase-orders/feature/mappers/purchaseOrdersMappers";
-import { toDocumentsModel } from "@/features/admin/features/documents/feature/mappers/documentsMappers";
-import { toOnboardingModel } from "@/features/admin/features/onboarding/feature/mappers/onboardingMappers";
 import { toComplianceModel } from "@/features/admin/features/compliance/feature/mappers/complianceMappers";
+import * as contractsApi from "@/features/admin/features/contracts/feature/api/contractsApi";
+import { toContractsModel } from "@/features/admin/features/contracts/feature/mappers/contractsMappers";
+import * as credentialsApi from "@/features/admin/features/credentials/feature/api/credentialsApi";
+import { toCredentialsModel } from "@/features/admin/features/credentials/feature/mappers/credentialsMappers";
+import { toDocumentsModel } from "@/features/admin/features/documents/feature/mappers/documentsMappers";
+import * as invoicesApi from "@/features/admin/features/invoices/feature/api/invoicesApi";
+import { toInvoicesModel } from "@/features/admin/features/invoices/feature/mappers/invoicesMappers";
+import { toOnboardingModel } from "@/features/admin/features/onboarding/feature/mappers/onboardingMappers";
+import * as purchaseOrdersApi from "@/features/admin/features/purchase-orders/feature/api/purchaseOrdersApi";
+import { toPurchaseOrdersModel } from "@/features/admin/features/purchase-orders/feature/mappers/purchaseOrdersMappers";
+import { toRiskScoringDashboardModel } from "@/features/admin/features/risk-scoring/feature/mappers/riskScoringMappers";
 import { toSlaMonitoringModel } from "@/features/admin/features/sla-monitoring/feature/mappers/slaMonitoringMappers";
 import type { SlaRunModel } from "@/features/admin/features/sla-monitoring/feature/types/slaMonitoringModel";
-import { toRiskScoringDashboardModel } from "@/features/admin/features/risk-scoring/feature/mappers/riskScoringMappers";
+import { toSourcingModel } from "@/features/admin/features/sourcing/feature/mappers/sourcingMappers";
+import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 import { normalizeEligibilityFile } from "@/lib/vendor-core/types";
-import { toCredentialsModel } from "@/features/admin/features/credentials/feature/mappers/credentialsMappers";
-import * as contractsApi from "@/features/admin/features/contracts/feature/api/contractsApi";
-import * as invoicesApi from "@/features/admin/features/invoices/feature/api/invoicesApi";
-import * as purchaseOrdersApi from "@/features/admin/features/purchase-orders/feature/api/purchaseOrdersApi";
-import * as credentialsApi from "@/features/admin/features/credentials/feature/api/credentialsApi";
 
 describe("feature-contract", () => {
 	it("builds stable query keys for list and detail scopes", () => {

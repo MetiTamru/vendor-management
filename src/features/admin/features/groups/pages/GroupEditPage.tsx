@@ -11,13 +11,13 @@ import { getMutationErrorMessage } from "@/lib/api/errors";
 
 import { GroupForm } from "../components/GroupForm";
 import {
-	formValuesToUpdateCommand,
-	groupModelToFormValues,
-} from "../service/mappers/group-form.mapper";
-import {
 	useGroup,
 	useUpdateGroupMutation,
 } from "../feature/queries/useGroupsQuery";
+import {
+	formValuesToUpdateCommand,
+	groupModelToFormValues,
+} from "../service/mappers/group-form.mapper";
 import type { GroupBusinessValues } from "../validation/group-business.schema";
 
 type GroupEditPageProps = {

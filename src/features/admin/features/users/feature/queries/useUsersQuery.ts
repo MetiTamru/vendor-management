@@ -5,18 +5,22 @@ import {
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
 
+import { useUsersList } from "../../service/queries/user.query";
 import {
 	listVendorCoreLoginEvents,
 	listVendorCoreUsers,
 } from "../api/usersApi";
-import { useUsersList } from "../../service/queries/user.query";
 
 const domain = "users";
 
 export { useUsersList };
 
 export function useVendorCoreUsersQuery() {
-	return useVendorCoreFeatureQuery(domain, "vendor-core-list", listVendorCoreUsers);
+	return useVendorCoreFeatureQuery(
+		domain,
+		"vendor-core-list",
+		listVendorCoreUsers
+	);
 }
 
 export function useVendorCoreLoginEventsQuery(

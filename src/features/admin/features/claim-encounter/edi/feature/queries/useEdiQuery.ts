@@ -4,10 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
-import {
-	loadEdiFixture,
-	loadEdiByPath
-} from "../api/ediApi";
+import { loadEdiByPath, loadEdiFixture } from "../api/ediApi";
 
 const domain = "claim-encounter-edi";
 

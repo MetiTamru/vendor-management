@@ -1,6 +1,6 @@
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import { NextConfig } from "next";
 
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const isDockerBuild = process.env.DOCKER_BUILD === "1";

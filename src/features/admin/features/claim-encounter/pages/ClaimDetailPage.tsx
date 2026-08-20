@@ -34,7 +34,6 @@ import {
 	EdiViewerLoader,
 	loadEdiFixture,
 } from "@/features/admin/features/claim-encounter/edi";
-import { findClaimLineByClaimId } from "@/features/admin/features/claim-encounter/live-claims";
 import {
 	type ClaimDetail,
 	buildClaimDetailFromLine,
@@ -42,11 +41,12 @@ import {
 	formatCurrency,
 	getClaimDetail,
 } from "@/features/admin/features/claim-encounter/feature/api/claimEncounterApi";
+import { useVendorCoreClaimLines } from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
+import { findClaimLineByClaimId } from "@/features/admin/features/claim-encounter/live-claims";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import { useVendorCoreClaimLines } from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
 
 const MAIN_TABS = [
 	"Claim Summary",

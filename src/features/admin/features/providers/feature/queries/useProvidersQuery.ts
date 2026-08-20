@@ -7,8 +7,12 @@ import {
 } from "@/features/admin/shared/vendor-core-feature-query";
 import { isMockEnabled } from "@/lib/mock-mode";
 
-import { listProviderSummaries, listProviders, seedProviders } from "../api/providersApi";
 import { getProviderSummaries } from "../../mock-data";
+import {
+	listProviderSummaries,
+	listProviders,
+	seedProviders,
+} from "../api/providersApi";
 
 const domain = "providers";
 const liveOnly = !isMockEnabled();

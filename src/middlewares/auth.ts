@@ -2,6 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { defaultLocale } from "@/i18n/config";
 import { getAuthSessionUrl } from "@/lib/auth/api-url";
+import {
+	DEV_SIGNED_OUT_COOKIE,
+	isDevSignedOutCookieValue,
+} from "@/lib/auth/dev-session";
 import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import {
 	getHomePath,
@@ -24,9 +28,15 @@ function hasE2eSession(request: NextRequest): boolean {
 	return request.cookies.get(E2E_SESSION_COOKIE)?.value === "1";
 }
 
+function isDevMockSignedOut(request: NextRequest): boolean {
+	return isDevSignedOutCookieValue(
+		request.cookies.get(DEV_SIGNED_OUT_COOKIE)?.value
+	);
+}
+
 export async function isAuthenticated(request: NextRequest): Promise<boolean> {
 	if (isMockAuthEnabled()) {
-		return true;
+		return !isDevMockSignedOut(request);
 	}
 
 	if (hasE2eSession(request)) {
@@ -57,8 +67,14 @@ export async function handleAuth(
 		const { pathname } = request.nextUrl;
 		const locale = getLocaleFromPathname(pathname) ?? defaultLocale;
 		const homePath = getHomePath(locale);
+		const loginPath = getLoginPath(locale);
 
-		// Auth pages → home when mock-authenticated
+		if (isDevMockSignedOut(request)) {
+			if (pathname.includes("/auth/")) return null;
+			return NextResponse.redirect(new URL(loginPath, request.url));
+		}
+
+		// Auth pages → home when the local mock/dev session is active
 		if (pathname.includes("/auth/")) {
 			return NextResponse.redirect(new URL(homePath, request.url));
 		}

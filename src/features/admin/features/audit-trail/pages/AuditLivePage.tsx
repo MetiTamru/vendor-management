@@ -19,11 +19,11 @@ import {
 	VendorCoreLiveChrome,
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreAudit,
 } from "@/features/admin/features/audit-trail/feature/queries/useAuditTrailQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 
 function AuditLiveBody() {
 	const invalidate = useInvalidateVendorCore();

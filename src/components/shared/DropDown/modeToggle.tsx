@@ -13,7 +13,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useSettingsStore, type ThemeMode } from "@/stores/settings-store";
+import { type ThemeMode, useSettingsStore } from "@/stores/settings-store";
 
 type ModeToggleProps = {
 	className?: string;

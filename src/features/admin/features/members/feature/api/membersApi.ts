@@ -1,12 +1,12 @@
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { MemberCoverageDto, VendorDto } from "@/lib/vendor-core/types";
 
 import {
+	type MemberSummary,
 	getMember,
 	getMemberSummaries,
-	type MemberSummary,
 } from "../../mock-data";
-import { withMockOrRemote } from "@/lib/mock-mode";
 
 export {
 	displayName,

@@ -5,9 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
+	getObligationDetail,
 	listObligations,
 	listUpcomingDeadlines,
-	getObligationDetail
 } from "../api/compliance-calendarApi";
 
 const domain = "compliance-calendar";

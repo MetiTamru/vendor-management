@@ -1,3 +1,4 @@
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { ClaimLineDto } from "@/lib/vendor-core/types";
 import type { ProgramFileType } from "@/types/UI/system.types";
@@ -17,6 +18,7 @@ import {
 	claimsForFile,
 	claimsForResponse,
 	displayClaimStatus,
+	downloadTextFile,
 	exceptionsForProgram,
 	exportRowsAsCsv,
 	filesForProgram,
@@ -28,9 +30,7 @@ import {
 	getVendorFile,
 	responsesForProgram,
 	vendorPerformanceForProgram,
-	downloadTextFile,
 } from "../../mock-data";
-import { withMockOrRemote } from "@/lib/mock-mode";
 
 export {
 	REJECT_REASON_CATALOG,
@@ -69,23 +69,43 @@ export type {
 } from "../../mock-data";
 
 export async function listClaimVendorFiles() {
-	return withMockOrRemote(() => CLAIM_VENDOR_FILES, async () => [], []);
+	return withMockOrRemote(
+		() => CLAIM_VENDOR_FILES,
+		async () => [],
+		[]
+	);
 }
 
 export async function listClaimResponses() {
-	return withMockOrRemote(() => CLAIM_RESPONSES, async () => [], []);
+	return withMockOrRemote(
+		() => CLAIM_RESPONSES,
+		async () => [],
+		[]
+	);
 }
 
 export async function listClaimExceptions() {
-	return withMockOrRemote(() => CLAIM_EXCEPTIONS, async () => [], []);
+	return withMockOrRemote(
+		() => CLAIM_EXCEPTIONS,
+		async () => [],
+		[]
+	);
 }
 
 export async function listClaimLines() {
-	return withMockOrRemote(() => CLAIM_LINES, async () => [], []);
+	return withMockOrRemote(
+		() => CLAIM_LINES,
+		async () => [],
+		[]
+	);
 }
 
 export async function listSubmissionBatches() {
-	return withMockOrRemote(() => SUBMISSION_BATCHES, async () => [], []);
+	return withMockOrRemote(
+		() => SUBMISSION_BATCHES,
+		async () => [],
+		[]
+	);
 }
 
 export async function listClaimLinesLive(): Promise<ClaimLineDto[]> {
@@ -93,7 +113,10 @@ export async function listClaimLinesLive(): Promise<ClaimLineDto[]> {
 	return page.results ?? [];
 }
 
-export async function seedClaimLines(body?: { vendor_id?: string; force?: boolean }) {
+export async function seedClaimLines(body?: {
+	vendor_id?: string;
+	force?: boolean;
+}) {
 	return vendorCoreApi.seedClaimLines(body);
 }
 

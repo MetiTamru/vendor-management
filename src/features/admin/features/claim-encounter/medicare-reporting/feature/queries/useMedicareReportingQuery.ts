@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
+	getPartDKpis,
 	listPartDSubmissions,
-	getPartDKpis
 } from "../api/medicare-reportingApi";
 
 const domain = "medicare-reporting";

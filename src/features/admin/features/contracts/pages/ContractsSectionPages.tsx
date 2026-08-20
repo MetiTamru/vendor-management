@@ -87,26 +87,26 @@ export function ContractsEffectiveDatesPage({
 					description="Term periods and renewal windows across all contracts."
 				/>
 			)}
-		<SummaryCardsGrid columns={3}>
-			<SummaryCard
-				label="Current"
-				value={summary.current}
-				icon={CalendarDays}
-				tone="text-sky-700 bg-sky-500/10"
-			/>
-			<SummaryCard
-				label="Upcoming"
-				value={summary.upcoming}
-				icon={CalendarDays}
-				tone="text-amber-700 bg-amber-500/10"
-			/>
-			<SummaryCard
-				label="Completed"
-				value={summary.completed}
-				icon={CalendarDays}
-				tone="text-emerald-700 bg-emerald-500/10"
-			/>
-		</SummaryCardsGrid>
+			<SummaryCardsGrid columns={3}>
+				<SummaryCard
+					label="Current"
+					value={summary.current}
+					icon={CalendarDays}
+					tone="text-sky-700 bg-sky-500/10"
+				/>
+				<SummaryCard
+					label="Upcoming"
+					value={summary.upcoming}
+					icon={CalendarDays}
+					tone="text-amber-700 bg-amber-500/10"
+				/>
+				<SummaryCard
+					label="Completed"
+					value={summary.completed}
+					icon={CalendarDays}
+					tone="text-emerald-700 bg-emerald-500/10"
+				/>
+			</SummaryCardsGrid>
 
 			{isLoading ? (
 				<Skeleton className="h-72 w-full rounded-xl" />
@@ -442,20 +442,20 @@ export function ContractsDocumentsPage({
 					description="Executed agreements, exhibits, and supporting files."
 				/>
 			)}
-		<SummaryCardsGrid columns={2}>
-			<SummaryCard
-				label="Documents on file"
-				value={summary.total}
-				icon={FileText}
-				tone="text-rose-700 bg-rose-500/10"
-			/>
-			<SummaryCard
-				label="Contracts with docs"
-				value={summary.contracts}
-				icon={FileText}
-				tone="text-primary bg-primary/10"
-			/>
-		</SummaryCardsGrid>
+			<SummaryCardsGrid columns={2}>
+				<SummaryCard
+					label="Documents on file"
+					value={summary.total}
+					icon={FileText}
+					tone="text-rose-700 bg-rose-500/10"
+				/>
+				<SummaryCard
+					label="Contracts with docs"
+					value={summary.contracts}
+					icon={FileText}
+					tone="text-primary bg-primary/10"
+				/>
+			</SummaryCardsGrid>
 
 			{isLoading ? (
 				<Skeleton className="h-72 w-full rounded-xl" />

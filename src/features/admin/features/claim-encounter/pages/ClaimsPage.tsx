@@ -46,7 +46,6 @@ import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { ClaimPageHeader } from "@/features/admin/features/claim-encounter/components/ClaimPageChrome";
 import { usePagedRows } from "@/features/admin/features/claim-encounter/components/ClaimQueueChrome";
 import { EdiViewerDialog } from "@/features/admin/features/claim-encounter/edi";
-import { claimLineDtosToClaimLines } from "@/features/admin/features/claim-encounter/live-claims";
 import {
 	type ClaimLine,
 	SHOWCASE_CLAIM_DETAIL,
@@ -60,6 +59,7 @@ import {
 	useSeedClaimLines,
 	useVendorCoreClaimLines,
 } from "@/features/admin/features/claim-encounter/feature/queries/useClaimEncounterQuery";
+import { claimLineDtosToClaimLines } from "@/features/admin/features/claim-encounter/live-claims";
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";

@@ -1,11 +1,11 @@
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 
 import {
+	type ProviderSummary,
 	getProvider,
 	getProviderSummaries,
-	type ProviderSummary,
 } from "../../mock-data";
-import { withMockOrRemote } from "@/lib/mock-mode";
 
 export {
 	displayProviderName,

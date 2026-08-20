@@ -28,12 +28,13 @@ import {
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import type { LoginEventDto } from "@/lib/vendor-core/types";
+
 import {
 	useInvalidateVendorCore,
 	useVendorCoreLoginEvents,
 	useVendorCoreUsers,
 } from "../feature/queries/useUsersQuery";
-import type { LoginEventDto } from "@/lib/vendor-core/types";
 
 function rolesForUser(u: {
 	is_superuser?: boolean;

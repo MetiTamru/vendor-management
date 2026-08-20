@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { featureQueryKey } from "@/features/admin/shared/feature-contract";
 
 import {
-	listOpenGapsByMeasure,
 	listGapClosureActivity,
+	listOpenGapsByMeasure,
 } from "../api/quality-performanceApi";
 import { getQualityPerformancePlaceholder } from "../api/qualityPerformanceApi";
 import { toQualityPerformancePlaceholderModel } from "../mappers/qualityPerformanceMappers";

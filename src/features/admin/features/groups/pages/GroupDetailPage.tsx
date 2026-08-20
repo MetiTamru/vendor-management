@@ -9,8 +9,8 @@ import { GroupCharacteristicsSection } from "../components/GroupCharacteristicsS
 import { GroupDetailCard } from "../components/GroupDetailCard";
 import { GroupHeader } from "../components/GroupHeader";
 import { GroupMembersSection } from "../components/GroupMembersSection";
-import { useGroupTabs } from "../hooks/useGroupTabs";
 import { useGroup } from "../feature/queries/useGroupsQuery";
+import { useGroupTabs } from "../hooks/useGroupTabs";
 
 type GroupDetailPageProps = {
 	groupId: string;

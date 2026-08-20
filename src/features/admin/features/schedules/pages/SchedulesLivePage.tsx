@@ -32,7 +32,6 @@ import {
 	IntakeJobFormDialog,
 	type IntakeJobFormValues,
 } from "@/features/admin/features/integration-intake/components/IntakeJobFormDialog";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import {
 	useCreateIntakeJob,
 	useInvalidateVendorCore,
@@ -43,6 +42,7 @@ import {
 	useVendorCoreJobs,
 	useVendorCoreVendors,
 } from "@/features/admin/features/schedules/feature/queries/useSchedulesQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import type { IntakeJobDto } from "@/lib/vendor-core/types";
 import { vendorLabel } from "@/lib/vendor-core/types";
 

@@ -35,9 +35,9 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import {
+	type AuthDetail,
 	LTSS_LIST_HREF,
 	getLtssAuthDetail,
-	type AuthDetail,
 } from "./auth-detail-data";
 
 const CELL = "px-3 py-2 text-xs";
@@ -79,7 +79,13 @@ function Card({
 	);
 }
 
-function Meta({ label, children }: { label: string; children: React.ReactNode }) {
+function Meta({
+	label,
+	children,
+}: {
+	label: string;
+	children: React.ReactNode;
+}) {
 	return (
 		<div className="space-y-0.5">
 			<p className="text-[11px] text-muted-foreground">{label}</p>
@@ -112,7 +118,11 @@ function StatusDotLabel({
 
 function SummaryStrip({ detail }: { detail: AuthDetail }) {
 	const chartData = [
-		{ name: "used", value: detail.utilization.utilizationPct, color: "#3b82f6" },
+		{
+			name: "used",
+			value: detail.utilization.utilizationPct,
+			color: "#3b82f6",
+		},
 		{
 			name: "remaining",
 			value: 100 - detail.utilization.utilizationPct,
@@ -281,7 +291,12 @@ export function LtssAuthDetailPage({ authId }: { authId: string }) {
 				description="View authorization, service utilization, encounters, and submission history."
 				actions={
 					<>
-						<Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs" asChild>
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-9 gap-1.5 text-xs"
+							asChild
+						>
 							<Link href={LTSS_LIST_HREF}>
 								<ArrowLeft className="size-3.5" />
 								Back to Authorization & Services
@@ -295,10 +310,14 @@ export function LtssAuthDetailPage({ authId }: { authId: string }) {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => toast.message("Edit authorization")}>
+								<DropdownMenuItem
+									onClick={() => toast.message("Edit authorization")}
+								>
 									Edit authorization
 								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => toast.message("Export detail")}>
+								<DropdownMenuItem
+									onClick={() => toast.message("Export detail")}
+								>
 									Export detail
 								</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => toast.message("Add note")}>
@@ -406,7 +425,9 @@ export function LtssAuthDetailPage({ authId }: { authId: string }) {
 										key={String(label)}
 										className="flex items-center justify-between gap-3 border-b border-border/60 pb-2 last:border-0 last:pb-0"
 									>
-										<span className="text-xs text-muted-foreground">{label}</span>
+										<span className="text-xs text-muted-foreground">
+											{label}
+										</span>
 										<span className="font-semibold tabular-nums">{value}</span>
 									</div>
 								))}
@@ -609,7 +630,9 @@ export function LtssAuthDetailPage({ authId }: { authId: string }) {
 									<Icon className="size-4" aria-hidden />
 								</span>
 								<span>
-									<span className="block text-sm font-semibold">{item.title}</span>
+									<span className="block text-sm font-semibold">
+										{item.title}
+									</span>
 									<span className="mt-0.5 block text-xs text-muted-foreground">
 										{item.subtitle}
 									</span>

@@ -67,7 +67,10 @@ export function VendorContractsTab({ vendorId }: { vendorId: string }) {
 							Contracts
 						</p>
 					</div>
-					<nav className="flex flex-col gap-0.5 p-2" aria-label="Contract sections">
+					<nav
+						className="flex flex-col gap-0.5 p-2"
+						aria-label="Contract sections"
+					>
 						{CONTRACT_SECTIONS.map((item) => {
 							const Icon = item.icon;
 							const active = section === item.id;

@@ -28,16 +28,16 @@ import type {
 } from "@/features/admin/features/claim-encounter/compliance-program/config";
 import { getComplianceProgramPage } from "@/features/admin/features/claim-encounter/compliance-program/config";
 import {
+	rowsForComplianceProgramPage,
+	statsForRows,
+} from "@/features/admin/features/claim-encounter/compliance-program/feature/queries/useComplianceProgramQuery";
+import {
 	filterChipsForPage,
 	filterExportLabel,
 	filterPlaceholder,
 	filterRows,
 } from "@/features/admin/features/claim-encounter/compliance-program/filter-utils";
 import { analyticsForPage } from "@/features/admin/features/claim-encounter/compliance-program/mock-analytics";
-import {
-	rowsForComplianceProgramPage,
-	statsForRows,
-} from "@/features/admin/features/claim-encounter/compliance-program/feature/queries/useComplianceProgramQuery";
 import {
 	ClaimKpiGrid,
 	ClaimPageHeader,

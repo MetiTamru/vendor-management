@@ -424,9 +424,7 @@ function detailFor(summary: MemberSummary): MemberDetail {
 		memberType: "Subscriber",
 		personCode: isJohn ? "01" : String(idx).padStart(2, "0"),
 		relationshipCode: isJohn ? "18" : idx % 3 === 0 ? "01" : "18",
-		externalId: isJohn
-			? "E987654321"
-			: `E${pad(100000000 + idx, 9)}`,
+		externalId: isJohn ? "E987654321" : `E${pad(100000000 + idx, 9)}`,
 		employeeType: summary.status === "termed" ? "Termed" : "Active",
 		sourceSystem: isJohn ? "NIH Eligibility" : summary.vendorSource,
 		sourceFileName: isJohn

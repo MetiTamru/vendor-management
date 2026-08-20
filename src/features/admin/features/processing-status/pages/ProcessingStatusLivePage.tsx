@@ -20,13 +20,13 @@ import {
 	VendorCoreLiveChrome,
 	VendorCoreLoadingRow,
 } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { StatusBadge } from "@/features/shared/vms/StatusBadge";
-import { Link } from "@/i18n/navigation";
 import {
 	useInvalidateVendorCore,
 	useVendorCoreMonitoring,
 	useVendorCoreValidationResults,
 } from "@/features/admin/features/processing-status/feature/queries/useProcessingStatusQuery";
+import { StatusBadge } from "@/features/shared/vms/StatusBadge";
+import { Link } from "@/i18n/navigation";
 
 function ProcessingStatusLiveBody() {
 	const invalidate = useInvalidateVendorCore();

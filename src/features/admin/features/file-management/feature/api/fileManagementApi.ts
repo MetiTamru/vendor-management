@@ -1,3 +1,4 @@
+import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
 	InboundFileDto,
@@ -8,16 +9,15 @@ import type {
 
 import {
 	FILE_RUNS,
-	displayRunStatus,
-	getFileRun,
-	getValidationIssue,
-	markFileRunReviewed,
 	type FileRun,
 	type LogEntry,
 	type ProcessStatus,
 	type ValidationIssue,
+	displayRunStatus,
+	getFileRun,
+	getValidationIssue,
+	markFileRunReviewed,
 } from "../../mock-data";
-import { withMockOrRemote } from "@/lib/mock-mode";
 
 export {
 	displayRunStatus,
@@ -28,11 +28,19 @@ export {
 export type { FileRun, LogEntry, ProcessStatus, ValidationIssue };
 
 export async function listFileRuns(): Promise<FileRun[]> {
-	return withMockOrRemote(() => FILE_RUNS, async () => [], []);
+	return withMockOrRemote(
+		() => FILE_RUNS,
+		async () => [],
+		[]
+	);
 }
 
 export async function getFileRunById(id: string): Promise<FileRun | null> {
-	return withMockOrRemote(() => getFileRun(id) ?? null, async () => null, null);
+	return withMockOrRemote(
+		() => getFileRun(id) ?? null,
+		async () => null,
+		null
+	);
 }
 
 export async function listInboundFiles(params?: {

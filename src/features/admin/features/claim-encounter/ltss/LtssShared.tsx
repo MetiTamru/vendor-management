@@ -61,18 +61,18 @@ export function StatusPill({ status }: { status: AuthStatus | string }) {
 			"border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
 		Pending:
 			"border-transparent bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200",
-		Closed:
-			"border-transparent bg-muted text-muted-foreground",
+		Closed: "border-transparent bg-muted text-muted-foreground",
 		Healthy: "border-transparent bg-emerald-100 text-emerald-800",
 		Review: "border-transparent bg-amber-100 text-amber-900",
 		Issue: "border-transparent bg-red-100 text-red-800",
-		"On Time":
-			"border-transparent bg-emerald-100 text-emerald-800",
+		"On Time": "border-transparent bg-emerald-100 text-emerald-800",
 		Late: "border-transparent bg-red-100 text-red-800",
 		Partial: "border-transparent bg-amber-100 text-amber-900",
 	};
 	return (
-		<span className={cn(LTSS_STATUS_PILL_CLASS, styles[status] ?? styles.Pending)}>
+		<span
+			className={cn(LTSS_STATUS_PILL_CLASS, styles[status] ?? styles.Pending)}
+		>
 			{status}
 		</span>
 	);
