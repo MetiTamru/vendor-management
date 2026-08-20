@@ -78,10 +78,13 @@ function MemberStatusPill({ status }: { status: MemberStatus }) {
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "active" && "bg-emerald-100 text-emerald-800",
-				status === "pending" && "bg-amber-100 text-amber-900",
-				status === "inactive" && "bg-slate-100 text-slate-700",
-				status === "termed" && "bg-red-100 text-red-800"
+				status === "active" &&
+					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+				status === "pending" &&
+					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "inactive" && "bg-muted text-muted-foreground",
+				status === "termed" &&
+					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 			)}
 		>
 			{status}
@@ -94,10 +97,13 @@ function EligPill({ status }: { status: EligibilityStatus }) {
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "eligible" && "bg-emerald-100 text-emerald-800",
-				status === "termed" && "bg-red-100 text-red-800",
-				status === "pending" && "bg-amber-100 text-amber-900",
-				status === "ineligible" && "bg-slate-100 text-slate-700"
+				status === "eligible" &&
+					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+				status === "termed" &&
+					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+				status === "pending" &&
+					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "ineligible" && "bg-muted text-muted-foreground"
 			)}
 		>
 			{status === "eligible" ? "Eligible" : status}
@@ -110,10 +116,14 @@ function ClaimPill({ status }: { status: ClaimStatus }) {
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "paid" && "bg-emerald-100 text-emerald-800",
-				status === "denied" && "bg-red-100 text-red-800",
-				status === "pending" && "bg-amber-100 text-amber-900",
-				status === "partial" && "bg-sky-100 text-sky-900"
+				status === "paid" &&
+					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+				status === "denied" &&
+					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+				status === "pending" &&
+					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "partial" &&
+					"bg-sky-500/15 text-sky-900 dark:bg-sky-500/20 dark:text-sky-300"
 			)}
 		>
 			{status}
@@ -126,9 +136,12 @@ function ExceptionPill({ status }: { status: ExceptionStatus }) {
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "open" && "bg-red-100 text-red-800",
-				status === "in_progress" && "bg-amber-100 text-amber-900",
-				status === "resolved" && "bg-emerald-100 text-emerald-800"
+				status === "open" &&
+					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+				status === "in_progress" &&
+					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "resolved" &&
+					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
 			)}
 		>
 			{status.replace("_", " ")}
@@ -214,12 +227,12 @@ function HeaderField({
 }) {
 	return (
 		<div className="min-w-0 space-y-0.5">
-			<p className="text-[11px] font-medium leading-none text-slate-500">
+			<p className="text-[11px] font-medium leading-none text-muted-foreground">
 				{label}
 			</p>
 			<div
 				className={cn(
-					"text-sm font-semibold leading-tight text-slate-900",
+					"text-sm font-semibold leading-tight text-foreground",
 					accent && "text-primary",
 					mono && "font-mono tabular-nums"
 				)}
@@ -231,7 +244,7 @@ function HeaderField({
 }
 
 function HeaderDivider() {
-	return <div className="hidden h-auto w-px shrink-0 self-stretch bg-slate-200 xl:block" />;
+	return <div className="hidden h-auto w-px shrink-0 self-stretch bg-border xl:block" />;
 }
 
 function MetricStrip({
@@ -409,7 +422,7 @@ export function MemberDetailPage({
 			</div>
 
 			{/* Identity header */}
-			<section className="overflow-hidden rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+			<section className="overflow-hidden rounded-xl border border-border bg-card px-4 py-4 shadow-sm">
 				<div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:gap-0">
 					{/* Identity + IDs */}
 					<div className="flex min-w-0 gap-3 xl:pr-5">
@@ -418,19 +431,19 @@ export function MemberDetailPage({
 						</div>
 						<div className="min-w-0 space-y-2.5">
 							<div className="flex flex-wrap items-center gap-2">
-								<h1 className="text-lg font-bold tracking-wide text-slate-900 uppercase">
+								<h1 className="text-lg font-bold tracking-wide text-foreground uppercase">
 									{name}
 								</h1>
 								<span
 									className={cn(
 										"inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
 										member.status === "active" &&
-											"bg-emerald-100 text-emerald-800",
+											"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
 										member.status === "pending" &&
-											"bg-amber-100 text-amber-900",
+											"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
 										member.status === "inactive" &&
-											"bg-slate-100 text-slate-700",
-										member.status === "termed" && "bg-red-100 text-red-800"
+											"bg-muted text-muted-foreground",
+										member.status === "termed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 									)}
 								>
 									{member.status === "active"
@@ -460,11 +473,11 @@ export function MemberDetailPage({
 									mono
 								/>
 								<div className="min-w-0 space-y-0.5 sm:col-span-1">
-									<p className="text-[11px] font-medium leading-none text-slate-500">
+									<p className="text-[11px] font-medium leading-none text-muted-foreground">
 										Relationship
 									</p>
-									<div className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-										<Users className="size-3.5 shrink-0 text-slate-400" />
+									<div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+										<Users className="size-3.5 shrink-0 text-muted-foreground" />
 										{member.memberType ?? "Subscriber"}
 									</div>
 								</div>
@@ -493,11 +506,11 @@ export function MemberDetailPage({
 							}
 						/>
 						<div className="min-w-0 space-y-0.5">
-							<p className="text-[11px] font-medium leading-none text-slate-500">
+							<p className="text-[11px] font-medium leading-none text-muted-foreground">
 								SSN
 							</p>
 							<div className="flex items-center gap-1.5">
-								<span className="font-mono text-sm font-semibold tabular-nums text-slate-900">
+								<span className="font-mono text-sm font-semibold tabular-nums text-foreground">
 									{showSsn
 										? `123-45-${member.ssnLast4}`
 										: maskSsn(member.ssnLast4)}
@@ -682,7 +695,7 @@ export function MemberDetailPage({
 
 						<Panel title="Eligibility Status">
 							<div className="flex flex-col items-center justify-center gap-3 py-3 text-center">
-								<span className="flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+								<span className="flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
 									<CheckCircle2 className="size-8" />
 								</span>
 								<p className="text-base font-semibold capitalize text-emerald-800">
@@ -1046,10 +1059,10 @@ export function MemberDetailPage({
 													className={cn(
 														"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
 														v.status === "success" &&
-															"bg-emerald-100 text-emerald-800",
+															"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
 														v.status === "warning" &&
-															"bg-amber-100 text-amber-900",
-														v.status === "failed" && "bg-red-100 text-red-800"
+															"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+														v.status === "failed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 													)}
 												>
 													{v.status}
@@ -1130,9 +1143,9 @@ function FeedStatusPill({
 		<span
 			className={cn(
 				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "success" && "bg-emerald-100 text-emerald-800",
-				status === "warning" && "bg-amber-100 text-amber-900",
-				status === "failed" && "bg-red-100 text-red-800"
+				status === "success" && "bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+				status === "warning" && "bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+				status === "failed" && "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
 			)}
 		>
 			{status}
@@ -1655,10 +1668,10 @@ function TabBody({
 									className={cn(
 										"flex size-10 shrink-0 items-center justify-center rounded-full",
 										member.eligibilityStatus === "eligible"
-											? "bg-emerald-100 text-emerald-700"
+											? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
 											: member.eligibilityStatus === "pending"
-												? "bg-amber-100 text-amber-800"
-												: "bg-red-100 text-red-700"
+												? "bg-amber-500/15 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+												: "bg-red-500/15 text-red-700 dark:bg-red-500/20 dark:text-red-300"
 									)}
 								>
 									<CheckCircle2 className="size-5" />
@@ -1982,7 +1995,7 @@ function TabBody({
 											<TableCell className="py-2.5">
 												<p className="text-sm font-medium">{r.planName}</p>
 												{!r.endDate ? (
-													<span className="mt-0.5 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
+													<span className="mt-0.5 inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
 														Active
 													</span>
 												) : null}
@@ -2294,8 +2307,8 @@ function TabBody({
 										className={cn(
 											"rounded-full px-2 py-0.5 text-[10px] font-medium",
 											a.remaining <= 0
-												? "bg-emerald-100 text-emerald-800"
-												: "bg-slate-100 text-slate-700"
+												? "bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
+												: "bg-muted text-muted-foreground"
 										)}
 									>
 										{a.remaining <= 0 ? "Met" : "Open"}
@@ -2391,8 +2404,8 @@ function TabBody({
 												className={cn(
 													"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
 													a.remaining <= 0
-														? "bg-emerald-100 text-emerald-800"
-														: "bg-slate-100 text-slate-700"
+														? "bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
+														: "bg-muted text-muted-foreground"
 												)}
 											>
 												{a.remaining <= 0 ? "Met" : "Open"}
@@ -2621,7 +2634,7 @@ function TabBody({
 					>
 						{actionNeeded.length === 0 ? (
 							<div className="flex flex-col items-center gap-2 py-6 text-center">
-								<span className="flex size-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+								<span className="flex size-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
 									<CheckCircle2 className="size-5" />
 								</span>
 								<p className="text-sm font-medium">No open exceptions</p>
