@@ -1,4 +1,33 @@
-export type ApiMembersRecordDto = Record<string, unknown> & {
+export type ApiMembersRecordDto = {
 	id?: string | number | null;
 	name?: string | null;
+	memberId?: string | null;
+	alternateId?: string | null;
+	firstName?: string | null;
+	middleName?: string | null;
+	lastName?: string | null;
+	dob?: string | null;
+	gender?: string | null;
+	ssnLast4?: string | null;
+	phone?: string | null;
+	email?: string | null;
+	addressLine1?: string | null;
+	city?: string | null;
+	state?: string | null;
+	zip?: string | null;
+	status?: string | null;
+	eligibilityLabel?: string | null;
+	accountGroup?: string | null;
+	program?: string | null;
+	planName?: string | null;
+	planType?: string | null;
+	lob?: string | null;
+	pcpName?: string | null;
+	pcpNpi?: string | null;
+	memberSince?: string | null;
+	coverageEffectiveDate?: string | null;
+	lastClaimDate?: string | null;
+	claimsYtd?: number | null;
+	paidYtd?: number | null;
+	vendorSource?: string | null;
 };

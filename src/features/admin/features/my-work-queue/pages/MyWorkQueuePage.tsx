@@ -59,13 +59,20 @@ import { cn } from "@/lib/utils";
 
 import {
 	MIGRATION_STATUS_LABEL,
-	TPA_TPV_ROWS,
 	WHITELIST_STATUS_LABEL,
-	WORK_QUEUE_KPI,
-	type MigrationStatus,
-	type TpaTpvRow,
-	type WhitelistStatus,
-} from "../mock-data";
+} from "../feature/api/myWorkQueueApi";
+import {
+	useTpaTpvRowsList,
+	useUpdateTpaTpvContactsMutation,
+	useUpdateTpaTpvInfoMutation,
+	useUpdateTpaTpvMigrationMutation,
+	useWorkQueueKpisList,
+} from "../feature/queries/useMyWorkQueueQuery";
+import type {
+	MigrationStatus,
+	TpaTpvModel,
+	WhitelistStatus,
+} from "../feature/types/myWorkQueueModel";
 
 type ActionModal = "info" | "contacts" | "migration" | "history" | null;
 
@@ -189,13 +196,19 @@ function ModalShell({
 }
 
 export function MyWorkQueuePage() {
+	const { rows: allRows } = useTpaTpvRowsList();
+	const { kpis } = useWorkQueueKpisList();
+	const updateInfo = useUpdateTpaTpvInfoMutation();
+	const updateContacts = useUpdateTpaTpvContactsMutation();
+	const updateMigration = useUpdateTpaTpvMigrationMutation();
+
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [analystFilter, setAnalystFilter] = useState("all");
 	const [waveFilter, setWaveFilter] = useState("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(20);
-	const [activeRow, setActiveRow] = useState<TpaTpvRow | null>(null);
+	const [activeRow, setActiveRow] = useState<TpaTpvModel | null>(null);
 	const [modal, setModal] = useState<ActionModal>(null);
 
 	const [infoForm, setInfoForm] = useState({
@@ -250,21 +263,20 @@ export function MyWorkQueuePage() {
 	}, [activeRow]);
 
 	const analysts = useMemo(
-		() =>
-			Array.from(new Set(TPA_TPV_ROWS.map((r) => r.assignedAnalyst))).sort(),
-		[]
+		() => Array.from(new Set(allRows.map((r) => r.assignedAnalyst))).sort(),
+		[allRows]
 	);
 	const waves = useMemo(
 		() =>
-			Array.from(new Set(TPA_TPV_ROWS.map((r) => String(r.wave)))).sort(
+			Array.from(new Set(allRows.map((r) => String(r.wave)))).sort(
 				(a, b) => Number(a) - Number(b)
 			),
-		[]
+		[allRows]
 	);
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();
-		return TPA_TPV_ROWS.filter((row) => {
+		return allRows.filter((row) => {
 			if (statusFilter !== "all" && row.status !== statusFilter) return false;
 			if (analystFilter !== "all" && row.assignedAnalyst !== analystFilter)
 				return false;
@@ -277,7 +289,7 @@ export function MyWorkQueuePage() {
 				row.assignedAnalyst.toLowerCase().includes(q)
 			);
 		});
-	}, [search, statusFilter, analystFilter, waveFilter]);
+	}, [allRows, search, statusFilter, analystFilter, waveFilter]);
 
 	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
 	const safePage = Math.min(page, pageCount);
@@ -298,7 +310,7 @@ export function MyWorkQueuePage() {
 		else if (id === "not_started") setStatusFilter("not_started");
 	}
 
-	function openModal(row: TpaTpvRow, next: ActionModal) {
+	function openModal(row: TpaTpvModel, next: ActionModal) {
 		setActiveRow(row);
 		setModal(next);
 	}
@@ -308,8 +320,40 @@ export function MyWorkQueuePage() {
 		setActiveRow(null);
 	}
 
-	function saveAndClose(label: string) {
-		toast.success(`${label} saved for ${activeRow?.name ?? "record"}`);
+	async function saveInfo() {
+		if (!activeRow) return;
+		await updateInfo.mutateAsync({
+			id: activeRow.id,
+			body: {
+				name: infoForm.name,
+				code: infoForm.code,
+				type: infoForm.type as TpaTpvModel["type"],
+				wave: Number(infoForm.wave) || 1,
+				serverType: infoForm.serverType,
+				notes: infoForm.notes,
+			},
+		});
+		toast.success(`TPA/TPV Information saved for ${activeRow.name}`);
+		closeModal();
+	}
+
+	async function saveContacts() {
+		if (!activeRow) return;
+		await updateContacts.mutateAsync({
+			id: activeRow.id,
+			body: contactsForm,
+		});
+		toast.success(`Contacts saved for ${activeRow.name}`);
+		closeModal();
+	}
+
+	async function saveMigration() {
+		if (!activeRow) return;
+		await updateMigration.mutateAsync({
+			id: activeRow.id,
+			body: migrationForm,
+		});
+		toast.success(`Migration Details saved for ${activeRow.name}`);
 		closeModal();
 	}
 
@@ -381,7 +425,7 @@ export function MyWorkQueuePage() {
 			</div>
 
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				{WORK_QUEUE_KPI.map((kpi) => {
+				{kpis.map((kpi) => {
 					const Icon = KPI_ICON[kpi.tone];
 					return (
 						<button
@@ -699,7 +743,7 @@ export function MyWorkQueuePage() {
 						<Button variant="outline" size="sm" onClick={closeModal}>
 							Cancel
 						</Button>
-						<Button size="sm" onClick={() => saveAndClose("TPA/TPV Information")}>
+						<Button size="sm" onClick={() => void saveInfo()}>
 							Save
 						</Button>
 					</>
@@ -801,10 +845,7 @@ export function MyWorkQueuePage() {
 						<Button variant="outline" size="sm" onClick={closeModal}>
 							Cancel
 						</Button>
-						<Button
-							size="sm"
-							onClick={() => saveAndClose("Contacts Information")}
-						>
+						<Button size="sm" onClick={() => void saveContacts()}>
 							Save
 						</Button>
 					</>
@@ -903,10 +944,7 @@ export function MyWorkQueuePage() {
 						<Button variant="outline" size="sm" onClick={closeModal}>
 							Cancel
 						</Button>
-						<Button
-							size="sm"
-							onClick={() => saveAndClose("Migration Information")}
-						>
+						<Button size="sm" onClick={() => void saveMigration()}>
 							Save
 						</Button>
 					</>

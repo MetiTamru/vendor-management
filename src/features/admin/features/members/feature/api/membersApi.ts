@@ -3,10 +3,13 @@ import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { MemberCoverageDto, VendorDto } from "@/lib/vendor-core/types";
 
 import {
+	type MemberDetail,
 	type MemberSummary,
 	getMember,
 	getMemberSummaries,
 } from "../../mock-data";
+import { toMemberOverviewModel } from "../mappers/membersMappers";
+import type { MemberOverviewModel } from "../types/membersModel";
 
 export {
 	displayName,
@@ -17,13 +20,23 @@ export {
 	memberAge,
 } from "../../mock-data";
 export type {
+	AccumulatorRow,
 	ClaimStatus,
+	DependentRow,
 	EligibilityStatus,
 	ExceptionStatus,
 	MemberDetail,
 	MemberStatus,
 	MemberSummary,
+	OtherStatusRow,
 } from "../../mock-data";
+
+export type {
+	MemberOverviewDto,
+	MemberSummaryDto,
+	MembersCreateDto,
+	MembersUpdateDto,
+} from "../dto/membersDto";
 
 export async function listMemberSummaries() {
 	return withMockOrRemote(
@@ -39,6 +52,54 @@ export async function getMemberDetail(idOrMemberId: string) {
 		async () => undefined,
 		undefined
 	);
+}
+
+/** Overview-shaped projection used by the member detail Overview tab. */
+export async function getMemberOverview(
+	idOrMemberId: string
+): Promise<MemberOverviewModel | undefined> {
+	const detail = await getMemberDetail(idOrMemberId);
+	if (!detail) return undefined;
+	return toMemberOverviewModel(toOverviewDto(detail));
+}
+
+function toOverviewDto(detail: MemberDetail): MemberOverviewModel {
+	return {
+		eligibilityStatus: detail.eligibilityStatus,
+		coverageStart: detail.coverageStart,
+		coverageEnd: detail.coverageEnd,
+		planId: detail.planId,
+		planCode: detail.planCode,
+		benefitPackage: detail.benefitPackage,
+		coverageLevelCode: detail.coverageLevelCode,
+		coverageLevel: detail.coverageLevel,
+		secondaryCoverage: detail.secondaryCoverage,
+		statusEffectiveDate: detail.statusEffectiveDate,
+		statusTermDate: detail.statusTermDate,
+		enrollmentDate: detail.enrollmentDate,
+		disenrollmentDate: detail.disenrollmentDate,
+		lastEligibilityUpdate: detail.lastEligibilityUpdate,
+		groupId: detail.groupId,
+		groupName: detail.groupName,
+		clientId: detail.clientId,
+		accountType: detail.accountType,
+		accountStatus: detail.accountStatus,
+		memberType: detail.memberType,
+		personCode: detail.personCode,
+		relationshipCode: detail.relationshipCode,
+		externalId: detail.externalId,
+		employeeType: detail.employeeType,
+		sourceSystem: detail.sourceSystem,
+		sourceFileName: detail.sourceFileName,
+		sourceFileReceived: detail.sourceFileReceived,
+		recordStatus: detail.recordStatus,
+		changeDetected: detail.changeDetected,
+		dataAsOf: detail.dataAsOf,
+		dependents: detail.dependents,
+		claims: detail.claims,
+		accumulators: detail.accumulators,
+		otherStatuses: detail.otherStatuses,
+	};
 }
 
 export async function listMemberCoverages(): Promise<MemberCoverageDto[]> {
