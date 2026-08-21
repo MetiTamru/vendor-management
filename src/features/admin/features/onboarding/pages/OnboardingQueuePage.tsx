@@ -69,16 +69,13 @@ export function OnboardingQueuePage() {
 				entityLabel="case"
 				onClear={() => setSelectedIds(new Set())}
 				onApprove={() => {
-					toast.success(`Approved ${selectedIds.size} onboarding case(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk approve is not available yet.");
 				}}
 				onReject={() => {
-					toast.message(`Sent back ${selectedIds.size} case(s) for revision.`);
-					setSelectedIds(new Set());
+					toast.info("Bulk send-back is not available yet.");
 				}}
 				onExport={() => {
-					toast.success(`Exported ${selectedIds.size} case(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk export is not available yet.");
 				}}
 			/>
 			{error ? (

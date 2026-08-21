@@ -64,16 +64,13 @@ export function PurchaseOrdersPage() {
 				entityLabel="purchase order"
 				onClear={() => setSelectedIds(new Set())}
 				onApprove={() => {
-					toast.success(`Approved ${selectedIds.size} PO(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk approve is not available yet.");
 				}}
 				onArchive={() => {
-					toast.success(`Archived ${selectedIds.size} PO(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk archive is not available yet.");
 				}}
 				onExport={() => {
-					toast.success(`Exported ${selectedIds.size} PO(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk export is not available yet.");
 				}}
 			/>
 			{isLoading ? (

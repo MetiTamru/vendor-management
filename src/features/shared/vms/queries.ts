@@ -299,13 +299,18 @@ export function useInvalidateVms() {
 
 export function useInviteVendorMutation() {
 	const invalidate = useInvalidateVms();
+	const invalidateVendorCore = useInvalidateVendorCore();
 	return useMutation({
 		mutationFn: (data: {
 			legalName: string;
 			email: string;
 			categories: string[];
+			note?: string;
 		}) => vmsApi.inviteVendor(data),
-		onSuccess: invalidate,
+		onSuccess: async () => {
+			invalidate();
+			await invalidateVendorCore();
+		},
 	});
 }
 

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api/client";
+import { buildAcceptPath, createVendorInvite } from "@/lib/auth/vendor-invites";
 import {
 	isMockEnabled,
 	isNestApiEnabled,
@@ -222,9 +223,32 @@ export const vmsApi = {
 		legalName: string;
 		email: string;
 		categories: string[];
-	}) {
+		note?: string;
+	}): Promise<{
+		vendor: VendorModel;
+		invite: {
+			token: string;
+			expiresAt: string;
+			acceptPath: string;
+			emailDelivery: "link_only";
+		};
+	}> {
+		const contactName = data.email.split("@")[0] ?? data.email;
+		const contacts = [
+			{
+				id: `c-${Date.now()}`,
+				name: contactName,
+				email: data.email,
+				phone: null,
+				role: "Primary",
+				isPrimary: true,
+			},
+		];
+
+		let vendor: VendorModel;
+
 		if (isMockEnabled()) {
-			return mockDelay(
+			vendor = await mockDelay(
 				vmsStore.createVendor({
 					legalName: data.legalName,
 					tradeName: null,
@@ -235,23 +259,13 @@ export const vmsApi = {
 					city: "",
 					taxId: null,
 					website: null,
-					description: null,
+					description: data.note?.trim() || null,
 					riskLevel: "medium",
-					contacts: [
-						{
-							id: `c-${Date.now()}`,
-							name: data.email.split("@")[0] ?? data.email,
-							email: data.email,
-							phone: null,
-							role: "Primary",
-							isPrimary: true,
-						},
-					],
+					contacts,
 				})
 			);
-		}
-		if (isVendorCoreLive()) {
-			return vmsApi.createVendor({
+		} else if (isVendorCoreLive()) {
+			vendor = await vmsApi.createVendor({
 				legalName: data.legalName,
 				tradeName: null,
 				status: "prospect",
@@ -261,27 +275,36 @@ export const vmsApi = {
 				city: "Unknown",
 				taxId: null,
 				website: null,
-				description: null,
+				description: data.note?.trim() || null,
 				riskLevel: "medium",
-				contacts: [
-					{
-						id: `c-${Date.now()}`,
-						name: data.email.split("@")[0] ?? data.email,
-						email: data.email,
-						phone: null,
-						role: "Primary",
-						isPrimary: true,
-					},
-				],
+				contacts,
 			});
-		}
-		if (isNestApiEnabled()) {
-			return apiClient<VendorModel>(vmsPaths.invite, {
+		} else if (isNestApiEnabled()) {
+			vendor = await apiClient<VendorModel>(vmsPaths.invite, {
 				method: "POST",
 				body: JSON.stringify(data),
 			});
+		} else {
+			throw new Error("Vendor invite unavailable");
 		}
-		throw new Error("Vendor invite unavailable");
+
+		const invite = createVendorInvite({
+			vendorId: vendor.id,
+			legalName: vendor.legalName,
+			email: data.email,
+			categories: data.categories,
+			note: data.note,
+		});
+
+		return {
+			vendor,
+			invite: {
+				token: invite.token,
+				expiresAt: invite.expiresAt,
+				acceptPath: buildAcceptPath(invite.token),
+				emailDelivery: "link_only",
+			},
+		};
 	},
 	async listCategories() {
 		return withMockOrRemote(

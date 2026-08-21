@@ -64,16 +64,13 @@ export function InvoicesPage() {
 				entityLabel="invoice"
 				onClear={() => setSelectedIds(new Set())}
 				onApprove={() => {
-					toast.success(`Approved ${selectedIds.size} invoice(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk approve is not available yet.");
 				}}
 				onReject={() => {
-					toast.message(`Rejected ${selectedIds.size} invoice(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk reject is not available yet.");
 				}}
 				onExport={() => {
-					toast.success(`Exported ${selectedIds.size} invoice(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk export is not available yet.");
 				}}
 			/>
 			{isLoading ? (

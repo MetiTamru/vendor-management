@@ -11,9 +11,10 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	Clock3,
+	Copy,
 	Download,
 	ExternalLink,
-	FileText,
+	Link2,
 	Mail,
 	MoreHorizontal,
 	NotebookPen,
@@ -76,6 +77,10 @@ import {
 import type { VendorStatus } from "@/features/shared/vms/types";
 import { formatDate } from "@/features/shared/vms/utils";
 import { Link } from "@/i18n/navigation";
+import {
+	buildAcceptUrl,
+	getPendingInviteByVendorId,
+} from "@/lib/auth/vendor-invites";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -287,8 +292,13 @@ export function VendorDetailPage() {
 }
 
 function VendorDetailView() {
-	const params = useParams<{ id?: string; vendorId?: string }>();
+	const params = useParams<{
+		id?: string;
+		vendorId?: string;
+		locale?: string;
+	}>();
 	const vendorId = params.vendorId ?? params.id;
+	const locale = params.locale ?? "en";
 	const { vendor, isLoading, error } = useVendor(vendorId);
 	const { contracts } = useContractsList(vendorId);
 	const updateVendor = useUpdateVendorMutation();
@@ -296,10 +306,22 @@ function VendorDetailView() {
 	const [tab, setTab] = useState<Tab>("Overview");
 	const [status, setStatus] = useState<VendorStatus>("prospect");
 	const [trendRange, setTrendRange] = useState("7");
+	const [inviteTick, setInviteTick] = useState(0);
+	const [pendingInvite, setPendingInvite] = useState(() =>
+		vendorId ? getPendingInviteByVendorId(String(vendorId)) : null
+	);
 
 	useEffect(() => {
 		if (vendor) setStatus(vendor.status);
 	}, [vendor]);
+
+	useEffect(() => {
+		if (!vendor) {
+			setPendingInvite(null);
+			return;
+		}
+		setPendingInvite(getPendingInviteByVendorId(vendor.id));
+	}, [vendor, inviteTick]);
 
 	const accounts = useMemo(
 		() => (vendor ? getVendorAccounts(vendor.id) : []),
@@ -347,6 +369,35 @@ function VendorDetailView() {
 	const primary =
 		vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
 	const displayName = vendor?.tradeName ?? vendor?.legalName ?? "Vendor";
+
+	const inviteHref = useMemo(() => {
+		if (!vendor) return "/admin/vendors/invite";
+		const params = new URLSearchParams();
+		params.set("legalName", vendor.legalName);
+		if (primary?.email) params.set("email", primary.email);
+		if (vendor.categories.length) {
+			params.set("categories", vendor.categories.join(", "));
+		}
+		return `/admin/vendors/invite?${params.toString()}`;
+	}, [vendor, primary]);
+
+	async function copyPendingInviteLink() {
+		if (!pendingInvite) {
+			toast.info("No pending invite link for this vendor.", {
+				description: "Create one with Invite contact.",
+			});
+			return;
+		}
+		try {
+			await navigator.clipboard.writeText(
+				buildAcceptUrl(locale, pendingInvite.token)
+			);
+			toast.success("Accept link copied");
+			setInviteTick((n) => n + 1);
+		} catch {
+			toast.error("Could not copy invite link");
+		}
+	}
 
 	async function saveStatus() {
 		if (!vendor) return;
@@ -417,6 +468,18 @@ function VendorDetailView() {
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-2">
+						{(vendor.status === "invited" || vendor.status === "prospect") &&
+						pendingInvite ? (
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-9 border-primary/25 text-xs font-semibold"
+								onClick={copyPendingInviteLink}
+							>
+								<Link2 className="mr-1.5 size-3.5" />
+								Copy invite link
+							</Button>
+						) : null}
 						<Button
 							variant="outline"
 							size="sm"
@@ -485,8 +548,14 @@ function VendorDetailView() {
 										</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
-										<Link href="/admin/vendors/invite">Invite contact</Link>
+										<Link href={inviteHref}>Invite contact</Link>
 									</DropdownMenuItem>
+									{pendingInvite ? (
+										<DropdownMenuItem onClick={copyPendingInviteLink}>
+											<Copy className="mr-2 size-3.5" />
+											Copy invite link
+										</DropdownMenuItem>
+									) : null}
 								</>
 							}
 						/>

@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
-import { useLocale } from "next-intl";
+import {
+	ArrowRight,
+	CheckCircle2,
+	Eye,
+	EyeOff,
+	Loader2,
+	Lock,
+	Mail,
+} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -40,15 +49,30 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
 	const locale = useLocale();
+	const t = useTranslations("Auth");
+	const searchParams = useSearchParams();
+	const invited = searchParams.get("invited") === "1";
+	const invitedEmail = searchParams.get("email")?.trim() ?? "";
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
+	const [showInvitedBanner, setShowInvitedBanner] = useState(invited);
 	const mockAuth = isMockAuthEnabled();
 	const nestLogin = isNestApiEnabled();
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
-		defaultValues: { email: "", password: "" },
+		defaultValues: { email: invitedEmail, password: "" },
 	});
+
+	useEffect(() => {
+		if (invitedEmail) {
+			form.setValue("email", invitedEmail);
+		}
+	}, [form, invitedEmail]);
+
+	useEffect(() => {
+		setShowInvitedBanner(invited);
+	}, [invited]);
 
 	function enterDevSession() {
 		clearDevSignedOutCookie();
@@ -87,6 +111,20 @@ export function LoginForm() {
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
+				{showInvitedBanner ? (
+					<div className="flex items-start gap-2.5 rounded-md border border-emerald-500/25 bg-emerald-500/5 px-3 py-2.5 text-sm">
+						<CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+						<div className="space-y-0.5">
+							<p className="font-medium text-foreground">
+								{t("invitedBannerTitle")}
+							</p>
+							<p className="text-[13px] text-muted-foreground">
+								{t("invitedBannerDescription")}
+							</p>
+						</div>
+					</div>
+				) : null}
+
 				<FormField
 					control={form.control}
 					name="email"

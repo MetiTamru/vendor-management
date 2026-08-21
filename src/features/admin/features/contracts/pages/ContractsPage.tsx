@@ -241,16 +241,15 @@ export function ContractsPage({
 				entityLabel="contract"
 				onClear={() => setSelectedIds(new Set())}
 				onApprove={() => {
-					toast.success(`Approved ${selectedIds.size} contract(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk approve is not available yet.");
 				}}
 				onArchive={() => {
-					toast.success(`Archived ${selectedIds.size} contract(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk archive is not available yet.");
 				}}
 				onExport={() => {
-					toast.success(`Exported ${selectedIds.size} contract(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk export is not available yet.", {
+						description: "Open a contract to work with it individually.",
+					});
 				}}
 			/>
 

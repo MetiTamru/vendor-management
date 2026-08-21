@@ -38,7 +38,9 @@
 		"resetTitle": "አዲስ የይለፍ ቃል",
 		"resetDescription": "ለመለያዎ አዲስ የይለፍ ቃል ይምረጡ",
 		"inviteTitle": "ግብዣ ተቀበል",
-		"inviteDescription": "እንደ አቅራቢ ለመቀላቀል የይለፍ ቃል ያዘጋጁ"
+		"inviteDescription": "እንደ አቅራቢ ለመቀላቀል የይለፍ ቃል ያዘጋጁ",
+		"invitedBannerTitle": "ግብዣ ተቀብሏል",
+		"invitedBannerDescription": "ለመቀጠል በግብዣዎ ላይ ያለውን ኢሜይል በመጠቀም ይግቡ."
 	},
 	"Admin": {
 		"title": "Vendor Management",

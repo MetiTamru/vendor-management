@@ -19,6 +19,7 @@ import {
 	Plus,
 	RefreshCw,
 	Search,
+	UserPlus,
 	Users,
 } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -72,6 +73,7 @@ import {
 } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
+import { downloadCsv, stampFilename } from "@/lib/export/csv";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 
@@ -386,6 +388,12 @@ function VendorsDirectoryPage() {
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
+					<Button size="sm" variant="outline" className="h-9" asChild>
+						<Link href="/admin/vendors/invite">
+							<UserPlus className="mr-1.5 size-3.5" />
+							Invite vendor
+						</Link>
+					</Button>
 					<Button size="sm" className="h-9" asChild>
 						<Link href="/admin/vendors/create">
 							<Plus className="mr-1.5 size-3.5" />
@@ -586,12 +594,41 @@ function VendorsDirectoryPage() {
 				entityLabel="vendor"
 				onClear={() => setSelectedIds(new Set())}
 				onExport={() => {
-					toast.success(`Exported ${selectedIds.size} vendor(s).`);
-					setSelectedIds(new Set());
+					const selected = filtered.filter((row) => selectedIds.has(row.id));
+					if (selected.length === 0) {
+						toast.message("Select at least one vendor to export.");
+						return;
+					}
+					downloadCsv(
+						stampFilename("vendors"),
+						[
+							"Vendor",
+							"Vendor ID",
+							"Vendor Type",
+							"Status",
+							"Linked Accounts",
+							"Active Jobs",
+							"Last File Received",
+							"Health",
+						],
+						selected.map((row) => [
+							row.name,
+							row.vendorCode,
+							row.vendorType,
+							row.status,
+							row.linkedAccounts,
+							row.activeJobs,
+							row.lastFileReceived,
+							row.health,
+						])
+					);
+					toast.success(`Downloaded CSV for ${selected.length} vendor(s).`);
 				}}
 				onArchive={() => {
-					toast.success(`Archived ${selectedIds.size} vendor(s).`);
-					setSelectedIds(new Set());
+					toast.info("Bulk archive is not available yet.", {
+						description:
+							"Archive vendors individually from the row actions menu.",
+					});
 				}}
 			/>
 			<Card className="min-w-0 bg-card">

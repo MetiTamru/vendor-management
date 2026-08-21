@@ -40,7 +40,9 @@
 		"resetTitle": "New password",
 		"resetDescription": "Choose a password for your account",
 		"inviteTitle": "Accept invitation",
-		"inviteDescription": "Set a password to join as a supplier"
+		"inviteDescription": "Set a password for your supplier account, then sign in to continue onboarding",
+		"invitedBannerTitle": "Invitation accepted",
+		"invitedBannerDescription": "Sign in with the email from your invite to continue."
 	},
 	"Admin": {
 		"title": "Vendor Management",

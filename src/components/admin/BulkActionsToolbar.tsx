@@ -1,7 +1,6 @@
 "use client";
 
 import { Archive, CheckCircle2, Download, XCircle } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,7 @@ type BulkActionsToolbarProps = {
 	selectedCount: number;
 	entityLabel: string;
 	onClear: () => void;
+	/** Real export handler only — omit the button when not wired. */
 	onExport?: () => void;
 	onApprove?: () => void;
 	onReject?: () => void;
@@ -91,19 +91,7 @@ export function BulkActionsToolbar({
 						<Download className="mr-1.5 size-3.5" />
 						Export
 					</Button>
-				) : (
-					<Button
-						size="sm"
-						variant="outline"
-						className="h-8 text-xs"
-						onClick={() =>
-							toast.success(`Exported ${selectedCount} ${entityLabel}(s).`)
-						}
-					>
-						<Download className="mr-1.5 size-3.5" />
-						Export
-					</Button>
-				)}
+				) : null}
 			</div>
 		</div>
 	);

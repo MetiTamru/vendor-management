@@ -15,7 +15,7 @@ export const authOutlineButtonClass =
 	"h-auto w-full rounded-sm border-foreground/15 px-4 py-3 text-sm font-medium shadow-none";
 
 export const authFieldClass = cn(
-	"h-12 rounded-md border border-foreground/15 bg-background pl-11 pr-3 text-sm shadow-none",
+	"h-12 rounded-md border border-foreground/15 bg-background pl-12 pr-3 text-sm shadow-none",
 	"placeholder:text-muted-foreground/70",
 	"transition-[border-color,box-shadow,background-color] duration-150",
 	"hover:border-foreground/25",
@@ -41,10 +41,6 @@ export function AuthFieldFrame({
 			<span className="pointer-events-none absolute inset-y-0 left-0 flex w-11 items-center justify-center text-muted-foreground">
 				<Icon className="size-[1.05rem]" strokeWidth={1.75} />
 			</span>
-			<span
-				aria-hidden
-				className="pointer-events-none absolute top-2.5 bottom-2.5 left-11 w-px bg-foreground/10"
-			/>
 			{children}
 			{trailing}
 		</div>

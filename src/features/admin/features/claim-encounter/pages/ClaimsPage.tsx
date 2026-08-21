@@ -63,6 +63,7 @@ import { claimLineDtosToClaimLines } from "@/features/admin/features/claim-encou
 import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
+import { downloadCsv, stampFilename } from "@/lib/export/csv";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
@@ -510,7 +511,51 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 		setPage(1);
 		setApplied((n) => n + 1);
 		setFiltersOpen(false);
-		toast.success("Search applied");
+	}
+
+	function exportClaimsCsv() {
+		if (filtered.length === 0) {
+			toast.message("No claims to export with the current filters.");
+			return;
+		}
+		downloadCsv(
+			stampFilename("claims"),
+			[
+				"Claim ID",
+				"Member",
+				"Member ID",
+				"Provider NPI",
+				"Vendor",
+				"Payer",
+				"Group",
+				"Plan",
+				"Claim Type",
+				"Claim Status",
+				"Response Status",
+				"Priority",
+				"Amount Billed",
+				"Received At",
+				"File Name",
+			],
+			filtered.map((row) => [
+				row.claimId,
+				row.memberName,
+				row.memberId,
+				row.providerNpi,
+				row.vendor,
+				row.payer,
+				row.group,
+				row.plan,
+				row.displayClaimType,
+				row.claimStatus,
+				row.responseStatus,
+				row.priority,
+				row.amountBilled,
+				row.receivedAt,
+				row.fileName,
+			])
+		);
+		toast.success(`Downloaded CSV for ${filtered.length} claim(s).`);
 	}
 
 	return (
@@ -529,13 +574,15 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem
-									onClick={() => toast.success("CSV export queued")}
-								>
+								<DropdownMenuItem onClick={exportClaimsCsv}>
 									Export CSV
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => toast.success("XLSX export queued")}
+									onClick={() =>
+										toast.info("Excel export is not available yet.", {
+											description: "Use Export CSV for now.",
+										})
+									}
 								>
 									Export Excel
 								</DropdownMenuItem>
@@ -545,7 +592,7 @@ function ClaimsBody({ useLive }: { useLive: boolean }) {
 							variant="outline"
 							size="sm"
 							className="h-9"
-							onClick={() => toast.message("Print dialog opened")}
+							onClick={() => window.print()}
 						>
 							<Printer className="mr-1.5 size-3.5" />
 							Print
