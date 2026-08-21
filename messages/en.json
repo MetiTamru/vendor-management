@@ -50,6 +50,7 @@
 		"offline": "You are offline. Changes will resume when connection is restored.",
 		"sections": {
 			"top": "Overview",
+			"workspace": "Workspace",
 			"master_data": "Master Data",
 			"procurement": "Procurement",
 			"governance": "Governance",
@@ -63,6 +64,7 @@
 		},
 		"nav": {
 			"dashboard": "Dashboard",
+			"myworkqueue": "My Work Queue",
 			"vendors": "Vendors",
 			"contracts": "Contracts",
 			"overview": "Overview",

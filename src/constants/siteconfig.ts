@@ -11,6 +11,14 @@ const vendorManagementNav: SidebarNavItem[] = [
 		section: "top",
 		module: "vendor_management",
 	},
+	// Workspace
+	{
+		title: "My Work Queue",
+		href: "/admin/my-work-queue",
+		permission: "dashboard-view",
+		section: "workspace",
+		module: "vendor_management",
+	},
 	// Master Data
 	{
 		title: "Vendors",

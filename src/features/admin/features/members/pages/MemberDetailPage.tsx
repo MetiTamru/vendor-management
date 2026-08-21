@@ -214,6 +214,55 @@ function MetaField({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
+function OverviewRow({
+	label,
+	value,
+}: {
+	label: string;
+	value: ReactNode;
+}) {
+	return (
+		<div className="flex items-start justify-between gap-3 border-b border-border/40 py-2 last:border-b-0">
+			<span className="shrink-0 text-[11px] font-medium text-muted-foreground">
+				{label}
+			</span>
+			<span className="min-w-0 text-right text-sm font-semibold text-foreground">
+				{value ?? "—"}
+			</span>
+		</div>
+	);
+}
+
+function ActiveBadge({
+	label = "Active",
+}: {
+	label?: string;
+}) {
+	return (
+		<span className="inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+			{label}
+		</span>
+	);
+}
+
+function TruncateCell({
+	children,
+	className,
+}: {
+	children: ReactNode;
+	className?: string;
+}) {
+	const text = typeof children === "string" ? children : undefined;
+	return (
+		<TableCell
+			className={cn("max-w-0 overflow-hidden text-sm", className)}
+			title={text}
+		>
+			<span className="block truncate">{children}</span>
+		</TableCell>
+	);
+}
+
 function HeaderField({
 	label,
 	value,
@@ -651,479 +700,439 @@ export function MemberDetailPage({
 
 			{tab === "Overview" ? (
 				<div className="space-y-4">
-					{/* Top row */}
-					<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-						<Panel title="Member Snapshot">
-							<dl className="grid grid-cols-2 gap-x-4 gap-y-5">
-								<div>
-									<dt className="text-xs font-medium text-muted-foreground">
-										Member since
-									</dt>
-									<dd className="mt-1 text-sm font-medium tabular-nums">
-										{formatDate(member.memberSince)}
-									</dd>
-								</div>
-								<div>
-									<dt className="text-xs font-medium text-muted-foreground">
-										Last claim
-									</dt>
-									<dd className="mt-1 text-sm font-medium tabular-nums">
-										{formatDate(member.lastClaimDate)}
-									</dd>
-								</div>
-								<div>
-									<dt className="text-xs font-medium text-muted-foreground">
-										Total claims (YTD)
-									</dt>
-									<dd className="mt-1 text-xl font-semibold tabular-nums">
-										{member.claimsYtd}
-									</dd>
-								</div>
-								<div>
-									<dt className="text-xs font-medium text-muted-foreground">
-										Total paid (YTD)
-									</dt>
-									<dd className="mt-1 text-xl font-semibold tabular-nums">
-										{formatCurrency(member.paidYtd)}
-									</dd>
-								</div>
-							</dl>
-						</Panel>
-
-						<Panel title="Eligibility Status">
-							<div className="flex flex-col items-center justify-center gap-3 py-3 text-center">
-								<span className="flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-									<CheckCircle2 className="size-8" />
-								</span>
-								<p className="text-base font-semibold capitalize text-emerald-800">
-									{member.eligibilityStatus === "eligible"
-										? "Eligible"
-										: member.eligibilityStatus}
-								</p>
-								<p className="text-sm text-muted-foreground">
-									{formatDate(member.coverageStart)}
-									{" – "}
-									{member.coverageEnd
-										? formatDate(member.coverageEnd)
-										: "Present"}
-								</p>
-							</div>
-						</Panel>
-
-						<Panel title="Plan Information">
-							<div className="grid grid-cols-2 gap-x-4 gap-y-4">
-								<MetaField
-									label="Plan ID"
-									value={<span className="font-mono">{member.planId}</span>}
+					{/* Top row — 4 info cards */}
+					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+						<Panel dense title="Current Eligibility">
+							<div>
+								<OverviewRow
+									label="Eligibility Status"
+									value={
+										member.eligibilityStatus === "eligible" ? (
+											<ActiveBadge label="Active" />
+										) : (
+											<EligPill status={member.eligibilityStatus} />
+										)
+									}
 								/>
-								<MetaField label="Type" value={member.planType} />
-								<MetaField label="LOB" value={member.lob} />
-								<MetaField label="Program" value={member.program} />
+								<OverviewRow
+									label="Status Effective Date"
+									value={formatDate(
+										member.statusEffectiveDate ?? member.coverageStart
+									)}
+								/>
+								<OverviewRow
+									label="Status Term Date"
+									value={
+										member.statusTermDate
+											? formatDate(member.statusTermDate)
+											: "—"
+									}
+								/>
+								<OverviewRow
+									label="Enrollment Date"
+									value={formatDate(
+										member.enrollmentDate ?? member.coverageStart
+									)}
+								/>
+								<OverviewRow
+									label="Disenrollment Date"
+									value={
+										member.disenrollmentDate
+											? formatDate(member.disenrollmentDate)
+											: "—"
+									}
+								/>
+								<OverviewRow
+									label="Last Eligibility Update"
+									value={member.lastEligibilityUpdate ?? member.dataAsOf}
+								/>
+								<OverviewRow
+									label="Secondary Coverage"
+									value={member.secondaryCoverage ?? "No"}
+								/>
 							</div>
 						</Panel>
 
-						<Panel title="Important Alerts">
-							{member.alerts.length === 0 ? (
-								<p className="text-sm text-muted-foreground">No open alerts.</p>
-							) : (
-								<ul className="space-y-4">
-									{member.alerts.map((a) => (
-										<li key={a.id} className="flex items-start gap-3">
-											{a.severity === "info" ? (
-												<Info className="mt-0.5 size-4 shrink-0 text-sky-600" />
-											) : (
-												<AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-											)}
-											<div className="min-w-0 flex-1">
-												<p className="text-sm font-medium leading-snug">
-													{a.title}
-												</p>
-												<button
-													type="button"
-													className="text-xs font-medium text-primary hover:underline"
-													onClick={() => {
-														if (a.title.includes("Exception"))
-															setTab("Eligibility Exceptions");
-														else if (a.title.includes("Claim"))
-															setTab("Claims & Encounters");
-														else setTab("Eligibility");
-													}}
-												>
-													{a.hrefLabel}
-												</button>
-											</div>
-										</li>
-									))}
-								</ul>
-							)}
+						<Panel dense title="Current Coverage / Plan">
+							<div>
+								<OverviewRow label="Plan Name" value={member.planName} />
+								<OverviewRow
+									label="Plan Code"
+									value={member.planCode ?? member.planId}
+								/>
+								<OverviewRow
+									label="Benefit Package"
+									value={member.benefitPackage ?? "—"}
+								/>
+								<OverviewRow
+									label="Coverage Level Code"
+									value={member.coverageLevelCode ?? "—"}
+								/>
+								<OverviewRow
+									label="Coverage Level"
+									value={member.coverageLevel ?? "—"}
+								/>
+								<OverviewRow
+									label="Coverage Effective Date"
+									value={formatDate(
+										member.coverageEffectiveDate ?? member.coverageStart
+									)}
+								/>
+								<OverviewRow
+									label="Coverage Term Date"
+									value={
+										member.coverageEnd ? formatDate(member.coverageEnd) : "—"
+									}
+								/>
+							</div>
+						</Panel>
+
+						<Panel dense title="Key Dates">
+							<div>
+								<OverviewRow
+									label="Date of Birth"
+									value={formatDate(member.dob)}
+								/>
+								<OverviewRow
+									label="Eligibility Effective Date"
+									value={formatDate(member.coverageStart)}
+								/>
+								<OverviewRow
+									label="Eligibility Term Date"
+									value={
+										member.coverageEnd ? formatDate(member.coverageEnd) : "—"
+									}
+								/>
+								<OverviewRow
+									label="Plan Effective Date"
+									value={formatDate(
+										member.coverageEffectiveDate ?? member.coverageStart
+									)}
+								/>
+								<OverviewRow
+									label="Plan Term Date"
+									value={
+										member.coverageEnd ? formatDate(member.coverageEnd) : "—"
+									}
+								/>
+								<OverviewRow
+									label="Last Updated"
+									value={member.lastEligibilityUpdate ?? member.dataAsOf}
+								/>
+							</div>
+						</Panel>
+
+						<Panel dense title="Account / Group">
+							<div>
+								<OverviewRow
+									label="Group ID"
+									value={
+										<span className="text-primary">{member.groupId ?? "—"}</span>
+									}
+								/>
+								<OverviewRow
+									label="Group Name"
+									value={member.groupName ?? member.accountGroup ?? "—"}
+								/>
+								<OverviewRow label="Client ID" value={member.clientId ?? "—"} />
+								<OverviewRow
+									label="Account Type"
+									value={member.accountType ?? "—"}
+								/>
+								<OverviewRow
+									label="Account Status"
+									value={
+										member.accountStatus === "Active" ? (
+											<ActiveBadge />
+										) : (
+											(member.accountStatus ?? "—")
+										)
+									}
+								/>
+								<OverviewRow
+									label="Member Type"
+									value={member.memberType ?? "—"}
+								/>
+							</div>
 						</Panel>
 					</div>
 
-					{/* Middle row */}
-					<div className="grid gap-4 lg:grid-cols-2">
+					{/* Middle row — Accumulators / Claims / Source */}
+					<div className="grid gap-3 lg:grid-cols-3">
 						<Panel
-							title="Eligibility History"
-							action={
-								<button
-									type="button"
-									className="text-xs font-medium text-primary hover:underline"
-									onClick={() => setTab("Eligibility")}
-								>
-									View all
-								</button>
-							}
+							dense
+							title={`Recent Accumulators (as of ${member.dataAsOf.split(" ")[0]})`}
 						>
-							<TableScroll>
-								<Table>
+							<div className="overflow-hidden">
+								<Table className="w-full table-fixed">
 									<TableHeader>
 										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Start</TableHead>
-											<TableHead className="h-9 text-xs">End</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
-											<TableHead className="h-9 text-xs">Source</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Type
+											</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Individual
+											</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Family
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{member.eligibilityHistory.slice(0, 4).map((r) => (
-											<TableRow key={r.id}>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(r.startDate)}
+										{member.accumulators.slice(0, 4).map((row) => (
+											<TableRow key={row.id}>
+												<TableCell className="py-2 text-xs font-medium">
+													{row.label}
 												</TableCell>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(r.endDate)}
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatCurrency(row.individual)}
 												</TableCell>
-												<TableCell className="py-2.5">
-													<EligPill status={r.status} />
-												</TableCell>
-												<TableCell className="py-2.5 text-sm">
-													{r.source}
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatCurrency(row.family)}
 												</TableCell>
 											</TableRow>
 										))}
 									</TableBody>
 								</Table>
-							</TableScroll>
-						</Panel>
-
-						<Panel
-							title="Coverage / Plan History"
-							action={
+							</div>
+							<div className="mt-3 text-center">
 								<button
 									type="button"
 									className="text-xs font-medium text-primary hover:underline"
-									onClick={() => setTab("Coverage & Plan History")}
+									onClick={() => setTab("Accumulators")}
 								>
-									View all
+									View All Accumulators
 								</button>
-							}
-						>
-							<TableScroll>
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Plan</TableHead>
-											<TableHead className="h-9 text-xs">Type</TableHead>
-											<TableHead className="h-9 text-xs">Dates</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{member.planHistory.map((r) => (
-											<TableRow key={r.id}>
-												<TableCell className="max-w-[160px] truncate py-2.5 text-sm font-medium">
-													{r.planName}
-												</TableCell>
-												<TableCell className="py-2.5 text-sm">
-													{r.planType}
-												</TableCell>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(r.startDate)} – {formatDate(r.endDate)}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</TableScroll>
+							</div>
 						</Panel>
-					</div>
 
-					<Panel
-						title="Family / Dependents"
-						action={
-							<button
-								type="button"
-								className="text-xs font-medium text-primary hover:underline"
-								onClick={() => setTab("Family / Dependents")}
-							>
-								View all
-							</button>
-						}
-					>
-						<TableScroll>
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Name</TableHead>
-										<TableHead className="h-9 text-xs">Relationship</TableHead>
-										<TableHead className="h-9 text-xs">Status</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{member.dependents.map((d) => (
-										<TableRow key={d.id}>
-											<TableCell className="py-2.5 text-sm font-medium">
-												{d.name}
-												<p className="mt-0.5 text-xs font-normal text-muted-foreground">
-													{formatDate(d.dob)} · {d.gender}
-												</p>
-											</TableCell>
-											<TableCell className="py-2.5 text-sm">
-												{d.relationship}
-											</TableCell>
-											<TableCell className="py-2.5">
-												<MemberStatusPill status={d.coverageStatus} />
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableScroll>
-					</Panel>
-
-					{/* Bottom row */}
-					<div className="grid gap-4 lg:grid-cols-2">
 						<Panel
-							title="Recent Claims & Encounters"
+							dense
+							title="Recent Claims"
 							action={
 								<button
 									type="button"
 									className="text-xs font-medium text-primary hover:underline"
 									onClick={() => setTab("Claims & Encounters")}
 								>
-									View all
+									View All Claims
 								</button>
 							}
 						>
-							<div className="mb-3 flex gap-1.5">
-								{(
-									[
-										{ id: "claims", label: `Claims (${member.claims.length})` },
-										{
-											id: "encounters",
-											label: `Encounters (${member.encounters.length})`,
-										},
-									] as const
-								).map((p) => (
-									<button
-										key={p.id}
-										type="button"
-										onClick={() => setClaimsPane(p.id)}
-										className={cn(
-											"rounded-md px-2.5 py-1.5 text-xs font-medium",
-											claimsPane === p.id
-												? "bg-primary text-primary-foreground"
-												: "text-muted-foreground hover:bg-muted/50"
-										)}
-									>
-										{p.label}
-									</button>
-								))}
-							</div>
-							<TableScroll>
-								<Table>
+							<div className="overflow-hidden">
+								<Table className="w-full table-fixed">
 									<TableHeader>
 										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">DOS</TableHead>
-											<TableHead className="h-9 text-xs">Claim #</TableHead>
-											<TableHead className="h-9 text-xs">Type</TableHead>
-											<TableHead className="h-9 text-right text-xs">
-												Paid
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Service Date
 											</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Type
+											</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-[10px] font-semibold uppercase">
+												Status
+											</TableHead>
+											<TableHead className="h-8 bg-muted/40 text-right text-[10px] font-semibold uppercase">
+												Billed Amount
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{claimRows.slice(0, 5).map((c) => (
-											<TableRow key={c.id}>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(c.dos)}
+										{member.claims.slice(0, 4).map((claim) => (
+											<TableRow key={claim.id}>
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatDate(claim.dos)}
 												</TableCell>
-												<TableCell className="py-2.5 font-mono text-xs">
-													{c.claimNumber}
+												<TableCell className="py-2 text-xs">
+													{claim.type}
 												</TableCell>
-												<TableCell className="py-2.5 text-sm">
-													{c.type}
+												<TableCell className="py-2">
+													<ClaimPill status={claim.status} />
 												</TableCell>
-												<TableCell className="py-2.5 text-right text-sm tabular-nums">
-													{formatCurrency(c.paid)}
-												</TableCell>
-												<TableCell className="py-2.5">
-													<ClaimPill status={c.status} />
+												<TableCell className="py-2 text-right text-xs tabular-nums">
+													{formatCurrency(claim.billed)}
 												</TableCell>
 											</TableRow>
 										))}
 									</TableBody>
 								</Table>
-							</TableScroll>
+							</div>
 						</Panel>
 
-						<Panel
-							title="Accumulators"
-							action={
-								<button
-									type="button"
-									className="text-xs font-medium text-primary hover:underline"
-									onClick={() => setTab("Accumulators")}
-								>
-									View all
-								</button>
-							}
-						>
-							<TableScroll>
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Type</TableHead>
-											<TableHead className="h-9 text-right text-xs">
-												Individual
-											</TableHead>
-											<TableHead className="h-9 text-right text-xs">
-												Family
-											</TableHead>
-											<TableHead className="h-9 text-right text-xs">
-												Remaining
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{member.accumulators.map((a) => (
-											<TableRow key={a.id}>
-												<TableCell className="py-2.5 text-sm font-medium">
-													{a.label}
-												</TableCell>
-												<TableCell className="py-2.5 text-right text-sm tabular-nums">
-													{formatCurrency(a.individual)}
-												</TableCell>
-												<TableCell className="py-2.5 text-right text-sm tabular-nums">
-													{formatCurrency(a.family)}
-												</TableCell>
-												<TableCell className="py-2.5 text-right text-sm tabular-nums">
-													{formatCurrency(a.remaining)}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</TableScroll>
+						<Panel dense title="Source Information (Latest)">
+							<div>
+								<OverviewRow
+									label="Source System"
+									value={member.sourceSystem ?? member.vendorSource}
+								/>
+								<OverviewRow
+									label="File Name"
+									value={
+										<span
+											className="block max-w-[180px] truncate"
+											title={member.sourceFileName}
+										>
+											{member.sourceFileName ?? "—"}
+										</span>
+									}
+								/>
+								<OverviewRow
+									label="File Received"
+									value={member.sourceFileReceived ?? "—"}
+								/>
+								<OverviewRow
+									label="Record Status"
+									value={
+										member.recordStatus === "Processed" ? (
+											<ActiveBadge label="Processed" />
+										) : (
+											(member.recordStatus ?? "—")
+										)
+									}
+								/>
+								<OverviewRow
+									label="Record Effective Date"
+									value={formatDate(member.coverageStart)}
+								/>
+								<OverviewRow
+									label="Change Detected"
+									value={member.changeDetected ?? "—"}
+								/>
+							</div>
 						</Panel>
 					</div>
 
-					<Panel
-						title="Vendor / Source History"
-						action={
-							<button
-								type="button"
-								className="text-xs font-medium text-primary hover:underline"
-								onClick={() => setTab("Vendor / Source History")}
-							>
-								View all
-							</button>
-						}
-					>
-						<TableScroll>
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Source</TableHead>
-										<TableHead className="h-9 text-xs">Feed</TableHead>
-										<TableHead className="h-9 text-xs">Last received</TableHead>
-										<TableHead className="h-9 text-xs">Status</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{member.vendorHistory.map((v) => (
-										<TableRow key={v.id}>
-											<TableCell className="py-2.5 text-sm font-medium">
-												{v.vendor}
-											</TableCell>
-											<TableCell className="py-2.5 text-sm">
-												{v.fileFeedType}
-											</TableCell>
-											<TableCell className="py-2.5 text-sm tabular-nums">
-												{v.lastReceived}
-											</TableCell>
-											<TableCell className="py-2.5">
-												<span
-													className={cn(
-														"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-														v.status === "success" &&
-															"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-														v.status === "warning" &&
-															"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-														v.status === "failed" &&
-															"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
+					{/* Bottom row — Family / Other Status */}
+					<div className="grid gap-3 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+						<Panel dense title="Family Members">
+							<div className="overflow-hidden">
+								<Table className="w-full table-fixed">
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<TableHead className="h-8 w-[14%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Member ID
+											</TableHead>
+											<TableHead className="h-8 w-[22%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Member Name
+											</TableHead>
+											<TableHead className="h-8 w-[12%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Relationship
+											</TableHead>
+											<TableHead className="h-8 w-[12%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Date of Birth
+											</TableHead>
+											<TableHead className="h-8 w-[8%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Gender
+											</TableHead>
+											<TableHead className="h-8 w-[14%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Eligibility Status
+											</TableHead>
+											<TableHead className="h-8 w-[18%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Current Plan
+											</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{member.dependents.map((dep) => (
+											<TableRow key={dep.id}>
+												<TableCell className="py-2 text-xs font-medium text-primary">
+													{dep.memberId ?? "—"}
+												</TableCell>
+												<TruncateCell className="py-2 text-xs font-medium">
+													{dep.name}
+												</TruncateCell>
+												<TableCell className="py-2 text-xs">
+													{dep.relationship}
+												</TableCell>
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatDate(dep.dob)}
+												</TableCell>
+												<TableCell className="py-2 text-xs">
+													{dep.gender}
+												</TableCell>
+												<TableCell className="py-2">
+													{dep.coverageStatus === "active" ? (
+														<ActiveBadge />
+													) : (
+														<MemberStatusPill status={dep.coverageStatus} />
 													)}
-												>
-													{v.status}
-												</span>
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableScroll>
-					</Panel>
+												</TableCell>
+												<TruncateCell className="py-2 text-xs">
+													{dep.planName ?? member.planName}
+												</TruncateCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+							<div className="mt-3 text-center">
+								<button
+									type="button"
+									className="text-xs font-medium text-primary hover:underline"
+									onClick={() => setTab("Family / Dependents")}
+								>
+									View All Family Members
+								</button>
+							</div>
+						</Panel>
 
-					{/* Full-width exceptions */}
-					<Panel title="Eligibility Exceptions">
-						<TableScroll>
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead>Exception type</TableHead>
-										<TableHead>Description</TableHead>
-										<TableHead>Detected</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead>Source</TableHead>
-										<TableHead>Resolution</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{member.exceptions.length === 0 ? (
-										<TableRow>
-											<TableCell
-												colSpan={6}
-												className="h-16 text-center text-muted-foreground"
-											>
-												No eligibility exceptions for this member.
-											</TableCell>
+						<Panel
+							dense
+							title={`Other Status (as of ${member.dataAsOf.split(" ")[0]})`}
+						>
+							<div className="overflow-hidden">
+								<Table className="w-full table-fixed">
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<TableHead className="h-8 w-[16%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Status Slot
+											</TableHead>
+											<TableHead className="h-8 w-[18%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Status
+											</TableHead>
+											<TableHead className="h-8 w-[30%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Status Detail
+											</TableHead>
+											<TableHead className="h-8 w-[18%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Effective Start
+											</TableHead>
+											<TableHead className="h-8 w-[18%] bg-muted/40 text-[10px] font-semibold uppercase">
+												Effective End
+											</TableHead>
 										</TableRow>
-									) : (
-										member.exceptions.map((ex) => (
-											<TableRow key={ex.id}>
-												<TableCell className="text-sm font-semibold text-red-700">
-													{ex.exceptionType}
+									</TableHeader>
+									<TableBody>
+										{member.otherStatuses.map((row) => (
+											<TableRow key={row.id}>
+												<TableCell className="py-2 text-xs">{row.slot}</TableCell>
+												<TruncateCell className="py-2 text-xs font-medium">
+													{row.status}
+												</TruncateCell>
+												<TruncateCell className="py-2 text-xs text-muted-foreground">
+													{row.detail}
+												</TruncateCell>
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatDate(row.effectiveStart)}
 												</TableCell>
-												<TableCell className="max-w-[280px] text-sm leading-relaxed">
-													{ex.description}
-												</TableCell>
-												<TableCell className="text-sm tabular-nums">
-													{formatDate(ex.startDetected)}
-												</TableCell>
-												<TableCell>
-													<ExceptionPill status={ex.status} />
-												</TableCell>
-												<TableCell className="text-sm">{ex.source}</TableCell>
-												<TableCell className="max-w-[280px] text-sm text-muted-foreground leading-relaxed">
-													{ex.resolution}
+												<TableCell className="py-2 text-xs tabular-nums">
+													{formatDate(row.effectiveEnd)}
 												</TableCell>
 											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						</TableScroll>
-						<ViewAllLink onClick={() => setTab("Eligibility Exceptions")} />
-					</Panel>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+							<div className="mt-3 text-center">
+								<button
+									type="button"
+									className="text-xs font-medium text-primary hover:underline"
+									onClick={() => setTab("Demographics")}
+								>
+									View All Other Status
+								</button>
+							</div>
+						</Panel>
+					</div>
 				</div>
 			) : (
 				<TabBody tab={tab} member={member} />
@@ -1823,28 +1832,30 @@ function TabBody({
 						}
 					>
 						<TableScroll>
-							<Table>
+							<Table className="w-full table-fixed">
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Type</TableHead>
-										<TableHead className="h-9 text-xs">Description</TableHead>
-										<TableHead className="h-9 text-xs">Source</TableHead>
-										<TableHead className="h-9 text-xs">Status</TableHead>
-										<TableHead className="h-9 text-xs">Detected</TableHead>
+										<TableHead className="h-9 w-[18%] text-xs">Type</TableHead>
+										<TableHead className="h-9 w-[36%] text-xs">
+											Description
+										</TableHead>
+										<TableHead className="h-9 w-[16%] text-xs">Source</TableHead>
+										<TableHead className="h-9 w-[14%] text-xs">Status</TableHead>
+										<TableHead className="h-9 w-[16%] text-xs">Detected</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{openExceptions.map((ex) => (
 										<TableRow key={ex.id}>
-											<TableCell className="py-2.5 text-sm font-medium text-amber-800">
+											<TruncateCell className="py-2.5 text-sm font-medium text-amber-800">
 												{ex.exceptionType}
-											</TableCell>
-											<TableCell className="py-2.5 text-sm leading-relaxed">
+											</TruncateCell>
+											<TruncateCell className="py-2.5 text-sm text-muted-foreground">
 												{ex.description}
-											</TableCell>
-											<TableCell className="py-2.5 text-sm">
+											</TruncateCell>
+											<TruncateCell className="py-2.5 text-sm">
 												{ex.source}
-											</TableCell>
+											</TruncateCell>
 											<TableCell className="py-2.5">
 												<ExceptionPill status={ex.status} />
 											</TableCell>
@@ -2679,15 +2690,19 @@ function TabBody({
 						}
 					>
 						<TableScroll>
-							<Table>
+							<Table className="w-full table-fixed">
 								<TableHeader>
 									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Type</TableHead>
-										<TableHead className="h-9 text-xs">Description</TableHead>
-										<TableHead className="h-9 text-xs">Detected</TableHead>
-										<TableHead className="h-9 text-xs">Status</TableHead>
-										<TableHead className="h-9 text-xs">Source</TableHead>
-										<TableHead className="h-9 text-xs">Resolution</TableHead>
+										<TableHead className="h-9 w-[16%] text-xs">Type</TableHead>
+										<TableHead className="h-9 w-[28%] text-xs">
+											Description
+										</TableHead>
+										<TableHead className="h-9 w-[12%] text-xs">Detected</TableHead>
+										<TableHead className="h-9 w-[12%] text-xs">Status</TableHead>
+										<TableHead className="h-9 w-[14%] text-xs">Source</TableHead>
+										<TableHead className="h-9 w-[18%] text-xs">
+											Resolution
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -2703,24 +2718,24 @@ function TabBody({
 									) : (
 										member.exceptions.map((ex) => (
 											<TableRow key={ex.id}>
-												<TableCell className="py-2.5 text-sm font-medium text-amber-900">
+												<TruncateCell className="py-2.5 text-sm font-medium text-amber-900">
 													{ex.exceptionType}
-												</TableCell>
-												<TableCell className="max-w-[240px] py-2.5 text-sm leading-relaxed">
+												</TruncateCell>
+												<TruncateCell className="py-2.5 text-sm text-muted-foreground">
 													{ex.description}
-												</TableCell>
+												</TruncateCell>
 												<TableCell className="py-2.5 text-sm tabular-nums">
 													{formatDate(ex.startDetected)}
 												</TableCell>
 												<TableCell className="py-2.5">
 													<ExceptionPill status={ex.status} />
 												</TableCell>
-												<TableCell className="py-2.5 text-sm">
+												<TruncateCell className="py-2.5 text-sm">
 													{ex.source}
-												</TableCell>
-												<TableCell className="max-w-[220px] py-2.5 text-sm text-muted-foreground">
+												</TruncateCell>
+												<TruncateCell className="py-2.5 text-sm text-muted-foreground">
 													{ex.resolution}
-												</TableCell>
+												</TruncateCell>
 											</TableRow>
 										))
 									)}

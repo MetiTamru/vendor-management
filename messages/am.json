@@ -48,6 +48,7 @@
 		"offline": "ከመስመር ውጭ ነዎት። ግንኙነት ሲመለስ ለውጦች ይቀጥላሉ።",
 		"sections": {
 			"top": "አጠቃላይ",
+			"workspace": "የስራ ቦታ",
 			"master_data": "ዋና ውሂብ",
 			"procurement": "ግዢ",
 			"governance": "መሪነት",
@@ -59,6 +60,7 @@
 		},
 		"nav": {
 			"dashboard": "ዳሽቦርድ",
+			"myworkqueue": "የእኔ የስራ ወረፋ",
 			"vendors": "አቅራቢዎች",
 			"contracts": "ውሎች",
 			"overview": "አጠቃላይ እይታ",

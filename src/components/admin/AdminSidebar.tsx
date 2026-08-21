@@ -30,6 +30,7 @@ import {
 	History,
 	Home,
 	Hospital,
+	Inbox,
 	KeyRound,
 	LifeBuoy,
 	LineChart,
@@ -144,10 +145,12 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	"File Management": Files,
 	"Master Data Entry": Database,
 	"Error Correction": FileWarning,
+	"My Work Queue": Inbox,
 };
 
 const VENDOR_SECTION_ORDER = [
 	"top",
+	"workspace",
 	"master_data",
 	"integration_file_operations",
 	"operations",
