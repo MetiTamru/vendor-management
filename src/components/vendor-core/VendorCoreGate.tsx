@@ -16,6 +16,8 @@ import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { AUTH_PATHS } from "@/lib/auth/paths";
+import { redirectToLogin } from "@/lib/auth/redirect-to-login";
+import { isPublicPath } from "@/lib/routes";
 import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
 import {
 	VendorCoreApiError,
@@ -95,6 +97,7 @@ export function VendorCoreSessionProvider({
 
 	const refreshUser = useCallback(async () => {
 		if (!getStoredAccessToken()) {
+			clearTokens();
 			setUser(null);
 			return null;
 		}
@@ -123,6 +126,7 @@ export function VendorCoreSessionProvider({
 		(async () => {
 			if (!getStoredAccessToken()) {
 				if (!cancelled) {
+					clearTokens();
 					setUser(null);
 					setBootstrapping(false);
 				}
@@ -154,6 +158,25 @@ export function VendorCoreSessionProvider({
 		if (!shellAuth || bootstrapping || !user?.must_change_password) return;
 		if (pathname.includes(AUTH_PATHS.changePassword)) return;
 		router.replace(AUTH_PATHS.changePassword);
+	}, [shellAuth, bootstrapping, user, pathname, router]);
+
+	// Unauthenticated users always leave the app shell for login.
+	useEffect(() => {
+		if (!live || !shellAuth || bootstrapping) return;
+		if (isPublicPath(pathname)) return;
+		if (user) return;
+		redirectToLogin(locale);
+	}, [live, shellAuth, bootstrapping, user, pathname, locale]);
+
+	// Valid JWT on the login screen → home (middleware no longer bounces login).
+	useEffect(() => {
+		if (!shellAuth || bootstrapping || !user) return;
+		if (pathname !== AUTH_PATHS.login) return;
+		if (user.must_change_password) {
+			router.replace(AUTH_PATHS.changePassword);
+			return;
+		}
+		router.replace("/");
 	}, [shellAuth, bootstrapping, user, pathname, router]);
 
 	const signIn = useCallback(async (username: string, password: string) => {
@@ -189,7 +212,10 @@ export function VendorCoreSessionProvider({
 	const markUnauthed = useCallback(() => {
 		clearTokens();
 		setUser(null);
-	}, []);
+		if (shellAuth) {
+			redirectToLogin(locale);
+		}
+	}, [shellAuth, locale]);
 
 	const sessionBits = meToSession(user);
 
@@ -237,6 +263,7 @@ export function VendorCoreSessionProvider({
  */
 export function VendorCoreAuthBanner() {
 	const session = useVendorCoreSessionOptional();
+	const locale = useLocale();
 
 	if (
 		!session?.live ||
@@ -258,15 +285,7 @@ export function VendorCoreAuthBanner() {
 						{getVendorCoreBaseUrl()} — sign in again or reconnect for live data
 					</p>
 				</div>
-				<Button
-					type="button"
-					size="sm"
-					onClick={() => {
-						window.location.assign(
-							`${window.location.pathname.split("/").slice(0, 2).join("/")}${AUTH_PATHS.login}`
-						);
-					}}
-				>
+				<Button type="button" size="sm" onClick={() => redirectToLogin(locale)}>
 					Sign in
 				</Button>
 			</div>
@@ -294,7 +313,7 @@ export function VendorCoreGate({
 
 	useEffect(() => {
 		if (!needsLogin || !shellAuth) return;
-		window.location.assign(`/${locale}${AUTH_PATHS.login}`);
+		redirectToLogin(locale);
 	}, [needsLogin, shellAuth, locale]);
 
 	if (!live) {
@@ -345,9 +364,7 @@ NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com`}
 					<Button
 						type="button"
 						className="w-full"
-						onClick={() => {
-							window.location.assign(`/${locale}${AUTH_PATHS.login}`);
-						}}
+						onClick={() => redirectToLogin(locale)}
 					>
 						Go to sign in
 					</Button>
