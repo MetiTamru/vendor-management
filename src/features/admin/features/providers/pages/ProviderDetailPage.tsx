@@ -62,6 +62,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { VendorCoreLoadingRow } from "@/components/vendor-core/VendorCoreLiveChrome";
 import {
 	type ClaimActivityStatus,
 	type CredentialStatus,
@@ -69,6 +71,7 @@ import {
 	type FeedStatus,
 	type NetworkStatus,
 	type ProviderStatus,
+	type ProviderSummary,
 	displayProviderName,
 	formatCompact,
 	formatCurrency,
@@ -77,8 +80,11 @@ import {
 	initials,
 	providerAge,
 } from "@/features/admin/features/providers/feature/api/providersApi";
+import { useProviderDetailQuery } from "@/features/admin/features/providers/feature/queries/useProvidersQuery";
 import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 const TABS = [
 	{ id: "Overview", icon: Activity },
@@ -325,690 +331,731 @@ export function ProviderDetailPage({
 	const providerId = decodeURIComponent(
 		Array.isArray(raw) ? (raw[0] ?? "") : String(raw ?? "")
 	);
-	const provider = useMemo(
-		() => (providerId ? getProvider(providerId) : undefined),
-		[providerId]
+	const useApi = !isMockEnabled();
+	const programFilter = useAdminModuleStore(
+		(s) => s.fileType
+	) as ProviderSummary["program"];
+	const detailQuery = useProviderDetailQuery(providerId, useApi, programFilter);
+	const mockProvider = useMemo(
+		() => (!useApi && providerId ? getProvider(providerId) : undefined),
+		[useApi, providerId]
 	);
+	const provider = useApi ? detailQuery.data : mockProvider;
 	const [tab, setTab] = useState<TabId>("Overview");
 
-	const credCounts = useMemo(() => {
-		const counts: Record<CredentialStatus, number> = {
+	const body = (() => {
+		if (useApi && detailQuery.isLoading && !detailQuery.data) {
+			return <VendorCoreLoadingRow label="Loading provider…" />;
+		}
+
+		if (useApi && detailQuery.error) {
+			return (
+				<div className="space-y-5">
+					<p className="text-sm text-destructive">
+						{detailQuery.error.message}
+					</p>
+					<Button asChild variant="outline" size="sm">
+						<Link href="/admin/providers">Back to providers</Link>
+					</Button>
+				</div>
+			);
+		}
+
+		if (!provider) {
+			return (
+				<div className="space-y-5">
+					<p className="text-sm text-destructive">Provider not found.</p>
+					<Button asChild variant="outline" size="sm">
+						<Link href="/admin/providers">Back to providers</Link>
+					</Button>
+				</div>
+			);
+		}
+
+		const credCounts: Record<CredentialStatus, number> = {
 			complete: 0,
 			expiring: 0,
 			expired: 0,
 			pending: 0,
 		};
-		if (!provider) return counts;
-		for (const c of provider.credentialing) counts[c.status] += 1;
-		return counts;
-	}, [provider]);
+		for (const c of provider.credentialing) credCounts[c.status] += 1;
 
-	if (!provider) {
+		const name = displayProviderName(provider);
+
+		const credTotal =
+			credCounts.complete +
+			credCounts.expiring +
+			credCounts.expired +
+			credCounts.pending;
+		const credPct = credTotal
+			? Math.round((credCounts.complete / credTotal) * 100)
+			: 0;
+
+		const donutData = [
+			{ name: "Complete", value: credCounts.complete, fill: "#059669" },
+			{ name: "Expiring", value: credCounts.expiring, fill: "#f59e0b" },
+			{ name: "Expired", value: credCounts.expired, fill: "#ef4444" },
+			{ name: "Pending", value: credCounts.pending, fill: "#94a3b8" },
+		].filter((d) => d.value > 0);
+
+		const kpis = [
+			{
+				label: "Claims",
+				value: formatCompact(provider.claims12m),
+				trend: provider.claimsTrendPct,
+				icon: Receipt,
+			},
+			{
+				label: "Encounters",
+				value: formatCompact(provider.encounters12m),
+				trend: provider.encountersTrendPct,
+				icon: Activity,
+			},
+			{
+				label: "Total Billed",
+				value: formatCurrency(provider.billed12m),
+				trend: provider.billedTrendPct,
+				icon: Receipt,
+			},
+			{
+				label: "Total Paid",
+				value: formatCurrency(provider.paid12m),
+				trend: provider.paidTrendPct,
+				icon: CheckCircle2,
+			},
+			{
+				label: "Rejection Rate",
+				value: `${provider.rejectionRate}%`,
+				trend: provider.rejectionTrendPct,
+				icon: FileWarning,
+			},
+			{
+				label: "Net Payment",
+				value: formatCurrency(provider.netPayment12m),
+				trend: provider.netPaymentTrendPct,
+				icon: TrendingDown,
+			},
+		];
+
 		return (
 			<div className="space-y-5">
-				<p className="text-sm text-destructive">Provider not found.</p>
-				<Button asChild variant="outline" size="sm">
-					<Link href="/admin/providers">Back to providers</Link>
-				</Button>
-			</div>
-		);
-	}
-
-	const name = displayProviderName(provider);
-
-	const credTotal =
-		credCounts.complete +
-		credCounts.expiring +
-		credCounts.expired +
-		credCounts.pending;
-	const credPct = credTotal
-		? Math.round((credCounts.complete / credTotal) * 100)
-		: 0;
-
-	const donutData = [
-		{ name: "Complete", value: credCounts.complete, fill: "#059669" },
-		{ name: "Expiring", value: credCounts.expiring, fill: "#f59e0b" },
-		{ name: "Expired", value: credCounts.expired, fill: "#ef4444" },
-		{ name: "Pending", value: credCounts.pending, fill: "#94a3b8" },
-	].filter((d) => d.value > 0);
-
-	const kpis = [
-		{
-			label: "Claims",
-			value: formatCompact(provider.claims12m),
-			trend: provider.claimsTrendPct,
-			icon: Receipt,
-		},
-		{
-			label: "Encounters",
-			value: formatCompact(provider.encounters12m),
-			trend: provider.encountersTrendPct,
-			icon: Activity,
-		},
-		{
-			label: "Total Billed",
-			value: formatCurrency(provider.billed12m),
-			trend: provider.billedTrendPct,
-			icon: Receipt,
-		},
-		{
-			label: "Total Paid",
-			value: formatCurrency(provider.paid12m),
-			trend: provider.paidTrendPct,
-			icon: CheckCircle2,
-		},
-		{
-			label: "Rejection Rate",
-			value: `${provider.rejectionRate}%`,
-			trend: provider.rejectionTrendPct,
-			icon: FileWarning,
-		},
-		{
-			label: "Net Payment",
-			value: formatCurrency(provider.netPayment12m),
-			trend: provider.netPaymentTrendPct,
-			icon: TrendingDown,
-		},
-	];
-
-	return (
-		<div className="space-y-5">
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<p className="text-sm text-muted-foreground">
-					<span className="text-foreground/80">Providers</span>
-					<span className="mx-1.5 text-border">/</span>
-					Provider Profile
-				</p>
-				<div className="flex flex-wrap gap-2">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm" className="h-9">
-								Provider Summary
-								<ChevronDown className="ml-1 size-3.5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem
-								onClick={() => toast.message("Opening provider summary…")}
-							>
-								One-page summary
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => toast.message("Opening enrollment packet…")}
-							>
-								Enrollment packet
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm" className="h-9">
-								<Printer className="mr-1.5 size-3.5" />
-								Print
-								<ChevronDown className="ml-1 size-3.5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => toast.success("Print profile")}>
-								Print profile
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => toast.success("Print credentialing")}
-							>
-								Print credentialing
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button size="sm" className="h-9">
-								<Download className="mr-1.5 size-3.5" />
-								Export
-								<ChevronDown className="ml-1 size-3.5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => toast.success("Exported CSV")}>
-								Export CSV
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => toast.success("Exported PDF")}>
-								Export PDF
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</div>
-
-			{/* Identity header */}
-			<section className="rounded-xl border border-border/40 bg-card p-5 shadow-sm">
-				<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-					<div className="flex min-w-0 gap-4">
-						<div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
-							{initials(provider.name)}
-						</div>
-						<div className="min-w-0 space-y-2">
-							<div className="flex flex-wrap items-center gap-2.5">
-								<h1 className="text-2xl font-semibold tracking-tight">
-									{name}
-								</h1>
-								<StatusPill status={provider.status} />
-							</div>
-							<p className="text-sm text-muted-foreground">
-								<span className="font-medium text-foreground">
-									{provider.specialty}
-								</span>
-								<span className="mx-1.5 text-border">·</span>
-								{provider.subspecialty}
-							</p>
-							<div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
-								<span>
-									NPI{" "}
-									<span className="font-mono font-medium text-foreground">
-										{provider.npi}
-									</span>
-								</span>
-								<span>
-									Tax ID{" "}
-									<span className="font-mono font-medium text-foreground">
-										{provider.taxId}
-									</span>
-								</span>
-								<span>
-									UPIN{" "}
-									<span className="font-mono font-medium text-foreground">
-										{provider.upin}
-									</span>
-								</span>
-								<span>
-									Medicaid{" "}
-									<span className="font-mono font-medium text-foreground">
-										{provider.medicaidId}
-									</span>
-								</span>
-							</div>
-							<div className="flex flex-col gap-1.5 pt-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5">
-								<span className="inline-flex items-start gap-2">
-									<Building2 className="mt-0.5 size-3.5 shrink-0" />
-									<span>
-										<span className="font-medium text-foreground">
-											{provider.practiceName}
-										</span>
-										<span className="mx-1.5">·</span>
-										{provider.practiceAddress}
-									</span>
-								</span>
-								<span className="inline-flex items-center gap-2">
-									<MapPin className="size-3.5 shrink-0" />
-									{provider.practicePhone}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					<div className="grid shrink-0 gap-4 rounded-lg bg-muted/30 p-4 sm:grid-cols-2 lg:w-[380px]">
-						<MetaField label="Provider type" value={provider.providerType} />
-						<MetaField label="Gender" value={provider.gender} />
-						<MetaField label="Date of birth" value={formatDate(provider.dob)} />
-						<MetaField
-							label="Years in practice"
-							value={`${provider.yearsInPractice} years`}
-						/>
-						<div className="col-span-full flex items-center gap-3 border-t border-border/40 pt-4">
-							<span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-								<CheckCircle2 className="size-5" />
-							</span>
-							<div className="min-w-0">
-								<p className="text-xs font-medium text-muted-foreground">
-									Enrollment
-								</p>
-								<p className="text-sm font-semibold capitalize text-emerald-800">
-									{provider.enrollmentStatus === "enrolled"
-										? "Enrolled"
-										: provider.enrollmentStatus}
-									<span className="ml-2 font-normal text-muted-foreground">
-										· Effective {formatDate(provider.enrollmentEffective)}
-									</span>
-								</p>
-								<button
-									type="button"
-									className="mt-0.5 text-xs font-medium text-primary hover:underline"
-									onClick={() => setTab("Enrollment")}
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<p className="text-sm text-muted-foreground">
+						<span className="text-foreground/80">Providers</span>
+						<span className="mx-1.5 text-border">/</span>
+						Provider Profile
+					</p>
+					<div className="flex flex-wrap gap-2">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="sm" className="h-9">
+									Provider Summary
+									<ChevronDown className="ml-1 size-3.5" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem
+									onClick={() => toast.message("Opening provider summary…")}
 								>
-									View enrollment details →
-								</button>
-							</div>
-						</div>
+									One-page summary
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => toast.message("Opening enrollment packet…")}
+								>
+									Enrollment packet
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="sm" className="h-9">
+									<Printer className="mr-1.5 size-3.5" />
+									Print
+									<ChevronDown className="ml-1 size-3.5" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem
+									onClick={() => toast.success("Print profile")}
+								>
+									Print profile
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => toast.success("Print credentialing")}
+								>
+									Print credentialing
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button size="sm" className="h-9">
+									<Download className="mr-1.5 size-3.5" />
+									Export
+									<ChevronDown className="ml-1 size-3.5" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onClick={() => toast.success("Exported CSV")}>
+									Export CSV
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => toast.success("Exported PDF")}>
+									Export PDF
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
-			</section>
 
-			{/* Tabs */}
-			<nav className="overflow-x-auto border-b border-border/40">
-				<div className="flex min-w-max gap-1">
-					{TABS.map((item) => {
-						const Icon = item.icon;
-						return (
-							<button
-								key={item.id}
-								type="button"
-								onClick={() => setTab(item.id)}
-								className={cn(
-									"inline-flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors",
-									tab === item.id
-										? "border-primary text-primary"
-										: "border-transparent text-muted-foreground hover:text-foreground"
-								)}
-							>
-								<Icon className="size-3.5" />
-								{item.id}
-							</button>
-						);
-					})}
-				</div>
-			</nav>
-
-			{tab === "Overview" ? (
-				<div className="space-y-5">
-					{/* KPIs */}
-					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-						{kpis.map((k) => {
-							const Icon = k.icon;
-							return (
-								<div
-									key={k.label}
-									className="rounded-xl border border-border/40 bg-card p-4 shadow-sm"
-								>
-									<div className="flex items-start justify-between gap-2">
-										<div className="min-w-0">
-											<p className="text-xs font-medium text-muted-foreground">
-												{k.label}
-											</p>
-											<p className="mt-1.5 truncate text-lg font-semibold tabular-nums tracking-tight">
-												{k.value}
-											</p>
-											<div className="mt-1.5">
-												<Trend value={k.trend} />
-											</div>
-										</div>
-										<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-											<Icon className="size-4" />
-										</span>
-									</div>
+				{/* Identity header */}
+				<section className="rounded-xl border border-border/40 bg-card p-5 shadow-sm">
+					<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+						<div className="flex min-w-0 gap-4">
+							<div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+								{initials(provider.name)}
+							</div>
+							<div className="min-w-0 space-y-2">
+								<div className="flex flex-wrap items-center gap-2.5">
+									<h1 className="text-2xl font-semibold tracking-tight">
+										{name}
+									</h1>
+									<StatusPill status={provider.status} />
 								</div>
+								<p className="text-sm text-muted-foreground">
+									<span className="font-medium text-foreground">
+										{provider.specialty}
+									</span>
+									<span className="mx-1.5 text-border">·</span>
+									{provider.subspecialty}
+								</p>
+								<div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+									<span>
+										NPI{" "}
+										<span className="font-mono font-medium text-foreground">
+											{provider.npi}
+										</span>
+									</span>
+									<span>
+										Tax ID{" "}
+										<span className="font-mono font-medium text-foreground">
+											{provider.taxId}
+										</span>
+									</span>
+									<span>
+										UPIN{" "}
+										<span className="font-mono font-medium text-foreground">
+											{provider.upin}
+										</span>
+									</span>
+									<span>
+										Medicaid{" "}
+										<span className="font-mono font-medium text-foreground">
+											{provider.medicaidId}
+										</span>
+									</span>
+								</div>
+								<div className="flex flex-col gap-1.5 pt-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5">
+									<span className="inline-flex items-start gap-2">
+										<Building2 className="mt-0.5 size-3.5 shrink-0" />
+										<span>
+											<span className="font-medium text-foreground">
+												{provider.practiceName}
+											</span>
+											<span className="mx-1.5">·</span>
+											{provider.practiceAddress}
+										</span>
+									</span>
+									<span className="inline-flex items-center gap-2">
+										<MapPin className="size-3.5 shrink-0" />
+										{provider.practicePhone}
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<div className="grid shrink-0 gap-4 rounded-lg bg-muted/30 p-4 sm:grid-cols-2 lg:w-[380px]">
+							<MetaField label="Provider type" value={provider.providerType} />
+							<MetaField label="Gender" value={provider.gender} />
+							<MetaField
+								label="Date of birth"
+								value={formatDate(provider.dob)}
+							/>
+							<MetaField
+								label="Years in practice"
+								value={`${provider.yearsInPractice} years`}
+							/>
+							<div className="col-span-full flex items-center gap-3 border-t border-border/40 pt-4">
+								<span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+									<CheckCircle2 className="size-5" />
+								</span>
+								<div className="min-w-0">
+									<p className="text-xs font-medium text-muted-foreground">
+										Enrollment
+									</p>
+									<p className="text-sm font-semibold capitalize text-emerald-800">
+										{provider.enrollmentStatus === "enrolled"
+											? "Enrolled"
+											: provider.enrollmentStatus}
+										<span className="ml-2 font-normal text-muted-foreground">
+											· Effective {formatDate(provider.enrollmentEffective)}
+										</span>
+									</p>
+									<button
+										type="button"
+										className="mt-0.5 text-xs font-medium text-primary hover:underline"
+										onClick={() => setTab("Enrollment")}
+									>
+										View enrollment details →
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Tabs */}
+				<nav className="overflow-x-auto border-b border-border/40">
+					<div className="flex min-w-max gap-1">
+						{TABS.map((item) => {
+							const Icon = item.icon;
+							return (
+								<button
+									key={item.id}
+									type="button"
+									onClick={() => setTab(item.id)}
+									className={cn(
+										"inline-flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors",
+										tab === item.id
+											? "border-primary text-primary"
+											: "border-transparent text-muted-foreground hover:text-foreground"
+									)}
+								>
+									<Icon className="size-3.5" />
+									{item.id}
+								</button>
 							);
 						})}
 					</div>
+				</nav>
 
-					{/* Row 1 */}
-					<div className="grid gap-4 lg:grid-cols-2">
-						<Panel title="Provider Locations">
-							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Location</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
-											<TableHead className="h-9 text-xs">Primary</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{provider.locations.map((loc) => (
-											<TableRow key={loc.id}>
-												<TableCell className="py-2.5">
-													<p className="text-sm font-medium">{loc.name}</p>
-													<p className="text-sm leading-relaxed text-muted-foreground">
-														{loc.address}
-													</p>
-													<p className="text-sm leading-relaxed text-muted-foreground">
-														{loc.phone}
-													</p>
-												</TableCell>
-												<TableCell className="py-2.5">
-													<StatusPill status={loc.status} />
-												</TableCell>
-												<TableCell className="py-2.5 text-sm">
-													{loc.isPrimary ? "Yes" : "No"}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-							<ViewLink
-								label={`View all locations (${provider.locations.length})`}
-								onClick={() => setTab("Locations")}
-							/>
-						</Panel>
-
-						<Panel title="Network Participation">
-							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Network</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
-											<TableHead className="h-9 text-xs">Effective</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{provider.networks.slice(0, 5).map((n) => (
-											<TableRow key={n.id}>
-												<TableCell className="py-2.5">
-													<p className="text-sm font-medium">{n.networkPlan}</p>
-													<p className="text-sm leading-relaxed text-muted-foreground">
-														{n.payer}
-													</p>
-												</TableCell>
-												<TableCell className="py-2.5">
-													<NetworkPill status={n.status} />
-												</TableCell>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(n.effectiveDate)}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-							<ViewLink
-								label={`View all networks (${provider.networks.length})`}
-								onClick={() => setTab("Network Participation")}
-							/>
-						</Panel>
-					</div>
-
-					<Panel title="Identifiers">
-						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{provider.identifiers.map((id) => (
-								<MetaField
-									key={id.id}
-									label={id.label}
-									value={<span className="font-mono text-sm">{id.value}</span>}
-								/>
-							))}
+				{tab === "Overview" ? (
+					<div className="space-y-5">
+						{/* KPIs */}
+						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+							{kpis.map((k) => {
+								const Icon = k.icon;
+								return (
+									<div
+										key={k.label}
+										className="rounded-xl border border-border/40 bg-card p-4 shadow-sm"
+									>
+										<div className="flex items-start justify-between gap-2">
+											<div className="min-w-0">
+												<p className="text-xs font-medium text-muted-foreground">
+													{k.label}
+												</p>
+												<p className="mt-1.5 truncate text-lg font-semibold tabular-nums tracking-tight">
+													{k.value}
+												</p>
+												<div className="mt-1.5">
+													<Trend value={k.trend} />
+												</div>
+											</div>
+											<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+												<Icon className="size-4" />
+											</span>
+										</div>
+									</div>
+								);
+							})}
 						</div>
-						<ViewLink
-							label="View all identifiers"
-							onClick={() => setTab("Identifiers")}
-						/>
-					</Panel>
 
-					{/* Row 2 — charts */}
-					<div className="grid gap-4 lg:grid-cols-2">
-						<Panel title="Claims & Encounters Volume">
-							<div className="h-[220px]">
-								<ResponsiveContainer width="100%" height="100%">
-									<ComposedChart data={provider.monthlyVolume}>
-										<CartesianGrid strokeDasharray="3 3" vertical={false} />
-										<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-										<YAxis tick={{ fontSize: 10 }} width={36} />
-										<Tooltip />
-										<Legend wrapperStyle={{ fontSize: 11 }} />
-										<Bar
-											dataKey="claims"
-											name="Claims"
-											fill="#13446c"
-											radius={[3, 3, 0, 0]}
-										/>
-										<Line
-											type="monotone"
-											dataKey="encounters"
-											name="Encounters"
-											stroke="#059669"
-											strokeWidth={2}
-											dot={{ r: 3 }}
-										/>
-									</ComposedChart>
-								</ResponsiveContainer>
+						{/* Row 1 */}
+						<div className="grid gap-4 lg:grid-cols-2">
+							<Panel title="Provider Locations">
+								<div className="overflow-x-auto">
+									<Table>
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="h-9 text-xs">Location</TableHead>
+												<TableHead className="h-9 text-xs">Status</TableHead>
+												<TableHead className="h-9 text-xs">Primary</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.locations.map((loc) => (
+												<TableRow key={loc.id}>
+													<TableCell className="py-2.5">
+														<p className="text-sm font-medium">{loc.name}</p>
+														<p className="text-sm leading-relaxed text-muted-foreground">
+															{loc.address}
+														</p>
+														<p className="text-sm leading-relaxed text-muted-foreground">
+															{loc.phone}
+														</p>
+													</TableCell>
+													<TableCell className="py-2.5">
+														<StatusPill status={loc.status} />
+													</TableCell>
+													<TableCell className="py-2.5 text-sm">
+														{loc.isPrimary ? "Yes" : "No"}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
+								<ViewLink
+									label={`View all locations (${provider.locations.length})`}
+									onClick={() => setTab("Locations")}
+								/>
+							</Panel>
+
+							<Panel title="Network Participation">
+								<div className="overflow-x-auto">
+									<Table>
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="h-9 text-xs">Network</TableHead>
+												<TableHead className="h-9 text-xs">Status</TableHead>
+												<TableHead className="h-9 text-xs">Effective</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.networks.slice(0, 5).map((n) => (
+												<TableRow key={n.id}>
+													<TableCell className="py-2.5">
+														<p className="text-sm font-medium">
+															{n.networkPlan}
+														</p>
+														<p className="text-sm leading-relaxed text-muted-foreground">
+															{n.payer}
+														</p>
+													</TableCell>
+													<TableCell className="py-2.5">
+														<NetworkPill status={n.status} />
+													</TableCell>
+													<TableCell className="py-2.5 text-sm tabular-nums">
+														{formatDate(n.effectiveDate)}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
+								<ViewLink
+									label={`View all networks (${provider.networks.length})`}
+									onClick={() => setTab("Network Participation")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel title="Identifiers">
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								{provider.identifiers.map((id) => (
+									<MetaField
+										key={id.id}
+										label={id.label}
+										value={
+											<span className="font-mono text-sm">{id.value}</span>
+										}
+									/>
+								))}
 							</div>
 							<ViewLink
-								label="View claims & encounters"
-								onClick={() => setTab("Claims & Encounters")}
+								label="View all identifiers"
+								onClick={() => setTab("Identifiers")}
 							/>
 						</Panel>
 
-						<Panel title="Rejection Trends">
-							<div className="h-[220px]">
-								<ResponsiveContainer width="100%" height="100%">
-									<ComposedChart data={provider.monthlyVolume}>
-										<CartesianGrid strokeDasharray="3 3" vertical={false} />
-										<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-										<YAxis yAxisId="left" tick={{ fontSize: 10 }} width={28} />
-										<YAxis
-											yAxisId="right"
-											orientation="right"
-											tick={{ fontSize: 10 }}
-											width={32}
-											unit="%"
-										/>
-										<Tooltip />
-										<Legend wrapperStyle={{ fontSize: 11 }} />
-										<Bar
-											yAxisId="left"
-											dataKey="rejectionCount"
-											name="Rejection Count"
-											fill="#fecaca"
-											radius={[3, 3, 0, 0]}
-										/>
-										<Area
-											yAxisId="right"
-											type="monotone"
-											dataKey="rejectionRate"
-											name="Rejection Rate (%)"
-											stroke="#ef4444"
-											fill="#ef444422"
-											strokeWidth={2}
-										/>
-									</ComposedChart>
-								</ResponsiveContainer>
+						{/* Row 2 — charts */}
+						<div className="grid gap-4 lg:grid-cols-2">
+							<Panel title="Claims & Encounters Volume">
+								<div className="h-[220px]">
+									<ResponsiveContainer width="100%" height="100%">
+										<ComposedChart data={provider.monthlyVolume}>
+											<CartesianGrid strokeDasharray="3 3" vertical={false} />
+											<XAxis dataKey="month" tick={{ fontSize: 10 }} />
+											<YAxis tick={{ fontSize: 10 }} width={36} />
+											<Tooltip />
+											<Legend wrapperStyle={{ fontSize: 11 }} />
+											<Bar
+												dataKey="claims"
+												name="Claims"
+												fill="#13446c"
+												radius={[3, 3, 0, 0]}
+											/>
+											<Line
+												type="monotone"
+												dataKey="encounters"
+												name="Encounters"
+												stroke="#059669"
+												strokeWidth={2}
+												dot={{ r: 3 }}
+											/>
+										</ComposedChart>
+									</ResponsiveContainer>
+								</div>
+								<ViewLink
+									label="View claims & encounters"
+									onClick={() => setTab("Claims & Encounters")}
+								/>
+							</Panel>
+
+							<Panel title="Rejection Trends">
+								<div className="h-[220px]">
+									<ResponsiveContainer width="100%" height="100%">
+										<ComposedChart data={provider.monthlyVolume}>
+											<CartesianGrid strokeDasharray="3 3" vertical={false} />
+											<XAxis dataKey="month" tick={{ fontSize: 10 }} />
+											<YAxis
+												yAxisId="left"
+												tick={{ fontSize: 10 }}
+												width={28}
+											/>
+											<YAxis
+												yAxisId="right"
+												orientation="right"
+												tick={{ fontSize: 10 }}
+												width={32}
+												unit="%"
+											/>
+											<Tooltip />
+											<Legend wrapperStyle={{ fontSize: 11 }} />
+											<Bar
+												yAxisId="left"
+												dataKey="rejectionCount"
+												name="Rejection Count"
+												fill="#fecaca"
+												radius={[3, 3, 0, 0]}
+											/>
+											<Area
+												yAxisId="right"
+												type="monotone"
+												dataKey="rejectionRate"
+												name="Rejection Rate (%)"
+												stroke="#ef4444"
+												fill="#ef444422"
+												strokeWidth={2}
+											/>
+										</ComposedChart>
+									</ResponsiveContainer>
+								</div>
+								<ViewLink
+									label="View rejection details"
+									onClick={() => setTab("Rejection Trends")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel title="Top Rejection Reasons">
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<TableHead className="h-9 text-xs">Reason</TableHead>
+											<TableHead className="h-9 text-right text-xs">
+												Count
+											</TableHead>
+											<TableHead className="h-9 text-right text-xs">
+												%
+											</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{provider.rejectionReasons.map((r) => (
+											<TableRow key={r.id}>
+												<TableCell className="py-2.5 text-sm">
+													{r.reason}
+												</TableCell>
+												<TableCell className="py-2.5 text-right text-sm tabular-nums">
+													{r.count}
+												</TableCell>
+												<TableCell className="py-2.5 text-right text-sm tabular-nums">
+													{r.pct}%
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
 							</div>
 							<ViewLink
-								label="View rejection details"
+								label="View all rejection reasons"
 								onClick={() => setTab("Rejection Trends")}
 							/>
 						</Panel>
-					</div>
 
-					<Panel title="Top Rejection Reasons">
-						<div className="overflow-x-auto">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 text-xs">Reason</TableHead>
-										<TableHead className="h-9 text-right text-xs">
-											Count
-										</TableHead>
-										<TableHead className="h-9 text-right text-xs">%</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{provider.rejectionReasons.map((r) => (
-										<TableRow key={r.id}>
-											<TableCell className="py-2.5 text-sm">
-												{r.reason}
-											</TableCell>
-											<TableCell className="py-2.5 text-right text-sm tabular-nums">
-												{r.count}
-											</TableCell>
-											<TableCell className="py-2.5 text-right text-sm tabular-nums">
-												{r.pct}%
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-						<ViewLink
-							label="View all rejection reasons"
-							onClick={() => setTab("Rejection Trends")}
-						/>
-					</Panel>
-
-					{/* Row 3 */}
-					<div className="grid gap-4 lg:grid-cols-2">
-						<Panel title="Vendors / Source Associations">
-							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Vendor</TableHead>
-											<TableHead className="h-9 text-xs">Feed</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{provider.vendors.map((v) => (
-											<TableRow key={v.id}>
-												<TableCell className="py-2.5">
-													<p className="text-sm font-medium">{v.vendor}</p>
-													<p className="text-sm leading-relaxed text-muted-foreground">
-														{v.frequency} · {v.lastReceived}
-													</p>
-												</TableCell>
-												<TableCell className="py-2.5 text-sm">
-													{v.fileType}
-												</TableCell>
-												<TableCell className="py-2.5">
-													<FeedPill status={v.status} />
-												</TableCell>
+						{/* Row 3 */}
+						<div className="grid gap-4 lg:grid-cols-2">
+							<Panel title="Vendors / Source Associations">
+								<div className="overflow-x-auto">
+									<Table>
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="h-9 text-xs">Vendor</TableHead>
+												<TableHead className="h-9 text-xs">Feed</TableHead>
+												<TableHead className="h-9 text-xs">Status</TableHead>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-							<ViewLink
-								label="View all vendors / sources"
-								onClick={() => setTab("Vendors / Sources")}
-							/>
-						</Panel>
-
-						<Panel title="Credentialing Summary">
-							<div className="flex flex-col items-center gap-3 sm:flex-row">
-								<div className="relative h-[160px] w-[160px] shrink-0">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={donutData}
-												dataKey="value"
-												nameKey="name"
-												innerRadius={48}
-												outerRadius={68}
-												paddingAngle={2}
-											>
-												{donutData.map((d) => (
-													<Cell key={d.name} fill={d.fill} />
-												))}
-											</Pie>
-										</PieChart>
-									</ResponsiveContainer>
-									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-										<p className="text-lg font-semibold tabular-nums">
-											{credPct}%
-										</p>
-										<p className="text-xs text-muted-foreground">Complete</p>
-									</div>
+										</TableHeader>
+										<TableBody>
+											{provider.vendors.map((v) => (
+												<TableRow key={v.id}>
+													<TableCell className="py-2.5">
+														<p className="text-sm font-medium">{v.vendor}</p>
+														<p className="text-sm leading-relaxed text-muted-foreground">
+															{v.frequency} · {v.lastReceived}
+														</p>
+													</TableCell>
+													<TableCell className="py-2.5 text-sm">
+														{v.fileType}
+													</TableCell>
+													<TableCell className="py-2.5">
+														<FeedPill status={v.status} />
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
 								</div>
-								<ul className="w-full space-y-2 text-sm">
-									{[
-										{
-											label: "Complete",
-											value: credCounts.complete,
-											color: "bg-emerald-500",
-										},
-										{
-											label: "Expiring",
-											value: credCounts.expiring,
-											color: "bg-amber-500",
-										},
-										{
-											label: "Expired",
-											value: credCounts.expired,
-											color: "bg-red-500",
-										},
-										{
-											label: "Pending",
-											value: credCounts.pending,
-											color: "bg-slate-400",
-										},
-									].map((row) => (
-										<li
-											key={row.label}
-											className="flex items-center justify-between gap-2"
-										>
-											<span className="flex items-center gap-2">
-												<span
-													className={cn("size-2.5 rounded-full", row.color)}
-												/>
-												{row.label}
-											</span>
-											<span className="font-medium tabular-nums">
-												{row.value}
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
+								<ViewLink
+									label="View all vendors / sources"
+									onClick={() => setTab("Vendors / Sources")}
+								/>
+							</Panel>
+
+							<Panel title="Credentialing Summary">
+								<div className="flex flex-col items-center gap-3 sm:flex-row">
+									<div className="relative h-[160px] w-[160px] shrink-0">
+										<ResponsiveContainer width="100%" height="100%">
+											<PieChart>
+												<Pie
+													data={donutData}
+													dataKey="value"
+													nameKey="name"
+													innerRadius={48}
+													outerRadius={68}
+													paddingAngle={2}
+												>
+													{donutData.map((d) => (
+														<Cell key={d.name} fill={d.fill} />
+													))}
+												</Pie>
+											</PieChart>
+										</ResponsiveContainer>
+										<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+											<p className="text-lg font-semibold tabular-nums">
+												{credPct}%
+											</p>
+											<p className="text-xs text-muted-foreground">Complete</p>
+										</div>
+									</div>
+									<ul className="w-full space-y-2 text-sm">
+										{[
+											{
+												label: "Complete",
+												value: credCounts.complete,
+												color: "bg-emerald-500",
+											},
+											{
+												label: "Expiring",
+												value: credCounts.expiring,
+												color: "bg-amber-500",
+											},
+											{
+												label: "Expired",
+												value: credCounts.expired,
+												color: "bg-red-500",
+											},
+											{
+												label: "Pending",
+												value: credCounts.pending,
+												color: "bg-slate-400",
+											},
+										].map((row) => (
+											<li
+												key={row.label}
+												className="flex items-center justify-between gap-2"
+											>
+												<span className="flex items-center gap-2">
+													<span
+														className={cn("size-2.5 rounded-full", row.color)}
+													/>
+													{row.label}
+												</span>
+												<span className="font-medium tabular-nums">
+													{row.value}
+												</span>
+											</li>
+										))}
+									</ul>
+								</div>
+								<ViewLink
+									label="View credentialing details"
+									onClick={() => setTab("Credentialing & Exceptions")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel title="Credentialing & Enrollment Exceptions">
+							{provider.exceptions.length === 0 ? (
+								<p className="text-sm text-muted-foreground">
+									No open exceptions.
+								</p>
+							) : (
+								<div className="overflow-x-auto">
+									<Table>
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<TableHead className="h-9 text-xs">Type</TableHead>
+												<TableHead className="h-9 text-xs">Status</TableHead>
+												<TableHead className="h-9 text-xs">Date</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.exceptions.map((ex) => (
+												<TableRow key={ex.id}>
+													<TableCell className="py-2.5">
+														<p className="text-sm font-medium text-amber-800">
+															{ex.exceptionType}
+														</p>
+														<p className="text-sm leading-relaxed text-muted-foreground">
+															{ex.description}
+														</p>
+													</TableCell>
+													<TableCell className="py-2.5">
+														<ExceptionPill status={ex.status} />
+													</TableCell>
+													<TableCell className="py-2.5 text-sm tabular-nums">
+														{formatDate(ex.dateIdentified)}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
+							)}
 							<ViewLink
-								label="View credentialing details"
+								label="View all exceptions"
 								onClick={() => setTab("Credentialing & Exceptions")}
 							/>
 						</Panel>
+
+						<footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3 text-xs text-muted-foreground">
+							<p>All dates and times are displayed in Eastern Time (ET).</p>
+							<p>Data as of {provider.dataAsOf}</p>
+						</footer>
 					</div>
+				) : (
+					<TabBody tab={tab} provider={provider} />
+				)}
+			</div>
+		);
+	})();
 
-					<Panel title="Credentialing & Enrollment Exceptions">
-						{provider.exceptions.length === 0 ? (
-							<p className="text-sm text-muted-foreground">
-								No open exceptions.
-							</p>
-						) : (
-							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow className="hover:bg-transparent">
-											<TableHead className="h-9 text-xs">Type</TableHead>
-											<TableHead className="h-9 text-xs">Status</TableHead>
-											<TableHead className="h-9 text-xs">Date</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{provider.exceptions.map((ex) => (
-											<TableRow key={ex.id}>
-												<TableCell className="py-2.5">
-													<p className="text-sm font-medium text-amber-800">
-														{ex.exceptionType}
-													</p>
-													<p className="text-sm leading-relaxed text-muted-foreground">
-														{ex.description}
-													</p>
-												</TableCell>
-												<TableCell className="py-2.5">
-													<ExceptionPill status={ex.status} />
-												</TableCell>
-												<TableCell className="py-2.5 text-sm tabular-nums">
-													{formatDate(ex.dateIdentified)}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-						)}
-						<ViewLink
-							label="View all exceptions"
-							onClick={() => setTab("Credentialing & Exceptions")}
-						/>
-					</Panel>
-
-					<footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3 text-xs text-muted-foreground">
-						<p>All dates and times are displayed in Eastern Time (ET).</p>
-						<p>Data as of {provider.dataAsOf}</p>
-					</footer>
-				</div>
-			) : (
-				<TabBody tab={tab} provider={provider} />
-			)}
-		</div>
-	);
+	if (useApi) {
+		return <VendorCoreGate title="Provider">{body}</VendorCoreGate>;
+	}
+	return body;
 }
 
 function ClaimsEncountersTab({

@@ -13,12 +13,18 @@ import { UsersTable } from "../components/UsersTable";
 import { useUsersList } from "../feature/queries/useUsersQuery";
 import { UsersLivePage } from "./UsersLivePage";
 
-export function UsersPage() {
-	if (isVendorCoreLive() || !isMockEnabled()) return <UsersLivePage />;
-	return <UsersMockOrNestPage />;
+type UsersPageProps = {
+	embedded?: boolean;
+};
+
+export function UsersPage({ embedded = false }: UsersPageProps) {
+	if (isVendorCoreLive() || !isMockEnabled()) {
+		return <UsersLivePage embedded={embedded} />;
+	}
+	return <UsersMockOrNestPage embedded={embedded} />;
 }
 
-function UsersMockOrNestPage() {
+function UsersMockOrNestPage({ embedded = false }: UsersPageProps) {
 	const t = useTranslations("Users");
 	const { users, isInitialLoading, isRefreshing, isEmpty, error } =
 		useUsersList();
@@ -33,9 +39,11 @@ function UsersMockOrNestPage() {
 		);
 	}, [users, search]);
 
+	const shellClass = embedded ? "space-y-6" : "container space-y-6 py-8";
+
 	if (isInitialLoading) {
 		return (
-			<div className="container space-y-6 py-8">
+			<div className={shellClass}>
 				<Skeleton className="h-10 w-48" />
 				<Skeleton className="h-64 w-full" />
 			</div>
@@ -44,20 +52,28 @@ function UsersMockOrNestPage() {
 
 	if (error) {
 		return (
-			<div className="container py-8">
+			<div className={embedded ? "py-4" : "container py-8"}>
 				<p className="text-sm text-destructive">{error.message}</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="container space-y-6 py-8">
-			<div>
-				<h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+		<div className={shellClass}>
+			{embedded ? (
 				<p className="text-sm text-muted-foreground">
 					{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
 				</p>
-			</div>
+			) : (
+				<div>
+					<h1 className="text-2xl font-semibold tracking-tight">
+						{t("title")}
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
+					</p>
+				</div>
+			)}
 
 			<Input
 				placeholder={t("searchPlaceholder")}

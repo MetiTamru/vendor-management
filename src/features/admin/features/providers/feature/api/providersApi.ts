@@ -1,6 +1,7 @@
 import { withMockOrRemote } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 
+import { providerDtoToDetail } from "../../live-providers";
 import {
 	type ProviderSummary,
 	getProvider,
@@ -35,10 +36,16 @@ export async function listProviderSummaries() {
 	);
 }
 
-export async function getProviderDetail(idOrNpi: string) {
+export async function getProviderDetail(
+	idOrNpi: string,
+	program?: ProviderSummary["program"]
+) {
 	return withMockOrRemote(
 		() => getProvider(idOrNpi),
-		async () => undefined,
+		async () => {
+			const dto = await vendorCoreApi.getProvider(idOrNpi);
+			return providerDtoToDetail(dto, program ?? "DHCF");
+		},
 		undefined
 	);
 }

@@ -106,6 +106,7 @@
 			"approvals": "ፍቃዶች",
 			"groups": "ቡድኖች",
 			"roles": "ሚናዎች",
+			"users": "ተጠቃሚዎች",
 			"exportcenter": "የማውጫ ማዕከል",
 			"riskscoring": "የአደጋ ደረጃ"
 		},
@@ -209,10 +210,16 @@
 	},
 	"Settings": {
 		"title": "ቅንብሮች",
-		"subtitle": "የመተግበሪያ ውቅር",
+		"subtitle": "የመተግበሪያ ውቅር እና የማንነት አስተዳደር",
 		"refreshing": "(በማደስ ላይ…)",
 		"searchPlaceholder": "ቅንብሮችን ፈልግ…",
 		"emptyList": "ምንም ቅንብር አልተገኘም።",
+		"tabs": {
+			"general": "አጠቃላይ",
+			"groups": "ቡድኖች",
+			"roles": "ሚናዎች",
+			"users": "ተጠቃሚዎች"
+		},
 		"table": {
 			"key": "ቁልፍ",
 			"value": "ዋጋ",

@@ -14,6 +14,9 @@ describe("setting.mapper", () => {
 			key: "app.name",
 			value: "Starter",
 			category: "general",
+			valueType: "string",
+			isSecret: false,
+			description: null,
 		});
 	});
 });

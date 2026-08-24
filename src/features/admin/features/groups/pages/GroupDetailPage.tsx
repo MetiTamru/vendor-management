@@ -35,7 +35,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 			<div className="container py-16 text-center">
 				<h1 className="text-xl font-semibold">Group not found</h1>
 				<Button className="mt-4" asChild>
-					<Link href="/admin/groups">Back to groups</Link>
+					<Link href="/admin/settings?tab=groups">Back to groups</Link>
 				</Button>
 			</div>
 		);
@@ -45,7 +45,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 		<div className="container space-y-6 py-8">
 			<div className="flex items-center gap-4">
 				<Button variant="outline" size="sm" asChild>
-					<Link href="/admin/groups">← Back</Link>
+					<Link href="/admin/settings?tab=groups">← Back</Link>
 				</Button>
 				{(isStale || hasSyncError) && (
 					<Button variant="secondary" size="sm" onClick={() => refetch()}>

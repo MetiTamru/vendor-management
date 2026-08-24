@@ -59,11 +59,11 @@ import { cn } from "@/lib/utils";
 
 import {
 	MIGRATION_STATUS_LABEL,
+	type MigrationStatus,
 	TPA_TPV_ROWS,
+	type TpaTpvRow,
 	WHITELIST_STATUS_LABEL,
 	WORK_QUEUE_KPI,
-	type MigrationStatus,
-	type TpaTpvRow,
 	type WhitelistStatus,
 } from "../mock-data";
 
@@ -321,8 +321,8 @@ export function MyWorkQueuePage() {
 						TPA/TPV Tracking
 					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Centralized tracking of TPA/TPV vendors, connections, communications,
-						and migration status.
+						Centralized tracking of TPA/TPV vendors, connections,
+						communications, and migration status.
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -540,7 +540,10 @@ export function MyWorkQueuePage() {
 											{row.name}
 										</button>
 									</TableCell>
-									<TableCell className={cn(td, "truncate")} title={row.serverType}>
+									<TableCell
+										className={cn(td, "truncate")}
+										title={row.serverType}
+									>
 										{row.serverType}
 									</TableCell>
 									<TableCell
@@ -565,7 +568,10 @@ export function MyWorkQueuePage() {
 										{row.assignedAnalyst}
 									</TableCell>
 									<TableCell
-										className={cn(td, "truncate tabular-nums text-muted-foreground")}
+										className={cn(
+											td,
+											"truncate tabular-nums text-muted-foreground"
+										)}
 										title={row.lastUpdated}
 									>
 										{row.lastUpdated}
@@ -699,7 +705,10 @@ export function MyWorkQueuePage() {
 						<Button variant="outline" size="sm" onClick={closeModal}>
 							Cancel
 						</Button>
-						<Button size="sm" onClick={() => saveAndClose("TPA/TPV Information")}>
+						<Button
+							size="sm"
+							onClick={() => saveAndClose("TPA/TPV Information")}
+						>
 							Save
 						</Button>
 					</>
@@ -1029,7 +1038,9 @@ export function MyWorkQueuePage() {
 									HISTORY_DOT[event.tone]
 								)}
 							/>
-							<p className="text-xs font-semibold text-foreground">{event.at}</p>
+							<p className="text-xs font-semibold text-foreground">
+								{event.at}
+							</p>
 							<p className="mt-0.5 text-xs text-muted-foreground">
 								{event.message}
 							</p>

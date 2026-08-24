@@ -11,7 +11,10 @@ describe("role.mapper", () => {
 		).toEqual({
 			id: "r1",
 			name: "Admin",
+			slug: "Admin",
 			permissions: ["*"],
+			isSystemRole: false,
+			description: null,
 		});
 	});
 });

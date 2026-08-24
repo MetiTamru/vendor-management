@@ -23,7 +23,12 @@ import {
 import { useGroupSearch } from "../hooks/useGroupSearch";
 import { useGroupUiStore } from "../store/group.ui-store";
 
-export function GroupsPage() {
+type GroupsPageProps = {
+	/** Render inside Settings tabs — no standalone page chrome. */
+	embedded?: boolean;
+};
+
+export function GroupsPage({ embedded = false }: GroupsPageProps) {
 	const t = useTranslations("Groups");
 	const { groups, isInitialLoading, isRefreshing, isEmpty, error } =
 		useGroupsList();
@@ -32,9 +37,11 @@ export function GroupsPage() {
 	const setMembershipMode = useGroupUiStore((s) => s.setMembershipMode);
 	const deleteMutation = useDeleteGroupMutation();
 
+	const shellClass = embedded ? "space-y-6" : "container space-y-6 py-8";
+
 	if (isInitialLoading) {
 		return (
-			<div className="container space-y-6 py-8">
+			<div className={shellClass}>
 				<Skeleton className="h-10 w-48" />
 				<Skeleton className="h-32 w-full" />
 				<Skeleton className="h-64 w-full" />
@@ -44,21 +51,27 @@ export function GroupsPage() {
 
 	if (error) {
 		return (
-			<div className="container py-8">
+			<div className={embedded ? "py-4" : "container py-8"}>
 				<p className="text-sm text-destructive">{error.message}</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="container space-y-6 py-8">
+		<div className={shellClass}>
 			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+				{embedded ? (
 					<p className="text-sm text-muted-foreground">
 						{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
 					</p>
-				</div>
+				) : (
+					<div>
+						<h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+						<p className="text-sm text-muted-foreground">
+							{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
+						</p>
+					</div>
+				)}
 				<GroupsCreateButton />
 			</div>
 

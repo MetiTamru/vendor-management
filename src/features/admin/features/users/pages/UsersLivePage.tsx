@@ -56,7 +56,7 @@ function eventUserLabel(ev: LoginEventDto): string {
 	return ev.username;
 }
 
-function UsersLiveBody() {
+function UsersLiveBody({ embedded = false }: { embedded?: boolean }) {
 	const invalidate = useInvalidateVendorCore();
 	const usersQ = useVendorCoreUsers();
 	const [eventScope, setEventScope] = useState<"all" | "me">("all");
@@ -94,6 +94,7 @@ function UsersLiveBody() {
 			subtitle="Directory and login events from vendor-core"
 			onRefresh={() => void invalidate()}
 			refreshing={loading}
+			compact={embedded}
 		>
 			{error ? <VendorCoreErrorBanner message={error} /> : null}
 
@@ -243,10 +244,10 @@ function UsersLiveBody() {
 	);
 }
 
-export function UsersLivePage() {
+export function UsersLivePage({ embedded = false }: { embedded?: boolean }) {
 	return (
 		<VendorCoreGate title="Users">
-			<UsersLiveBody />
+			<UsersLiveBody embedded={embedded} />
 		</VendorCoreGate>
 	);
 }
