@@ -318,13 +318,30 @@ export type ErrorRecordDto = {
 	updated_at?: string;
 };
 
+export type ProviderVendorRef = {
+	id: string;
+	legal_name?: string;
+	vendor_code?: string;
+	reference_id?: string;
+};
+
+export type ProviderRosterRef = {
+	id: string;
+	reference_id?: string;
+	original_filename?: string;
+	provider_count?: number;
+	received_at?: string;
+	vendor_id?: string | null;
+	vendor?: ProviderVendorRef | string | null;
+};
+
 export type ProviderDto = {
 	id: string;
 	reference_id?: string;
 	roster_file_id?: string;
-	roster_file?: string | null;
+	roster_file?: ProviderRosterRef | string | null;
 	vendor_id?: string | null;
-	vendor?: string | null;
+	vendor?: ProviderVendorRef | string | null;
 	npi: string;
 	name: string;
 	taxonomy?: string;
@@ -332,6 +349,7 @@ export type ProviderDto = {
 	status?: string;
 	effective_date?: string | null;
 	raw_object_id?: string | null;
+	metadata?: Record<string, unknown> | null;
 	created_at?: string;
 	updated_at?: string;
 };
@@ -360,6 +378,7 @@ export type ProviderListQuery = {
 	taxonomy?: string;
 	entity_type?: string;
 	status?: string;
+	order_by?: string;
 	limit?: number;
 	offset?: number;
 };
@@ -380,6 +399,24 @@ export type ProviderUpdateInput = Partial<ProviderCreateInput>;
 
 export type ProviderStatusInput = {
 	status: "active" | "inactive" | "pending" | "termed";
+};
+
+/** GET /api/v1/providers/stats/ — list dashboard KPI counts. */
+export type ProviderDashboardStatsQuery = {
+	program?: "MDH" | "DHCF" | "BHP" | string;
+	vendor_id?: string;
+	roster_file_id?: string;
+};
+
+export type ProviderDashboardStatsDto = {
+	total: number;
+	active: number;
+	pending: number;
+	termed: number;
+	inactive: number;
+	program?: string;
+	vendor_id?: string | null;
+	roster_file_id?: string | null;
 };
 
 export type ProviderRosterCreateInput = {
@@ -1063,24 +1100,70 @@ export function normalizeErrorRecord(
 }
 
 export function normalizeProvider(raw: Record<string, unknown>): ProviderDto {
+	const rosterRaw = raw.roster_file;
+	const rosterObj =
+		rosterRaw && typeof rosterRaw === "object"
+			? (rosterRaw as Record<string, unknown>)
+			: null;
+	const vendorRaw = raw.vendor ?? rosterObj?.vendor;
+	const vendorObj =
+		vendorRaw && typeof vendorRaw === "object"
+			? (vendorRaw as Record<string, unknown>)
+			: null;
+	const metadata =
+		raw.metadata && typeof raw.metadata === "object"
+			? (raw.metadata as Record<string, unknown>)
+			: null;
+
 	return {
 		...(raw as unknown as ProviderDto),
 		id: String(raw.id ?? ""),
 		reference_id: pickString(raw, "reference_id") || undefined,
 		roster_file_id:
-			refId(raw.roster_file as string | { id: string } | null) ??
+			refId(rosterRaw as string | { id: string } | null) ??
 			(raw.roster_file_id != null ? String(raw.roster_file_id) : undefined),
-		roster_file:
-			typeof raw.roster_file === "string"
-				? raw.roster_file
-				: pickString(raw, "roster_file") || null,
+		roster_file: rosterObj
+			? {
+					id: String(rosterObj.id ?? ""),
+					reference_id: pickString(rosterObj, "reference_id") || undefined,
+					original_filename:
+						pickString(rosterObj, "original_filename") || undefined,
+					provider_count:
+						rosterObj.provider_count != null
+							? Number(rosterObj.provider_count)
+							: undefined,
+					received_at: pickString(rosterObj, "received_at") || undefined,
+					vendor_id:
+						refId(rosterObj.vendor as string | { id: string } | null) ??
+						(rosterObj.vendor_id != null ? String(rosterObj.vendor_id) : null),
+					vendor: vendorObj
+						? {
+								id: String(vendorObj.id ?? ""),
+								legal_name: pickString(vendorObj, "legal_name") || undefined,
+								vendor_code: pickString(vendorObj, "vendor_code") || undefined,
+								reference_id:
+									pickString(vendorObj, "reference_id") || undefined,
+							}
+						: typeof rosterObj.vendor === "string"
+							? rosterObj.vendor
+							: null,
+				}
+			: typeof rosterRaw === "string"
+				? rosterRaw
+				: null,
 		vendor_id:
-			refId(raw.vendor as string | { id: string } | null) ??
+			refId(vendorRaw as string | { id: string } | null) ??
 			(raw.vendor_id != null ? String(raw.vendor_id) : null),
-		vendor:
-			typeof raw.vendor === "string"
-				? raw.vendor
-				: pickString(raw, "vendor") || null,
+		vendor: vendorObj
+			? {
+					id: String(vendorObj.id ?? ""),
+					legal_name: pickString(vendorObj, "legal_name") || undefined,
+					vendor_code: pickString(vendorObj, "vendor_code") || undefined,
+					reference_id: pickString(vendorObj, "reference_id") || undefined,
+				}
+			: typeof vendorRaw === "string"
+				? vendorRaw
+				: null,
 		npi: String(raw.npi ?? ""),
 		name: String(raw.name ?? ""),
 		taxonomy: pickString(raw, "taxonomy") || undefined,
@@ -1088,6 +1171,7 @@ export function normalizeProvider(raw: Record<string, unknown>): ProviderDto {
 		status: pickString(raw, "status") || undefined,
 		effective_date: pickString(raw, "effective_date") || null,
 		raw_object_id: pickString(raw, "raw_object_id") || null,
+		metadata,
 		created_at: pickString(raw, "created_at") || undefined,
 		updated_at: pickString(raw, "updated_at") || undefined,
 	};
