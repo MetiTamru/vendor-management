@@ -8,8 +8,8 @@
  * NestJS (`NEXT_PUBLIC_API_URL`) is off unless `NEXT_PUBLIC_USE_NEST=true`.
  * Staging uses vendor-core only — Nest is not deployed on api.vm.tillahealth.com.
  *
- * App shell without Nest: keep `NEXT_PUBLIC_DEV_ADMIN=true` (mock auth only).
- * With `NEXT_PUBLIC_USE_MOCK=true`, both Nest auth and vendor-core login are skipped.
+ * Live shell auth (Django JWT): `USE_MOCK=false`, Nest off, sign in at `/auth/login`.
+ * `NEXT_PUBLIC_DEV_ADMIN` is ignored while Django shell auth is active.
  * Restart `pnpm dev` after changing `NEXT_PUBLIC_*` values.
  */
 export function isMockEnabled(): boolean {

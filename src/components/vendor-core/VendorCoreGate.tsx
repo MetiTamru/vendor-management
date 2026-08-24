@@ -11,26 +11,38 @@ import {
 } from "react";
 
 import { Loader2 } from "lucide-react";
+import { useLocale } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { AUTH_PATHS } from "@/lib/auth/paths";
+import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
 import {
+	VendorCoreApiError,
 	clearTokens,
 	getStoredAccessToken,
 	getVendorCoreBaseUrl,
 	isVendorCoreLive,
 	vendorCoreLogin,
+	vendorCoreLogout,
+	vendorCoreMe,
 } from "@/lib/vendor-core/client";
+import type { MeUserDto } from "@/lib/vendor-core/types";
 
 export type VendorCoreSessionValue = {
 	live: boolean;
+	/** Django owns the app shell login (live + Nest off). */
+	shellAuth: boolean;
 	authed: boolean;
 	loading: boolean;
 	bootstrapping: boolean;
 	error: string | null;
-	signIn: (username: string, password: string) => Promise<void>;
-	signOut: () => void;
+	user: MeUserDto | null;
+	mustChangePassword: boolean;
+	signIn: (username: string, password: string) => Promise<MeUserDto>;
+	signOut: () => Promise<void>;
 	markUnauthed: () => void;
+	refreshUser: () => Promise<MeUserDto | null>;
 };
 
 const VendorCoreSessionContext = createContext<VendorCoreSessionValue | null>(
@@ -47,14 +59,23 @@ export function useVendorCoreSession(): VendorCoreSessionValue {
 	return ctx;
 }
 
-/** Safe when provider is missing (e.g. outside admin). */
+/** Safe when provider is missing (e.g. outside tree briefly). */
 export function useVendorCoreSessionOptional(): VendorCoreSessionValue | null {
 	return useContext(VendorCoreSessionContext);
 }
 
+function meToSession(
+	user: MeUserDto | null
+): Pick<VendorCoreSessionValue, "user" | "mustChangePassword" | "authed"> {
+	return {
+		user,
+		mustChangePassword: Boolean(user?.must_change_password),
+		authed: Boolean(user),
+	};
+}
+
 /**
- * App-wide vendor-core JWT session. Wrap the admin shell so dashboard /
- * shared queries can call the remote API after one login.
+ * App-wide vendor-core JWT session. Mounted at root so login + ABAC share state.
  */
 export function VendorCoreSessionProvider({
 	children,
@@ -62,58 +83,145 @@ export function VendorCoreSessionProvider({
 	children: ReactNode;
 }) {
 	const live = isVendorCoreLive();
-	const [authed, setAuthed] = useState(false);
+	const shellAuth = isDjangoShellAuthEnabled();
+	const locale = useLocale();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	const [user, setUser] = useState<MeUserDto | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [bootstrapping, setBootstrapping] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	const refreshUser = useCallback(async () => {
+		if (!getStoredAccessToken()) {
+			setUser(null);
+			return null;
+		}
+		try {
+			const me = await vendorCoreMe();
+			setUser(me);
+			setError(null);
+			return me;
+		} catch (err) {
+			if (err instanceof VendorCoreApiError && err.status === 401) {
+				clearTokens();
+				setUser(null);
+			}
+			return null;
+		}
+	}, []);
+
 	useEffect(() => {
 		if (!live) {
 			setBootstrapping(false);
+			setUser(null);
 			return;
 		}
-		setAuthed(Boolean(getStoredAccessToken()));
-		setBootstrapping(false);
+
+		let cancelled = false;
+		(async () => {
+			if (!getStoredAccessToken()) {
+				if (!cancelled) {
+					setUser(null);
+					setBootstrapping(false);
+				}
+				return;
+			}
+			try {
+				const me = await vendorCoreMe();
+				if (!cancelled) {
+					setUser(me);
+					setError(null);
+				}
+			} catch {
+				if (!cancelled) {
+					clearTokens();
+					setUser(null);
+				}
+			} finally {
+				if (!cancelled) setBootstrapping(false);
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
 	}, [live]);
 
-	const signIn = useCallback(async (user: string, pass: string) => {
+	// Force password change when Django flags the account
+	useEffect(() => {
+		if (!shellAuth || bootstrapping || !user?.must_change_password) return;
+		if (pathname.includes(AUTH_PATHS.changePassword)) return;
+		router.replace(AUTH_PATHS.changePassword);
+	}, [shellAuth, bootstrapping, user, pathname, router]);
+
+	const signIn = useCallback(async (username: string, password: string) => {
 		setLoading(true);
 		setError(null);
 		try {
-			await vendorCoreLogin({ username: user, password: pass });
-			setAuthed(true);
+			await vendorCoreLogin({ username, password });
+			const me = await vendorCoreMe();
+			setUser(me);
+			return me;
 		} catch (err) {
-			setAuthed(false);
-			setError(err instanceof Error ? err.message : "Login failed");
+			setUser(null);
+			const message = err instanceof Error ? err.message : "Login failed";
+			setError(message);
 			throw err;
 		} finally {
 			setLoading(false);
 		}
 	}, []);
 
-	const signOut = useCallback(() => {
-		clearTokens();
-		setAuthed(false);
-		setError(null);
-	}, []);
+	const signOut = useCallback(async () => {
+		setLoading(true);
+		try {
+			await vendorCoreLogout();
+		} finally {
+			setUser(null);
+			setError(null);
+			setLoading(false);
+			window.location.assign(`/${locale}${AUTH_PATHS.login}`);
+		}
+	}, [locale]);
 
 	const markUnauthed = useCallback(() => {
 		clearTokens();
-		setAuthed(false);
+		setUser(null);
 	}, []);
+
+	const sessionBits = meToSession(user);
 
 	const value = useMemo(
 		() => ({
 			live,
-			authed,
+			shellAuth,
+			authed: sessionBits.authed,
+			loading,
+			bootstrapping,
+			error,
+			user: sessionBits.user,
+			mustChangePassword: sessionBits.mustChangePassword,
+			signIn,
+			signOut,
+			markUnauthed,
+			refreshUser,
+		}),
+		[
+			live,
+			shellAuth,
+			sessionBits.authed,
+			sessionBits.user,
+			sessionBits.mustChangePassword,
 			loading,
 			bootstrapping,
 			error,
 			signIn,
 			signOut,
 			markUnauthed,
-		}),
-		[live, authed, loading, bootstrapping, error, signIn, signOut, markUnauthed]
+			refreshUser,
+		]
 	);
 
 	return (
@@ -123,73 +231,45 @@ export function VendorCoreSessionProvider({
 	);
 }
 
-/** Compact sign-in strip when live data needs a Django JWT. */
+/**
+ * Banner only when Nest (or dual) owns shell auth but vendor-core JWT is still needed.
+ * Hidden when Django shell auth already signed the user in at /auth/login.
+ */
 export function VendorCoreAuthBanner() {
 	const session = useVendorCoreSessionOptional();
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
-	const [open, setOpen] = useState(true);
 
-	if (!session?.live || session.bootstrapping || session.authed || !open) {
+	if (
+		!session?.live ||
+		session.shellAuth ||
+		session.bootstrapping ||
+		session.authed
+	) {
 		return null;
 	}
 
 	return (
 		<div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-3">
-			<form
-				className="mx-auto flex max-w-4xl flex-wrap items-end gap-2"
-				onSubmit={(e) => {
-					e.preventDefault();
-					void session.signIn(username, password).catch(() => undefined);
-				}}
-			>
-				<div className="min-w-[12rem] flex-1">
+			<div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2">
+				<div>
 					<p className="text-sm font-medium text-foreground">
-						Connect to vendor-core API
+						Vendor-core API not connected
 					</p>
 					<p className="text-muted-foreground text-xs">
-						{getVendorCoreBaseUrl()} — required to load remote vendors &amp;
-						files
+						{getVendorCoreBaseUrl()} — sign in again or reconnect for live data
 					</p>
 				</div>
-				<Input
-					className="h-9 w-36 bg-background"
-					placeholder="Username"
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-					autoComplete="username"
-					required
-				/>
-				<Input
-					className="h-9 w-36 bg-background"
-					type="password"
-					placeholder="Password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					autoComplete="current-password"
-					required
-				/>
-				<Button type="submit" size="sm" disabled={session.loading}>
-					{session.loading ? (
-						<>
-							<Loader2 className="animate-spin" /> Connecting…
-						</>
-					) : (
-						"Connect"
-					)}
-				</Button>
 				<Button
 					type="button"
 					size="sm"
-					variant="ghost"
-					onClick={() => setOpen(false)}
+					onClick={() => {
+						window.location.assign(
+							`${window.location.pathname.split("/").slice(0, 2).join("/")}${AUTH_PATHS.login}`
+						);
+					}}
 				>
-					Dismiss
+					Sign in
 				</Button>
-				{session.error ? (
-					<p className="basis-full text-sm text-destructive">{session.error}</p>
-				) : null}
-			</form>
+			</div>
 		</div>
 	);
 }
@@ -204,16 +284,18 @@ export function VendorCoreGate({
 	description?: string;
 }) {
 	const session = useVendorCoreSessionOptional();
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
+	const locale = useLocale();
 
-	// Standalone gate when provider is absent (shouldn't happen in admin)
 	const live = session?.live ?? isVendorCoreLive();
+	const shellAuth = session?.shellAuth ?? isDjangoShellAuthEnabled();
 	const authed = session?.authed ?? false;
-	const loading = session?.loading ?? false;
 	const bootstrapping = session?.bootstrapping ?? false;
-	const error = session?.error ?? null;
-	const signIn = session?.signIn;
+	const needsLogin = live && !bootstrapping && !authed;
+
+	useEffect(() => {
+		if (!needsLogin || !shellAuth) return;
+		window.location.assign(`/${locale}${AUTH_PATHS.login}`);
+	}, [needsLogin, shellAuth, locale]);
 
 	if (!live) {
 		return (
@@ -222,13 +304,13 @@ export function VendorCoreGate({
 					<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
 					<p className="text-muted-foreground mt-1 text-sm">
 						{description ??
-							"Point NEXT_PUBLIC_VENDOR_CORE_API_URL at the deployed Django API to enable live integration data."}
+							"Set NEXT_PUBLIC_USE_MOCK=false and point NEXT_PUBLIC_VENDOR_CORE_API_URL at Django to enable live data."}
 					</p>
 				</div>
 				<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
 					{`NEXT_PUBLIC_USE_MOCK=false
-NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
-NEXT_PUBLIC_DEV_ADMIN=true`}
+NEXT_PUBLIC_DEV_ADMIN=false
+NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com`}
 				</pre>
 			</div>
 		);
@@ -243,52 +325,33 @@ NEXT_PUBLIC_DEV_ADMIN=true`}
 		);
 	}
 
-	if (!authed) {
+	if (needsLogin) {
 		return (
 			<div className="mx-auto flex max-w-md flex-col gap-4 p-6">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
 					<p className="text-muted-foreground mt-1 text-sm">
-						Sign in to {getVendorCoreBaseUrl()}
+						{shellAuth
+							? "Your session expired. Redirecting to sign in…"
+							: `Sign in required for ${getVendorCoreBaseUrl()}`}
 					</p>
 				</div>
-				<form
-					className="space-y-4"
-					onSubmit={(e) => {
-						e.preventDefault();
-						void signIn?.(username, password).catch(() => undefined);
-					}}
-				>
-					<Input
-						placeholder="Username"
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						autoComplete="username"
-						required
-					/>
-					<Input
-						type="password"
-						placeholder="Password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						autoComplete="current-password"
-						required
-					/>
-					{error ? <p className="text-sm text-destructive">{error}</p> : null}
+				{shellAuth ? (
+					<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+						<Loader2 className="size-4 animate-spin" />
+						Redirecting…
+					</div>
+				) : (
 					<Button
-						type="submit"
-						disabled={loading || !signIn}
+						type="button"
 						className="w-full"
+						onClick={() => {
+							window.location.assign(`/${locale}${AUTH_PATHS.login}`);
+						}}
 					>
-						{loading ? (
-							<>
-								<Loader2 className="animate-spin" /> Connecting…
-							</>
-						) : (
-							"Connect"
-						)}
+						Go to sign in
 					</Button>
-				</form>
+				)}
 			</div>
 		);
 	}

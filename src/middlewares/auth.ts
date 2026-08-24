@@ -7,12 +7,18 @@ import {
 	isDevSignedOutCookieValue,
 } from "@/lib/auth/dev-session";
 import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
+import { isNestApiEnabled } from "@/lib/mock-mode";
 import {
 	getHomePath,
 	getLocaleFromPathname,
 	getLoginPath,
 	resolveAuthRedirect,
 } from "@/lib/routes";
+import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
+import {
+	VENDOR_CORE_SESSION_COOKIE,
+	hasVendorCoreSessionCookieValue,
+} from "@/lib/vendor-core/session-cookie";
 
 const SESSION_FETCH_TIMEOUT_MS = 5_000;
 const E2E_SESSION_COOKIE = "e2e-session";
@@ -34,6 +40,12 @@ function isDevMockSignedOut(request: NextRequest): boolean {
 	);
 }
 
+function hasDjangoSessionCookie(request: NextRequest): boolean {
+	return hasVendorCoreSessionCookieValue(
+		request.cookies.get(VENDOR_CORE_SESSION_COOKIE)?.value
+	);
+}
+
 export async function isAuthenticated(request: NextRequest): Promise<boolean> {
 	if (isMockAuthEnabled()) {
 		return !isDevMockSignedOut(request);
@@ -41,6 +53,16 @@ export async function isAuthenticated(request: NextRequest): Promise<boolean> {
 
 	if (hasE2eSession(request)) {
 		return true;
+	}
+
+	if (isDjangoShellAuthEnabled()) {
+		return hasDjangoSessionCookie(request);
+	}
+
+	if (!isNestApiEnabled()) {
+		// Live without Nest and without Django shell — should not happen;
+		// treat as unauthenticated rather than open shell.
+		return false;
 	}
 
 	try {
