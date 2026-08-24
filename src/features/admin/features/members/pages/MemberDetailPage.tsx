@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 
 import {
-	AlertTriangle,
 	BadgeCheck,
 	Building2,
 	CalendarDays,
@@ -14,7 +13,6 @@ import {
 	Eye,
 	EyeOff,
 	History,
-	Info,
 	Languages,
 	Mail,
 	MapPin,
@@ -26,7 +24,6 @@ import {
 	Users,
 	Wallet,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +41,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { VendorCoreLoadingRow } from "@/components/vendor-core/VendorCoreLiveChrome";
 import {
 	type ClaimStatus,
 	type EligibilityStatus,
@@ -56,7 +55,22 @@ import {
 	maskSsn,
 	memberAge,
 } from "@/features/admin/features/members/feature/api/membersApi";
+import { useMemberDetailQuery } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import {
+	MemberCreateAccumulatorButton,
+	MemberCreateClaimButton,
+	MemberCreateExceptionButton,
+	MemberSourceRecordViewer,
+	useMemberTabData,
+} from "@/features/admin/features/members/pages/member-detail-actions";
+import {
+	downloadMemberDetailCsv,
+	downloadMemberDetailPdf,
+	openMemberDocumentPdf,
+	printMemberProfile,
+} from "@/features/admin/features/members/pages/member-detail-export-actions";
 import { Link } from "@/i18n/navigation";
+import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -73,18 +87,19 @@ const TABS = [
 
 type Tab = (typeof TABS)[number];
 
+function statusPillClass(positive: boolean, negative: boolean) {
+	if (positive) return "border-chart-2/20 bg-chart-2/10 text-chart-2";
+	if (negative)
+		return "border-destructive/20 bg-destructive/10 text-destructive";
+	return "border-border/60 bg-muted text-muted-foreground";
+}
+
 function MemberStatusPill({ status }: { status: MemberStatus }) {
 	return (
 		<span
 			className={cn(
-				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "active" &&
-					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-				status === "pending" &&
-					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-				status === "inactive" && "bg-muted text-muted-foreground",
-				status === "termed" &&
-					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
+				"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold capitalize",
+				statusPillClass(status === "active", status === "termed")
 			)}
 		>
 			{status}
@@ -96,14 +111,11 @@ function EligPill({ status }: { status: EligibilityStatus }) {
 	return (
 		<span
 			className={cn(
-				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "eligible" &&
-					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-				status === "termed" &&
-					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
-				status === "pending" &&
-					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-				status === "ineligible" && "bg-muted text-muted-foreground"
+				"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold capitalize",
+				statusPillClass(
+					status === "eligible",
+					status === "termed" || status === "ineligible"
+				)
 			)}
 		>
 			{status === "eligible" ? "Eligible" : status}
@@ -115,15 +127,8 @@ function ClaimPill({ status }: { status: ClaimStatus }) {
 	return (
 		<span
 			className={cn(
-				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "paid" &&
-					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-				status === "denied" &&
-					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
-				status === "pending" &&
-					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-				status === "partial" &&
-					"bg-sky-500/15 text-sky-900 dark:bg-sky-500/20 dark:text-sky-300"
+				"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold capitalize",
+				statusPillClass(status === "paid", status === "denied")
 			)}
 		>
 			{status}
@@ -135,13 +140,8 @@ function ExceptionPill({ status }: { status: ExceptionStatus }) {
 	return (
 		<span
 			className={cn(
-				"inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-				status === "open" &&
-					"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
-				status === "in_progress" &&
-					"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-				status === "resolved" &&
-					"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
+				"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold capitalize",
+				statusPillClass(status === "resolved", status === "open")
 			)}
 		>
 			{status.replace("_", " ")}
@@ -149,14 +149,88 @@ function ExceptionPill({ status }: { status: ExceptionStatus }) {
 	);
 }
 
+/** Sharp, elegant member profile UI system */
+const MEMBER_UI = {
+	radius: "rounded-md",
+	radiusSm: "rounded-sm",
+	surface:
+		"overflow-hidden border border-border/70 bg-card shadow-[0_1px_0_0_rgba(15,23,42,0.05)]",
+	label:
+		"text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground",
+	labelAccent:
+		"text-[9px] font-semibold uppercase tracking-[0.12em] text-primary/85",
+	title: "text-[13px] font-semibold tracking-tight text-foreground",
+} as const;
+
+function SurfaceTopAccent() {
+	return (
+		<div
+			className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary via-primary/35 to-transparent"
+			aria-hidden
+		/>
+	);
+}
+
+function OverviewCard({
+	title,
+	icon: Icon,
+	iconTone = "primary",
+	action,
+	children,
+	className,
+}: {
+	title: string;
+	icon: typeof ShieldCheck;
+	iconTone?: "primary" | "chart-2" | "chart-3" | "chart-5";
+	action?: ReactNode;
+	children: ReactNode;
+	className?: string;
+}) {
+	const iconClass = {
+		primary: "bg-primary/10 text-primary border-primary/15",
+		"chart-2": "bg-chart-2/10 text-chart-2 border-chart-2/15",
+		"chart-3": "bg-chart-3/10 text-chart-3 border-chart-3/15",
+		"chart-5": "bg-chart-5/10 text-chart-5 border-chart-5/15",
+	}[iconTone];
+
+	return (
+		<section
+			className={cn(
+				"relative flex flex-col",
+				MEMBER_UI.surface,
+				MEMBER_UI.radius,
+				className
+			)}
+		>
+			<SurfaceTopAccent />
+			<div className="flex items-center gap-2 border-b border-border/35 bg-muted/[0.12] px-3.5 py-2.5">
+				<span
+					className={cn(
+						"flex size-7 shrink-0 items-center justify-center border",
+						MEMBER_UI.radiusSm,
+						iconClass
+					)}
+				>
+					<Icon className="size-3.5" strokeWidth={2.25} />
+				</span>
+				<h3 className={cn("min-w-0 flex-1", MEMBER_UI.title)}>{title}</h3>
+				{action}
+			</div>
+			<div className="min-h-0 flex-1 px-3.5 py-1">{children}</div>
+		</section>
+	);
+}
+
 function Panel({
 	title,
+	icon: Icon,
 	action,
 	children,
 	className,
 	dense,
 }: {
 	title: string;
+	icon?: typeof ShieldCheck;
 	action?: ReactNode;
 	children: ReactNode;
 	className?: string;
@@ -165,20 +239,33 @@ function Panel({
 	return (
 		<section
 			className={cn(
-				"flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+				"relative flex flex-col",
+				MEMBER_UI.surface,
+				MEMBER_UI.radius,
 				className
 			)}
 		>
+			<SurfaceTopAccent />
 			<div
 				className={cn(
-					"flex items-center justify-between gap-3 border-b border-border/30 bg-gradient-to-r from-primary/[0.06] via-sky-500/[0.04] to-transparent",
-					dense ? "px-4 py-2.5" : "px-5 py-3.5"
+					"flex items-center gap-2 border-b border-border/35 bg-muted/[0.12]",
+					dense ? "px-3.5 py-2" : "px-4 py-2.5"
 				)}
 			>
-				<h3 className="text-sm font-semibold tracking-tight">{title}</h3>
+				{Icon ? (
+					<span
+						className={cn(
+							"flex size-7 shrink-0 items-center justify-center border border-primary/15 bg-primary/10 text-primary",
+							MEMBER_UI.radiusSm
+						)}
+					>
+						<Icon className="size-3.5" strokeWidth={2.25} />
+					</span>
+				) : null}
+				<h3 className={cn("min-w-0 flex-1", MEMBER_UI.title)}>{title}</h3>
 				{action}
 			</div>
-			<div className={cn("min-h-0 flex-1", dense ? "p-4" : "p-5")}>
+			<div className={cn("min-h-0 flex-1", dense ? "p-3.5" : "p-4")}>
 				{children}
 			</div>
 		</section>
@@ -217,29 +304,59 @@ function MetaField({ label, value }: { label: string; value: ReactNode }) {
 function OverviewRow({
 	label,
 	value,
+	valueClassName,
 }: {
 	label: string;
 	value: ReactNode;
+	valueClassName?: string;
 }) {
 	return (
-		<div className="flex items-start justify-between gap-3 border-b border-border/40 py-2 last:border-b-0">
-			<span className="shrink-0 text-[11px] font-medium text-muted-foreground">
+		<div className="group flex items-center justify-between gap-3 border-b border-border/25 py-2 transition-colors last:border-b-0 hover:bg-muted/[0.08]">
+			<span className="shrink-0 pl-0.5 text-[11px] leading-tight text-muted-foreground transition-colors group-hover:text-foreground/70">
 				{label}
 			</span>
-			<span className="min-w-0 text-right text-sm font-semibold text-foreground">
+			<span
+				className={cn(
+					"min-w-0 pr-0.5 text-right text-xs leading-tight font-semibold text-foreground",
+					valueClassName
+				)}
+			>
 				{value ?? "—"}
 			</span>
 		</div>
 	);
 }
 
-function ActiveBadge({
-	label = "Active",
-}: {
-	label?: string;
-}) {
+function ActiveBadge({ label = "Active" }: { label?: string }) {
 	return (
-		<span className="inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+		<span className="inline-flex rounded-sm border border-chart-2/20 bg-chart-2/10 px-1.5 py-px text-[9px] font-bold tracking-wide text-chart-2 uppercase">
+			{label}
+		</span>
+	);
+}
+
+function ProfileStatusBadge({ status }: { status: MemberStatus }) {
+	const label =
+		status === "active"
+			? "Active"
+			: status === "pending"
+				? "Pending"
+				: status === "inactive"
+					? "Inactive"
+					: "Termed";
+
+	return (
+		<span
+			className={cn(
+				"inline-flex rounded-sm border px-1.5 py-px text-[9px] font-bold tracking-wide uppercase",
+				status === "active" && "border-chart-2/20 bg-chart-2/10 text-chart-2",
+				status === "pending" && "border-chart-3/20 bg-chart-3/10 text-chart-3",
+				status === "inactive" &&
+					"border-border/60 bg-muted text-muted-foreground",
+				status === "termed" &&
+					"border-destructive/20 bg-destructive/10 text-destructive"
+			)}
+		>
 			{label}
 		</span>
 	);
@@ -275,15 +392,15 @@ function HeaderField({
 	mono?: boolean;
 }) {
 	return (
-		<div className="min-w-0 space-y-0.5">
-			<p className="text-[11px] font-medium leading-none text-muted-foreground">
+		<div className="min-w-0 space-y-1">
+			<p className={accent ? MEMBER_UI.labelAccent : MEMBER_UI.label}>
 				{label}
 			</p>
 			<div
 				className={cn(
-					"text-sm font-semibold leading-tight text-foreground",
-					accent && "text-primary",
-					mono && "font-mono tabular-nums"
+					"text-[13px] font-semibold leading-tight",
+					accent ? "text-primary" : "text-foreground",
+					mono && "font-mono text-xs tabular-nums tracking-tight"
 				)}
 			>
 				{value ?? "—"}
@@ -292,16 +409,21 @@ function HeaderField({
 	);
 }
 
-function HeaderDivider() {
-	return (
-		<div className="hidden h-auto w-px shrink-0 self-stretch bg-border xl:block" />
-	);
-}
+const METRIC_DOT_TONES = [
+	"bg-chart-3",
+	"bg-primary",
+	"bg-chart-5",
+	"bg-chart-4",
+	"bg-chart-2",
+	"bg-primary/70",
+	"bg-chart-5/80",
+] as const;
 
 function MetricStrip({
 	title,
 	items,
 	compact,
+	embedded,
 	className,
 }: {
 	title?: string;
@@ -310,51 +432,65 @@ function MetricStrip({
 		value: ReactNode;
 		accent?: boolean;
 		mono?: boolean;
+		sub?: ReactNode;
 	}>;
 	compact?: boolean;
+	embedded?: boolean;
 	className?: string;
 }) {
 	return (
 		<section
 			className={cn(
-				"overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+				!embedded && cn("relative", MEMBER_UI.surface, MEMBER_UI.radius),
 				className
 			)}
 		>
+			{!embedded ? <SurfaceTopAccent /> : null}
 			{title ? (
-				<div className="border-b border-border/30 bg-gradient-to-r from-emerald-500/[0.08] via-primary/[0.05] to-sky-500/[0.06] px-3 py-1.5 sm:px-4">
-					<p className="text-[11px] font-semibold tracking-tight text-primary/80 uppercase">
-						{title}
-					</p>
+				<div className="border-b border-border/35 px-4 py-2 sm:px-5">
+					<p className={MEMBER_UI.label}>{title}</p>
 				</div>
 			) : null}
-			<div className="flex w-full flex-wrap bg-gradient-to-b from-muted/20 to-transparent lg:flex-nowrap">
-				{items.map((item, index) => (
-					<div
-						key={item.label}
-						className={cn(
-							"min-w-0 flex-1",
-							compact
-								? "min-w-[5.5rem] basis-[5.5rem] px-2.5 py-2.5 sm:px-3"
-								: "min-w-[8.5rem] basis-[8.5rem] px-3 py-3 sm:px-4",
-							index > 0 && "border-l border-border/30"
-						)}
-					>
-						<p className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-							{item.label}
-						</p>
+			<div className="flex w-full overflow-x-auto lg:overflow-visible">
+				<div className="flex min-w-max flex-1 lg:min-w-0">
+					{items.map((item, index) => (
 						<div
+							key={item.label}
 							className={cn(
-								"mt-1 truncate text-sm font-semibold",
-								item.mono &&
-									"font-mono text-[13px] tabular-nums tracking-tight",
-								item.accent ? "text-emerald-700" : "text-foreground"
+								"min-w-0 flex-1 transition-colors hover:bg-muted/[0.14]",
+								compact
+									? "min-w-[6.75rem] px-3 py-2.5 sm:min-w-[7.5rem] sm:px-4"
+									: "min-w-[7.5rem] px-4 py-3 sm:px-5",
+								index > 0 && "border-l border-border/30"
 							)}
 						>
-							{item.value ?? "—"}
+							<div className="flex items-center gap-1">
+								<span
+									className={cn(
+										"size-1 shrink-0 rounded-full",
+										METRIC_DOT_TONES[index % METRIC_DOT_TONES.length]
+									)}
+								/>
+								<p className={MEMBER_UI.label}>{item.label}</p>
+							</div>
+							<div
+								className={cn(
+									"mt-1 truncate text-xs font-semibold",
+									item.mono &&
+										"font-mono text-[11px] tabular-nums tracking-tight",
+									item.accent ? "text-primary" : "text-foreground"
+								)}
+							>
+								{item.value ?? "—"}
+							</div>
+							{item.sub ? (
+								<p className="mt-0.5 truncate text-[10px] leading-tight text-muted-foreground">
+									{item.sub}
+								</p>
+							) : null}
 						</div>
-					</div>
-				))}
+					))}
+				</div>
 			</div>
 		</section>
 	);
@@ -384,60 +520,151 @@ export function MemberDetailPage({
 	const memberId = decodeURIComponent(
 		Array.isArray(raw) ? (raw[0] ?? "") : String(raw ?? "")
 	);
-	const member = useMemo(
-		() => (memberId ? getMember(memberId) : undefined),
-		[memberId]
+	const useApi = !isMockEnabled();
+	const detailQuery = useMemberDetailQuery(memberId, useApi);
+	const mockMember = useMemo(
+		() => (!useApi && memberId ? getMember(memberId) : undefined),
+		[useApi, memberId]
 	);
+	const member = useApi ? detailQuery.data : mockMember;
 	const [tab, setTab] = useState<Tab>("Overview");
 	const [claimsPane, setClaimsPane] = useState<"claims" | "encounters">(
 		"claims"
 	);
 	const [showSsn, setShowSsn] = useState(false);
 
-	if (!member) {
+	const body = (() => {
+		if (useApi && detailQuery.isLoading && !detailQuery.data) {
+			return <VendorCoreLoadingRow label="Loading member…" />;
+		}
+		if (useApi && detailQuery.error) {
+			return (
+				<div className="space-y-4">
+					<p className="text-sm text-destructive">
+						{detailQuery.error.message}
+					</p>
+					<Button asChild variant="outline" size="sm">
+						<Link href="/admin/members">Back to members</Link>
+					</Button>
+				</div>
+			);
+		}
+		if (!member) {
+			return (
+				<div className="space-y-4">
+					<p className="text-sm text-destructive">Member not found.</p>
+					<Button asChild variant="outline" size="sm">
+						<Link href="/admin/members">Back to members</Link>
+					</Button>
+				</div>
+			);
+		}
 		return (
-			<div className="space-y-4">
-				<p className="text-sm text-destructive">Member not found.</p>
-				<Button asChild variant="outline" size="sm">
-					<Link href="/admin/members">Back to members</Link>
-				</Button>
-			</div>
+			<MemberDetailBody
+				memberId={memberId}
+				member={member}
+				tab={tab}
+				setTab={setTab}
+				claimsPane={claimsPane}
+				setClaimsPane={setClaimsPane}
+				showSsn={showSsn}
+				setShowSsn={setShowSsn}
+			/>
 		);
-	}
+	})();
 
+	if (useApi) {
+		return <VendorCoreGate title="Member">{body}</VendorCoreGate>;
+	}
+	return body;
+}
+
+function MemberDetailBody({
+	memberId,
+	member: baseMember,
+	tab,
+	setTab,
+	claimsPane,
+	setClaimsPane,
+	showSsn,
+	setShowSsn,
+}: {
+	memberId: string;
+	member: NonNullable<ReturnType<typeof getMember>>;
+	tab: Tab;
+	setTab: (t: Tab) => void;
+	claimsPane: "claims" | "encounters";
+	setClaimsPane: (p: "claims" | "encounters") => void;
+	showSsn: boolean;
+	setShowSsn: (v: boolean | ((b: boolean) => boolean)) => void;
+}) {
+	const member =
+		useMemberTabData(memberId, baseMember, tab, claimsPane) ?? baseMember;
+	const [sourceRecordId, setSourceRecordId] = useState<string | null>(null);
+	const [exportBusy, setExportBusy] = useState(false);
+	const apiMemberId = baseMember.id;
 	const name = displayName(member);
+
+	async function runExport(task: () => Promise<void>) {
+		if (exportBusy) return;
+		setExportBusy(true);
+		try {
+			await task();
+		} finally {
+			setExportBusy(false);
+		}
+	}
 	const claimRows = claimsPane === "claims" ? member.claims : member.encounters;
 
 	return (
-		<div className="space-y-5">
+		<div className="space-y-3">
 			{/* Page actions */}
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<p className="text-sm text-muted-foreground">
-					<span className="text-foreground/80">Members</span>
-					<span className="mx-1.5 text-border">/</span>
-					Member Profile
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<p className="text-xs text-muted-foreground">
+					<span>Members</span>
+					<span className="mx-1.5 text-border/80">/</span>
+					<span className="font-semibold text-foreground">Member Profile</span>
 				</p>
-				<div className="flex flex-wrap gap-2">
+				<div className="flex flex-wrap items-center gap-1.5">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm" className="h-9">
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 rounded-md border-border/70 bg-card px-3 text-xs shadow-none"
+							>
 								Member Summary
-								<ChevronDown className="ml-1 size-3.5" />
+								<ChevronDown className="ml-1 size-3 opacity-60" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem
-								onClick={() => toast.message("Opening member summary PDF…")}
+								disabled={exportBusy}
+								onClick={() =>
+									void runExport(() =>
+										openMemberDocumentPdf(apiMemberId, "summary")
+									)
+								}
 							>
 								One-page summary
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => toast.message("Opening eligibility letter…")}
+								disabled={exportBusy}
+								onClick={() =>
+									void runExport(() =>
+										openMemberDocumentPdf(apiMemberId, "eligibility-letter")
+									)
+								}
 							>
 								Eligibility letter
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => toast.message("Opening coverage card…")}
+								disabled={exportBusy}
+								onClick={() =>
+									void runExport(() =>
+										openMemberDocumentPdf(apiMemberId, "coverage-card")
+									)
+								}
 							>
 								Coverage card
 							</DropdownMenuItem>
@@ -446,25 +673,42 @@ export function MemberDetailPage({
 					<Button
 						variant="outline"
 						size="sm"
-						className="h-9"
-						onClick={() => toast.success("Print dialog opened")}
+						className="h-8 rounded-md border-border/70 bg-card px-3 text-xs shadow-none"
+						disabled={exportBusy}
+						onClick={() =>
+							void runExport(() => printMemberProfile(apiMemberId))
+						}
 					>
-						<Printer className="mr-1.5 size-3.5" />
+						<Printer className="mr-1 size-3" />
 						Print
 					</Button>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button size="sm" className="h-9">
-								<Download className="mr-1.5 size-3.5" />
+							<Button
+								size="sm"
+								className="h-8 rounded-md px-3 text-xs shadow-none"
+								disabled={exportBusy}
+							>
+								<Download className="mr-1 size-3" />
 								Export
-								<ChevronDown className="ml-1 size-3.5" />
+								<ChevronDown className="ml-1 size-3 opacity-80" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => toast.success("Exported CSV")}>
+							<DropdownMenuItem
+								disabled={exportBusy}
+								onClick={() =>
+									void runExport(() => downloadMemberDetailCsv(apiMemberId))
+								}
+							>
 								Export CSV
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => toast.success("Exported PDF")}>
+							<DropdownMenuItem
+								disabled={exportBusy}
+								onClick={() =>
+									void runExport(() => downloadMemberDetailPdf(apiMemberId))
+								}
+							>
 								Export PDF
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -473,236 +717,184 @@ export function MemberDetailPage({
 			</div>
 
 			{/* Identity header */}
-			<section className="overflow-hidden rounded-xl border border-border bg-card px-4 py-4 shadow-sm">
-				<div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:gap-0">
-					{/* Identity + IDs */}
-					<div className="flex min-w-0 gap-3 xl:pr-5">
-						<div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-							<UserRound className="size-7" />
-						</div>
-						<div className="min-w-0 space-y-2.5">
-							<div className="flex flex-wrap items-center gap-2">
-								<h1 className="text-lg font-bold tracking-wide text-foreground uppercase">
-									{name}
-								</h1>
-								<span
-									className={cn(
-										"inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
-										member.status === "active" &&
-											"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-										member.status === "pending" &&
-											"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-										member.status === "inactive" &&
-											"bg-muted text-muted-foreground",
-										member.status === "termed" &&
-											"bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300"
-									)}
-								>
-									{member.status === "active"
-										? "Active"
-										: member.status === "pending"
-											? "Pending"
-											: member.status === "inactive"
-												? "Inactive"
-												: "Termed"}
-								</span>
-							</div>
-							<div className="grid gap-x-5 gap-y-2 sm:grid-cols-3">
-								<HeaderField
-									label="Cardholder ID"
-									value={member.memberId}
-									accent
-									mono
-								/>
-								<HeaderField
-									label="Person Code"
-									value={member.personCode ?? "01"}
-									mono
-								/>
-								<HeaderField
-									label="Relationship Code"
-									value={member.relationshipCode ?? "18"}
-									mono
-								/>
-								<div className="min-w-0 space-y-0.5 sm:col-span-1">
-									<p className="text-[11px] font-medium leading-none text-muted-foreground">
-										Relationship
-									</p>
-									<div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-										<Users className="size-3.5 shrink-0 text-muted-foreground" />
-										{member.memberType ?? "Subscriber"}
-									</div>
+			<section className={cn("relative", MEMBER_UI.surface, MEMBER_UI.radius)}>
+				<SurfaceTopAccent />
+				<div
+					className="pointer-events-none absolute -top-10 -right-8 size-36 rounded-full bg-primary/[0.035] blur-2xl"
+					aria-hidden
+				/>
+				<div
+					className="pointer-events-none absolute -bottom-8 left-1/4 size-28 rounded-full bg-chart-5/[0.04] blur-2xl"
+					aria-hidden
+				/>
+				<div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-chart-5/[0.015]" />
+
+				<div className="relative border-b border-border/30 px-4 py-3 sm:px-5">
+					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5 xl:gap-7">
+						<div className="flex min-w-0 items-center gap-3 lg:max-w-[19rem] lg:shrink-0">
+							<div className="relative shrink-0">
+								<div className="flex size-11 items-center justify-center rounded-full border-2 border-primary/15 bg-primary text-primary-foreground">
+									<UserRound className="size-5" strokeWidth={1.75} />
 								</div>
-								<HeaderField
-									label="External ID"
-									value={member.externalId ?? "—"}
-									mono
-								/>
+								{member.status === "active" ? (
+									<span className="absolute right-0 bottom-0 size-2 rounded-full border border-card bg-chart-2" />
+								) : null}
+							</div>
+							<div className="min-w-0">
+								<div className="flex flex-wrap items-center gap-2">
+									<h1 className="text-base font-bold tracking-tight text-primary">
+										{name}
+									</h1>
+									<ProfileStatusBadge status={member.status} />
+								</div>
+								<p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+									{member.memberType ?? "Subscriber"}
+									<span className="mx-1.5 text-border/80">·</span>
+									Person Code {member.personCode ?? "01"}
+									<span className="mx-1.5 text-border/80">·</span>
+									Relationship Code {member.relationshipCode ?? "18"}
+								</p>
+							</div>
+						</div>
+
+						<div className="hidden h-9 w-px shrink-0 bg-border/50 lg:block" />
+
+						<div className="grid min-w-0 flex-1 grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-4 sm:gap-x-6">
+							<HeaderField
+								label="Cardholder ID"
+								value={member.memberId}
+								accent
+								mono
+							/>
+							<HeaderField
+								label="External ID"
+								value={member.externalId ?? "—"}
+								accent
+								mono
+							/>
+							<HeaderField
+								label="Alternate ID"
+								value={member.alternateId ?? "—"}
+								accent
+								mono
+							/>
+							<div className="min-w-0 space-y-1">
+								<p className={MEMBER_UI.labelAccent}>SSN</p>
+								<div className="flex items-center gap-1">
+									<span className="font-mono text-[13px] font-semibold tabular-nums text-foreground">
+										{showSsn
+											? `123-45-${member.ssnLast4}`
+											: maskSsn(member.ssnLast4)}
+									</span>
+									<button
+										type="button"
+										aria-label={showSsn ? "Hide SSN" : "Show SSN"}
+										onClick={() => setShowSsn((v) => !v)}
+										className={cn(
+											"p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+											MEMBER_UI.radiusSm
+										)}
+									>
+										{showSsn ? (
+											<EyeOff className="size-3" />
+										) : (
+											<Eye className="size-3" />
+										)}
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
+				</div>
 
-					<HeaderDivider />
-
-					{/* DOB + SSN */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField
-							label="Date of Birth"
-							value={
-								<span className="tabular-nums">
-									{formatDate(member.dob)}
-									{memberAge(member.dob) != null
-										? ` (${memberAge(member.dob)})`
-										: ""}
-								</span>
-							}
-						/>
-						<div className="min-w-0 space-y-0.5">
-							<p className="text-[11px] font-medium leading-none text-muted-foreground">
-								SSN
-							</p>
-							<div className="flex items-center gap-1.5">
-								<span className="font-mono text-sm font-semibold tabular-nums text-foreground">
-									{showSsn
-										? `123-45-${member.ssnLast4}`
-										: maskSsn(member.ssnLast4)}
-								</span>
-								<button
-									type="button"
-									aria-label={showSsn ? "Hide SSN" : "Show SSN"}
-									onClick={() => setShowSsn((v) => !v)}
-									className="rounded p-0.5 text-primary hover:bg-primary/5"
-								>
-									{showSsn ? (
-										<EyeOff className="size-3.5" />
-									) : (
-										<Eye className="size-3.5" />
-									)}
-								</button>
-							</div>
-						</div>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Gender + Alternate ID */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField label="Gender" value={member.gender} />
-						<HeaderField
-							label="Alternate ID"
-							value={member.alternateId ?? "—"}
-							mono
-						/>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Account / Group */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField
-							label="Account / Group"
-							value={member.groupId ?? "—"}
-							accent
-						/>
-						<HeaderField
-							label="Group Name"
-							value={member.groupName ?? member.accountGroup ?? "—"}
-						/>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Plan */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField label="Current Plan" value={member.planName} accent />
-						<HeaderField
-							label="Coverage Level"
-							value={member.coverageLevel ?? "—"}
-						/>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Employment */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField
-							label="Employee Type"
-							value={member.employeeType ?? member.accountStatus ?? "—"}
-						/>
-						<HeaderField
-							label="Effective Date"
-							value={formatDate(
-								member.statusEffectiveDate ?? member.coverageStart
-							)}
-						/>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Eligibility */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:px-5">
-						<HeaderField
-							label="Eligibility Status"
-							value={
+				<MetricStrip
+					embedded
+					compact
+					className="relative bg-muted/[0.14]"
+					items={[
+						{
+							label: "Date of Birth",
+							value: formatDate(member.dob),
+							sub:
+								memberAge(member.dob) != null
+									? `Age ${memberAge(member.dob)} · ${member.gender ?? "—"}`
+									: (member.gender ?? undefined),
+						},
+						{
+							label: "Account / Group",
+							value: member.groupId ?? "—",
+							sub: member.groupName ?? member.accountGroup ?? undefined,
+							accent: Boolean(member.groupId),
+						},
+						{
+							label: "Current Plan",
+							value: member.planName ?? "—",
+							sub: member.coverageLevel ?? undefined,
+						},
+						{
+							label: "Employee Type",
+							value: member.employeeType ?? member.accountStatus ?? "—",
+						},
+						{
+							label: "Eligibility Status",
+							value:
 								member.eligibilityStatus === "eligible"
 									? "Eligible"
 									: member.eligibilityStatus === "termed"
 										? "Termed"
 										: member.eligibilityStatus === "pending"
 											? "Pending"
-											: "Ineligible"
-							}
-						/>
-						<HeaderField
-							label="Term Date"
-							value={
-								member.statusTermDate ? formatDate(member.statusTermDate) : "—"
-							}
-						/>
-					</div>
-
-					<HeaderDivider />
-
-					{/* Source */}
-					<div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:pl-5">
-						<HeaderField
-							label="Source"
-							value={member.sourceSystem ?? member.vendorSource}
-						/>
-						<HeaderField
-							label="Last Updated"
-							value={member.lastEligibilityUpdate ?? member.dataAsOf}
-						/>
-					</div>
-				</div>
+											: "Ineligible",
+							accent: member.eligibilityStatus === "eligible",
+						},
+						{
+							label: "Source",
+							value: member.sourceSystem ?? member.vendorSource ?? "—",
+						},
+						{
+							label: "Gender",
+							value: member.gender ?? "—",
+						},
+					]}
+				/>
 			</section>
 
 			{/* Tabs */}
-			<nav className="overflow-x-auto border-b border-border/40">
-				<div className="flex min-w-max gap-1">
+			<nav
+				className={cn(
+					"relative overflow-hidden border border-border/50 bg-muted/25 p-1",
+					MEMBER_UI.radius
+				)}
+			>
+				<div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+				<div className="flex min-w-max gap-0.5 overflow-x-auto pr-7 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 					{TABS.map((item) => (
 						<button
 							key={item}
 							type="button"
 							onClick={() => setTab(item)}
 							className={cn(
-								"border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors",
+								"px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all",
+								MEMBER_UI.radiusSm,
 								tab === item
-									? "border-primary text-primary"
-									: "border-transparent text-muted-foreground hover:text-foreground"
+									? "bg-primary text-primary-foreground shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]"
+									: "text-muted-foreground hover:bg-background/80 hover:text-foreground"
 							)}
 						>
 							{item}
 						</button>
 					))}
 				</div>
+				<div className="pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-end bg-gradient-to-l from-muted/25 to-transparent pr-1.5">
+					<ChevronDown className="size-3 rotate-[-90deg] text-muted-foreground/50" />
+				</div>
 			</nav>
 
 			{tab === "Overview" ? (
-				<div className="space-y-4">
+				<div className="space-y-3">
 					{/* Top row — 4 info cards */}
 					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-						<Panel dense title="Current Eligibility">
+						<OverviewCard icon={ShieldCheck} title="Current Eligibility">
 							<div>
 								<OverviewRow
 									label="Eligibility Status"
@@ -751,9 +943,13 @@ export function MemberDetailPage({
 									value={member.secondaryCoverage ?? "No"}
 								/>
 							</div>
-						</Panel>
+						</OverviewCard>
 
-						<Panel dense title="Current Coverage / Plan">
+						<OverviewCard
+							icon={Wallet}
+							iconTone="chart-2"
+							title="Current Coverage / Plan"
+						>
 							<div>
 								<OverviewRow label="Plan Name" value={member.planName} />
 								<OverviewRow
@@ -785,9 +981,13 @@ export function MemberDetailPage({
 									}
 								/>
 							</div>
-						</Panel>
+						</OverviewCard>
 
-						<Panel dense title="Key Dates">
+						<OverviewCard
+							icon={CalendarDays}
+							iconTone="chart-3"
+							title="Key Dates"
+						>
 							<div>
 								<OverviewRow
 									label="Date of Birth"
@@ -820,15 +1020,18 @@ export function MemberDetailPage({
 									value={member.lastEligibilityUpdate ?? member.dataAsOf}
 								/>
 							</div>
-						</Panel>
+						</OverviewCard>
 
-						<Panel dense title="Account / Group">
+						<OverviewCard
+							icon={Building2}
+							iconTone="chart-5"
+							title="Account / Group"
+						>
 							<div>
 								<OverviewRow
 									label="Group ID"
-									value={
-										<span className="text-primary">{member.groupId ?? "—"}</span>
-									}
+									value={member.groupId ?? "—"}
+									valueClassName="font-mono text-chart-5"
 								/>
 								<OverviewRow
 									label="Group Name"
@@ -854,7 +1057,7 @@ export function MemberDetailPage({
 									value={member.memberType ?? "—"}
 								/>
 							</div>
-						</Panel>
+						</OverviewCard>
 					</div>
 
 					{/* Middle row — Accumulators / Claims / Source */}
@@ -1104,7 +1307,9 @@ export function MemberDetailPage({
 									<TableBody>
 										{member.otherStatuses.map((row) => (
 											<TableRow key={row.id}>
-												<TableCell className="py-2 text-xs">{row.slot}</TableCell>
+												<TableCell className="py-2 text-xs">
+													{row.slot}
+												</TableCell>
 												<TruncateCell className="py-2 text-xs font-medium">
 													{row.status}
 												</TruncateCell>
@@ -1135,8 +1340,21 @@ export function MemberDetailPage({
 					</div>
 				</div>
 			) : (
-				<TabBody tab={tab} member={member} />
+				<TabBody
+					tab={tab}
+					member={member}
+					memberId={memberId}
+					onOpenSourceRecord={setSourceRecordId}
+				/>
 			)}
+			<MemberSourceRecordViewer
+				memberId={memberId}
+				recordId={sourceRecordId ?? ""}
+				open={Boolean(sourceRecordId)}
+				onOpenChange={(open) => {
+					if (!open) setSourceRecordId(null);
+				}}
+			/>
 		</div>
 	);
 }
@@ -1322,9 +1540,13 @@ function MemberClaimsEncountersTab({
 function TabBody({
 	tab,
 	member,
+	memberId,
+	onOpenSourceRecord,
 }: {
 	tab: Tab;
 	member: NonNullable<ReturnType<typeof getMember>>;
+	memberId: string;
+	onOpenSourceRecord: (id: string) => void;
 }) {
 	if (tab === "Demographics") {
 		const age = memberAge(member.dob);
@@ -1839,9 +2061,15 @@ function TabBody({
 										<TableHead className="h-9 w-[36%] text-xs">
 											Description
 										</TableHead>
-										<TableHead className="h-9 w-[16%] text-xs">Source</TableHead>
-										<TableHead className="h-9 w-[14%] text-xs">Status</TableHead>
-										<TableHead className="h-9 w-[16%] text-xs">Detected</TableHead>
+										<TableHead className="h-9 w-[16%] text-xs">
+											Source
+										</TableHead>
+										<TableHead className="h-9 w-[14%] text-xs">
+											Status
+										</TableHead>
+										<TableHead className="h-9 w-[16%] text-xs">
+											Detected
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -2250,7 +2478,14 @@ function TabBody({
 	}
 
 	if (tab === "Claims & Encounters") {
-		return <MemberClaimsEncountersTab member={member} />;
+		return (
+			<div className="space-y-3">
+				<div className="flex justify-end">
+					<MemberCreateClaimButton memberId={memberId} />
+				</div>
+				<MemberClaimsEncountersTab member={member} />
+			</div>
+		);
 	}
 
 	if (tab === "Accumulators") {
@@ -2264,6 +2499,9 @@ function TabBody({
 
 		return (
 			<div className="space-y-4">
+				<div className="flex justify-end">
+					<MemberCreateAccumulatorButton memberId={memberId} />
+				</div>
 				<MetricStrip
 					title="Accumulator snapshot"
 					items={[
@@ -2555,6 +2793,9 @@ function TabBody({
 										</TableHead>
 										<TableHead className="h-9 text-xs">Last received</TableHead>
 										<TableHead className="h-9 text-xs">Status</TableHead>
+										<TableHead className="h-9 text-right text-xs">
+											Action
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -2581,6 +2822,16 @@ function TabBody({
 											<TableCell className="py-2.5">
 												<FeedStatusPill status={v.status} />
 											</TableCell>
+											<TableCell className="py-2.5 text-right">
+												<Button
+													variant="outline"
+													size="sm"
+													className="h-7"
+													onClick={() => onOpenSourceRecord(v.id)}
+												>
+													View source
+												</Button>
+											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
@@ -2605,6 +2856,9 @@ function TabBody({
 
 		return (
 			<div className="space-y-4">
+				<div className="flex justify-end">
+					<MemberCreateExceptionButton memberId={memberId} />
+				</div>
 				<MetricStrip
 					title="Exception health"
 					items={[
@@ -2697,9 +2951,15 @@ function TabBody({
 										<TableHead className="h-9 w-[28%] text-xs">
 											Description
 										</TableHead>
-										<TableHead className="h-9 w-[12%] text-xs">Detected</TableHead>
-										<TableHead className="h-9 w-[12%] text-xs">Status</TableHead>
-										<TableHead className="h-9 w-[14%] text-xs">Source</TableHead>
+										<TableHead className="h-9 w-[12%] text-xs">
+											Detected
+										</TableHead>
+										<TableHead className="h-9 w-[12%] text-xs">
+											Status
+										</TableHead>
+										<TableHead className="h-9 w-[14%] text-xs">
+											Source
+										</TableHead>
 										<TableHead className="h-9 w-[18%] text-xs">
 											Resolution
 										</TableHead>

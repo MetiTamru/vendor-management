@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	type ReactNode,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 
 import {
-	CalendarDays,
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
 	Download,
+	Filter,
+	Loader2,
 	RefreshCw,
 	Search,
 } from "lucide-react";
@@ -34,35 +41,239 @@ import {
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import {
 	type MemberStatus,
+	type MemberSummary,
 	displayName,
+	eligibilityLabelToApi,
+	exportMemberListCsv,
 	formatDate,
-	maskSsn,
+	memberStatusLabelToApi,
 } from "@/features/admin/features/members/feature/api/membersApi";
 import {
 	useInvalidateVendorCore,
 	useMemberSummariesList,
-	useVendorCoreMemberCoverages,
+	useMemberSummariesPageQuery,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import { memberCoveragesToSummaries } from "@/features/admin/features/members/live-members";
-import { VENDOR_NAMES } from "@/features/admin/features/vendors/vendor-integration-mock";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { downloadBlob, stampFilename } from "@/lib/export/csv";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import { vendorCoreApi } from "@/lib/vendor-core";
+import type { MemberListQuery } from "@/lib/vendor-core/types";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type GenderFilter = "all" | "Male" | "Female" | "Other" | "Unknown";
 
-function StatusPill({ status }: { status: MemberStatus }) {
-	const map: Record<MemberStatus, string> = {
-		active:
-			"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
-		inactive: "bg-muted text-muted-foreground",
-		pending:
-			"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
-		termed: "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+type MemberSearchFilters = {
+	memberId: string;
+	alternateId: string;
+	firstName: string;
+	lastName: string;
+	dob: string;
+	gender: GenderFilter;
+	accountGroup: string;
+	plan: string;
+	eligibilityStatus: string;
+	memberStatus: string;
+	effectiveFrom: string;
+	effectiveTo: string;
+	search: string;
+	lob: string;
+	vendorId: string;
+};
+
+const EMPTY_MEMBER_FILTERS: MemberSearchFilters = {
+	memberId: "",
+	alternateId: "",
+	firstName: "",
+	lastName: "",
+	dob: "",
+	gender: "all",
+	accountGroup: "all",
+	plan: "all",
+	eligibilityStatus: "all",
+	memberStatus: "all",
+	effectiveFrom: "",
+	effectiveTo: "",
+	search: "",
+	lob: "",
+	vendorId: "all",
+};
+
+function hasMemberFilters(filters: MemberSearchFilters): boolean {
+	return (
+		filters.memberId.trim().length > 0 ||
+		filters.alternateId.trim().length > 0 ||
+		filters.firstName.trim().length > 0 ||
+		filters.lastName.trim().length > 0 ||
+		filters.dob.length > 0 ||
+		filters.gender !== "all" ||
+		filters.accountGroup !== "all" ||
+		filters.plan !== "all" ||
+		filters.eligibilityStatus !== "all" ||
+		filters.memberStatus !== "all" ||
+		filters.effectiveFrom.length > 0 ||
+		filters.effectiveTo.length > 0 ||
+		filters.search.trim().length > 0 ||
+		filters.lob.trim().length > 0 ||
+		filters.vendorId !== "all"
+	);
+}
+
+function buildMemberListQuery(
+	filters: MemberSearchFilters,
+	page: number,
+	pageSize: number,
+	programFilter: string
+): MemberListQuery {
+	const q: MemberListQuery = {
+		limit: pageSize,
+		offset: (page - 1) * pageSize,
+		order_by: "-updated_at",
 	};
+	if (filters.memberId.trim()) q.cardholder_id = filters.memberId.trim();
+	if (filters.alternateId.trim()) q.alternate_id = filters.alternateId.trim();
+	if (filters.firstName.trim()) q.first_name = filters.firstName.trim();
+	if (filters.lastName.trim()) q.last_name = filters.lastName.trim();
+	if (filters.dob) q.date_of_birth = filters.dob;
+	if (filters.gender !== "all") q.gender = filters.gender;
+	if (filters.plan !== "all") q.plan_name = filters.plan;
+	const elig = eligibilityLabelToApi(filters.eligibilityStatus);
+	if (elig) q.eligibility_status = elig;
+	const st = memberStatusLabelToApi(filters.memberStatus);
+	if (st) q.status = st;
+	if (filters.effectiveFrom) q.coverage_effective_from = filters.effectiveFrom;
+	if (filters.effectiveTo) q.coverage_effective_to = filters.effectiveTo;
+	if (programFilter) q.program = programFilter;
+	if (filters.search.trim()) q.search = filters.search.trim();
+	if (filters.lob.trim()) q.lob = filters.lob.trim();
+	if (filters.vendorId !== "all") q.vendor_id = filters.vendorId;
+	if (filters.accountGroup !== "all") q.account_group = filters.accountGroup;
+	return q;
+}
+
+function filterMockMembers(
+	members: MemberSummary[],
+	filters: MemberSearchFilters,
+	programFilter: string
+): MemberSummary[] {
+	return members
+		.filter((m) => m.program === programFilter)
+		.filter((m) => {
+			if (
+				filters.memberId &&
+				!m.memberId.toLowerCase().includes(filters.memberId.toLowerCase())
+			)
+				return false;
+			if (
+				filters.alternateId &&
+				!(m.alternateId ?? "")
+					.toLowerCase()
+					.includes(filters.alternateId.toLowerCase())
+			)
+				return false;
+			if (
+				filters.firstName &&
+				!m.firstName.toLowerCase().includes(filters.firstName.toLowerCase())
+			)
+				return false;
+			if (
+				filters.lastName &&
+				!m.lastName.toLowerCase().includes(filters.lastName.toLowerCase())
+			)
+				return false;
+			if (filters.dob && m.dob !== filters.dob) return false;
+			if (filters.gender !== "all" && m.gender !== filters.gender) return false;
+			if (
+				filters.accountGroup !== "all" &&
+				m.accountGroup !== filters.accountGroup
+			)
+				return false;
+			if (filters.plan !== "all" && m.planName !== filters.plan) return false;
+			if (
+				filters.eligibilityStatus !== "all" &&
+				(m.eligibilityLabel ?? "") !== filters.eligibilityStatus
+			)
+				return false;
+			if (filters.memberStatus !== "all") {
+				const memberStatusLabel =
+					m.status === "active"
+						? "Active"
+						: m.status === "inactive"
+							? "Inactive"
+							: m.status === "pending"
+								? "Pending"
+								: "Termed";
+				if (memberStatusLabel !== filters.memberStatus) return false;
+			}
+			if (
+				filters.effectiveFrom &&
+				(m.coverageEffectiveDate ?? "") < filters.effectiveFrom
+			)
+				return false;
+			if (
+				filters.effectiveTo &&
+				(m.coverageEffectiveDate ?? "") > filters.effectiveTo
+			)
+				return false;
+			if (filters.search.trim()) {
+				const s = filters.search.trim().toLowerCase();
+				const hay =
+					`${m.memberId} ${m.firstName} ${m.lastName} ${m.alternateId ?? ""}`.toLowerCase();
+				if (!hay.includes(s)) return false;
+			}
+			if (
+				filters.lob.trim() &&
+				!m.lob.toLowerCase().includes(filters.lob.trim().toLowerCase())
+			)
+				return false;
+			return true;
+		});
+}
+
+const th =
+	"h-9 px-2 py-2 text-[11px] font-bold uppercase tracking-wide text-foreground";
+const td = "px-2 py-2 text-[12px] align-middle text-foreground";
+
+const compactFieldClass = cn(
+	"h-8 rounded-md border border-border bg-background text-xs shadow-none",
+	"hover:border-foreground/20",
+	"focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+);
+
+const compactLabelClass =
+	"text-[10px] font-medium uppercase tracking-wide text-muted-foreground";
+
+function CompactField({
+	id,
+	label,
+	children,
+	className,
+}: {
+	id?: string;
+	label: string;
+	children: ReactNode;
+	className?: string;
+}) {
+	return (
+		<div className={cn("min-w-0 space-y-0.5", className)}>
+			<label htmlFor={id} className={compactLabelClass}>
+				{label}
+			</label>
+			{children}
+		</div>
+	);
+}
+
+const STATUS_TONE: Record<MemberStatus, string> = {
+	active:
+		"bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300",
+	inactive: "bg-muted text-muted-foreground",
+	pending:
+		"bg-amber-500/15 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300",
+	termed: "bg-red-500/15 text-red-800 dark:bg-red-500/20 dark:text-red-300",
+};
+
+function StatusPill({ status }: { status: MemberStatus }) {
 	const label =
 		status === "active"
 			? "Active"
@@ -75,21 +286,31 @@ function StatusPill({ status }: { status: MemberStatus }) {
 	return (
 		<span
 			className={cn(
-				"inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold",
-				map[status]
+				"inline-flex max-w-full truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+				STATUS_TONE[status]
 			)}
+			title={label}
 		>
 			{label}
 		</span>
 	);
 }
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
-	return (
-		<label className="text-[11px] font-semibold text-muted-foreground">
-			{children}
-		</label>
-	);
+function EligibilityPill({
+	label,
+}: {
+	label?: "Active" | "Inactive" | "Pending" | "Termed" | undefined;
+}) {
+	if (!label) {
+		return <span className="text-[11px] text-muted-foreground">—</span>;
+	}
+	const map: Record<NonNullable<typeof label>, MemberStatus> = {
+		Active: "active",
+		Inactive: "inactive",
+		Pending: "pending",
+		Termed: "termed",
+	};
+	return <StatusPill status={map[label]} />;
 }
 
 export function MembersPage() {
@@ -105,649 +326,590 @@ export function MembersPage() {
 
 function MembersDirectoryPage() {
 	const router = useRouter();
-	const useLive = !isMockEnabled();
+	const useApi = !isMockEnabled();
 	const invalidate = useInvalidateVendorCore();
-	const coveragesQ = useVendorCoreMemberCoverages();
 	const vendorsQ = useVendorCoreVendors();
-	const { members: mockSummaries } = useMemberSummariesList();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 
-	const [memberId, setMemberId] = useState("");
-	const [alternateId, setAlternateId] = useState("");
-	const [firstName, setFirstName] = useState("");
-	const [lastName, setLastName] = useState("");
-	const [dob, setDob] = useState("");
-	const [gender, setGender] = useState<GenderFilter>("all");
-	const [accountGroup, setAccountGroup] = useState("all");
-	const [plan, setPlan] = useState("all");
-	const [eligibilityStatus, setEligibilityStatus] = useState("all");
-	const [memberStatus, setMemberStatus] = useState("all");
-	const [effectiveFrom, setEffectiveFrom] = useState("");
-	const [effectiveTo, setEffectiveTo] = useState("");
+	const [draftFilters, setDraftFilters] = useState(EMPTY_MEMBER_FILTERS);
+	const [appliedFilters, setAppliedFilters] = useState(EMPTY_MEMBER_FILTERS);
 	const [showMoreFilters, setShowMoreFilters] = useState(false);
 	const [page, setPage] = useState(1);
-	const [pageSize, setPageSize] = useState(10);
+	const [pageSize, setPageSize] = useState(20);
 	const [refreshing, setRefreshing] = useState(false);
-	const [seeding, setSeeding] = useState(false);
-	const autoSeedAttempted = useRef(false);
+	const [exporting, setExporting] = useState(false);
 
-	const programScoped = useMemo(() => {
-		if (!useLive) {
-			return mockSummaries.filter((m) => m.program === programFilter);
-		}
-		return memberCoveragesToSummaries(coveragesQ.data ?? []);
-	}, [useLive, coveragesQ.data, programFilter, mockSummaries]);
+	const patchDraft = (patch: Partial<MemberSearchFilters>) => {
+		setDraftFilters((prev) => ({ ...prev, ...patch }));
+	};
+
+	useEffect(() => {
+		setPage(1);
+	}, [programFilter]);
+
+	const listQuery = useMemo(
+		() => buildMemberListQuery(appliedFilters, page, pageSize, programFilter),
+		[appliedFilters, page, pageSize, programFilter]
+	);
+
+	const pageQ = useMemberSummariesPageQuery(listQuery, useApi);
+	const mockList = useMemberSummariesList();
+
+	const programMembers = useMemo(
+		() => mockList.members.filter((m) => m.program === programFilter),
+		[mockList.members, programFilter]
+	);
+
+	const mockFiltered = useMemo(() => {
+		if (useApi) return [];
+		return filterMockMembers(mockList.members, appliedFilters, programFilter);
+	}, [useApi, mockList.members, appliedFilters, programFilter]);
+
+	const totalCount = useApi ? (pageQ.data?.count ?? 0) : mockFiltered.length;
+	const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+	const safePage = Math.min(page, pageCount);
+	const pageRows = useApi
+		? (pageQ.data?.results ?? [])
+		: mockFiltered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
 	const plans = useMemo(
-		() => Array.from(new Set(programScoped.map((m) => m.planName))).sort(),
-		[programScoped]
+		() => Array.from(new Set(programMembers.map((m) => m.planName))).sort(),
+		[programMembers]
 	);
-	const accountGroups = useMemo(
-		() =>
-			Array.from(
-				new Set(
-					programScoped
-						.map((m) => m.accountGroup)
-						.filter((g): g is string => Boolean(g))
-				)
-			).sort(),
-		[programScoped]
-	);
-	const vendors = useMemo(() => {
-		if (!useLive) return VENDOR_NAMES;
-		const fromRows = Array.from(
-			new Set(programScoped.map((m) => m.vendorSource).filter(Boolean))
+
+	const accountGroups = useMemo(() => {
+		return Array.from(
+			new Set(
+				programMembers
+					.map((m) => m.accountGroup)
+					.filter((g): g is string => Boolean(g))
+			)
 		).sort();
-		if (fromRows.length) return fromRows;
-		return (vendorsQ.data ?? []).map((v) => v.name).sort();
-	}, [useLive, programScoped, vendorsQ.data]);
+	}, [programMembers]);
 
-	const filtered = useMemo(() => {
-		return programScoped.filter((m) => {
-			if (
-				memberId &&
-				!m.memberId.toLowerCase().includes(memberId.toLowerCase())
-			)
-				return false;
-			if (
-				alternateId &&
-				!(m.alternateId ?? "").toLowerCase().includes(alternateId.toLowerCase())
-			)
-				return false;
-			if (
-				firstName &&
-				!m.firstName.toLowerCase().includes(firstName.toLowerCase())
-			)
-				return false;
-			if (
-				lastName &&
-				!m.lastName.toLowerCase().includes(lastName.toLowerCase())
-			)
-				return false;
-			if (dob && m.dob !== dob) return false;
-			if (gender !== "all" && m.gender !== gender) return false;
-			if (accountGroup !== "all" && m.accountGroup !== accountGroup)
-				return false;
-			if (plan !== "all" && m.planName !== plan) return false;
-			if (
-				eligibilityStatus !== "all" &&
-				(m.eligibilityLabel ?? "") !== eligibilityStatus
-			)
-				return false;
-			if (memberStatus !== "all") {
-				const memberStatusLabel =
-					m.status === "active"
-						? "Active"
-						: m.status === "inactive"
-							? "Inactive"
-							: m.status === "pending"
-								? "Pending"
-								: "Termed";
-				if (memberStatusLabel !== memberStatus) return false;
-			}
-			if (effectiveFrom && (m.coverageEffectiveDate ?? "") < effectiveFrom)
-				return false;
-			if (effectiveTo && (m.coverageEffectiveDate ?? "") > effectiveTo)
-				return false;
-			return true;
-		});
-	}, [
-		programScoped,
-		memberId,
-		alternateId,
-		firstName,
-		lastName,
-		dob,
-		gender,
-		accountGroup,
-		plan,
-		eligibilityStatus,
-		memberStatus,
-		effectiveFrom,
-		effectiveTo,
-	]);
-
-	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-	const safePage = Math.min(page, pageCount);
-	const pageRows = filtered.slice(
-		(safePage - 1) * pageSize,
-		safePage * pageSize
-	);
+	const isLoading = useApi ? pageQ.isLoading && !pageQ.data : false;
+	const error = useApi ? pageQ.error : null;
+	const hasActiveFilters = hasMemberFilters(appliedFilters);
+	const hasDraftFilters = hasMemberFilters(draftFilters);
 
 	async function handleRefresh() {
 		setRefreshing(true);
 		try {
-			if (useLive) await invalidate();
-			else await new Promise((r) => setTimeout(r, 250));
+			if (useApi) {
+				await invalidate();
+			} else await new Promise((r) => setTimeout(r, 250));
 			toast.success("Member search refreshed");
 		} finally {
 			setRefreshing(false);
 		}
 	}
 
-	async function handleSeed(options?: { silent?: boolean }) {
-		setSeeding(true);
-		try {
-			const result = await vendorCoreApi.seedMemberCoverages();
-			if (result.created > 0 && !options?.silent) {
-				toast.success(`Seeded ${result.created} member coverages`);
-			}
-			await invalidate();
-		} catch (err) {
-			if (!options?.silent) {
-				toast.error(
-					err instanceof Error ? err.message : "Failed to seed member coverages"
-				);
-			}
-			throw err;
-		} finally {
-			setSeeding(false);
-		}
-	}
-
-	useEffect(() => {
-		if (!useLive || autoSeedAttempted.current || coveragesQ.isLoading) return;
-		if (coveragesQ.error || (coveragesQ.data?.length ?? 0) > 0) return;
-		autoSeedAttempted.current = true;
-		void handleSeed({ silent: true }).catch(() => {
-			/* ignore */
-		});
-	}, [useLive, coveragesQ.isLoading, coveragesQ.error, coveragesQ.data]);
-
-	function clearFilters() {
-		setMemberId("");
-		setAlternateId("");
-		setFirstName("");
-		setLastName("");
-		setDob("");
-		setGender("all");
-		setAccountGroup("all");
-		setPlan("all");
-		setEligibilityStatus("all");
-		setMemberStatus("all");
-		setEffectiveFrom("");
-		setEffectiveTo("");
+	function handleSearch() {
+		setAppliedFilters({ ...draftFilters });
 		setPage(1);
 	}
 
-	if (useLive && coveragesQ.isLoading && !coveragesQ.data) {
+	async function handleExportList() {
+		if (!useApi) {
+			toast.message(
+				"Export uses the current search results once export API is available"
+			);
+			return;
+		}
+		setExporting(true);
+		try {
+			const { blob, filename } = await exportMemberListCsv(listQuery);
+			downloadBlob(filename ?? stampFilename("members-list"), blob);
+			toast.success("Member list exported");
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Export failed");
+		} finally {
+			setExporting(false);
+		}
+	}
+
+	function clearFilters() {
+		setDraftFilters(EMPTY_MEMBER_FILTERS);
+		setAppliedFilters(EMPTY_MEMBER_FILTERS);
+		setPage(1);
+	}
+
+	if (isLoading) {
 		return (
-			<div className="space-y-4">
-				<Skeleton className="h-10 w-56" />
-				<Skeleton className="h-40 w-full" />
-				<Skeleton className="h-64 w-full" />
+			<div className="space-y-3">
+				<Skeleton className="h-10 w-full max-w-md" />
+				<Skeleton className="h-11 w-full border border-border" />
+				<Skeleton className="h-72 w-full border border-border" />
 			</div>
 		);
 	}
 
+	const rangeStart = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
+	const rangeEnd = Math.min(safePage * pageSize, totalCount);
+	const resultsMeta =
+		totalCount === 0
+			? "No results"
+			: `${totalCount.toLocaleString()} found · ${rangeStart}–${rangeEnd}`;
+
+	function onSearchKeyDown(event: KeyboardEvent) {
+		if (event.key === "Enter") handleSearch();
+	}
+
+	const pageButtons = Array.from({ length: pageCount }, (_, i) => i + 1).slice(
+		0,
+		5
+	);
+
 	return (
-		<div className="space-y-5">
-			{useLive && coveragesQ.error ? (
-				<div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-					{coveragesQ.error.message}
+		<div className="space-y-4">
+			<div className="flex flex-wrap items-start justify-between gap-3">
+				<div className="min-w-0">
+					<h1 className="text-2xl font-semibold tracking-tight text-foreground">
+						Members
+					</h1>
+					<p className="mt-1 text-sm text-muted-foreground">
+						Search and open member profiles · {programFilter} · {resultsMeta}
+					</p>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={() => void handleRefresh()}
+						disabled={refreshing}
+					>
+						<RefreshCw
+							className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
+						/>
+						Refresh
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={() => void handleExportList()}
+						disabled={exporting}
+					>
+						{exporting ? (
+							<Loader2 className="mr-1.5 size-3.5 animate-spin" />
+						) : (
+							<Download className="mr-1.5 size-3.5" />
+						)}
+						Export
+					</Button>
+				</div>
+			</div>
+
+			{error ? (
+				<div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+					{error.message}
 				</div>
 			) : null}
 
-			<section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-				<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-					<div>
-						<h1 className="text-xl font-semibold text-foreground">
-							Member Search
-						</h1>
-						<p className="text-sm text-muted-foreground">
-							Search and view member information across all sources.
-						</p>
+			<section className="overflow-hidden rounded-lg border border-border bg-card">
+				<div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5">
+					<div className="relative min-w-[180px] flex-1">
+						<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							value={draftFilters.search}
+							onChange={(e) => patchDraft({ search: e.target.value })}
+							onKeyDown={onSearchKeyDown}
+							placeholder="Search name, member ID, alternate ID…"
+							className={cn(compactFieldClass, "pl-8")}
+						/>
 					</div>
-					<div className="flex flex-wrap gap-2">
-						{useLive && programScoped.length === 0 ? (
-							<Button
-								size="sm"
-								onClick={() => void handleSeed()}
-								disabled={seeding}
-							>
-								{seeding ? "Seeding..." : "Seed demo coverages"}
-							</Button>
-						) : null}
+					<Select
+						value={draftFilters.memberStatus}
+						onValueChange={(value) => patchDraft({ memberStatus: value })}
+					>
+						<SelectTrigger className={cn(compactFieldClass, "w-[140px]")}>
+							<SelectValue placeholder="All status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All status</SelectItem>
+							<SelectItem value="Active">Active</SelectItem>
+							<SelectItem value="Pending">Pending</SelectItem>
+							<SelectItem value="Inactive">Inactive</SelectItem>
+							<SelectItem value="Termed">Termed</SelectItem>
+						</SelectContent>
+					</Select>
+					<Select
+						value={draftFilters.plan}
+						onValueChange={(value) => patchDraft({ plan: value })}
+					>
+						<SelectTrigger className={cn(compactFieldClass, "w-[150px]")}>
+							<SelectValue placeholder="All plans" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All plans</SelectItem>
+							{plans.map((planName) => (
+								<SelectItem key={planName} value={planName}>
+									{planName}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className={cn(
+							"h-8",
+							showMoreFilters && "border-primary/40 bg-primary/5 text-primary"
+						)}
+						onClick={() => setShowMoreFilters((v) => !v)}
+					>
+						<Filter className="mr-1.5 size-3.5" />
+						Filters
+						<ChevronDown
+							className={cn(
+								"ml-1 size-3.5 transition-transform",
+								showMoreFilters && "rotate-180"
+							)}
+						/>
+					</Button>
+					{hasActiveFilters || hasDraftFilters ? (
 						<Button
-							variant="outline"
+							type="button"
+							variant="ghost"
 							size="sm"
-							className="border-primary/30 text-primary"
+							className="h-8 px-2 text-xs text-primary"
 							onClick={clearFilters}
 						>
 							Clear
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							className="border-primary/30 text-primary"
-						>
-							Save Search
-						</Button>
-						<Button size="sm" className="bg-primary text-primary-foreground">
-							<Search className="mr-1.5 size-4" />
-							Search
-						</Button>
-					</div>
-				</div>
-
-				<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-					<div className="space-y-1.5">
-						<FieldLabel>Member ID</FieldLabel>
-						<Input
-							value={memberId}
-							onChange={(e) => {
-								setMemberId(e.target.value);
-								setPage(1);
-							}}
-							placeholder="Enter Member ID"
-							className="h-10"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Alternate ID</FieldLabel>
-						<Input
-							value={alternateId}
-							onChange={(e) => {
-								setAlternateId(e.target.value);
-								setPage(1);
-							}}
-							placeholder="Enter Alternate ID"
-							className="h-10"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>First Name</FieldLabel>
-						<Input
-							value={firstName}
-							onChange={(e) => {
-								setFirstName(e.target.value);
-								setPage(1);
-							}}
-							placeholder="Enter First Name"
-							className="h-10"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Last Name</FieldLabel>
-						<Input
-							value={lastName}
-							onChange={(e) => {
-								setLastName(e.target.value);
-								setPage(1);
-							}}
-							placeholder="Enter Last Name"
-							className="h-10"
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Date of Birth</FieldLabel>
-						<div className="relative">
-							<Input
-								type="date"
-								value={dob}
-								onChange={(e) => {
-									setDob(e.target.value);
-									setPage(1);
-								}}
-								className="h-10 pr-10"
-							/>
-							<CalendarDays className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-						</div>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Gender</FieldLabel>
-						<Select
-							value={gender}
-							onValueChange={(value: GenderFilter) => {
-								setGender(value);
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="h-10">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All</SelectItem>
-								<SelectItem value="Male">Male</SelectItem>
-								<SelectItem value="Female">Female</SelectItem>
-								<SelectItem value="Other">Other</SelectItem>
-								<SelectItem value="Unknown">Unknown</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-
-				<div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-					<div className="space-y-1.5">
-						<FieldLabel>Account / Group</FieldLabel>
-						<Select
-							value={accountGroup}
-							onValueChange={(value) => {
-								setAccountGroup(value);
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="h-10">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All</SelectItem>
-								{accountGroups.map((group) => (
-									<SelectItem key={group} value={group}>
-										{group}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Plan</FieldLabel>
-						<Select
-							value={plan}
-							onValueChange={(value) => {
-								setPlan(value);
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="h-10">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All</SelectItem>
-								{plans.map((planName) => (
-									<SelectItem key={planName} value={planName}>
-										{planName}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Eligibility Status</FieldLabel>
-						<Select
-							value={eligibilityStatus}
-							onValueChange={(value) => {
-								setEligibilityStatus(value);
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="h-10">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All</SelectItem>
-								<SelectItem value="Active">Active</SelectItem>
-								<SelectItem value="Pending">Pending</SelectItem>
-								<SelectItem value="Inactive">Inactive</SelectItem>
-								<SelectItem value="Termed">Termed</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Member Status</FieldLabel>
-						<Select
-							value={memberStatus}
-							onValueChange={(value) => {
-								setMemberStatus(value);
-								setPage(1);
-							}}
-						>
-							<SelectTrigger className="h-10">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All</SelectItem>
-								<SelectItem value="Active">Active</SelectItem>
-								<SelectItem value="Pending">Pending</SelectItem>
-								<SelectItem value="Inactive">Inactive</SelectItem>
-								<SelectItem value="Termed">Termed</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Effective Date From</FieldLabel>
-						<div className="relative">
-							<Input
-								type="date"
-								value={effectiveFrom}
-								onChange={(e) => {
-									setEffectiveFrom(e.target.value);
-									setPage(1);
-								}}
-								className="h-10 pr-10"
-							/>
-							<CalendarDays className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-						</div>
-					</div>
-					<div className="space-y-1.5">
-						<FieldLabel>Effective Date To</FieldLabel>
-						<div className="relative">
-							<Input
-								type="date"
-								value={effectiveTo}
-								onChange={(e) => {
-									setEffectiveTo(e.target.value);
-									setPage(1);
-								}}
-								className="h-10 pr-10"
-							/>
-							<CalendarDays className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-						</div>
-					</div>
-				</div>
-
-				<div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-					<button
+					) : null}
+					<Button
 						type="button"
-						onClick={() => setShowMoreFilters((value) => !value)}
-						className="inline-flex items-center text-sm font-medium text-primary"
+						size="sm"
+						className="h-8"
+						onClick={handleSearch}
 					>
-						More Filters
-						<ChevronDown
-							className={cn(
-								"ml-1 size-4 transition-transform",
-								showMoreFilters && "rotate-180"
-							)}
-						/>
-					</button>
-					<div className="flex items-center gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							className="border-primary/25"
-							onClick={() => void handleRefresh()}
-							disabled={refreshing}
-						>
-							<RefreshCw
-								className={cn("mr-1.5 size-3.5", refreshing && "animate-spin")}
-							/>
-							Refresh
-						</Button>
-						<Button variant="outline" size="sm" className="border-primary/25">
-							<Download className="mr-1.5 size-3.5" />
-							Export
-						</Button>
-					</div>
+						<Search className="mr-1.5 size-3.5" />
+						Search
+					</Button>
 				</div>
 
 				{showMoreFilters ? (
-					<div className="mt-3 rounded-lg border border-dashed border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-						Additional advanced filters can be added here later. The current
-						view matches the provided search design and is wired to mock data.
+					<div className="grid gap-2 border-b border-border bg-muted/15 p-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+						<CompactField id="member-id" label="Member ID">
+							<Input
+								id="member-id"
+								value={draftFilters.memberId}
+								onChange={(e) => patchDraft({ memberId: e.target.value })}
+								onKeyDown={onSearchKeyDown}
+								placeholder="Member ID"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField id="alternate-id" label="Alternate ID">
+							<Input
+								id="alternate-id"
+								value={draftFilters.alternateId}
+								onChange={(e) => patchDraft({ alternateId: e.target.value })}
+								onKeyDown={onSearchKeyDown}
+								placeholder="Alternate ID"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField id="first-name" label="First name">
+							<Input
+								id="first-name"
+								value={draftFilters.firstName}
+								onChange={(e) => patchDraft({ firstName: e.target.value })}
+								onKeyDown={onSearchKeyDown}
+								placeholder="First"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField id="last-name" label="Last name">
+							<Input
+								id="last-name"
+								value={draftFilters.lastName}
+								onChange={(e) => patchDraft({ lastName: e.target.value })}
+								onKeyDown={onSearchKeyDown}
+								placeholder="Last"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField id="dob" label="DOB">
+							<Input
+								id="dob"
+								type="date"
+								value={draftFilters.dob}
+								onChange={(e) => patchDraft({ dob: e.target.value })}
+								className={cn(
+									compactFieldClass,
+									"[color-scheme:light] dark:[color-scheme:dark]"
+								)}
+							/>
+						</CompactField>
+						<CompactField label="Gender">
+							<Select
+								value={draftFilters.gender}
+								onValueChange={(value: GenderFilter) =>
+									patchDraft({ gender: value })
+								}
+							>
+								<SelectTrigger className={compactFieldClass}>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">All</SelectItem>
+									<SelectItem value="Male">Male</SelectItem>
+									<SelectItem value="Female">Female</SelectItem>
+									<SelectItem value="Other">Other</SelectItem>
+									<SelectItem value="Unknown">Unknown</SelectItem>
+								</SelectContent>
+							</Select>
+						</CompactField>
+						<CompactField label="Eligibility">
+							<Select
+								value={draftFilters.eligibilityStatus}
+								onValueChange={(value) =>
+									patchDraft({ eligibilityStatus: value })
+								}
+							>
+								<SelectTrigger className={compactFieldClass}>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">All</SelectItem>
+									<SelectItem value="Active">Active</SelectItem>
+									<SelectItem value="Pending">Pending</SelectItem>
+									<SelectItem value="Inactive">Inactive</SelectItem>
+									<SelectItem value="Termed">Termed</SelectItem>
+								</SelectContent>
+							</Select>
+						</CompactField>
+						<CompactField label="Account / group">
+							<Select
+								value={draftFilters.accountGroup}
+								onValueChange={(value) => patchDraft({ accountGroup: value })}
+							>
+								<SelectTrigger className={compactFieldClass}>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">All</SelectItem>
+									{accountGroups.map((group) => (
+										<SelectItem key={group} value={group}>
+											{group}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</CompactField>
+						<CompactField id="effective-from" label="Effective from">
+							<Input
+								id="effective-from"
+								type="date"
+								value={draftFilters.effectiveFrom}
+								onChange={(e) => patchDraft({ effectiveFrom: e.target.value })}
+								className={cn(
+									compactFieldClass,
+									"[color-scheme:light] dark:[color-scheme:dark]"
+								)}
+							/>
+						</CompactField>
+						<CompactField id="effective-to" label="Effective to">
+							<Input
+								id="effective-to"
+								type="date"
+								value={draftFilters.effectiveTo}
+								onChange={(e) => patchDraft({ effectiveTo: e.target.value })}
+								className={cn(
+									compactFieldClass,
+									"[color-scheme:light] dark:[color-scheme:dark]"
+								)}
+							/>
+						</CompactField>
+						<CompactField id="lob" label="LOB">
+							<Input
+								id="lob"
+								value={draftFilters.lob}
+								onChange={(e) => patchDraft({ lob: e.target.value })}
+								onKeyDown={onSearchKeyDown}
+								placeholder="Line of business"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField label="Vendor">
+							<Select
+								value={draftFilters.vendorId}
+								onValueChange={(value) => patchDraft({ vendorId: value })}
+							>
+								<SelectTrigger className={compactFieldClass}>
+									<SelectValue placeholder="All" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">All</SelectItem>
+									{(vendorsQ.data ?? []).map((v) => (
+										<SelectItem key={v.id} value={v.id}>
+											{v.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</CompactField>
 					</div>
 				) : null}
-			</section>
 
-			<section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-				<div className="border-b border-border bg-muted/40 px-4 py-3">
-					<p className="text-sm font-semibold text-foreground">
-						Search Results
-					</p>
-					<p className="text-xs text-muted-foreground">
-						{filtered.length} members found in {programFilter}
-					</p>
-				</div>
-				<div className="overflow-x-auto">
-					<Table>
+				<div className="w-full overflow-hidden">
+					<Table className="w-full table-fixed">
 						<TableHeader>
-							<TableRow className="hover:bg-transparent">
-								<TableHead>Member ID</TableHead>
-								<TableHead>Alternate ID</TableHead>
-								<TableHead>Member Name</TableHead>
-								<TableHead>Date of Birth</TableHead>
-								<TableHead>Gender</TableHead>
-								<TableHead>Eligibility Status</TableHead>
-								<TableHead>Current Plan</TableHead>
-								<TableHead>Account / Group</TableHead>
-								<TableHead>Member Status</TableHead>
-								<TableHead className="text-right">Action</TableHead>
+							<TableRow className="border-b border-border bg-muted/50 hover:bg-muted/50">
+								<TableHead className={cn(th, "w-[11%]")}>Member ID</TableHead>
+								<TableHead className={cn(th, "w-[10%]")}>Alt ID</TableHead>
+								<TableHead className={cn(th, "w-[14%]")}>Name</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>DOB</TableHead>
+								<TableHead className={cn(th, "w-[5%]")}>Sex</TableHead>
+								<TableHead className={cn(th, "w-[9%]")}>Eligibility</TableHead>
+								<TableHead className={cn(th, "w-[12%]")}>Plan</TableHead>
+								<TableHead className={cn(th, "w-[10%]")}>Group</TableHead>
+								<TableHead className={cn(th, "w-[6%]")}>LOB</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Status</TableHead>
+								<TableHead className={cn(th, "w-[7%]")}>Effective</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{pageRows.map((member) => (
 								<TableRow
 									key={member.id}
-									className="cursor-pointer hover:bg-muted/40"
+									className="cursor-pointer border-b border-border/70 hover:bg-muted/50"
 									onClick={() => router.push(`/admin/members/${member.id}`)}
 								>
-									<TableCell className="font-medium text-primary">
+									<TableCell
+										className={cn(td, "truncate font-medium text-primary")}
+										title={member.memberId}
+									>
 										{member.memberId}
 									</TableCell>
-									<TableCell className="font-mono text-xs text-muted-foreground">
+									<TableCell
+										className={cn(td, "truncate text-muted-foreground")}
+										title={member.alternateId ?? undefined}
+									>
 										{member.alternateId ?? "—"}
 									</TableCell>
-									<TableCell>
-										<div>
-											<p className="text-sm font-medium text-foreground">
-												{displayName(member)}
-											</p>
-											<p className="text-xs text-muted-foreground">
-												{maskSsn(member.ssnLast4)}
-											</p>
-										</div>
+									<TableCell className={td}>
+										<span
+											className="block truncate font-medium text-primary hover:underline"
+											title={displayName(member)}
+										>
+											{displayName(member)}
+										</span>
 									</TableCell>
-									<TableCell className="text-sm">
+									<TableCell className={cn(td, "tabular-nums")}>
 										{formatDate(member.dob)}
 									</TableCell>
-									<TableCell className="text-sm">
+									<TableCell className={cn(td, "text-muted-foreground")}>
 										{member.gender === "Male"
 											? "M"
 											: member.gender === "Female"
 												? "F"
-												: member.gender}
+												: member.gender === "Other"
+													? "O"
+													: "U"}
 									</TableCell>
-									<TableCell>
-										<StatusPill status={member.status} />
-									</TableCell>
-									<TableCell className="text-sm">{member.planName}</TableCell>
-									<TableCell className="text-sm">
-										{member.accountGroup ?? "—"}
-									</TableCell>
-									<TableCell className="text-sm">
-										{member.status === "active"
-											? "Active"
-											: member.status === "inactive"
-												? "Inactive"
-												: member.status === "pending"
-													? "Pending"
-													: "Termed"}
+									<TableCell className={td}>
+										<EligibilityPill label={member.eligibilityLabel} />
 									</TableCell>
 									<TableCell
-										className="text-right"
-										onClick={(e) => e.stopPropagation()}
+										className={cn(td, "truncate")}
+										title={member.planName}
 									>
-										<Button asChild variant="outline" size="sm" className="h-8">
-											<Link href={`/admin/members/${member.id}`}>Open</Link>
-										</Button>
+										{member.planName}
+									</TableCell>
+									<TableCell
+										className={cn(td, "truncate text-muted-foreground")}
+										title={member.accountGroup ?? undefined}
+									>
+										{member.accountGroup ?? "—"}
+									</TableCell>
+									<TableCell className={cn(td, "truncate")} title={member.lob}>
+										{member.lob}
+									</TableCell>
+									<TableCell className={td}>
+										<StatusPill status={member.status} />
+									</TableCell>
+									<TableCell
+										className={cn(td, "tabular-nums text-muted-foreground")}
+									>
+										{formatDate(
+											member.coverageEffectiveDate ?? member.memberSince
+										)}
 									</TableCell>
 								</TableRow>
 							))}
 							{pageRows.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={10}
-										className="h-24 text-center text-muted-foreground"
+										colSpan={11}
+										className="h-20 text-center text-sm text-muted-foreground"
 									>
-										No members match the current filters.
+										No members match your filters.
 									</TableCell>
 								</TableRow>
 							) : null}
 						</TableBody>
 					</Table>
 				</div>
-				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm text-muted-foreground">
+
+				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-3 py-2.5 text-xs text-muted-foreground">
 					<p>
 						Showing{" "}
+						<span className="font-medium text-foreground">{rangeStart}</span> to{" "}
+						<span className="font-medium text-foreground">{rangeEnd}</span> of{" "}
 						<span className="font-medium text-foreground">
-							{filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1}
-						</span>
-						-
-						<span className="font-medium text-foreground">
-							{Math.min(safePage * pageSize, filtered.length)}
+							{totalCount.toLocaleString()}
 						</span>{" "}
-						of{" "}
-						<span className="font-medium text-foreground">
-							{filtered.length}
-						</span>
+						entries
 					</p>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1.5">
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-8"
+							className="size-7"
 							disabled={safePage <= 1}
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 						>
-							<ChevronLeft className="size-4" />
+							<ChevronLeft className="size-3.5" />
 						</Button>
-						<span className="px-2 text-xs tabular-nums">
-							{safePage} / {pageCount}
-						</span>
+						{pageButtons.map((n) => (
+							<Button
+								key={n}
+								variant={n === safePage ? "default" : "outline"}
+								size="icon"
+								className="size-7 text-xs"
+								onClick={() => setPage(n)}
+							>
+								{n}
+							</Button>
+						))}
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-8"
+							className="size-7"
 							disabled={safePage >= pageCount}
 							onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
 						>
-							<ChevronRight className="size-4" />
+							<ChevronRight className="size-3.5" />
 						</Button>
 						<Select
 							value={String(pageSize)}
-							onValueChange={(value) => {
-								setPageSize(Number(value));
+							onValueChange={(v) => {
+								setPageSize(Number(v));
 								setPage(1);
 							}}
 						>
-							<SelectTrigger className="h-8 w-[76px]">
+							<SelectTrigger className="h-7 w-[88px] text-xs">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{[10, 25, 50].map((size) => (
-									<SelectItem key={size} value={String(size)}>
-										{size}
-									</SelectItem>
-								))}
+								<SelectItem value="10">10/page</SelectItem>
+								<SelectItem value="20">20/page</SelectItem>
+								<SelectItem value="50">50/page</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>

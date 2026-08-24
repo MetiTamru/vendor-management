@@ -156,11 +156,119 @@ export type MemberCoverageDto = {
 				received_at?: string;
 				member_count?: number;
 		  };
+	/** Present on Member 360 list (`GET /members/list/`) as vendor_id */
+	vendor_id?: string | null;
 	is_visible?: boolean;
 	deleted_at?: string | null;
 	metadata?: Record<string, unknown> | null;
 	created_at?: string;
 	updated_at?: string;
+};
+
+/** `GET /api/v1/members/list/` row (snake_case wire). */
+export type MemberListDto = {
+	id: string;
+	reference_id?: string;
+	vendor_id?: string | null;
+	cardholder_id?: string;
+	person_code?: string;
+	external_id?: string;
+	first_name?: string;
+	middle_name?: string;
+	last_name?: string;
+	display_name?: string;
+	status?: string;
+	relationship_code?: string;
+	source_system?: string;
+	vendor_source?: string;
+	program?: string;
+	lob?: string;
+	plan_type?: string;
+	pcp_name?: string;
+	pcp_npi?: string;
+	member_since?: string | null;
+	claims_ytd?: number;
+	paid_ytd?: string | number;
+	last_claim_date?: string | null;
+	date_of_birth?: string | null;
+	gender?: string;
+	ssn_last4?: string;
+	phone?: string;
+	email?: string;
+	address_line1?: string;
+	address_line2?: string;
+	city?: string;
+	state?: string;
+	postal_code?: string;
+	alternate_id?: string;
+	eligibility_status?: string;
+	eligibility_label?: string;
+	account_group?: string;
+	group_name?: string;
+	plan_name?: string;
+	coverage_effective_date?: string | null;
+	last_eligibility_update?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+/** Nested slices on `GET /api/v1/members/<id>/`. */
+export type MemberDetailDto = MemberListDto & {
+	data_as_of?: string | null;
+	demographics?: Record<string, unknown> | null;
+	eligibility?: Record<string, unknown> | null;
+	plan_coverage?: Record<string, unknown> | null;
+	employment_group?: Record<string, unknown> | null;
+	other_statuses?: Record<string, unknown>[];
+	family_members?: Record<string, unknown>[];
+	latest_source?: Record<string, unknown> | null;
+	recent_sources?: Record<string, unknown>[];
+	change_events?: Record<string, unknown>[];
+	alerts?: Record<string, unknown>[];
+	eligibility_history?: Record<string, unknown>[];
+	plan_history?: Record<string, unknown>[];
+	claims?: Record<string, unknown>[];
+	encounters?: Record<string, unknown>[];
+	accumulators?: Record<string, unknown>[];
+	exceptions?: Record<string, unknown>[];
+	vendor_history?: Record<string, unknown>[];
+	preferred_name?: string;
+	preferred_language?: string;
+	race?: string;
+	ethnicity?: string;
+	communication_preference?: string;
+	emergency_contact_name?: string;
+	emergency_contact_phone?: string;
+	emergency_contact_relation?: string;
+	mailing_address_line1?: string;
+	mailing_address_line2?: string;
+	mailing_city?: string;
+	mailing_state?: string;
+	mailing_postal_code?: string;
+};
+
+export type MemberListQuery = {
+	search?: string;
+	vendor_id?: string;
+	status?: string;
+	cardholder_id?: string;
+	group_id?: string;
+	/** Employment group display name (backend `account_group` filter). */
+	account_group?: string;
+	alternate_id?: string;
+	first_name?: string;
+	last_name?: string;
+	date_of_birth?: string;
+	gender?: string;
+	plan_name?: string;
+	eligibility_status?: string;
+	program?: string;
+	lob?: string;
+	coverage_effective_from?: string;
+	coverage_effective_to?: string;
+	order_by?: string;
+	limit?: number;
+	offset?: number;
 };
 
 export type InboundFileDto = {
@@ -239,6 +347,62 @@ export type ProviderRosterDto = {
 	provider_count?: number;
 	created_at?: string;
 	updated_at?: string;
+};
+
+export type ProviderListQuery = {
+	is_visible?: boolean;
+	is_deleted?: boolean;
+	reference_id?: string;
+	roster_file_id?: string;
+	vendor_id?: string;
+	npi?: string;
+	name?: string;
+	taxonomy?: string;
+	entity_type?: string;
+	status?: string;
+	limit?: number;
+	offset?: number;
+};
+
+export type ProviderCreateInput = {
+	roster_file_id: string;
+	npi: string;
+	name: string;
+	taxonomy?: string;
+	entity_type?: string;
+	effective_date?: string | null;
+	raw_object_id?: string | null;
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+export type ProviderUpdateInput = Partial<ProviderCreateInput>;
+
+export type ProviderStatusInput = {
+	status: "active" | "inactive" | "pending" | "termed";
+};
+
+export type ProviderRosterCreateInput = {
+	vendor_id?: string | null;
+	source_inbound_file_id?: string | null;
+	original_filename?: string;
+	received_at: string;
+	provider_count?: number;
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+export type ProviderRosterUpdateInput = Partial<ProviderRosterCreateInput>;
+
+export type ProviderRosterListQuery = {
+	is_visible?: boolean;
+	is_deleted?: boolean;
+	reference_id?: string;
+	vendor_id?: string;
+	source_inbound_file_id?: string;
+	original_filename?: string;
+	limit?: number;
+	offset?: number;
 };
 
 /** GET /api/v1/eligibility-files/list/ — 834 eligibility file shells. */
@@ -396,6 +560,151 @@ export type MonitoringDashboardDto = {
 export type TokenPair = {
 	access: string;
 	refresh?: string;
+};
+
+/** `GET /api/v1/authentication/me/` → `result.user` */
+export type MeUserDto = {
+	id: string;
+	username: string;
+	email: string;
+	first_name?: string;
+	last_name?: string;
+	full_name?: string;
+	phone_number?: string | number | null;
+	is_active: boolean;
+	is_staff?: boolean;
+	is_admin?: boolean;
+	is_superuser?: boolean;
+	must_change_password?: boolean;
+};
+
+export type MeResponseDto = {
+	user: MeUserDto;
+};
+
+/** `/api/v1/identity-groups/` wire shapes */
+export type IdentityGroupMemberDto = {
+	id: string;
+	external_id?: string | null;
+	display_name: string;
+	role?: string | null;
+	user_id?: string | null;
+};
+
+export type IdentityGroupCharacteristicDto = {
+	id: string;
+	key: string;
+	operator: string;
+	value: unknown;
+};
+
+export type IdentityGroupDto = {
+	id: string;
+	name: string;
+	description?: string | null;
+	membership_mode: string;
+	members: IdentityGroupMemberDto[];
+	characteristics: IdentityGroupCharacteristicDto[];
+	period_start?: string | null;
+	period_end?: string | null;
+	is_active: boolean;
+	sync_status: string;
+	updated_at: string;
+};
+
+export type IdentityGroupMemberInput = {
+	external_id?: string | null;
+	display_name: string;
+	role?: string | null;
+	user_id?: string | null;
+};
+
+export type IdentityGroupCharacteristicInput = {
+	key: string;
+	operator: string;
+	value: unknown;
+};
+
+export type IdentityGroupCreateInput = {
+	name: string;
+	description?: string | null;
+	membership_mode: string;
+	members?: IdentityGroupMemberInput[];
+	characteristics?: IdentityGroupCharacteristicInput[];
+	period_start?: string | null;
+	period_end?: string | null;
+	is_active?: boolean;
+};
+
+export type IdentityGroupUpdateInput = Partial<IdentityGroupCreateInput>;
+
+export type IdentityGroupListQuery = {
+	search?: string;
+	is_active?: boolean;
+	limit?: number;
+	offset?: number;
+};
+
+/** `/api/v1/roles/` wire shapes */
+export type RoleUserCompactDto = {
+	id: string;
+	username: string;
+	email: string;
+};
+
+export type RoleDto = {
+	id: string;
+	name: string;
+	display_name: string;
+	description?: string | null;
+	permissions: string[];
+	is_system_role: boolean;
+	users?: RoleUserCompactDto[];
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type RoleCreateInput = {
+	name: string;
+	display_name: string;
+	description?: string | null;
+	permissions?: string[];
+};
+
+export type RoleUpdateInput = Partial<RoleCreateInput>;
+
+export type RoleListQuery = {
+	limit?: number;
+	offset?: number;
+};
+
+/** `/api/v1/settings/` wire shapes */
+export type AppSettingDto = {
+	id: string;
+	key: string;
+	value: string;
+	value_type: string;
+	category: string;
+	description?: string | null;
+	is_secret: boolean;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type AppSettingCreateInput = {
+	key: string;
+	value: string;
+	value_type?: string;
+	category: string;
+	description?: string | null;
+	is_secret?: boolean;
+};
+
+export type AppSettingUpdateInput = Partial<Omit<AppSettingCreateInput, "key">>;
+
+export type AppSettingListQuery = {
+	limit?: number;
+	offset?: number;
 };
 
 export function refId(
