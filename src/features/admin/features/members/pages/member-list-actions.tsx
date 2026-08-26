@@ -13,25 +13,17 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
-	useCreateMemberMutation,
 	useDeleteMemberMutation,
 	useSeedMembersMutation,
 	useUpdateMemberMutation,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import { MemberWriteForm } from "@/features/admin/features/members/pages/member-write-form";
-import type { MemberWriteBody } from "@/lib/vendor-core/types";
+import { Link } from "@/i18n/navigation";
 
 export function MemberDirectoryActions() {
-	const [open, setOpen] = useState(false);
-	const [vendorId, setVendorId] = useState("");
-	const create = useCreateMemberMutation();
 	const seed = useSeedMembersMutation();
 	const vendorsQ = useVendorCoreVendors();
-	const vendors = (vendorsQ.data ?? []).map((v) => ({
-		id: v.id,
-		name: v.name || v.legal_name || v.id,
-	}));
+	const defaultVendorId = vendorsQ.data?.[0]?.id;
 
 	return (
 		<>
@@ -43,7 +35,7 @@ export function MemberDirectoryActions() {
 				onClick={() =>
 					seed.mutate(
 						{
-							vendor_id: vendorId || vendors[0]?.id,
+							vendor_id: defaultVendorId,
 							count: 2,
 							force: true,
 						},
@@ -62,42 +54,9 @@ export function MemberDirectoryActions() {
 			>
 				Seed
 			</Button>
-			<Button size="sm" className="h-9" onClick={() => setOpen(true)}>
-				Add member
+			<Button size="sm" className="h-9" asChild>
+				<Link href="/admin/members/new">Add member</Link>
 			</Button>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="flex max-h-[min(36rem,85vh)] w-[min(72rem,calc(100%-2rem))] flex-col overflow-hidden sm:max-w-5xl">
-					<DialogHeader>
-						<DialogTitle>Create member</DialogTitle>
-					</DialogHeader>
-					<MemberWriteForm
-						vendorId={vendorId}
-						onVendorIdChange={setVendorId}
-						vendors={vendors}
-						pending={create.isPending}
-						submitLabel="Create"
-						onSubmit={(body: MemberWriteBody) => {
-							if (!vendorId || !body.cardholder_id) {
-								toast.error("Vendor and cardholder ID are required");
-								return;
-							}
-							create.mutate(
-								{ ...body, vendor_id: vendorId },
-								{
-									onSuccess: () => {
-										toast.success("Member created");
-										setOpen(false);
-									},
-									onError: (err) =>
-										toast.error(
-											err instanceof Error ? err.message : "Create failed"
-										),
-								}
-							);
-						}}
-					/>
-				</DialogContent>
-			</Dialog>
 		</>
 	);
 }

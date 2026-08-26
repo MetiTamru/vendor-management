@@ -22,6 +22,7 @@ import {
 	mapSourceRecordList,
 	memberDetailDtoToDetail,
 	memberListDtoToSummary,
+	sanitizeMemberWriteBody,
 } from "../../map-member-core";
 import {
 	type AccumulatorRow,
@@ -410,8 +411,23 @@ export async function createMember(body: MemberCreateBody | Record<string, unkno
 		if (!existing) throw new Error("No mock members");
 		return getMember(existing.id)!;
 	}
-	const dto = await vendorCoreApi.createMember(body);
-	return memberDetailDtoToDetail(dto);
+	const dto = await vendorCoreApi.createMember(sanitizeMemberWriteBody(body));
+	const rawId =
+		dto && typeof dto === "object" && "id" in dto
+			? String((dto as { id: unknown }).id ?? "")
+			: "";
+	try {
+		const detail = memberDetailDtoToDetail(dto as MemberDetailDto);
+		if (detail.id) return detail;
+		if (rawId) return { ...detail, id: rawId };
+	} catch {
+		/* fall through to raw id */
+	}
+	if (!rawId) throw new Error("Member created but no id returned");
+	return memberDetailDtoToDetail({
+		...(dto as object),
+		id: rawId,
+	} as MemberDetailDto);
 }
 
 export async function updateMember(
@@ -423,7 +439,7 @@ export async function updateMember(
 		if (!member) throw new Error("Member not found");
 		return member;
 	}
-	const dto = await vendorCoreApi.updateMember(id, body);
+	const dto = await vendorCoreApi.updateMember(id, sanitizeMemberWriteBody(body));
 	return memberDetailDtoToDetail(dto);
 }
 
@@ -457,7 +473,12 @@ export async function listMemberFamilyLinks(
 ): Promise<DependentRow[]> {
 	if (isMockEnabled()) return getMember(memberId)?.dependents ?? [];
 	const page = await vendorCoreApi.listMemberFamilyLinks(memberId);
-	return mapFamilyLinks(page.results as Record<string, unknown>[]);
+	const rows = Array.isArray(page)
+		? page
+		: Array.isArray(page?.results)
+			? page.results
+			: [];
+	return mapFamilyLinks(rows as Record<string, unknown>[]);
 }
 
 export async function getMemberFamilyLink(memberId: string, linkId: string) {

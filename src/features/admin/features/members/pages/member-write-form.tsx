@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -12,11 +12,18 @@ import {
 	RecordFormRow,
 	RecordFormSection,
 } from "@/components/ui/record-form";
-import { MemberFamilyEditor } from "@/features/admin/features/members/pages/member-family-editor";
+import {
+	MemberFamilyDraftEditor,
+	MemberFamilyEditor,
+	type MemberFamilyDraftHandle,
+	type MemberFamilyLiveHandle,
+	type PendingFamilyDependent,
+} from "@/features/admin/features/members/pages/member-family-editor";
 import type { MemberDetail } from "@/features/admin/features/members/mock-data";
 import { memberToWriteBody } from "@/features/admin/features/members/map-member-core";
 import { useUpdateMemberMutation } from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import type { MemberWriteBody } from "@/lib/vendor-core/types";
+import { cn } from "@/lib/utils";
 
 const fieldClass = "h-8 w-full bg-background text-sm";
 
@@ -25,10 +32,15 @@ function emptyWrite(): MemberWriteBody {
 		cardholder_id: "",
 		person_code: "01",
 		first_name: "",
+		middle_name: "",
 		last_name: "",
 		status: "active",
-		demographics: {},
-		eligibility: { status: "active" },
+		relationship_code: "18",
+		demographics: {
+			gender: "M",
+			communication_preference: "phone",
+		},
+		eligibility: { status: "active", secondary_coverage: false },
 		plan_coverage: {},
 		employment_group: {},
 	};
@@ -52,6 +64,9 @@ export function MemberWriteForm({
 	submitLabel,
 	onSubmit,
 	onCancel,
+	showFooter = true,
+	showFamily,
+	className,
 }: {
 	member?: MemberDetail;
 	vendorId?: string;
@@ -59,21 +74,59 @@ export function MemberWriteForm({
 	vendors?: { id: string; name: string }[];
 	pending?: boolean;
 	submitLabel: string;
-	onSubmit: (body: MemberWriteBody) => void;
+	onSubmit: (
+		body: MemberWriteBody,
+		pendingFamily?: PendingFamilyDependent[]
+	) => void;
 	onCancel?: () => void;
+	/** When false, parent owns Cancel / Save actions. */
+	showFooter?: boolean;
+	/** Override family editor visibility (default: when editing existing member). */
+	showFamily?: boolean;
+	className?: string;
 }) {
 	const [body, setBody] = useState<MemberWriteBody>(() =>
 		member ? memberToWriteBody(member) : emptyWrite()
 	);
+	const [pendingFamily, setPendingFamily] = useState<PendingFamilyDependent[]>(
+		[]
+	);
+	const familyFlushRef = useRef<MemberFamilyDraftHandle | null>(null);
+	const familyLiveRef = useRef<MemberFamilyLiveHandle | null>(null);
 	const demo = body.demographics ?? {};
 	const elig = body.eligibility ?? {};
 	const plan = body.plan_coverage ?? {};
 	const group = body.employment_group ?? {};
+	const familyVisible =
+		showFamily ?? Boolean(member?.id);
+
+	async function submitWithFamily() {
+		try {
+			if (member?.id && familyLiveRef.current) {
+				await familyLiveRef.current.flushAndLink();
+			}
+		} catch {
+			return;
+		}
+		const flushed =
+			!member?.id && familyFlushRef.current
+				? familyFlushRef.current.flush()
+				: pendingFamily;
+		onSubmit(body, member?.id ? undefined : flushed);
+	}
 
 	return (
-		<div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-0.5">
+		<div
+			className={cn(
+				"min-h-0 flex-1 space-y-6 overflow-y-auto pr-0.5",
+				className
+			)}
+		>
 			{vendors && onVendorIdChange ? (
-				<RecordFormSection title="Vendor">
+				<RecordFormSection
+					title="Vendor"
+					description="Required. Member is created under this vendor."
+				>
 					<RecordFormRow>
 						<RecordFormField label="Vendor">
 							<select
@@ -82,18 +135,23 @@ export function MemberWriteForm({
 								onChange={(e) => onVendorIdChange(e.target.value)}
 							>
 								<option value="">Select vendor</option>
-								{vendors.map((v) => (
-									<option key={v.id} value={v.id}>
-										{v.name}
-									</option>
-								))}
+								{vendors
+									.filter((v) => Boolean(v.id))
+									.map((v) => (
+										<option key={v.id} value={v.id}>
+											{v.name}
+										</option>
+									))}
 							</select>
 						</RecordFormField>
 					</RecordFormRow>
 				</RecordFormSection>
 			) : null}
 
-			<RecordFormSection title="Identity">
+			<RecordFormSection
+				title="Identity"
+				description="Core member identifiers and display name."
+			>
 				<RecordFormRow>
 					<RecordFormField label="Cardholder ID">
 						<Input
@@ -102,10 +160,9 @@ export function MemberWriteForm({
 							onChange={(e) =>
 								setBody({ ...body, cardholder_id: e.target.value })
 							}
+							placeholder="Required"
 						/>
 					</RecordFormField>
-				</RecordFormRow>
-				<RecordFormRow>
 					<RecordFormField label="Person code">
 						<Input
 							className={fieldClass}
@@ -115,6 +172,8 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
 					<RecordFormField label="External ID">
 						<Input
 							className={fieldClass}
@@ -122,6 +181,16 @@ export function MemberWriteForm({
 							onChange={(e) =>
 								setBody({ ...body, external_id: e.target.value })
 							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Relationship code">
+						<Input
+							className={fieldClass}
+							value={body.relationship_code ?? ""}
+							onChange={(e) =>
+								setBody({ ...body, relationship_code: e.target.value })
+							}
+							placeholder="18 = Self, 01 = Spouse…"
 						/>
 					</RecordFormField>
 				</RecordFormRow>
@@ -135,6 +204,19 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Middle name">
+						<Input
+							className={fieldClass}
+							value={body.middle_name ?? ""}
+							onChange={(e) =>
+								setBody({ ...body, middle_name: e.target.value })
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
 					<RecordFormField label="Last name">
 						<Input
 							className={fieldClass}
@@ -148,6 +230,7 @@ export function MemberWriteForm({
 				<RecordFormRow>
 					<RecordFormField label="Status">
 						<RecordFormChoice
+							tone="primary"
 							value={body.status || "active"}
 							onChange={(v) => setBody({ ...body, status: v })}
 							options={[
@@ -156,16 +239,6 @@ export function MemberWriteForm({
 								{ value: "inactive", label: "Inactive" },
 								{ value: "termed", label: "Termed" },
 							]}
-						/>
-					</RecordFormField>
-					<RecordFormField label="Relationship code">
-						<Input
-							className={fieldClass}
-							value={body.relationship_code ?? ""}
-							onChange={(e) =>
-								setBody({ ...body, relationship_code: e.target.value })
-							}
-							placeholder="18 = Self, 01 = Spouse…"
 						/>
 					</RecordFormField>
 				</RecordFormRow>
@@ -201,9 +274,47 @@ export function MemberWriteForm({
 						/>
 					</RecordFormField>
 				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Plan type">
+						<Input
+							className={fieldClass}
+							value={body.plan_type ?? ""}
+							onChange={(e) =>
+								setBody({ ...body, plan_type: e.target.value })
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Source system">
+						<Input
+							className={fieldClass}
+							value={body.source_system ?? ""}
+							onChange={(e) =>
+								setBody({ ...body, source_system: e.target.value })
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Member since">
+						<Input
+							type="date"
+							className={fieldClass}
+							value={body.member_since ?? ""}
+							onChange={(e) =>
+								setBody({
+									...body,
+									member_since: e.target.value || null,
+								})
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
 			</RecordFormSection>
 
-			<RecordFormSection title="Demographics">
+			<RecordFormSection
+				title="Demographics"
+				description="Contact, address, and demographic attributes."
+			>
 				<RecordFormRow>
 					<RecordFormField label="Date of birth">
 						<Input
@@ -220,12 +331,44 @@ export function MemberWriteForm({
 						/>
 					</RecordFormField>
 					<RecordFormField label="Gender">
+						<RecordFormChoice
+							value={demo.gender || "M"}
+							onChange={(v) =>
+								setBody(patchNested(body, "demographics", { gender: v }))
+							}
+							options={[
+								{ value: "M", label: "Male" },
+								{ value: "F", label: "Female" },
+								{ value: "O", label: "Other" },
+								{ value: "U", label: "Unknown" },
+							]}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="SSN last 4">
 						<Input
 							className={fieldClass}
-							value={demo.gender ?? ""}
+							value={demo.ssn_last4 ?? ""}
+							maxLength={4}
 							onChange={(e) =>
 								setBody(
-									patchNested(body, "demographics", { gender: e.target.value })
+									patchNested(body, "demographics", {
+										ssn_last4: e.target.value.replace(/\D/g, "").slice(0, 4),
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Alternate ID">
+						<Input
+							className={fieldClass}
+							value={demo.alternate_id ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										alternate_id: e.target.value,
+									})
 								)
 							}
 						/>
@@ -245,6 +388,7 @@ export function MemberWriteForm({
 					</RecordFormField>
 					<RecordFormField label="Email">
 						<Input
+							type="email"
 							className={fieldClass}
 							value={demo.email ?? ""}
 							onChange={(e) =>
@@ -256,7 +400,7 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Address">
+					<RecordFormField label="Address line 1">
 						<Input
 							className={fieldClass}
 							value={demo.address_line1 ?? ""}
@@ -264,6 +408,21 @@ export function MemberWriteForm({
 								setBody(
 									patchNested(body, "demographics", {
 										address_line1: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Address line 2">
+						<Input
+							className={fieldClass}
+							value={demo.address_line2 ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										address_line2: e.target.value,
 									})
 								)
 							}
@@ -308,13 +467,205 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+					<RecordFormField label="Preferred name">
+						<Input
+							className={fieldClass}
+							value={demo.preferred_name ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										preferred_name: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Preferred language">
+						<Input
+							className={fieldClass}
+							value={demo.preferred_language ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										preferred_language: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Communication">
+						<RecordFormChoice
+							value={demo.communication_preference || "phone"}
+							onChange={(v) =>
+								setBody(
+									patchNested(body, "demographics", {
+										communication_preference: v,
+									})
+								)
+							}
+							options={[
+								{ value: "phone", label: "Phone" },
+								{ value: "email", label: "Email" },
+								{ value: "mail", label: "Mail" },
+								{ value: "sms", label: "SMS" },
+							]}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Race">
+						<Input
+							className={fieldClass}
+							value={demo.race ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", { race: e.target.value })
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Ethnicity">
+						<Input
+							className={fieldClass}
+							value={demo.ethnicity ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										ethnicity: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Emergency contact">
+						<Input
+							className={fieldClass}
+							value={demo.emergency_contact_name ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										emergency_contact_name: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Emergency phone">
+						<Input
+							className={fieldClass}
+							value={demo.emergency_contact_phone ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										emergency_contact_phone: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Emergency relation">
+						<Input
+							className={fieldClass}
+							value={demo.emergency_contact_relation ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										emergency_contact_relation: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Mailing address 1">
+						<Input
+							className={fieldClass}
+							value={demo.mailing_address_line1 ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										mailing_address_line1: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Mailing address 2">
+						<Input
+							className={fieldClass}
+							value={demo.mailing_address_line2 ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										mailing_address_line2: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Mailing city">
+						<Input
+							className={fieldClass}
+							value={demo.mailing_city ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										mailing_city: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Mailing state">
+						<Input
+							className={fieldClass}
+							value={demo.mailing_state ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										mailing_state: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Mailing postal">
+						<Input
+							className={fieldClass}
+							value={demo.mailing_postal_code ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "demographics", {
+										mailing_postal_code: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
 				</RecordFormRow>
 			</RecordFormSection>
 
-			<RecordFormSection title="Eligibility">
+			<RecordFormSection
+				title="Eligibility"
+				description="Coverage eligibility status and dates."
+			>
 				<RecordFormRow>
 					<RecordFormField label="Status">
 						<RecordFormChoice
+							tone="primary"
 							value={elig.status || "active"}
 							onChange={(v) =>
 								setBody(patchNested(body, "eligibility", { status: v }))
@@ -343,6 +694,22 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+					<RecordFormField label="Status term">
+						<Input
+							type="date"
+							className={fieldClass}
+							value={elig.status_term_date ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "eligibility", {
+										status_term_date: e.target.value || null,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
 					<RecordFormField label="Enrollment date">
 						<Input
 							type="date"
@@ -357,10 +724,45 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+					<RecordFormField label="Disenrollment">
+						<Input
+							type="date"
+							className={fieldClass}
+							value={elig.disenrollment_date ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "eligibility", {
+										disenrollment_date: e.target.value || null,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Secondary coverage">
+						<RecordFormChoice
+							value={elig.secondary_coverage ? "yes" : "no"}
+							onChange={(v) =>
+								setBody(
+									patchNested(body, "eligibility", {
+										secondary_coverage: v === "yes",
+									})
+								)
+							}
+							options={[
+								{ value: "no", label: "No" },
+								{ value: "yes", label: "Yes" },
+							]}
+						/>
+					</RecordFormField>
 				</RecordFormRow>
 			</RecordFormSection>
 
-			<RecordFormSection title="Plan coverage">
+			<RecordFormSection
+				title="Plan coverage"
+				description="Active plan assignment and coverage window."
+			>
 				<RecordFormRow>
 					<RecordFormField label="Plan name">
 						<Input
@@ -390,6 +792,53 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
+					<RecordFormField label="Benefit package">
+						<Input
+							className={fieldClass}
+							maxLength={128}
+							value={plan.benefit_package ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "plan_coverage", {
+										benefit_package: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Coverage level">
+						<Input
+							className={fieldClass}
+							maxLength={64}
+							value={plan.coverage_level ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "plan_coverage", {
+										coverage_level: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Level code">
+						<Input
+							className={fieldClass}
+							maxLength={16}
+							value={plan.coverage_level_code ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "plan_coverage", {
+										coverage_level_code: e.target.value.slice(0, 16),
+									})
+								)
+							}
+							placeholder="Max 16 characters"
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
 					<RecordFormField label="Coverage effective">
 						<Input
 							type="date"
@@ -404,10 +853,27 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+					<RecordFormField label="Coverage term">
+						<Input
+							type="date"
+							className={fieldClass}
+							value={plan.coverage_term_date ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "plan_coverage", {
+										coverage_term_date: e.target.value || null,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
 				</RecordFormRow>
 			</RecordFormSection>
 
-			<RecordFormSection title="Employment / group">
+			<RecordFormSection
+				title="Employment / group"
+				description="Account group and employment classification."
+			>
 				<RecordFormRow>
 					<RecordFormField label="Group ID">
 						<Input
@@ -450,31 +916,110 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
+					<RecordFormField label="Account type">
+						<Input
+							className={fieldClass}
+							value={group.account_type ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "employment_group", {
+										account_type: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Account status">
+						<Input
+							className={fieldClass}
+							value={group.account_status ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "employment_group", {
+										account_status: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+					<RecordFormField label="Member type">
+						<Input
+							className={fieldClass}
+							value={group.member_type ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "employment_group", {
+										member_type: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
+				</RecordFormRow>
+				<RecordFormRow>
+					<RecordFormField label="Employee type">
+						<Input
+							className={fieldClass}
+							value={group.employee_type ?? ""}
+							onChange={(e) =>
+								setBody(
+									patchNested(body, "employment_group", {
+										employee_type: e.target.value,
+									})
+								)
+							}
+						/>
+					</RecordFormField>
 				</RecordFormRow>
 			</RecordFormSection>
 
-			{member?.id ? (
+			{familyVisible && member?.id ? (
 				<MemberFamilyEditor
 					memberId={member.id}
-					vendorId={member.vendorId}
+					vendorId={vendorId || member.vendorId}
 					subscriberCardholderId={member.memberId}
 					planName={member.planName}
 					program={member.program}
 					showSync={false}
-					defaultSubTab="list"
+					defaultSubTab="add"
+					flushRef={familyLiveRef}
 				/>
 			) : null}
 
-			<div className="flex justify-end gap-2">
-				{onCancel ? (
-					<Button type="button" variant="outline" onClick={onCancel}>
-						Cancel
+			{familyVisible && !member?.id ? (
+				<div className="space-y-2">
+					<div className="px-0.5">
+						<p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+							Family / dependents
+						</p>
+						<p className="mt-0.5 text-[11px] text-muted-foreground/80">
+							Optional. Stage dependents now — created and linked after save.
+						</p>
+					</div>
+					<MemberFamilyDraftEditor
+						vendorId={vendorId}
+						subscriberCardholderId={body.cardholder_id}
+						value={pendingFamily}
+						onChange={setPendingFamily}
+						flushRef={familyFlushRef}
+					/>
+				</div>
+			) : null}
+
+			{showFooter ? (
+				<div className="sticky bottom-0 z-10 flex justify-end gap-2 border-t border-border/50 bg-background/95 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+					{onCancel ? (
+						<Button type="button" variant="outline" onClick={onCancel}>
+							Cancel
+						</Button>
+					) : null}
+					<Button disabled={pending} onClick={submitWithFamily}>
+						{submitLabel}
 					</Button>
-				) : null}
-				<Button disabled={pending} onClick={() => onSubmit(body)}>
-					{submitLabel}
-				</Button>
-			</div>
+				</div>
+			) : null}
 		</div>
 	);
 }

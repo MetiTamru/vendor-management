@@ -18,7 +18,12 @@ import type {
 	PlanHistoryRow,
 	VendorSourceRow,
 } from "@/features/admin/features/members/mock-data";
-import type { MemberDetailDto, MemberListDto, MemberWriteBody } from "@/lib/vendor-core/types";
+import type {
+	MemberCreateBody,
+	MemberDetailDto,
+	MemberListDto,
+	MemberWriteBody,
+} from "@/lib/vendor-core/types";
 
 function str(v: unknown, fallback = ""): string {
 	if (v == null) return fallback;
@@ -137,7 +142,11 @@ export function memberListDtoToSummary(row: MemberListDto): MemberSummary {
 	return {
 		id: str(row.id),
 		memberId: str(row.cardholder_id || row.reference_id || row.id).slice(0, 64),
-		vendorId: str(row.vendor_id) || undefined,
+		vendorId: str(row.vendor_id) ||
+			(row.vendor && typeof row.vendor === "object"
+				? str((row.vendor as { id?: unknown }).id)
+				: "") ||
+			undefined,
 		alternateId: str(row.alternate_id) || undefined,
 		firstName: str(row.first_name, "—"),
 		middleName: str(row.middle_name) || undefined,
@@ -612,4 +621,43 @@ export function memberToWriteBody(member: MemberDetail): MemberWriteBody {
 			employee_type: dashToEmpty(member.employeeType),
 		},
 	};
+}
+
+const DATE_KEYS = new Set([
+	"member_since",
+	"date_of_birth",
+	"status_effective_date",
+	"status_term_date",
+	"enrollment_date",
+	"disenrollment_date",
+	"coverage_effective_date",
+	"coverage_term_date",
+]);
+
+/** Coerce blank date strings → null; drop undefined. Prevents DRF DateField 400s. */
+export function sanitizeMemberWriteBody(
+	body: MemberWriteBody | MemberCreateBody | Record<string, unknown>
+): Record<string, unknown> {
+	function cleanValue(key: string, value: unknown): unknown {
+		if (value === undefined) return undefined;
+		if (DATE_KEYS.has(key) && (value === "" || value === undefined)) {
+			return null;
+		}
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			const nested: Record<string, unknown> = {};
+			for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+				const cleaned = cleanValue(k, v);
+				if (cleaned !== undefined) nested[k] = cleaned;
+			}
+			return nested;
+		}
+		return value;
+	}
+
+	const out: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(body)) {
+		const cleaned = cleanValue(key, value);
+		if (cleaned !== undefined) out[key] = cleaned;
+	}
+	return out;
 }

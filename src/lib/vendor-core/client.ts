@@ -85,6 +85,36 @@ export class VendorCoreApiError extends Error {
 	}
 }
 
+/** Flatten nested DRF / problem-details field errors for toasts. */
+function flattenVendorCoreErrors(errors: unknown, prefix = ""): string | null {
+	if (errors == null || errors === "") return null;
+	if (typeof errors === "string") return prefix ? `${prefix}: ${errors}` : errors;
+	if (Array.isArray(errors)) {
+		const parts = errors
+			.map((item) => flattenVendorCoreErrors(item, prefix))
+			.filter(Boolean);
+		return parts.length ? parts.join("; ") : null;
+	}
+	if (typeof errors === "object") {
+		const parts: string[] = [];
+		for (const [key, value] of Object.entries(
+			errors as Record<string, unknown>
+		)) {
+			if (key === "_index") continue;
+			const path =
+				key === "non_field_errors" || key === "__all__"
+					? prefix
+					: prefix
+						? `${prefix}.${key}`
+						: key;
+			const flat = flattenVendorCoreErrors(value, path);
+			if (flat) parts.push(flat);
+		}
+		return parts.length ? parts.join("; ") : null;
+	}
+	return String(errors);
+}
+
 type RequestOptions = RequestInit & {
 	params?: Record<string, string | number | undefined | null>;
 	auth?: boolean;
@@ -171,12 +201,7 @@ export async function vendorCoreFetch<T>(
 	const data = text ? JSON.parse(text) : undefined;
 
 	if (!response.ok) {
-		const fieldErrors =
-			data?.result?.errors && typeof data.result.errors === "object"
-				? Object.entries(data.result.errors as Record<string, unknown>)
-						.map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-						.join("; ")
-				: null;
+		const fieldErrors = flattenVendorCoreErrors(data?.result?.errors);
 		throw new VendorCoreApiError(
 			fieldErrors ||
 				data?.result?.detail ||

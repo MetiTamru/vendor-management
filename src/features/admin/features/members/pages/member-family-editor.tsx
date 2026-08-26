@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
 	ArrowRightLeft,
@@ -30,10 +30,11 @@ import {
 } from "@/components/ui/record-form";
 import type { MemberSummary } from "@/features/admin/features/members/mock-data";
 import { memberAge } from "@/features/admin/features/members/mock-data";
+import { createMemberFamilyLink } from "@/features/admin/features/members/feature/api/membersApi";
 import {
-	useCreateMemberFamilyLinkMutation,
 	useCreateMemberMutation,
 	useDeleteMemberFamilyLinkMutation,
+	useMemberDetailQuery,
 	useMemberFamilyLinkQuery,
 	useMemberFamilyLinksQuery,
 	useMemberSummariesPageQuery,
@@ -100,6 +101,544 @@ function SectionShell({
 	);
 }
 
+/** Staged dependent before the primary member exists (create page). */
+export type PendingFamilyDependent = {
+	key: string;
+	kind: "create" | "link";
+	dependentId?: string;
+	firstName: string;
+	lastName: string;
+	cardholderId: string;
+	relationshipCode: string;
+	relationshipLabel: string;
+};
+
+export type MemberFamilyDraftHandle = {
+	/** Include in-progress add form row if filled; returns full pending list. */
+	flush: () => PendingFamilyDependent[];
+};
+
+/**
+ * Draft family UI for **Add member** — stages dependents locally.
+ * Primary create then creates/links them on submit.
+ */
+export function MemberFamilyDraftEditor({
+	vendorId,
+	subscriberCardholderId,
+	value,
+	onChange,
+	flushRef,
+}: {
+	vendorId?: string;
+	subscriberCardholderId?: string;
+	value: PendingFamilyDependent[];
+	onChange: (next: PendingFamilyDependent[]) => void;
+	flushRef?: React.MutableRefObject<MemberFamilyDraftHandle | null>;
+}) {
+	const [subTab, setSubTab] = useState<FamilySubTab>(
+		value.length > 0 ? "list" : "add"
+	);
+	const [addMode, setAddMode] = useState<AddMode>("create");
+	const [search, setSearch] = useState("");
+	const [selected, setSelected] = useState<MemberSummary | null>(null);
+	const [newFirstName, setNewFirstName] = useState("");
+	const [newLastName, setNewLastName] = useState("");
+	const [newCardholder, setNewCardholder] = useState("");
+	const [relationshipCode, setRelationshipCode] = useState("19");
+	const [relationshipLabel, setRelationshipLabel] = useState("Child");
+
+	const q = search.trim();
+	const browseFilters = useMemo(() => {
+		const base: {
+			limit: number;
+			offset: number;
+			vendor_id?: string;
+			search?: string;
+		} = { limit: 12, offset: 0 };
+		if (vendorId) base.vendor_id = vendorId;
+		if (q.length >= 1) base.search = q;
+		return base;
+	}, [vendorId, q]);
+
+	const browseEnabled =
+		!isMockEnabled() && subTab === "add" && addMode === "pick";
+	const browseQ = useMemberSummariesPageQuery(browseFilters, browseEnabled);
+
+	const linkedIds = useMemo(() => {
+		const ids = new Set<string>();
+		for (const row of value) {
+			if (row.dependentId) ids.add(row.dependentId);
+		}
+		return ids;
+	}, [value]);
+
+	const candidates = useMemo(() => {
+		const rows = browseQ.data?.results ?? [];
+		return rows.filter((m) => !linkedIds.has(m.id));
+	}, [browseQ.data, linkedIds]);
+
+	function applyPreset(code: string, label: string) {
+		setRelationshipCode(code);
+		setRelationshipLabel(label);
+	}
+
+	function resetAddForm() {
+		setSelected(null);
+		setSearch("");
+		setNewFirstName("");
+		setNewLastName("");
+		setNewCardholder("");
+	}
+
+	function buildCreatePending(): PendingFamilyDependent | null {
+		const first = newFirstName.trim();
+		const last = newLastName.trim();
+		if (!first || !last) return null;
+		const cardholder =
+			newCardholder.trim() ||
+			autoCardholder(subscriberCardholderId || "NEW");
+		return {
+			key: `create-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+			kind: "create",
+			firstName: first,
+			lastName: last,
+			cardholderId: cardholder,
+			relationshipCode,
+			relationshipLabel,
+		};
+	}
+
+	function buildPickPending(): PendingFamilyDependent | null {
+		if (!selected) return null;
+		return {
+			key: `link-${selected.id}`,
+			kind: "link",
+			dependentId: selected.id,
+			firstName: selected.firstName || "",
+			lastName: selected.lastName || "",
+			cardholderId: selected.memberId || "",
+			relationshipCode,
+			relationshipLabel,
+		};
+	}
+
+	if (flushRef) {
+		flushRef.current = {
+			flush: () => {
+				let next = value;
+				if (addMode === "create") {
+					const row = buildCreatePending();
+					if (row) {
+						next = [...value, row];
+						onChange(next);
+						resetAddForm();
+					}
+				} else {
+					const row = buildPickPending();
+					if (row && !value.some((d) => d.dependentId === row.dependentId)) {
+						next = [...value, row];
+						onChange(next);
+						resetAddForm();
+					}
+				}
+				return next;
+			},
+		};
+	}
+
+	function stageCreate() {
+		const row = buildCreatePending();
+		if (!row) {
+			toast.error("First and last name required");
+			return;
+		}
+		onChange([...value, row]);
+		toast.success(`Staged ${row.firstName} ${row.lastName}`);
+		resetAddForm();
+		setSubTab("list");
+	}
+
+	function stagePick() {
+		const row = buildPickPending();
+		if (!row) {
+			toast.error("Select a member from the list");
+			return;
+		}
+		onChange([...value, row]);
+		toast.success("Staged existing member");
+		resetAddForm();
+		setSubTab("list");
+	}
+
+	if (isMockEnabled()) {
+		return (
+			<SectionShell title="Family members">
+				<p className="text-sm text-muted-foreground">
+					Family dependents need live vendor-core (mock off).
+				</p>
+			</SectionShell>
+		);
+	}
+
+	return (
+		<div className="space-y-3">
+			<div className="flex flex-wrap items-center gap-2">
+				<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
+					<button
+						type="button"
+						className={cn(
+							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+							subTab === "list"
+								? "bg-background text-foreground shadow-sm"
+								: "text-muted-foreground hover:text-foreground"
+						)}
+						onClick={() => setSubTab("list")}
+					>
+						<Users className="size-3.5" />
+						Family members
+						<span className="rounded-sm bg-muted px-1.5 py-px text-[10px] tabular-nums">
+							{value.length}
+						</span>
+					</button>
+					<button
+						type="button"
+						className={cn(
+							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+							subTab === "add"
+								? "bg-background text-foreground shadow-sm"
+								: "text-muted-foreground hover:text-foreground"
+						)}
+						onClick={() => setSubTab("add")}
+					>
+						<UserPlus className="size-3.5" />
+						Add dependent
+					</button>
+				</div>
+				<p className="text-xs text-muted-foreground sm:ml-auto">
+					Staged until member is created
+				</p>
+			</div>
+
+			{subTab === "list" ? (
+				<SectionShell
+					title="Family members"
+					action={
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="h-7 text-xs"
+							onClick={() => setSubTab("add")}
+						>
+							<Plus className="mr-1 size-3.5" />
+							Add
+						</Button>
+					}
+				>
+					{value.length === 0 ? (
+						<div className="rounded-md border border-dashed border-border/70 px-4 py-8 text-center">
+							<p className="text-sm text-muted-foreground">
+								No dependents staged yet.
+							</p>
+							<Button
+								type="button"
+								size="sm"
+								className="mt-3"
+								onClick={() => setSubTab("add")}
+							>
+								Add dependent
+							</Button>
+						</div>
+					) : (
+						<div className="overflow-x-auto">
+							<table className="w-full text-sm">
+								<thead>
+									<tr className="border-b border-border/50 text-left text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+										<th className="px-2 py-2">Name</th>
+										<th className="px-2 py-2">Cardholder</th>
+										<th className="px-2 py-2">Relationship</th>
+										<th className="px-2 py-2">Source</th>
+										<th className="px-2 py-2 text-right">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{value.map((row) => (
+										<tr
+											key={row.key}
+											className="border-b border-border/30 last:border-0"
+										>
+											<td className="px-2 py-2.5 font-medium">
+												{[row.firstName, row.lastName]
+													.filter(Boolean)
+													.join(" ") || "—"}
+											</td>
+											<td className="px-2 py-2.5 font-mono text-xs">
+												{row.cardholderId || "—"}
+											</td>
+											<td className="px-2 py-2.5">
+												{row.relationshipLabel}
+												<span className="ml-1 text-xs text-muted-foreground">
+													({row.relationshipCode})
+												</span>
+											</td>
+											<td className="px-2 py-2.5 capitalize text-muted-foreground">
+												{row.kind === "create" ? "New" : "Existing"}
+											</td>
+											<td className="px-2 py-2.5">
+												<div className="flex justify-end">
+													<Button
+														type="button"
+														size="icon"
+														variant="ghost"
+														className="size-7 text-destructive"
+														title="Remove"
+														onClick={() =>
+															onChange(
+																value.filter((d) => d.key !== row.key)
+															)
+														}
+													>
+														<Trash2 className="size-3.5" />
+													</Button>
+												</div>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+				</SectionShell>
+			) : (
+				<div className="space-y-4">
+					<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium",
+								addMode === "create"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("create")}
+						>
+							Create new
+						</button>
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium",
+								addMode === "pick"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("pick")}
+						>
+							Link existing
+						</button>
+					</div>
+
+					<RecordFormSection>
+						<RecordFormRow>
+							<RecordFormField label="Type">
+								<RecordFormChoice
+									tone="primary"
+									value={relationshipCode}
+									onChange={(code) => {
+										const preset = REL_PRESETS.find((p) => p.code === code);
+										applyPreset(code, preset?.label ?? relationshipLabel);
+									}}
+									options={REL_PRESETS.map((p) => ({
+										value: p.code,
+										label: `${p.label} (${p.code})`,
+									}))}
+								/>
+							</RecordFormField>
+						</RecordFormRow>
+						<RecordFormRow>
+							<RecordFormField label="Rel. code">
+								<Input
+									className={fieldClass}
+									value={relationshipCode}
+									onChange={(e) => setRelationshipCode(e.target.value)}
+								/>
+							</RecordFormField>
+							<RecordFormField label="Rel. label">
+								<Input
+									className={fieldClass}
+									value={relationshipLabel}
+									onChange={(e) => setRelationshipLabel(e.target.value)}
+								/>
+							</RecordFormField>
+						</RecordFormRow>
+					</RecordFormSection>
+
+					{addMode === "create" ? (
+						<RecordFormSection
+							title="New dependent"
+							description="Staged now — created and linked when you create the member."
+						>
+							<RecordFormRow>
+								<RecordFormField label="First name">
+									<Input
+										className={fieldClass}
+										value={newFirstName}
+										onChange={(e) => setNewFirstName(e.target.value)}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							<RecordFormRow>
+								<RecordFormField label="Last name">
+									<Input
+										className={fieldClass}
+										value={newLastName}
+										onChange={(e) => setNewLastName(e.target.value)}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							<RecordFormRow>
+								<RecordFormField label="Cardholder ID">
+									<Input
+										className={fieldClass}
+										value={newCardholder}
+										onChange={(e) => setNewCardholder(e.target.value)}
+										placeholder="Auto-generated if empty"
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+						</RecordFormSection>
+					) : (
+						<RecordFormSection
+							title="Link existing member"
+							description="Search and select — staged until member create."
+						>
+							<RecordFormRow>
+								<RecordFormField label="Search" align="start">
+									<div className="w-full space-y-2">
+										{!vendorId ? (
+											<p className="text-xs text-destructive">
+												Select a vendor first to search members.
+											</p>
+										) : null}
+										<Input
+											className={fieldClass}
+											value={search}
+											onChange={(e) => {
+												setSearch(e.target.value);
+												setSelected(null);
+											}}
+											placeholder="Name or cardholder ID…"
+											disabled={!vendorId}
+										/>
+										{selected ? (
+											<div className="flex flex-wrap items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-sm">
+												<span className="font-medium">
+													{[selected.firstName, selected.lastName]
+														.filter(Boolean)
+														.join(" ")}
+												</span>
+												<span className="font-mono text-xs text-muted-foreground">
+													{selected.memberId}
+												</span>
+												<Button
+													type="button"
+													size="sm"
+													variant="ghost"
+													className="h-6 text-xs"
+													onClick={() => setSelected(null)}
+												>
+													Clear
+												</Button>
+											</div>
+										) : null}
+										<div className="max-h-48 overflow-auto rounded-md border border-border/60">
+											{!vendorId ? (
+												<p className="px-3 py-2 text-xs text-muted-foreground">
+													Vendor required.
+												</p>
+											) : browseQ.isLoading ? (
+												<p className="px-3 py-2 text-xs text-muted-foreground">
+													Loading…
+												</p>
+											) : candidates.length === 0 ? (
+												<p className="px-3 py-2 text-xs text-muted-foreground">
+													No match. Try Create new instead.
+												</p>
+											) : (
+												<ul className="divide-y divide-border/40 text-sm">
+													{candidates.map((m) => {
+														const name = [m.firstName, m.lastName]
+															.filter(Boolean)
+															.join(" ");
+														const active = selected?.id === m.id;
+														return (
+															<li key={m.id}>
+																<button
+																	type="button"
+																	className={cn(
+																		"flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted/40",
+																		active && "bg-muted/60"
+																	)}
+																	onClick={() => setSelected(m)}
+																>
+																	<span className="min-w-0 flex-1 truncate font-medium">
+																		{name}
+																	</span>
+																	<span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+																		{m.memberId}
+																	</span>
+																</button>
+															</li>
+														);
+													})}
+												</ul>
+											)}
+										</div>
+									</div>
+								</RecordFormField>
+							</RecordFormRow>
+						</RecordFormSection>
+					)}
+
+					<div className="flex justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setSubTab("list")}
+						>
+							Cancel
+						</Button>
+						{addMode === "create" ? (
+							<Button
+								type="button"
+								disabled={!newFirstName.trim() || !newLastName.trim()}
+								onClick={stageCreate}
+							>
+								<UserPlus className="mr-1 size-3.5" />
+								Stage dependent
+							</Button>
+						) : (
+							<Button
+								type="button"
+								disabled={!selected || !vendorId}
+								onClick={stagePick}
+							>
+								<Plus className="mr-1 size-3.5" />
+								Stage selected
+							</Button>
+						)}
+					</div>
+				</div>
+			)}
+		</div>
+	);
+}
+
+export type MemberFamilyLiveHandle = {
+	/** Create/link in-progress dependent form if filled (Edit tab Save). */
+	flushAndLink: () => Promise<void>;
+};
+
 /**
  * Family / Dependents: isolated **Family members** vs **Add dependent** tabs.
  * One members table only (no separate “roster”).
@@ -112,6 +651,7 @@ export function MemberFamilyEditor({
 	program,
 	showSync = true,
 	defaultSubTab = "list",
+	flushRef,
 }: {
 	memberId: string;
 	vendorId?: string;
@@ -120,10 +660,13 @@ export function MemberFamilyEditor({
 	program?: string;
 	showSync?: boolean;
 	defaultSubTab?: FamilySubTab;
+	flushRef?: React.MutableRefObject<MemberFamilyLiveHandle | null>;
 }) {
 	const enabled = Boolean(memberId) && !isMockEnabled();
+	const detailQ = useMemberDetailQuery(memberId, enabled && !vendorId);
+	const resolvedVendorId =
+		vendorId || detailQ.data?.vendorId || undefined;
 	const linksQ = useMemberFamilyLinksQuery(memberId, enabled);
-	const createLink = useCreateMemberFamilyLinkMutation(memberId);
 	const createMember = useCreateMemberMutation();
 	const updateLink = useUpdateMemberFamilyLinkMutation(memberId);
 	const updateMember = useUpdateMemberMutation();
@@ -170,10 +713,10 @@ export function MemberFamilyEditor({
 			vendor_id?: string;
 			search?: string;
 		} = { limit: 12, offset: 0 };
-		if (vendorId) base.vendor_id = vendorId;
+		if (resolvedVendorId) base.vendor_id = resolvedVendorId;
 		if (q.length >= 1) base.search = q;
 		return base;
-	}, [vendorId, q]);
+	}, [resolvedVendorId, q]);
 
 	const browseQ = useMemberSummariesPageQuery(
 		browseFilters,
@@ -226,18 +769,19 @@ export function MemberFamilyEditor({
 	}
 
 	function linkDependent(dependentId: string) {
-		createLink.mutate(
-			{
-				dependent_id: dependentId,
-				relationship_code: relationshipCode,
-				relationship_label: relationshipLabel,
-			},
-			{
-				onSuccess: afterLinkSuccess,
-				onError: (err) =>
-					toast.error(err instanceof Error ? err.message : "Link failed"),
+		void (async () => {
+			try {
+				await createMemberFamilyLink(memberId, {
+					dependent_id: dependentId,
+					relationship_code: relationshipCode,
+					relationship_label: relationshipLabel,
+				});
+				await linksQ.refetch();
+				afterLinkSuccess();
+			} catch (err) {
+				toast.error(err instanceof Error ? err.message : "Link failed");
 			}
-		);
+		})();
 	}
 
 	function submitPick() {
@@ -249,15 +793,13 @@ export function MemberFamilyEditor({
 	}
 
 	async function submitCreateNew() {
-		if (!vendorId) {
-			toast.error("Member has no vendor — cannot create dependent");
-			return;
+		if (!resolvedVendorId) {
+			throw new Error("Member has no vendor — cannot create dependent");
 		}
 		const first = newFirstName.trim();
 		const last = newLastName.trim();
 		if (!first || !last) {
-			toast.error("First and last name required");
-			return;
+			throw new Error("First and last name required");
 		}
 		const cardholder =
 			newCardholder.trim() ||
@@ -265,7 +807,7 @@ export function MemberFamilyEditor({
 		setBusy(true);
 		try {
 			const created = await createMember.mutateAsync({
-				vendor_id: vendorId,
+				vendor_id: resolvedVendorId,
 				cardholder_id: cardholder,
 				person_code: "02",
 				first_name: first,
@@ -277,40 +819,45 @@ export function MemberFamilyEditor({
 				plan_coverage: {},
 				employment_group: {},
 			});
-			if (!created?.id) {
-				toast.error("Member created but no id returned");
-				return;
+			const dependentId = created?.id?.trim();
+			if (!dependentId) {
+				throw new Error("Member created but no id returned — link skipped");
 			}
-			await new Promise<void>((resolve, reject) => {
-				createLink.mutate(
-					{
-						dependent_id: created.id,
-						relationship_code: relationshipCode,
-						relationship_label: relationshipLabel,
-					},
-					{
-						onSuccess: () => {
-							toast.success(`Created ${first} ${last} and linked`);
-							resetAddForm();
-							setSubTab("list");
-							resolve();
-						},
-						onError: (err) => {
-							toast.error(
-								err instanceof Error
-									? err.message
-									: "Member created but link failed"
-							);
-							reject(err);
-						},
-					}
-				);
+			await createMemberFamilyLink(memberId, {
+				dependent_id: dependentId,
+				relationship_code: relationshipCode,
+				relationship_label: relationshipLabel,
 			});
+			await linksQ.refetch();
+			toast.success(`Created ${first} ${last} and linked`);
+			resetAddForm();
+			setSubTab("list");
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Create failed");
+			throw err;
 		} finally {
 			setBusy(false);
 		}
+	}
+
+	if (flushRef) {
+		flushRef.current = {
+			flushAndLink: async () => {
+				if (addMode === "create" && newFirstName.trim() && newLastName.trim()) {
+					await submitCreateNew();
+					return;
+				}
+				if (addMode === "pick" && selected?.id) {
+					await createMemberFamilyLink(memberId, {
+						dependent_id: selected.id,
+						relationship_code: relationshipCode,
+						relationship_label: relationshipLabel,
+					});
+					await linksQ.refetch();
+					afterLinkSuccess();
+				}
+			},
+		};
 	}
 
 	if (isMockEnabled()) {
@@ -323,7 +870,7 @@ export function MemberFamilyEditor({
 		);
 	}
 
-	const pending = createLink.isPending || createMember.isPending || busy;
+	const pending = createMember.isPending || busy;
 
 	return (
 		<div className="space-y-3">
@@ -604,10 +1151,7 @@ export function MemberFamilyEditor({
 						</button>
 					</div>
 
-					<RecordFormSection
-						title="Relationship"
-						description="How this dependent relates to the subscriber."
-					>
+					<RecordFormSection>
 						<RecordFormRow>
 							<RecordFormField label="Type">
 								<RecordFormChoice
@@ -673,7 +1217,7 @@ export function MemberFamilyEditor({
 									/>
 								</RecordFormField>
 							</RecordFormRow>
-							{!vendorId ? (
+							{!resolvedVendorId ? (
 								<div className="border-t border-border/60 px-3 py-2 text-xs text-destructive">
 									This member has no vendor_id — create needs a live member
 									record.
@@ -776,11 +1320,11 @@ export function MemberFamilyEditor({
 								type="button"
 								disabled={
 									pending ||
-									!vendorId ||
+									!resolvedVendorId ||
 									!newFirstName.trim() ||
 									!newLastName.trim()
 								}
-								onClick={() => void submitCreateNew()}
+								onClick={() => void submitCreateNew().catch(() => undefined)}
 							>
 								<UserPlus className="mr-1 size-3.5" />
 								Create &amp; link
