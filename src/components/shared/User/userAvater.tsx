@@ -14,6 +14,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useVendorCoreSessionOptional } from "@/components/vendor-core/VendorCoreGate";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/lib/auth/dev-session";
 import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { AUTH_PATHS } from "@/lib/auth/paths";
+import { serverUserFromMe } from "@/lib/auth/session-user";
 import { getInitials } from "@/lib/utils/nameUtils";
 
 interface UserAvatarProps {
@@ -41,13 +43,20 @@ function localeAuthPath(locale: string, path: string) {
 const UserAvatar = ({ className: _className }: UserAvatarProps) => {
 	const locale = useLocale();
 	const mockAuth = isMockAuthEnabled();
+	const vendorCore = useVendorCoreSessionOptional();
 	const { data: session, isPending } = authClient.useSession();
 	const mockSignedOut = mockAuth && readDevSignedOutFromDocument();
+
+	const djangoUser =
+		vendorCore?.shellAuth && vendorCore.user
+			? serverUserFromMe(vendorCore.user)
+			: null;
+
 	const user: MenuUser | null = mockAuth
 		? mockSignedOut
 			? null
 			: MOCK_ADMIN_USER
-		: (session?.user ?? null);
+		: (djangoUser ?? session?.user ?? null);
 
 	const handleSignOut = async () => {
 		if (mockAuth) {
@@ -55,11 +64,19 @@ const UserAvatar = ({ className: _className }: UserAvatarProps) => {
 			window.location.assign(localeAuthPath(locale, AUTH_PATHS.login));
 			return;
 		}
+		if (vendorCore?.shellAuth) {
+			await vendorCore.signOut();
+			// signOut already navigates; keep assign as fallback if navigation was blocked
+			window.location.assign(localeAuthPath(locale, AUTH_PATHS.login));
+			return;
+		}
 		await authClient.signOut();
 		window.location.assign(localeAuthPath(locale, AUTH_PATHS.login));
 	};
 
-	if (!mockAuth && isPending) {
+	const pendingDjango =
+		Boolean(vendorCore?.shellAuth) && Boolean(vendorCore?.bootstrapping);
+	if ((!mockAuth && isPending && !vendorCore?.shellAuth) || pendingDjango) {
 		return <Skeleton className="size-10 shrink-0 rounded-full" />;
 	}
 

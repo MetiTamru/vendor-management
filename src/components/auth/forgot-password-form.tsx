@@ -28,6 +28,11 @@ import { authClient } from "@/lib/auth-client";
 import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { AUTH_PATHS } from "@/lib/auth/paths";
 import { isNestApiEnabled } from "@/lib/mock-mode";
+import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
+import {
+	VendorCoreApiError,
+	vendorCorePasswordResetRequest,
+} from "@/lib/vendor-core/client";
 
 type ForgetAuthClient = typeof authClient & {
 	forgetPassword: (input: {
@@ -46,8 +51,10 @@ export function ForgotPasswordForm() {
 	const locale = useLocale();
 	const [isLoading, setIsLoading] = useState(false);
 	const [sent, setSent] = useState(false);
+	const [submittedEmail, setSubmittedEmail] = useState("");
 	const mockAuth = isMockAuthEnabled();
 	const nestLogin = isNestApiEnabled();
+	const djangoAuth = isDjangoShellAuthEnabled();
 
 	const form = useForm<ForgotFormValues>({
 		resolver: zodResolver(forgotSchema),
@@ -57,6 +64,14 @@ export function ForgotPasswordForm() {
 	async function onSubmit(values: ForgotFormValues) {
 		setIsLoading(true);
 		try {
+			if (djangoAuth) {
+				await vendorCorePasswordResetRequest({ email: values.email.trim() });
+				setSubmittedEmail(values.email.trim());
+				setSent(true);
+				toast.success("Check your email for the reset code");
+				return;
+			}
+
 			if (mockAuth && !nestLogin) {
 				setSent(true);
 				toast.message("Reset email needs Nest auth enabled");
@@ -76,20 +91,36 @@ export function ForgotPasswordForm() {
 
 			setSent(true);
 			toast.success("Check your email");
-		} catch {
-			toast.error("Something went wrong");
+		} catch (err) {
+			toast.error(
+				err instanceof VendorCoreApiError ? err.message : "Something went wrong"
+			);
 		} finally {
 			setIsLoading(false);
 		}
 	}
 
+	const resetHref =
+		submittedEmail && djangoAuth
+			? `${AUTH_PATHS.resetPassword}?email=${encodeURIComponent(submittedEmail)}`
+			: AUTH_PATHS.resetPassword;
+
 	if (sent) {
 		return (
 			<div className="space-y-6">
 				<p className="text-sm leading-relaxed text-muted-foreground">
-					If an account exists for that email, reset instructions are on the
-					way.
+					{djangoAuth
+						? "If an account exists for that email, a 6-digit reset code is on the way. It expires in 10 minutes."
+						: "If an account exists for that email, reset instructions are on the way."}
 				</p>
+				{djangoAuth ? (
+					<Button asChild className={authPrimaryButtonClass}>
+						<Link href={resetHref}>
+							Enter reset code
+							<ArrowRight className="size-4" />
+						</Link>
+					</Button>
+				) : null}
 				<Link
 					href={AUTH_PATHS.login}
 					className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary underline-offset-4 hover:underline"
@@ -135,7 +166,7 @@ export function ForgotPasswordForm() {
 						</>
 					) : (
 						<>
-							Send reset link
+							{djangoAuth ? "Send reset code" : "Send reset link"}
 							<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
 						</>
 					)}

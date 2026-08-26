@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MemberWriteForm } from "@/features/admin/features/members/pages/member-write-form";
-import type { MemberDetail } from "@/features/admin/features/members/mock-data";
 import {
 	useCreateMemberAccumulatorMutation,
 	useCreateMemberClaimMutation,
@@ -25,7 +23,6 @@ import {
 	useDeleteMemberExceptionMutation,
 	useDeleteMemberMutation,
 	useHardDeleteMemberMutation,
-	useRestoreMemberMutation,
 	useMemberAccumulatorsQuery,
 	useMemberChangeEventsQuery,
 	useMemberClaimsQuery,
@@ -35,11 +32,14 @@ import {
 	useMemberPlanHistoryQuery,
 	useMemberSourceRecordQuery,
 	useMemberSourceRecordsQuery,
+	useRestoreMemberMutation,
 	useUpdateMemberAccumulatorMutation,
 	useUpdateMemberClaimMutation,
 	useUpdateMemberExceptionMutation,
 	useUpdateMemberMutation,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import type { MemberDetail } from "@/features/admin/features/members/mock-data";
+import { MemberWriteForm } from "@/features/admin/features/members/pages/member-write-form";
 import { useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 
@@ -162,6 +162,8 @@ export function MemberCreateExceptionButton({
 	const [description, setDescription] = useState("");
 	const mutation = useCreateMemberExceptionMutation(memberId);
 
+	if (isMockEnabled()) return null;
+
 	return (
 		<>
 			<Button size="sm" variant="outline" onClick={() => setOpen(true)}>
@@ -231,6 +233,8 @@ export function MemberCreateAccumulatorButton({
 	const [limit, setLimit] = useState("1500");
 	const [remaining, setRemaining] = useState("1500");
 	const mutation = useCreateMemberAccumulatorMutation(memberId);
+
+	if (isMockEnabled()) return null;
 
 	return (
 		<>
@@ -302,6 +306,8 @@ export function MemberCreateClaimButton({ memberId }: { memberId: string }) {
 	const [provider, setProvider] = useState("");
 	const [kind, setKind] = useState("medical");
 	const mutation = useCreateMemberClaimMutation(memberId);
+
+	if (isMockEnabled()) return null;
 
 	return (
 		<>
@@ -694,7 +700,9 @@ export function MemberChangeEventsPanel({ memberId }: { memberId: string }) {
 							<p className="text-xs text-muted-foreground">
 								{row.oldValue} → {row.newValue}
 							</p>
-							<p className="text-[11px] text-muted-foreground">{row.createdAt}</p>
+							<p className="text-[11px] text-muted-foreground">
+								{row.createdAt}
+							</p>
 						</li>
 					))}
 				</ul>
@@ -786,7 +794,9 @@ export function MemberProfileActions({
 						softDelete.mutate(memberId, {
 							onSuccess: afterGone,
 							onError: (err) =>
-								toast.error(err instanceof Error ? err.message : "Delete failed"),
+								toast.error(
+									err instanceof Error ? err.message : "Delete failed"
+								),
 						});
 					}}
 				>
@@ -805,7 +815,9 @@ export function MemberProfileActions({
 						restore.mutate(memberId, {
 							onSuccess: () => toast.success("Member restored"),
 							onError: (err) =>
-								toast.error(err instanceof Error ? err.message : "Restore failed"),
+								toast.error(
+									err instanceof Error ? err.message : "Restore failed"
+								),
 						})
 					}
 				>

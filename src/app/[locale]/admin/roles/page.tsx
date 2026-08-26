@@ -1,5 +1,10 @@
-import { RolesPage } from "@/features/admin/features/roles/pages/RolesPage";
+import { redirect } from "next/navigation";
 
-export default function AdminRolesRoute() {
-	return <RolesPage />;
+type Props = {
+	params: Promise<{ locale: string }>;
+};
+
+export default async function AdminRolesRoute({ params }: Props) {
+	const { locale } = await params;
+	redirect(`/${locale}/admin/settings?tab=roles`);
 }

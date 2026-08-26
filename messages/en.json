@@ -101,6 +101,7 @@
 			"approvals": "Approvals",
 			"groups": "Groups",
 			"roles": "Roles",
+			"users": "Users",
 			"exportcenter": "Export Center",
 			"vendorcomparison": "Vendor Comparison",
 			"audittrail": "Audit Trail",
@@ -257,10 +258,16 @@
 	},
 	"Settings": {
 		"title": "Settings",
-		"subtitle": "Application configuration",
+		"subtitle": "Application configuration and identity administration",
 		"refreshing": "(refreshing…)",
 		"searchPlaceholder": "Search settings…",
 		"emptyList": "No settings found.",
+		"tabs": {
+			"general": "General",
+			"groups": "Groups",
+			"roles": "Roles",
+			"users": "Users"
+		},
 		"table": {
 			"key": "Key",
 			"value": "Value",

@@ -6,6 +6,12 @@ import {
 	isDevSignedOutCookieValue,
 } from "@/lib/auth/dev-session";
 import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
+import { isNestApiEnabled } from "@/lib/mock-mode";
+import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
+import {
+	VENDOR_CORE_SESSION_COOKIE,
+	hasVendorCoreSessionCookieValue,
+} from "@/lib/vendor-core/session-cookie";
 
 export type ServerSessionUser = {
 	id: string;
@@ -14,6 +20,7 @@ export type ServerSessionUser = {
 	image?: string | null;
 	role?: string | null;
 	roles?: string[];
+	username?: string | null;
 	[key: string]: unknown;
 };
 
@@ -52,6 +59,31 @@ export async function getServerSession(): Promise<ServerSession | null> {
 				role: "admin",
 			},
 		};
+	}
+
+	if (isDjangoShellAuthEnabled()) {
+		if (
+			!hasVendorCoreSessionCookieValue(
+				cookieStore.get(VENDOR_CORE_SESSION_COOKIE)?.value
+			)
+		) {
+			return null;
+		}
+		// Tokens live in the browser; RSC only knows the session flag.
+		// Client providers load full profile via GET /authentication/me/.
+		return {
+			user: {
+				id: "vendor-core-session",
+				name: "Signed in",
+				role: "admin",
+				roles: ["admin"],
+			},
+			session: { vendorCore: true },
+		};
+	}
+
+	if (!isNestApiEnabled()) {
+		return null;
 	}
 
 	const cookieHeader = cookieStore

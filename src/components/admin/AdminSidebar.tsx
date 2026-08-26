@@ -104,6 +104,7 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	Approvals: CheckCircle2,
 	Groups: UsersRound,
 	Roles: KeyRound,
+	Users: Users,
 	"Export Center": Download,
 	"Integration Intake": Cable,
 	Credentials: KeyRound,

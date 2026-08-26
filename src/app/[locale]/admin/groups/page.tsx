@@ -1,5 +1,10 @@
-import { GroupsPage } from "@/features/admin/features/groups/pages/GroupsPage";
+import { redirect } from "next/navigation";
 
-export default function AdminGroupsRoute() {
-	return <GroupsPage />;
+type Props = {
+	params: Promise<{ locale: string }>;
+};
+
+export default async function AdminGroupsRoute({ params }: Props) {
+	const { locale } = await params;
+	redirect(`/${locale}/admin/settings?tab=groups`);
 }

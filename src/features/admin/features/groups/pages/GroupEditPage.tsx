@@ -55,7 +55,7 @@ export function GroupEditPage({ groupId }: GroupEditPageProps) {
 			<div className="container py-16 text-center">
 				<h1 className="text-xl font-semibold">{t("notFound")}</h1>
 				<Button className="mt-4" asChild>
-					<Link href="/admin/groups">{t("backToList")}</Link>
+					<Link href="/admin/settings?tab=groups">{t("backToList")}</Link>
 				</Button>
 			</div>
 		);

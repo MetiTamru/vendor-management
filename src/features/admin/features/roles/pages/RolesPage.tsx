@@ -10,7 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RolesTable } from "../components/RolesTable";
 import { useRolesList } from "../feature/queries/useRolesQuery";
 
-export function RolesPage() {
+type RolesPageProps = {
+	embedded?: boolean;
+};
+
+export function RolesPage({ embedded = false }: RolesPageProps) {
 	const t = useTranslations("Roles");
 	const { roles, isInitialLoading, isRefreshing, isEmpty, error } =
 		useRolesList();
@@ -22,9 +26,11 @@ export function RolesPage() {
 		return roles.filter((r) => r.name.toLowerCase().includes(q));
 	}, [roles, search]);
 
+	const shellClass = embedded ? "space-y-6" : "container space-y-6 py-8";
+
 	if (isInitialLoading) {
 		return (
-			<div className="container space-y-6 py-8">
+			<div className={shellClass}>
 				<Skeleton className="h-10 w-48" />
 				<Skeleton className="h-64 w-full" />
 			</div>
@@ -33,20 +39,26 @@ export function RolesPage() {
 
 	if (error) {
 		return (
-			<div className="container py-8">
+			<div className={embedded ? "py-4" : "container py-8"}>
 				<p className="text-sm text-destructive">{error.message}</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="container space-y-6 py-8">
-			<div>
-				<h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+		<div className={shellClass}>
+			{embedded ? (
 				<p className="text-sm text-muted-foreground">
 					{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
 				</p>
-			</div>
+			) : (
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+					<p className="text-sm text-muted-foreground">
+						{t("subtitle")} {isRefreshing ? t("refreshing") : ""}
+					</p>
+				</div>
+			)}
 
 			<Input
 				placeholder={t("searchPlaceholder")}

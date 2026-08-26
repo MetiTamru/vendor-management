@@ -9,10 +9,12 @@ import { isMockEnabled } from "@/lib/mock-mode";
 
 import { getProviderSummaries } from "../../mock-data";
 import {
+	getProviderDetail,
 	listProviderSummaries,
 	listProviders,
 	seedProviders,
 } from "../api/providersApi";
+import type { ProviderSummary } from "../api/providersApi";
 
 const domain = "providers";
 const liveOnly = !isMockEnabled();
@@ -37,6 +39,20 @@ export function useSeedProvidersMutation() {
 	>(domain, {
 		mutationFn: (body) => seedProviders(body),
 	});
+}
+
+export function useProviderDetailQuery(
+	providerId: string,
+	enabled = true,
+	program: ProviderSummary["program"] = "DHCF"
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"detail",
+		() => getProviderDetail(providerId, program),
+		enabled && liveOnly && Boolean(providerId),
+		[providerId, program]
+	);
 }
 
 export function useProviderSummariesList() {

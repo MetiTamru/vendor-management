@@ -1,5 +1,9 @@
 # Backend cutover checklist
 
+Short ops checklist for flipping mocks off. For the full **backend → frontend integration playbook** (what Django already exposes, where to look in `vendor-management-core`, phased queue starting at auth), see:
+
+**[integration/backend-frontend-playbook.md](./integration/backend-frontend-playbook.md)**
+
 When your NestJS (and optional Django vendor-core) APIs are ready, switch the frontend from mocks to live data with **one env var**. Fixture source files are **not deleted** — they become inactive when the toggle is off.
 
 ## 1. Environment
@@ -24,17 +28,17 @@ NestJS (`/api/auth/*`, `/api/admin/*`) is **not** on this host.
 
 ```env
 NEXT_PUBLIC_USE_MOCK=false
-NEXT_PUBLIC_DEV_ADMIN=true
+NEXT_PUBLIC_DEV_ADMIN=false
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_VENDOR_CORE_API_URL=https://api.vm.tillahealth.com
 ```
 
-This is the current dashboard default. Fixture files stay in source but are inactive.
-A remote `NEXT_PUBLIC_VENDOR_CORE_API_URL` powers Integration Intake, Processing Logs,
-Schedules, and the other vendor-core screens against Django. NestJS is not required.
+Sign in at `/{locale}/auth/login` with a Django username/password (same as Django admin users).  
+`DEV_ADMIN` is ignored while Django shell auth is active. Session cookie `vendor_core_session` gates middleware; Bearer tokens stay in `localStorage`.
 
-Live screens prompt for a Django JWT user (same credentials as Django admin).
-Browser calls go through the same-origin proxy at `/api/vendor-core/*` (avoids CORS).
+Browser API calls go through the same-origin proxy at `/api/vendor-core/*` (avoids CORS).
+
+See the [integration playbook — Authentication](./integration/backend-frontend-playbook.md#authentication-phase-1--integrated).
 
 Smoke test:
 
@@ -51,8 +55,12 @@ VENDOR_CORE_USER=… VENDOR_CORE_PASSWORD=… pnpm seed:vendor-core
 
 ## 2. Verify contracts
 
-- [Identity groups](./api-contracts/identity-groups.md) — required for admin Groups CRUD
-- [VMS domain](./api-contracts/vms.md) — vendors, onboarding, RFX, contracts, POs, invoices
+**Prefer Django paths** from the [integration playbook](./integration/backend-frontend-playbook.md) inventory (e.g. `/api/v1/identity-groups/`, `/api/v1/invoices/`, `/api/v1/purchase-orders/`).
+
+Nest `/api/admin/*` contracts below are optional / legacy when `NEXT_PUBLIC_USE_NEST=true`:
+
+- [Identity groups](./api-contracts/identity-groups.md) — Nest shape for Groups CRUD
+- [VMS domain](./api-contracts/vms.md) — Nest vendors, onboarding, RFX, contracts, POs, invoices
 - Users: `GET /api/admin/users/`
 - Roles: `GET /api/admin/roles/`
 - Settings: `GET /api/admin/settings/`

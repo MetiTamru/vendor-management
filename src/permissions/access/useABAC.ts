@@ -1,16 +1,22 @@
 "use client";
 
+import { useVendorCoreSessionOptional } from "@/components/vendor-core/VendorCoreGate";
 import { authClient } from "@/lib/auth-client";
 import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
-import { resolveAbacUser } from "@/lib/auth/session-user";
+import { resolveAbacUser, serverUserFromMe } from "@/lib/auth/session-user";
 
 import { PolicyEngine } from "../abac/engine";
 
 export const useABAC = () => {
 	const { data: session } = authClient.useSession();
+	const vendorCore = useVendorCoreSessionOptional();
+
 	const sessionUser = isMockAuthEnabled()
 		? MOCK_ADMIN_USER
-		: (session?.user as Parameters<typeof resolveAbacUser>[0]);
+		: vendorCore?.shellAuth && vendorCore.user
+			? serverUserFromMe(vendorCore.user)
+			: (session?.user as Parameters<typeof resolveAbacUser>[0]);
+
 	const abacUser = resolveAbacUser(sessionUser);
 
 	const checkAccess = (

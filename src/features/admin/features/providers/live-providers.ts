@@ -1,4 +1,6 @@
 import type {
+	FeedStatus,
+	ProviderDetail,
 	ProviderStatus,
 	ProviderSummary,
 } from "@/features/admin/features/providers/mock-data";
@@ -131,4 +133,118 @@ export function findProviderSummaryById(
 	program?: ProviderSummary["program"]
 ): ProviderSummary | undefined {
 	return providersToSummaries(providers, program).find((row) => row.id === id);
+}
+
+function splitPersonName(displayName: string): {
+	firstName: string;
+	middleName: string | null;
+	lastName: string;
+} {
+	const parts = displayName.trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) {
+		return { firstName: "—", middleName: null, lastName: "—" };
+	}
+	if (parts.length === 1) {
+		return { firstName: parts[0]!, middleName: null, lastName: "—" };
+	}
+	return {
+		firstName: parts[0]!,
+		middleName: parts.length > 2 ? parts.slice(1, -1).join(" ") : null,
+		lastName: parts[parts.length - 1]!,
+	};
+}
+
+/** Map a vendor-core provider into the admin detail shell (rich tabs stay empty in live mode). */
+export function providerDtoToDetail(
+	dto: ProviderDto,
+	program: ProviderSummary["program"] = "DHCF"
+): ProviderDetail {
+	const summary =
+		providersToSummaries([dto], program)[0] ??
+		({
+			id: dto.id,
+			npi: dto.npi,
+			name: dto.name,
+			credentials: "",
+			specialty: "General Practice",
+			subspecialty: "General",
+			taxId: "—",
+			upin: "—",
+			medicaidId: "—",
+			status: parseStatus(dto.status),
+			program,
+			providerType: parseProviderType(dto.entity_type),
+			gender: "Unknown",
+			dob: "—",
+			yearsInPractice: 0,
+			practiceName: dto.vendor ?? dto.roster_file ?? "—",
+			practiceAddress: "—",
+			practicePhone: "—",
+			enrollmentStatus: "enrolled",
+			enrollmentEffective: dto.effective_date ?? "—",
+			claims12m: 0,
+			encounters12m: 0,
+			billed12m: 0,
+			paid12m: 0,
+			rejectionRate: 0,
+			netPayment12m: 0,
+		} satisfies ProviderSummary);
+	const person = splitPersonName(summary.name);
+	const taxonomyDescription =
+		TAXONOMY_LABELS[dto.taxonomy ?? ""] ?? summary.specialty;
+
+	return {
+		...summary,
+		...person,
+		preferredName: null,
+		suffix: summary.credentials || null,
+		email: "—",
+		fax: "—",
+		preferredLanguage: "—",
+		race: "—",
+		ethnicity: "—",
+		taxonomyCode: dto.taxonomy ?? "—",
+		taxonomyDescription,
+		boardCertification: "—",
+		medicalSchool: "—",
+		graduationYear: 0,
+		acceptingNewPatients: true,
+		mailingAddress: summary.practiceAddress,
+		practiceCity: "Washington",
+		practiceState: "DC",
+		practiceZip: "20001",
+		website: null,
+		stateLicense: "—",
+		deaNumber: "—",
+		locations: [],
+		networks: [],
+		identifiers: [],
+		monthlyVolume: [],
+		rejectionReasons: [],
+		recentClaims: [],
+		recentEncounters: [],
+		vendors: dto.vendor
+			? [
+					{
+						id: dto.vendor_id ?? dto.id,
+						vendor: String(dto.vendor),
+						fileType: program,
+						dataSent: "Provider roster",
+						frequency: "—",
+						lastReceived: dto.updated_at?.slice(0, 10) ?? "—",
+						status: "active" satisfies FeedStatus,
+					},
+				]
+			: [],
+		credentialing: [],
+		exceptions: [],
+		claimsTrendPct: 0,
+		encountersTrendPct: 0,
+		billedTrendPct: 0,
+		paidTrendPct: 0,
+		rejectionTrendPct: 0,
+		netPaymentTrendPct: 0,
+		dataAsOf:
+			dto.updated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+	};
 }

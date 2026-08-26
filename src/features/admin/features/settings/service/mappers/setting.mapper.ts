@@ -8,7 +8,18 @@ export function toSettingModel(dto: ApiSettingDto): AppSettingModel | null {
 	const category = dto.category?.trim() ?? "general";
 	if (!id || !key) return null;
 
-	return { id, key, value, category };
+	return {
+		id,
+		key,
+		value,
+		category,
+		valueType:
+			typeof dto.value_type === "string" && dto.value_type.trim()
+				? dto.value_type
+				: "string",
+		isSecret: dto.is_secret === true,
+		description: typeof dto.description === "string" ? dto.description : null,
+	};
 }
 
 export function toSettingModelList(dtos: ApiSettingDto[]): AppSettingModel[] {

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 
+import { useVendorCoreSessionOptional } from "@/components/vendor-core/VendorCoreGate";
 import { authClient } from "@/lib/auth-client";
 import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { useABAC } from "@/permissions/access/useABAC";
@@ -30,7 +31,11 @@ export function PermissionProvider({
 }) {
 	const { checkAccess } = useABAC();
 	const { data: session } = authClient.useSession();
-	const hasUser = isMockAuthEnabled() || !!session?.user;
+	const vendorCore = useVendorCoreSessionOptional();
+	const hasUser =
+		isMockAuthEnabled() ||
+		!!session?.user ||
+		(Boolean(vendorCore?.shellAuth) && Boolean(vendorCore?.authed));
 
 	const value = useMemo<PermissionContextType>(
 		() => ({
@@ -50,7 +55,6 @@ export function PermissionProvider({
 		[checkAccess, hasUser]
 	);
 
-	// Ensure mock user is referenced so tree-shaking keeps the constant available for ABAC
 	void MOCK_ADMIN_USER;
 
 	return (

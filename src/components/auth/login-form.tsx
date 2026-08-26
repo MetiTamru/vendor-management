@@ -12,6 +12,7 @@ import {
 	Loader2,
 	Lock,
 	Mail,
+	User,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -39,13 +40,24 @@ import { clearDevSignedOutCookie } from "@/lib/auth/dev-session";
 import { isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { AUTH_PATHS } from "@/lib/auth/paths";
 import { isNestApiEnabled } from "@/lib/mock-mode";
+import { isDjangoShellAuthEnabled } from "@/lib/vendor-core/auth-mode";
+import {
+	VendorCoreApiError,
+	vendorCoreLogin,
+	vendorCoreMe,
+} from "@/lib/vendor-core/client";
 
-const loginSchema = z.object({
-	email: z.string().email("Enter a valid work email"),
+const nestLoginSchema = z.object({
+	identifier: z.string().email("Enter a valid work email"),
 	password: z.string().min(8, "At least 8 characters"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+const djangoLoginSchema = z.object({
+	identifier: z.string().min(1, "Enter your username"),
+	password: z.string().min(1, "Enter your password"),
+});
+
+type LoginFormValues = z.infer<typeof nestLoginSchema>;
 
 export function LoginForm() {
 	const locale = useLocale();
@@ -56,17 +68,19 @@ export function LoginForm() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 	const [showInvitedBanner, setShowInvitedBanner] = useState(invited);
+
 	const mockAuth = isMockAuthEnabled();
 	const nestLogin = isNestApiEnabled();
+	const djangoLogin = isDjangoShellAuthEnabled();
 
 	const form = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema),
-		defaultValues: { email: invitedEmail, password: "" },
+		resolver: zodResolver(djangoLogin ? djangoLoginSchema : nestLoginSchema),
+		defaultValues: { identifier: invitedEmail, password: "" },
 	});
 
 	useEffect(() => {
 		if (invitedEmail) {
-			form.setValue("email", invitedEmail);
+			form.setValue("identifier", invitedEmail);
 		}
 	}, [form, invitedEmail]);
 
@@ -83,13 +97,29 @@ export function LoginForm() {
 	async function onSubmit(values: LoginFormValues) {
 		setIsLoading(true);
 		try {
-			if (mockAuth && !nestLogin) {
+			if (mockAuth && !nestLogin && !djangoLogin) {
 				enterDevSession();
 				return;
 			}
 
+			if (djangoLogin) {
+				await vendorCoreLogin({
+					username: values.identifier.trim(),
+					password: values.password,
+				});
+				const me = await vendorCoreMe();
+				clearDevSignedOutCookie();
+				toast.success("Signed in");
+				if (me.must_change_password) {
+					window.location.assign(`/${locale}${AUTH_PATHS.changePassword}`);
+				} else {
+					window.location.assign(`/${locale}`);
+				}
+				return;
+			}
+
 			const result = await authClient.signIn.email({
-				email: values.email,
+				email: values.identifier,
 				password: values.password,
 			});
 
@@ -101,12 +131,24 @@ export function LoginForm() {
 			clearDevSignedOutCookie();
 			toast.success("Signed in");
 			window.location.assign(`/${locale}`);
-		} catch {
-			toast.error("Something went wrong");
+		} catch (err) {
+			const message =
+				err instanceof VendorCoreApiError
+					? err.message
+					: "Something went wrong";
+			toast.error(message);
 		} finally {
 			setIsLoading(false);
 		}
 	}
+
+	const identifierLabel = djangoLogin ? "Username" : "Email";
+	const identifierPlaceholder = djangoLogin
+		? "Enter your username"
+		: "you@company.com";
+	const IdentifierIcon = djangoLogin ? User : Mail;
+	const identifierType = djangoLogin ? ("text" as const) : ("email" as const);
+	const identifierAutoComplete = djangoLogin ? "username" : "email";
 
 	return (
 		<Form {...form}>
@@ -127,16 +169,18 @@ export function LoginForm() {
 
 				<FormField
 					control={form.control}
-					name="email"
+					name="identifier"
 					render={({ field }) => (
 						<FormItem className="gap-1.5">
-							<FormLabel className={authLabelClass}>Email</FormLabel>
+							<FormLabel className={authLabelClass}>
+								{identifierLabel}
+							</FormLabel>
 							<FormControl>
 								<AuthTextInput
-									icon={Mail}
-									type="email"
-									placeholder="you@company.com"
-									autoComplete="email"
+									icon={IdentifierIcon}
+									type={identifierType}
+									placeholder={identifierPlaceholder}
+									autoComplete={identifierAutoComplete}
 									{...field}
 								/>
 							</FormControl>
@@ -155,7 +199,7 @@ export function LoginForm() {
 									href={AUTH_PATHS.forgotPassword}
 									className="text-[12px] font-medium text-primary transition-colors hover:text-primary/80"
 								>
-									Forgot?
+									Forgot password
 								</Link>
 							</div>
 							<FormControl>
@@ -207,7 +251,7 @@ export function LoginForm() {
 						)}
 					</Button>
 
-					{mockAuth && !nestLogin ? (
+					{mockAuth && !nestLogin && !djangoLogin ? (
 						<Button
 							type="button"
 							variant="outline"
@@ -219,24 +263,6 @@ export function LoginForm() {
 						</Button>
 					) : null}
 				</div>
-
-				<div className="flex items-center gap-3 pt-3">
-					<span className="h-px flex-1 bg-foreground/10" />
-					<span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-						or
-					</span>
-					<span className="h-px flex-1 bg-foreground/10" />
-				</div>
-
-				<p className="text-center text-[13px] text-muted-foreground">
-					No account?{" "}
-					<Link
-						href={AUTH_PATHS.signUp}
-						className="font-semibold text-primary underline-offset-4 hover:underline"
-					>
-						Create one
-					</Link>
-				</p>
 			</form>
 		</Form>
 	);

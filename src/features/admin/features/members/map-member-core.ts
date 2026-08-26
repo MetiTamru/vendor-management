@@ -139,14 +139,15 @@ function mapComms(
 }
 
 export function memberListDtoToSummary(row: MemberListDto): MemberSummary {
+	const nestedVendor = (row as MemberListDto & { vendor?: unknown }).vendor;
+	const nestedVendorId =
+		nestedVendor && typeof nestedVendor === "object"
+			? str((nestedVendor as { id?: unknown }).id)
+			: "";
 	return {
 		id: str(row.id),
 		memberId: str(row.cardholder_id || row.reference_id || row.id).slice(0, 64),
-		vendorId: str(row.vendor_id) ||
-			(row.vendor && typeof row.vendor === "object"
-				? str((row.vendor as { id?: unknown }).id)
-				: "") ||
-			undefined,
+		vendorId: str(row.vendor_id) || nestedVendorId || undefined,
 		alternateId: str(row.alternate_id) || undefined,
 		firstName: str(row.first_name, "—"),
 		middleName: str(row.middle_name) || undefined,
@@ -429,7 +430,9 @@ export function memberDetailDtoToDetail(row: MemberDetailDto): MemberDetail {
 
 	return {
 		...base,
-		eligibilityStatus: mapEligibilityStatus(str(elig.status)),
+		eligibilityStatus: mapEligibilityStatus(
+			str(row.eligibility_status || elig.status)
+		),
 		coverageStart: dateStr(
 			plan.coverage_effective_date ?? row.coverage_effective_date
 		),

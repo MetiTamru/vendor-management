@@ -54,7 +54,10 @@ import {
 	useMemberSummariesPageQuery,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import { MemberDirectoryActions, MemberListRowDelete } from "@/features/admin/features/members/pages/member-list-actions";
+import {
+	MemberDirectoryActions,
+	MemberListRowDelete,
+} from "@/features/admin/features/members/pages/member-list-actions";
 import { useRouter } from "@/i18n/navigation";
 import { downloadBlob, stampFilename } from "@/lib/export/csv";
 import { isMockEnabled } from "@/lib/mock-mode";

@@ -56,25 +56,25 @@ import {
 } from "@/features/admin/features/members/feature/api/membersApi";
 import { useMemberDetailQuery } from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import {
-	MemberCreateAccumulatorButton,
-	MemberCreateClaimButton,
-	MemberCreateExceptionButton,
 	MemberAccumulatorRowActions,
 	MemberChangeEventsPanel,
 	MemberClaimRowActions,
+	MemberCreateAccumulatorButton,
+	MemberCreateClaimButton,
+	MemberCreateExceptionButton,
 	MemberExceptionRowActions,
 	MemberProfileActions,
 	MemberSourceRecordViewer,
 	useMemberTabData,
 } from "@/features/admin/features/members/pages/member-detail-actions";
-import { MemberFamilyEditor } from "@/features/admin/features/members/pages/member-family-editor";
-import { MemberEditPanel } from "@/features/admin/features/members/pages/member-write-form";
 import {
 	downloadMemberDetailCsv,
 	downloadMemberDetailPdf,
 	openMemberDocumentPdf,
 	printMemberProfile,
 } from "@/features/admin/features/members/pages/member-detail-export-actions";
+import { MemberFamilyEditor } from "@/features/admin/features/members/pages/member-family-editor";
+import { MemberEditPanel } from "@/features/admin/features/members/pages/member-write-form";
 import { Link } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
@@ -737,10 +737,7 @@ function MemberDetailBody({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<MemberProfileActions
-						member={member}
-						onEdit={enterEditMode}
-					/>
+					<MemberProfileActions member={member} onEdit={enterEditMode} />
 				</div>
 			</div>
 

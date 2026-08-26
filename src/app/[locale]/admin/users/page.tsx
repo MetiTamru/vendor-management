@@ -1,5 +1,10 @@
-import { UsersPage } from "@/features/admin/features/users/pages/UsersPage";
+import { redirect } from "next/navigation";
 
-export default function AdminUsersRoute() {
-	return <UsersPage />;
+type Props = {
+	params: Promise<{ locale: string }>;
+};
+
+export default async function AdminUsersRoute({ params }: Props) {
+	const { locale } = await params;
+	redirect(`/${locale}/admin/settings?tab=users`);
 }
