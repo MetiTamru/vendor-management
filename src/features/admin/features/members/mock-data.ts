@@ -13,6 +13,8 @@ export type ExceptionStatus = "open" | "in_progress" | "resolved";
 export type MemberSummary = {
 	id: string;
 	memberId: string;
+	/** Core vendor UUID when known (live API). */
+	vendorId?: string;
 	alternateId?: string;
 	firstName: string;
 	middleName?: string;
@@ -79,10 +81,15 @@ export type DependentRow = {
 	id: string;
 	name: string;
 	relationship: "Self" | "Spouse" | "Daughter" | "Son" | "Other";
+	relationshipCode?: string;
+	relationshipLabel?: string;
 	dob: string;
 	gender: string;
 	coverageStatus: MemberStatus;
+	/** Cardholder / display member id */
 	memberId?: string;
+	/** Linked dependent member UUID when known */
+	dependentId?: string;
 	pcpName?: string;
 	planName?: string;
 };
@@ -1062,9 +1069,10 @@ export function maskSsn(last4: string) {
 	return `XXX-XX-${last4}`;
 }
 
-export function memberAge(dob: string, asOf = "2026-08-04") {
+export function memberAge(dob: string, asOf?: string) {
+	const asOfDate = asOf ?? new Date().toISOString().slice(0, 10);
 	const [y, m, d] = dob.split("-").map(Number);
-	const [ay, am, ad] = asOf.split("-").map(Number);
+	const [ay, am, ad] = asOfDate.split("-").map(Number);
 	if (!y || !m || !d || !ay || !am || !ad) return null;
 	let age = ay - y;
 	if (am < m || (am === m && ad < d)) age -= 1;

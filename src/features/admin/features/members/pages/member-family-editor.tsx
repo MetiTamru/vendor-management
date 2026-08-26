@@ -1,0 +1,1045 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import {
+	ArrowRightLeft,
+	Eye,
+	Pencil,
+	Plus,
+	Trash2,
+	UserPlus,
+	Users,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	RecordFormChoice,
+	RecordFormField,
+	RecordFormRow,
+	RecordFormSection,
+} from "@/components/ui/record-form";
+import type { MemberSummary } from "@/features/admin/features/members/mock-data";
+import { memberAge } from "@/features/admin/features/members/mock-data";
+import {
+	useCreateMemberFamilyLinkMutation,
+	useCreateMemberMutation,
+	useDeleteMemberFamilyLinkMutation,
+	useMemberFamilyLinkQuery,
+	useMemberFamilyLinksQuery,
+	useMemberSummariesPageQuery,
+	useSyncMemberFamilyLinksMutation,
+	useTransferMemberFamilyLinkMutation,
+	useUpdateMemberFamilyLinkMutation,
+	useUpdateMemberMutation,
+} from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import { isMockEnabled } from "@/lib/mock-mode";
+import { cn } from "@/lib/utils";
+
+const fieldClass = "h-8 w-full bg-background text-sm";
+
+const REL_PRESETS = [
+	{ code: "18", label: "Self" },
+	{ code: "01", label: "Spouse" },
+	{ code: "19", label: "Child" },
+	{ code: "34", label: "Other" },
+] as const;
+
+type FamilySubTab = "list" | "add";
+type AddMode = "pick" | "create";
+
+function autoCardholder(subscriberCardholderId: string) {
+	const base =
+		(subscriberCardholderId || "DEP").replace(/[^A-Za-z0-9]/g, "").slice(0, 12) ||
+		"DEP";
+	const suffix = Date.now().toString(36).slice(-5).toUpperCase();
+	return `${base}-D${suffix}`.slice(0, 32);
+}
+
+function SectionShell({
+	title,
+	action,
+	children,
+	className,
+}: {
+	title?: string;
+	action?: React.ReactNode;
+	children: React.ReactNode;
+	className?: string;
+}) {
+	return (
+		<section
+			className={cn(
+				"overflow-hidden rounded-md border border-border/70 bg-card",
+				className
+			)}
+		>
+			{title || action ? (
+				<div className="flex items-center gap-2 border-b border-border/40 bg-muted/10 px-3.5 py-2">
+					{title ? (
+						<h3 className="min-w-0 flex-1 text-[13px] font-semibold tracking-tight">
+							{title}
+						</h3>
+					) : (
+						<span className="flex-1" />
+					)}
+					{action}
+				</div>
+			) : null}
+			<div className="p-3.5">{children}</div>
+		</section>
+	);
+}
+
+/**
+ * Family / Dependents: isolated **Family members** vs **Add dependent** tabs.
+ * One members table only (no separate “roster”).
+ */
+export function MemberFamilyEditor({
+	memberId,
+	vendorId,
+	subscriberCardholderId,
+	planName,
+	program,
+	showSync = true,
+	defaultSubTab = "list",
+}: {
+	memberId: string;
+	vendorId?: string;
+	subscriberCardholderId?: string;
+	planName?: string;
+	program?: string;
+	showSync?: boolean;
+	defaultSubTab?: FamilySubTab;
+}) {
+	const enabled = Boolean(memberId) && !isMockEnabled();
+	const linksQ = useMemberFamilyLinksQuery(memberId, enabled);
+	const createLink = useCreateMemberFamilyLinkMutation(memberId);
+	const createMember = useCreateMemberMutation();
+	const updateLink = useUpdateMemberFamilyLinkMutation(memberId);
+	const updateMember = useUpdateMemberMutation();
+	const transfer = useTransferMemberFamilyLinkMutation(memberId);
+	const remove = useDeleteMemberFamilyLinkMutation(memberId);
+	const sync = useSyncMemberFamilyLinksMutation(memberId);
+
+	const [subTab, setSubTab] = useState<FamilySubTab>(defaultSubTab);
+	const [addMode, setAddMode] = useState<AddMode>("create");
+	const [search, setSearch] = useState("");
+	const [selected, setSelected] = useState<MemberSummary | null>(null);
+	const [newFirstName, setNewFirstName] = useState("");
+	const [newLastName, setNewLastName] = useState("");
+	const [newCardholder, setNewCardholder] = useState("");
+	const [relationshipCode, setRelationshipCode] = useState("19");
+	const [relationshipLabel, setRelationshipLabel] = useState("Child");
+	const [editOpen, setEditOpen] = useState(false);
+	const [editLinkId, setEditLinkId] = useState("");
+	const [editDependentId, setEditDependentId] = useState("");
+	const [editFirstName, setEditFirstName] = useState("");
+	const [editLastName, setEditLastName] = useState("");
+	const [editCode, setEditCode] = useState("");
+	const [editLabel, setEditLabel] = useState("");
+	const [editBusy, setEditBusy] = useState(false);
+	const [viewOpen, setViewOpen] = useState(false);
+	const [viewLinkId, setViewLinkId] = useState("");
+	const [transferOpen, setTransferOpen] = useState(false);
+	const [transferLinkId, setTransferLinkId] = useState("");
+	const [newSubscriberId, setNewSubscriberId] = useState("");
+	const [busy, setBusy] = useState(false);
+
+	const viewDetailQ = useMemberFamilyLinkQuery(
+		memberId,
+		viewLinkId,
+		viewOpen && Boolean(viewLinkId)
+	);
+	const viewDetail = viewDetailQ.data;
+
+	const q = search.trim();
+	const browseFilters = useMemo(() => {
+		const base: {
+			limit: number;
+			offset: number;
+			vendor_id?: string;
+			search?: string;
+		} = { limit: 12, offset: 0 };
+		if (vendorId) base.vendor_id = vendorId;
+		if (q.length >= 1) base.search = q;
+		return base;
+	}, [vendorId, q]);
+
+	const browseQ = useMemberSummariesPageQuery(
+		browseFilters,
+		enabled && subTab === "add" && addMode === "pick"
+	);
+
+	const links = linksQ.data ?? [];
+	const linkedDependentIds = useMemo(() => {
+		const ids = new Set<string>();
+		for (const row of links) {
+			if (row.dependentId) ids.add(row.dependentId);
+			ids.add(row.id);
+		}
+		return ids;
+	}, [links]);
+
+	const candidates = useMemo(() => {
+		const rows = browseQ.data?.results ?? [];
+		return rows.filter(
+			(m) => m.id !== memberId && !linkedDependentIds.has(m.id)
+		);
+	}, [browseQ.data, memberId, linkedDependentIds]);
+
+	const activeCovered = links.filter((d) => d.coverageStatus === "active").length;
+	const childrenCount = links.filter(
+		(d) =>
+			d.relationship === "Daughter" ||
+			d.relationship === "Son" ||
+			(d.relationshipLabel || "").toLowerCase().includes("child") ||
+			d.relationshipCode === "19"
+	).length;
+
+	function applyPreset(code: string, label: string) {
+		setRelationshipCode(code);
+		setRelationshipLabel(label);
+	}
+
+	function resetAddForm() {
+		setSelected(null);
+		setSearch("");
+		setNewFirstName("");
+		setNewLastName("");
+		setNewCardholder("");
+	}
+
+	function afterLinkSuccess() {
+		toast.success("Dependent linked");
+		resetAddForm();
+		setSubTab("list");
+	}
+
+	function linkDependent(dependentId: string) {
+		createLink.mutate(
+			{
+				dependent_id: dependentId,
+				relationship_code: relationshipCode,
+				relationship_label: relationshipLabel,
+			},
+			{
+				onSuccess: afterLinkSuccess,
+				onError: (err) =>
+					toast.error(err instanceof Error ? err.message : "Link failed"),
+			}
+		);
+	}
+
+	function submitPick() {
+		if (!selected) {
+			toast.error("Select a member from the list");
+			return;
+		}
+		linkDependent(selected.id);
+	}
+
+	async function submitCreateNew() {
+		if (!vendorId) {
+			toast.error("Member has no vendor — cannot create dependent");
+			return;
+		}
+		const first = newFirstName.trim();
+		const last = newLastName.trim();
+		if (!first || !last) {
+			toast.error("First and last name required");
+			return;
+		}
+		const cardholder =
+			newCardholder.trim() ||
+			autoCardholder(subscriberCardholderId || memberId);
+		setBusy(true);
+		try {
+			const created = await createMember.mutateAsync({
+				vendor_id: vendorId,
+				cardholder_id: cardholder,
+				person_code: "02",
+				first_name: first,
+				last_name: last,
+				status: "active",
+				relationship_code: relationshipCode,
+				demographics: {},
+				eligibility: { status: "active" },
+				plan_coverage: {},
+				employment_group: {},
+			});
+			if (!created?.id) {
+				toast.error("Member created but no id returned");
+				return;
+			}
+			await new Promise<void>((resolve, reject) => {
+				createLink.mutate(
+					{
+						dependent_id: created.id,
+						relationship_code: relationshipCode,
+						relationship_label: relationshipLabel,
+					},
+					{
+						onSuccess: () => {
+							toast.success(`Created ${first} ${last} and linked`);
+							resetAddForm();
+							setSubTab("list");
+							resolve();
+						},
+						onError: (err) => {
+							toast.error(
+								err instanceof Error
+									? err.message
+									: "Member created but link failed"
+							);
+							reject(err);
+						},
+					}
+				);
+			});
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Create failed");
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	if (isMockEnabled()) {
+		return (
+			<SectionShell title="Family members">
+				<p className="text-sm text-muted-foreground">
+					Family link create/update needs live vendor-core (mock off).
+				</p>
+			</SectionShell>
+		);
+	}
+
+	const pending = createLink.isPending || createMember.isPending || busy;
+
+	return (
+		<div className="space-y-3">
+			<div className="flex flex-wrap items-center gap-2">
+				<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
+					<button
+						type="button"
+						className={cn(
+							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+							subTab === "list"
+								? "bg-background text-foreground shadow-sm"
+								: "text-muted-foreground hover:text-foreground"
+						)}
+						onClick={() => setSubTab("list")}
+					>
+						<Users className="size-3.5" />
+						Family members
+						<span className="rounded-sm bg-muted px-1.5 py-px text-[10px] tabular-nums">
+							{links.length}
+						</span>
+					</button>
+					<button
+						type="button"
+						className={cn(
+							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+							subTab === "add"
+								? "bg-background text-foreground shadow-sm"
+								: "text-muted-foreground hover:text-foreground"
+						)}
+						onClick={() => setSubTab("add")}
+					>
+						<UserPlus className="size-3.5" />
+						Add dependent
+					</button>
+				</div>
+				{showSync && subTab === "list" ? (
+					<Button
+						type="button"
+						size="sm"
+						variant="outline"
+						className="ml-auto"
+						disabled={sync.isPending}
+						onClick={() =>
+							sync.mutate(undefined, {
+								onSuccess: () => toast.success("Family links synced"),
+								onError: (err) =>
+									toast.error(
+										err instanceof Error ? err.message : "Sync failed"
+									),
+							})
+						}
+					>
+						Sync from source
+					</Button>
+				) : null}
+			</div>
+
+			{subTab === "list" ? (
+				<div className="space-y-3">
+					<SectionShell>
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+							{[
+								{ label: "Household size", value: String(links.length) },
+								{ label: "Active covered", value: String(activeCovered) },
+								{ label: "Children", value: String(childrenCount) },
+								{ label: "Shared plan", value: planName || "—" },
+								{ label: "Program", value: program || "—" },
+								{
+									label: "As of",
+									value: "Live links",
+								},
+							].map((item) => (
+								<div key={item.label} className="min-w-0">
+									<p className="text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+										{item.label}
+									</p>
+									<p className="mt-1 truncate text-xs font-semibold">
+										{item.value}
+									</p>
+								</div>
+							))}
+						</div>
+					</SectionShell>
+
+					<SectionShell
+						title="Family members"
+						action={
+							<Button
+								type="button"
+								size="sm"
+								variant="outline"
+								className="h-7 text-xs"
+								onClick={() => setSubTab("add")}
+							>
+								<Plus className="mr-1 size-3.5" />
+								Add
+							</Button>
+						}
+					>
+						{linksQ.isLoading ? (
+							<p className="text-sm text-muted-foreground">Loading…</p>
+						) : linksQ.error ? (
+							<p className="text-sm text-destructive">{linksQ.error.message}</p>
+						) : links.length === 0 ? (
+							<div className="rounded-md border border-dashed border-border/70 px-4 py-8 text-center">
+								<p className="text-sm text-muted-foreground">
+									No dependents linked yet.
+								</p>
+								<Button
+									type="button"
+									size="sm"
+									className="mt-3"
+									onClick={() => setSubTab("add")}
+								>
+									Add dependent
+								</Button>
+							</div>
+						) : (
+							<div className="overflow-x-auto">
+								<table className="w-full text-sm">
+									<thead>
+										<tr className="border-b border-border/50 text-left text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+											<th className="px-2 py-2">Name</th>
+											<th className="px-2 py-2">Cardholder</th>
+											<th className="px-2 py-2">Relationship</th>
+											<th className="px-2 py-2">Age</th>
+											<th className="px-2 py-2">Status</th>
+											<th className="px-2 py-2 text-right">Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{links.map((row) => {
+											const age = memberAge(row.dob);
+											return (
+												<tr
+													key={row.id}
+													className="border-b border-border/30 last:border-0"
+												>
+													<td className="px-2 py-2.5 font-medium">{row.name}</td>
+													<td className="px-2 py-2.5 font-mono text-xs">
+														{row.memberId ?? "—"}
+													</td>
+													<td className="px-2 py-2.5">
+														{row.relationshipLabel || row.relationship}
+														{row.relationshipCode ? (
+															<span className="ml-1 text-xs text-muted-foreground">
+																({row.relationshipCode})
+															</span>
+														) : null}
+													</td>
+													<td className="px-2 py-2.5 tabular-nums">
+														{age != null ? age : "—"}
+													</td>
+													<td className="px-2 py-2.5 capitalize">
+														{row.coverageStatus}
+													</td>
+													<td className="px-2 py-2.5">
+														<div className="flex justify-end gap-0.5">
+															<Button
+																type="button"
+																size="icon"
+																variant="ghost"
+																className="size-7"
+																title="View family link"
+																onClick={() => {
+																	setViewLinkId(row.id);
+																	setViewOpen(true);
+																}}
+															>
+																<Eye className="size-3.5" />
+															</Button>
+															<Button
+																type="button"
+																size="icon"
+																variant="ghost"
+																className="size-7"
+																title="Edit dependent"
+																onClick={() => {
+																	const parts = row.name
+																		.split(/\s+/)
+																		.filter(Boolean);
+																	setEditLinkId(row.id);
+																	setEditDependentId(row.dependentId ?? "");
+																	setEditFirstName(parts[0] ?? "");
+																	setEditLastName(parts.slice(1).join(" "));
+																	setEditCode(
+																		row.relationshipCode ||
+																			String(row.relationship)
+																	);
+																	setEditLabel(
+																		row.relationshipLabel ||
+																			String(row.relationship)
+																	);
+																	setEditOpen(true);
+																}}
+															>
+																<Pencil className="size-3.5" />
+															</Button>
+															<Button
+																type="button"
+																size="icon"
+																variant="ghost"
+																className="size-7"
+																title="Transfer"
+																onClick={() => {
+																	setTransferLinkId(row.id);
+																	setNewSubscriberId("");
+																	setTransferOpen(true);
+																}}
+															>
+																<ArrowRightLeft className="size-3.5" />
+															</Button>
+															<Button
+																type="button"
+																size="icon"
+																variant="ghost"
+																className="size-7 text-destructive"
+																title="Remove"
+																disabled={remove.isPending}
+																onClick={() => {
+																	if (
+																		!window.confirm(
+																			"Remove this family link?"
+																		)
+																	)
+																		return;
+																	remove.mutate(row.id, {
+																		onSuccess: () =>
+																			toast.success("Removed"),
+																		onError: (err) =>
+																			toast.error(
+																				err instanceof Error
+																					? err.message
+																					: "Delete failed"
+																			),
+																	});
+																}}
+															>
+																<Trash2 className="size-3.5" />
+															</Button>
+														</div>
+													</td>
+												</tr>
+											);
+										})}
+									</tbody>
+								</table>
+							</div>
+						)}
+					</SectionShell>
+				</div>
+			) : (
+				<div className="space-y-5">
+					<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium",
+								addMode === "create"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("create")}
+						>
+							Create new
+						</button>
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium",
+								addMode === "pick"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("pick")}
+						>
+							Link existing
+						</button>
+					</div>
+
+					<RecordFormSection
+						title="Relationship"
+						description="How this dependent relates to the subscriber."
+					>
+						<RecordFormRow>
+							<RecordFormField label="Type">
+								<RecordFormChoice
+									tone="primary"
+									value={relationshipCode}
+									onChange={(code) => {
+										const preset = REL_PRESETS.find((p) => p.code === code);
+										applyPreset(code, preset?.label ?? relationshipLabel);
+									}}
+									options={REL_PRESETS.map((p) => ({
+										value: p.code,
+										label: `${p.label} (${p.code})`,
+									}))}
+								/>
+							</RecordFormField>
+						</RecordFormRow>
+						<RecordFormRow>
+							<RecordFormField label="Rel. code">
+								<Input
+									className={fieldClass}
+									value={relationshipCode}
+									onChange={(e) => setRelationshipCode(e.target.value)}
+								/>
+							</RecordFormField>
+							<RecordFormField label="Rel. label">
+								<Input
+									className={fieldClass}
+									value={relationshipLabel}
+									onChange={(e) => setRelationshipLabel(e.target.value)}
+								/>
+							</RecordFormField>
+						</RecordFormRow>
+					</RecordFormSection>
+
+					{addMode === "create" ? (
+						<RecordFormSection
+							title="New dependent"
+							description="Creates a member (UUID auto-assigned) then links them. Cardholder auto-fills if blank."
+						>
+							<RecordFormRow>
+								<RecordFormField label="First name">
+									<Input
+										className={fieldClass}
+										value={newFirstName}
+										onChange={(e) => setNewFirstName(e.target.value)}
+									/>
+								</RecordFormField>
+								<RecordFormField label="Last name">
+									<Input
+										className={fieldClass}
+										value={newLastName}
+										onChange={(e) => setNewLastName(e.target.value)}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							<RecordFormRow>
+								<RecordFormField label="Cardholder ID">
+									<Input
+										className={fieldClass}
+										value={newCardholder}
+										onChange={(e) => setNewCardholder(e.target.value)}
+										placeholder="Auto-generated if empty"
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							{!vendorId ? (
+								<div className="border-t border-border/60 px-3 py-2 text-xs text-destructive">
+									This member has no vendor_id — create needs a live member
+									record.
+								</div>
+							) : null}
+						</RecordFormSection>
+					) : (
+						<RecordFormSection
+							title="Link existing member"
+							description="Search and select — no UUID typing."
+						>
+							<RecordFormRow>
+								<RecordFormField label="Search" align="start">
+									<div className="w-full space-y-2">
+										<Input
+											className={fieldClass}
+											value={search}
+											onChange={(e) => {
+												setSearch(e.target.value);
+												setSelected(null);
+											}}
+											placeholder="Name or cardholder ID…"
+										/>
+										{selected ? (
+											<div className="flex flex-wrap items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-sm">
+												<span className="font-medium">
+													{[selected.firstName, selected.lastName]
+														.filter(Boolean)
+														.join(" ")}
+												</span>
+												<span className="font-mono text-xs text-muted-foreground">
+													{selected.memberId}
+												</span>
+												<Button
+													type="button"
+													size="sm"
+													variant="ghost"
+													className="h-6 text-xs"
+													onClick={() => setSelected(null)}
+												>
+													Clear
+												</Button>
+											</div>
+										) : null}
+										<div className="max-h-48 overflow-auto rounded-md border border-border/60">
+											{browseQ.isLoading ? (
+												<p className="px-3 py-2 text-xs text-muted-foreground">
+													Loading…
+												</p>
+											) : candidates.length === 0 ? (
+												<p className="px-3 py-2 text-xs text-muted-foreground">
+													No match. Try Create new instead.
+												</p>
+											) : (
+												<ul className="divide-y divide-border/40 text-sm">
+													{candidates.map((m) => {
+														const name = [m.firstName, m.lastName]
+															.filter(Boolean)
+															.join(" ");
+														const active = selected?.id === m.id;
+														return (
+															<li key={m.id}>
+																<button
+																	type="button"
+																	className={cn(
+																		"flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted/40",
+																		active && "bg-muted/60"
+																	)}
+																	onClick={() => setSelected(m)}
+																>
+																	<span className="min-w-0 flex-1 truncate font-medium">
+																		{name}
+																	</span>
+																	<span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+																		{m.memberId}
+																	</span>
+																</button>
+															</li>
+														);
+													})}
+												</ul>
+											)}
+										</div>
+									</div>
+								</RecordFormField>
+							</RecordFormRow>
+						</RecordFormSection>
+					)}
+
+					<div className="flex justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setSubTab("list")}
+						>
+							Cancel
+						</Button>
+						{addMode === "create" ? (
+							<Button
+								type="button"
+								disabled={
+									pending ||
+									!vendorId ||
+									!newFirstName.trim() ||
+									!newLastName.trim()
+								}
+								onClick={() => void submitCreateNew()}
+							>
+								<UserPlus className="mr-1 size-3.5" />
+								Create &amp; link
+							</Button>
+						) : (
+							<Button
+								type="button"
+								disabled={pending || !selected}
+								onClick={submitPick}
+							>
+								<Plus className="mr-1 size-3.5" />
+								Link selected
+							</Button>
+						)}
+					</div>
+				</div>
+			)}
+
+			<Dialog open={viewOpen} onOpenChange={setViewOpen}>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Family link detail</DialogTitle>
+					</DialogHeader>
+					{viewDetailQ.isLoading ? (
+						<p className="text-sm text-muted-foreground">Loading…</p>
+					) : viewDetailQ.error ? (
+						<p className="text-sm text-destructive">
+							{viewDetailQ.error.message}
+						</p>
+					) : viewDetail ? (
+						<div className="space-y-2 text-sm">
+							<div className="grid grid-cols-[8rem_1fr] gap-x-2 gap-y-1.5">
+								<span className="text-muted-foreground">Link ID</span>
+								<span className="font-mono text-xs break-all">
+									{viewDetail.id}
+								</span>
+								<span className="text-muted-foreground">Subscriber</span>
+								<span className="font-mono text-xs break-all">
+									{viewDetail.subscriberId}
+								</span>
+								<span className="text-muted-foreground">Dependent</span>
+								<span className="font-mono text-xs break-all">
+									{viewDetail.dependentId}
+								</span>
+								<span className="text-muted-foreground">Name</span>
+								<span>
+									{[viewDetail.dependentFirstName, viewDetail.dependentLastName]
+										.filter(Boolean)
+										.join(" ") || "—"}
+								</span>
+								<span className="text-muted-foreground">Cardholder</span>
+								<span className="font-mono text-xs">
+									{viewDetail.dependentCardholderId || "—"}
+								</span>
+								<span className="text-muted-foreground">Status</span>
+								<span className="capitalize">
+									{viewDetail.dependentStatus || "—"}
+								</span>
+								<span className="text-muted-foreground">Rel. code</span>
+								<span>{viewDetail.relationshipCode || "—"}</span>
+								<span className="text-muted-foreground">Rel. label</span>
+								<span>{viewDetail.relationshipLabel || "—"}</span>
+								<span className="text-muted-foreground">Created</span>
+								<span>{viewDetail.createdAt}</span>
+							</div>
+							<div className="flex justify-end gap-2 pt-2">
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => {
+										setViewOpen(false);
+										setEditLinkId(viewDetail.id);
+										setEditDependentId(viewDetail.dependentId);
+										setEditFirstName(viewDetail.dependentFirstName);
+										setEditLastName(viewDetail.dependentLastName);
+										setEditCode(viewDetail.relationshipCode);
+										setEditLabel(viewDetail.relationshipLabel);
+										setEditOpen(true);
+									}}
+								>
+									Edit dependent
+								</Button>
+							</div>
+						</div>
+					) : (
+						<p className="text-sm text-muted-foreground">No detail.</p>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={editOpen} onOpenChange={setEditOpen}>
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>Edit dependent</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-5">
+						<RecordFormSection title="Name">
+							<RecordFormRow>
+								<RecordFormField label="First name">
+									<Input
+										className={fieldClass}
+										value={editFirstName}
+										onChange={(e) => setEditFirstName(e.target.value)}
+										disabled={!editDependentId}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							<RecordFormRow>
+								<RecordFormField label="Last name">
+									<Input
+										className={fieldClass}
+										value={editLastName}
+										onChange={(e) => setEditLastName(e.target.value)}
+										disabled={!editDependentId}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							{!editDependentId ? (
+								<div className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+									No dependent member id on this link — name cannot be updated.
+								</div>
+							) : null}
+						</RecordFormSection>
+
+						<RecordFormSection title="Relationship">
+							<RecordFormRow>
+								<RecordFormField label="Type">
+									<RecordFormChoice
+										tone="primary"
+										value={editCode}
+										onChange={(code) => {
+											const preset = REL_PRESETS.find((p) => p.code === code);
+											setEditCode(code);
+											if (preset) setEditLabel(preset.label);
+										}}
+										options={REL_PRESETS.map((p) => ({
+											value: p.code,
+											label: `${p.label} (${p.code})`,
+										}))}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+							<RecordFormRow>
+								<RecordFormField label="Rel. code">
+									<Input
+										className={fieldClass}
+										value={editCode}
+										onChange={(e) => setEditCode(e.target.value)}
+									/>
+								</RecordFormField>
+								<RecordFormField label="Rel. label">
+									<Input
+										className={fieldClass}
+										value={editLabel}
+										onChange={(e) => setEditLabel(e.target.value)}
+									/>
+								</RecordFormField>
+							</RecordFormRow>
+						</RecordFormSection>
+
+						<div className="flex justify-end gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setEditOpen(false)}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="button"
+								disabled={
+									editBusy ||
+									updateLink.isPending ||
+									updateMember.isPending ||
+									!editLinkId ||
+									(Boolean(editDependentId) &&
+										(!editFirstName.trim() || !editLastName.trim()))
+								}
+								onClick={() => {
+									void (async () => {
+										setEditBusy(true);
+										try {
+											if (editDependentId) {
+												await updateMember.mutateAsync({
+													id: editDependentId,
+													body: {
+														first_name: editFirstName.trim(),
+														last_name: editLastName.trim(),
+													},
+												});
+											}
+											await updateLink.mutateAsync({
+												linkId: editLinkId,
+												body: {
+													relationship_code: editCode,
+													relationship_label: editLabel,
+												},
+											});
+											toast.success("Dependent updated");
+											setEditOpen(false);
+										} catch (err) {
+											toast.error(
+												err instanceof Error ? err.message : "Update failed"
+											);
+										} finally {
+											setEditBusy(false);
+										}
+									})();
+								}}
+							>
+								Save
+							</Button>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Transfer family link</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-3">
+						<p className="text-xs text-muted-foreground">
+							Move this dependent under a different subscriber member UUID.
+						</p>
+						<div className="space-y-1.5">
+							<Label>New subscriber UUID</Label>
+							<Input
+								value={newSubscriberId}
+								onChange={(e) => setNewSubscriberId(e.target.value)}
+							/>
+						</div>
+						<Button
+							disabled={transfer.isPending || !newSubscriberId.trim()}
+							onClick={() =>
+								transfer.mutate(
+									{
+										linkId: transferLinkId,
+										body: { new_subscriber_id: newSubscriberId.trim() },
+									},
+									{
+										onSuccess: () => {
+											toast.success("Family link transferred");
+											setTransferOpen(false);
+										},
+										onError: (err) =>
+											toast.error(
+												err instanceof Error ? err.message : "Transfer failed"
+											),
+									}
+								)
+							}
+						>
+							Transfer
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+		</div>
+	);
+}

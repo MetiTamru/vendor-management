@@ -35,6 +35,7 @@ async function proxy(req: NextRequest, pathParts: string[]) {
 		method: req.method,
 		headers,
 		redirect: "follow",
+		cache: "no-store",
 	};
 
 	if (req.method !== "GET" && req.method !== "HEAD") {
@@ -61,6 +62,7 @@ async function proxy(req: NextRequest, pathParts: string[]) {
 	const responseHeaders = new Headers();
 	const upstreamType = upstream.headers.get("content-type");
 	if (upstreamType) responseHeaders.set("Content-Type", upstreamType);
+	responseHeaders.set("Cache-Control", "no-store");
 
 	return new NextResponse(body, {
 		status: upstream.status,

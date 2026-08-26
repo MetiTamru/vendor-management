@@ -2,20 +2,20 @@
  * Single switch for mock fixture data vs live APIs.
  *
  * Toggle via `.env`:
- * - `NEXT_PUBLIC_USE_MOCK=true` — local fixtures (default if unset)
- * - `NEXT_PUBLIC_USE_MOCK=false` — no fixture data; use remote vendor-core
+ * - `NEXT_PUBLIC_USE_MOCK=false` — live vendor-core (default if unset)
+ * - `NEXT_PUBLIC_USE_MOCK=true` — local fixtures
  *
  * NestJS (`NEXT_PUBLIC_API_URL`) is off unless `NEXT_PUBLIC_USE_NEST=true`.
  * Staging uses vendor-core only — Nest is not deployed on api.vm.tillahealth.com.
  *
- * App shell without Nest: keep `NEXT_PUBLIC_DEV_ADMIN=true` (mock auth only).
- * With `NEXT_PUBLIC_USE_MOCK=true`, both Nest auth and vendor-core login are skipped.
+ * Live shell auth (Django JWT): `USE_MOCK=false`, Nest off, sign in at `/auth/login`.
+ * `NEXT_PUBLIC_DEV_ADMIN` is ignored while Django shell auth is active.
  * Restart `pnpm dev` after changing `NEXT_PUBLIC_*` values.
  */
 export function isMockEnabled(): boolean {
 	const value = process.env.NEXT_PUBLIC_USE_MOCK;
-	if (value === undefined || value === "") return true;
-	return value !== "false" && value !== "0";
+	if (value === undefined || value === "") return false;
+	return value === "true" || value === "1";
 }
 
 /** Inverse of {@link isMockEnabled} — NestJS / vendor-core are expected. */

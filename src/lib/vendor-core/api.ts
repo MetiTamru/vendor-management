@@ -1,6 +1,10 @@
-import { vendorCoreFetch } from "@/lib/vendor-core/client";
+import { vendorCoreFetch, vendorCoreFetchBlob } from "@/lib/vendor-core/client";
 import type {
 	AccountDto,
+	AppSettingCreateInput,
+	AppSettingDto,
+	AppSettingListQuery,
+	AppSettingUpdateInput,
 	AuditRecordDto,
 	ClaimLineDto,
 	ConnectionDto,
@@ -8,16 +12,36 @@ import type {
 	CredentialDto,
 	EligibilityFileDto,
 	ErrorRecordDto,
+	IdentityGroupCreateInput,
+	IdentityGroupDto,
+	IdentityGroupListQuery,
+	IdentityGroupUpdateInput,
 	InboundFileDto,
 	IntakeJobDto,
 	IntakeJobRunDto,
 	LoginEventDto,
 	MemberCoverageDto,
+	MemberCreateBody,
+	MemberDetailDto,
+	MemberListDto,
+	MemberWriteBody,
+	MemberListQuery,
 	MonitoringDashboardDto,
 	PaginatedResult,
 	ProcessingEventDto,
+	ProviderCreateInput,
 	ProviderDto,
+	ProviderListQuery,
+	ProviderRosterCreateInput,
 	ProviderRosterDto,
+	ProviderRosterListQuery,
+	ProviderRosterUpdateInput,
+	ProviderStatusInput,
+	ProviderUpdateInput,
+	RoleCreateInput,
+	RoleDto,
+	RoleListQuery,
+	RoleUpdateInput,
 	RoutingRuleDto,
 	ValidationResultDto,
 	VendorDto,
@@ -63,9 +87,92 @@ export const vendorCoreEndpoints = {
 	memberCoveragesList: "/api/v1/member-coverages/list/",
 	memberCoveragesCreate: "/api/v1/member-coverages/create/",
 	memberCoveragesSeed: "/api/v1/member-coverages/seed/",
+	membersList: "/api/v1/members/list/",
+	membersListExportCsv: "/api/v1/members/list/export/csv/",
+	membersCreate: "/api/v1/members/create/",
+	membersSeed: "/api/v1/members/seed/",
+	member: (id: string) => `/api/v1/members/${id}/`,
+	memberUpdate: (id: string) => `/api/v1/members/${id}/update/`,
+	memberDelete: (id: string) => `/api/v1/members/${id}/delete/`,
+	memberHardDelete: (id: string) => `/api/v1/members/${id}/hard-delete/`,
+	memberRestore: (id: string) => `/api/v1/members/${id}/restore/`,
+	memberDetailExportCsv: (id: string) => `/api/v1/members/${id}/export/csv/`,
+	memberDetailExportPdf: (id: string) => `/api/v1/members/${id}/export/pdf/`,
+	memberPrint: (id: string) => `/api/v1/members/${id}/print/`,
+	memberDocumentSummaryPdf: (id: string) =>
+		`/api/v1/members/${id}/documents/summary/pdf/`,
+	memberDocumentEligibilityLetterPdf: (id: string) =>
+		`/api/v1/members/${id}/documents/eligibility-letter/pdf/`,
+	memberDocumentCoverageCardPdf: (id: string) =>
+		`/api/v1/members/${id}/documents/coverage-card/pdf/`,
+	memberSourceRecordsList: (id: string) =>
+		`/api/v1/members/${id}/source-records/list/`,
+	memberSourceRecord: (id: string, rid: string) =>
+		`/api/v1/members/${id}/source-records/${rid}/`,
+	memberEligibilityHistoryList: (id: string) =>
+		`/api/v1/members/${id}/eligibility-history/list/`,
+	memberPlanHistoryList: (id: string) =>
+		`/api/v1/members/${id}/plan-history/list/`,
+	memberExceptionsList: (id: string) =>
+		`/api/v1/members/${id}/exceptions/list/`,
+	memberExceptionsCreate: (id: string) =>
+		`/api/v1/members/${id}/exceptions/create/`,
+	memberExceptionUpdate: (id: string, exceptionId: string) =>
+		`/api/v1/members/${id}/exceptions/${exceptionId}/update/`,
+	memberExceptionDelete: (id: string, exceptionId: string) =>
+		`/api/v1/members/${id}/exceptions/${exceptionId}/delete/`,
+	memberAccumulatorsList: (id: string) =>
+		`/api/v1/members/${id}/accumulators/list/`,
+	memberAccumulatorsCreate: (id: string) =>
+		`/api/v1/members/${id}/accumulators/create/`,
+	memberAccumulatorUpdate: (id: string, accumulatorId: string) =>
+		`/api/v1/members/${id}/accumulators/${accumulatorId}/update/`,
+	memberAccumulatorDelete: (id: string, accumulatorId: string) =>
+		`/api/v1/members/${id}/accumulators/${accumulatorId}/delete/`,
+	memberClaimsList: (id: string) => `/api/v1/members/${id}/claims/list/`,
+	memberClaimsCreate: (id: string) => `/api/v1/members/${id}/claims/create/`,
+	memberClaimUpdate: (id: string, claimId: string) =>
+		`/api/v1/members/${id}/claims/${claimId}/update/`,
+	memberClaimDelete: (id: string, claimId: string) =>
+		`/api/v1/members/${id}/claims/${claimId}/delete/`,
+	memberChangeEventsList: (id: string) =>
+		`/api/v1/members/${id}/change-events/list/`,
+	memberFamilyLinksList: (id: string) =>
+		`/api/v1/members/${id}/family-links/list/`,
+	memberFamilyLinksCreate: (id: string) =>
+		`/api/v1/members/${id}/family-links/create/`,
+	memberFamilyLinksSync: (id: string) =>
+		`/api/v1/members/${id}/family-links/sync/`,
+	memberFamilyLink: (id: string, linkId: string) =>
+		`/api/v1/members/${id}/family-links/${linkId}/`,
+	memberFamilyLinkUpdate: (id: string, linkId: string) =>
+		`/api/v1/members/${id}/family-links/${linkId}/update/`,
+	memberFamilyLinkDelete: (id: string, linkId: string) =>
+		`/api/v1/members/${id}/family-links/${linkId}/delete/`,
+	memberFamilyLinkTransfer: (id: string, linkId: string) =>
+		`/api/v1/members/${id}/family-links/${linkId}/transfer/`,
 	providersList: "/api/v1/providers/list/",
+	providersCreate: "/api/v1/providers/create/",
 	providersSeed: "/api/v1/providers/seed/",
+	provider: (id: string) => `/api/v1/providers/${id}/`,
+	providerUpdate: (id: string) => `/api/v1/providers/${id}/update/`,
+	providerDelete: (id: string) => `/api/v1/providers/${id}/delete/`,
+	providerRestore: (id: string) => `/api/v1/providers/${id}/restore/`,
+	providerHardDelete: (id: string) => `/api/v1/providers/${id}/hard-delete/`,
+	providerStatus: (id: string) => `/api/v1/providers/${id}/status/`,
 	providerRostersList: "/api/v1/provider-rosters/list/",
+	providerRostersCreate: "/api/v1/provider-rosters/create/",
+	providerRoster: (id: string) => `/api/v1/provider-rosters/${id}/`,
+	providerRosterUpdate: (id: string) =>
+		`/api/v1/provider-rosters/${id}/update/`,
+	providerRosterDelete: (id: string) =>
+		`/api/v1/provider-rosters/${id}/delete/`,
+	providerRosterRestore: (id: string) =>
+		`/api/v1/provider-rosters/${id}/restore/`,
+	providerRosterHardDelete: (id: string) =>
+		`/api/v1/provider-rosters/${id}/hard-delete/`,
+	providerRosterRecount: (id: string) =>
+		`/api/v1/provider-rosters/${id}/recount/`,
 	claimLinesList: "/api/v1/claim-lines/list/",
 	claimLinesCreate: "/api/v1/claim-lines/create/",
 	claimLinesSeed: "/api/v1/claim-lines/seed/",
@@ -103,6 +210,34 @@ export const vendorCoreEndpoints = {
 	vendorHardDelete: (id: string) => `/api/v1/vendors/${id}/hard-delete/`,
 	vendorRestore: (id: string) => `/api/v1/vendors/${id}/restore/`,
 	health: "/health/",
+	identityGroupsList: "/api/v1/identity-groups/list/",
+	identityGroupsCreate: "/api/v1/identity-groups/create/",
+	identityGroup: (id: string) => `/api/v1/identity-groups/${id}/`,
+	identityGroupUpdate: (id: string) => `/api/v1/identity-groups/${id}/update/`,
+	identityGroupDelete: (id: string) => `/api/v1/identity-groups/${id}/delete/`,
+	identityGroupRestore: (id: string) =>
+		`/api/v1/identity-groups/${id}/restore/`,
+	identityGroupMembersAdd: (id: string) =>
+		`/api/v1/identity-groups/${id}/members/add/`,
+	identityGroupMembersRemove: (id: string) =>
+		`/api/v1/identity-groups/${id}/members/remove/`,
+	identityGroupMemberLinkUser: (id: string) =>
+		`/api/v1/identity-groups/${id}/members/link-user/`,
+	rolesList: "/api/v1/roles/list/",
+	rolesCreate: "/api/v1/roles/create/",
+	role: (id: string) => `/api/v1/roles/${id}/`,
+	roleUpdate: (id: string) => `/api/v1/roles/${id}/update/`,
+	roleDelete: (id: string) => `/api/v1/roles/${id}/delete/`,
+	roleRestore: (id: string) => `/api/v1/roles/${id}/restore/`,
+	roleHardDelete: (id: string) => `/api/v1/roles/${id}/hard-delete/`,
+	roleUsersAssign: (id: string) => `/api/v1/roles/${id}/users/assign/`,
+	roleUsersUnassign: (id: string) => `/api/v1/roles/${id}/users/unassign/`,
+	settingsList: "/api/v1/settings/list/",
+	settingsCreate: "/api/v1/settings/create/",
+	setting: (id: string) => `/api/v1/settings/${id}/`,
+	settingUpdate: (id: string) => `/api/v1/settings/${id}/update/`,
+	settingDelete: (id: string) => `/api/v1/settings/${id}/delete/`,
+	settingRestore: (id: string) => `/api/v1/settings/${id}/restore/`,
 } as const;
 
 function pageParams(
@@ -409,6 +544,300 @@ export const vendorCoreApi = {
 		} satisfies PaginatedResult<MemberCoverageDto>;
 	},
 
+	/** Single page — use for directory pagination. */
+	listMembersPage: async (params?: MemberListQuery) => {
+		const page = await vendorCoreFetch<PaginatedResult<MemberListDto>>(
+			vendorCoreEndpoints.membersList,
+			{
+				params: pageParams({
+					...params,
+					limit: params?.limit ?? 50,
+					offset: params?.offset ?? 0,
+				}),
+			}
+		);
+		return {
+			...page,
+			results: (page.results ?? []).map((row) => ({
+				...row,
+				id: String(row.id),
+			})),
+		} satisfies PaginatedResult<MemberListDto>;
+	},
+
+	/** All pages (ops / fallback). Prefer `listMembersPage` for UI tables. */
+	listMembers: async (params?: MemberListQuery) => {
+		const { limit: _l, offset: _o, ...filters } = params ?? {};
+		const results = await listAllPages(async ({ limit, offset }) => {
+			const page = await vendorCoreFetch<PaginatedResult<MemberListDto>>(
+				vendorCoreEndpoints.membersList,
+				{
+					params: pageParams({ ...filters, limit, offset }),
+				}
+			);
+			return {
+				...page,
+				results: (page.results ?? []).map((row) => ({
+					...row,
+					id: String(row.id),
+				})),
+			};
+		}, 50);
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<MemberListDto>;
+	},
+
+	getMember: (id: string) =>
+		vendorCoreFetch<MemberDetailDto>(vendorCoreEndpoints.member(id)),
+
+	createMember: (body: MemberCreateBody | Record<string, unknown>) =>
+		vendorCoreFetch<MemberDetailDto>(vendorCoreEndpoints.membersCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateMember: (id: string, body: MemberWriteBody | Record<string, unknown>) =>
+		vendorCoreFetch<MemberDetailDto>(vendorCoreEndpoints.memberUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	deleteMember: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.memberDelete(id), {
+			method: "DELETE",
+		}),
+
+	hardDeleteMember: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.memberHardDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreMember: (id: string) =>
+		vendorCoreFetch<MemberDetailDto>(vendorCoreEndpoints.memberRestore(id), {
+			method: "POST",
+		}),
+
+	seedMembers: (body?: Record<string, unknown>) =>
+		vendorCoreFetch<{ created?: number; skipped?: boolean }>(
+			vendorCoreEndpoints.membersSeed,
+			{ method: "POST", body: JSON.stringify(body ?? {}) }
+		),
+
+	listMemberSourceRecords: async (
+		memberId: string,
+		params?: { record_status?: string }
+	) => {
+		const page = await vendorCoreFetch<
+			PaginatedResult<Record<string, unknown>>
+		>(vendorCoreEndpoints.memberSourceRecordsList(memberId), {
+			params: pageParams(params),
+		});
+		return page;
+	},
+
+	getMemberSourceRecord: (memberId: string, recordId: string) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberSourceRecord(memberId, recordId)
+		),
+
+	listMemberEligibilityHistory: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberEligibilityHistoryList(memberId),
+			{ params: pageParams() }
+		),
+
+	listMemberPlanHistory: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberPlanHistoryList(memberId),
+			{ params: pageParams() }
+		),
+
+	listMemberExceptions: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberExceptionsList(memberId),
+			{ params: pageParams() }
+		),
+
+	createMemberException: (memberId: string, body: Record<string, unknown>) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberExceptionsCreate(memberId),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateMemberException: (
+		memberId: string,
+		exceptionId: string,
+		body: Record<string, unknown>
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberExceptionUpdate(memberId, exceptionId),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	deleteMemberException: (memberId: string, exceptionId: string) =>
+		vendorCoreFetch<void>(
+			vendorCoreEndpoints.memberExceptionDelete(memberId, exceptionId),
+			{ method: "DELETE" }
+		),
+
+	listMemberAccumulators: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberAccumulatorsList(memberId),
+			{ params: pageParams() }
+		),
+
+	createMemberAccumulator: (memberId: string, body: Record<string, unknown>) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberAccumulatorsCreate(memberId),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateMemberAccumulator: (
+		memberId: string,
+		accumulatorId: string,
+		body: Record<string, unknown>
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberAccumulatorUpdate(memberId, accumulatorId),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	deleteMemberAccumulator: (memberId: string, accumulatorId: string) =>
+		vendorCoreFetch<void>(
+			vendorCoreEndpoints.memberAccumulatorDelete(memberId, accumulatorId),
+			{ method: "DELETE" }
+		),
+
+	listMemberClaims: (memberId: string, params?: { claim_kind?: string }) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberClaimsList(memberId),
+			{ params: pageParams(params) }
+		),
+
+	createMemberClaim: (memberId: string, body: Record<string, unknown>) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberClaimsCreate(memberId),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateMemberClaim: (
+		memberId: string,
+		claimId: string,
+		body: Record<string, unknown>
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberClaimUpdate(memberId, claimId),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	deleteMemberClaim: (memberId: string, claimId: string) =>
+		vendorCoreFetch<void>(
+			vendorCoreEndpoints.memberClaimDelete(memberId, claimId),
+			{ method: "DELETE" }
+		),
+
+	listMemberChangeEvents: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberChangeEventsList(memberId),
+			{ params: pageParams() }
+		),
+
+	listMemberFamilyLinks: (memberId: string) =>
+		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(
+			vendorCoreEndpoints.memberFamilyLinksList(memberId),
+			{ params: pageParams() }
+		),
+
+	getMemberFamilyLink: (memberId: string, linkId: string) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberFamilyLink(memberId, linkId)
+		),
+
+	createMemberFamilyLink: (
+		memberId: string,
+		body: {
+			dependent_id: string;
+			relationship_code?: string;
+			relationship_label?: string;
+		}
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberFamilyLinksCreate(memberId),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateMemberFamilyLink: (
+		memberId: string,
+		linkId: string,
+		body: { relationship_code?: string; relationship_label?: string }
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberFamilyLinkUpdate(memberId, linkId),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	deleteMemberFamilyLink: (memberId: string, linkId: string) =>
+		vendorCoreFetch<void>(
+			vendorCoreEndpoints.memberFamilyLinkDelete(memberId, linkId),
+			{ method: "DELETE" }
+		),
+
+	syncMemberFamilyLinks: (memberId: string) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberFamilyLinksSync(memberId),
+			{ method: "POST", body: JSON.stringify({}) }
+		),
+
+	transferMemberFamilyLink: (
+		memberId: string,
+		linkId: string,
+		body: { new_subscriber_id: string }
+	) =>
+		vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.memberFamilyLinkTransfer(memberId, linkId),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	exportMemberListCsv: (params?: MemberListQuery) => {
+		const { limit: _l, offset: _o, ...filters } = params ?? {};
+		return vendorCoreFetchBlob(vendorCoreEndpoints.membersListExportCsv, {
+			params: filters,
+		});
+	},
+
+	exportMemberDetailCsv: (memberId: string) =>
+		vendorCoreFetchBlob(vendorCoreEndpoints.memberDetailExportCsv(memberId)),
+
+	exportMemberDetailPdf: (
+		memberId: string,
+		params?: { variant?: "full" | "summary" }
+	) =>
+		vendorCoreFetchBlob(vendorCoreEndpoints.memberDetailExportPdf(memberId), {
+			params,
+		}),
+
+	exportMemberPrintHtml: (memberId: string) =>
+		vendorCoreFetchBlob(vendorCoreEndpoints.memberPrint(memberId)),
+
+	exportMemberDocumentPdf: (
+		memberId: string,
+		document: "summary" | "eligibility-letter" | "coverage-card"
+	) => {
+		const path =
+			document === "summary"
+				? vendorCoreEndpoints.memberDocumentSummaryPdf(memberId)
+				: document === "eligibility-letter"
+					? vendorCoreEndpoints.memberDocumentEligibilityLetterPdf(memberId)
+					: vendorCoreEndpoints.memberDocumentCoverageCardPdf(memberId);
+		return vendorCoreFetchBlob(path);
+	},
+
 	createMemberCoverage: (body: {
 		eligibility_file_id: string;
 		subscriber_id: string;
@@ -579,12 +1008,28 @@ export const vendorCoreApi = {
 			}
 		).then((row) => normalizeErrorRecord(row)),
 
-	listProviders: async () => {
+	listProviders: async (params?: ProviderListQuery) => {
 		const results = await listAllPages(async ({ limit, offset }) => {
 			const page = await vendorCoreFetch<
 				PaginatedResult<Record<string, unknown>>
 			>(vendorCoreEndpoints.providersList, {
-				params: pageParams({ limit, offset }),
+				params: pageParams({
+					...params,
+					limit,
+					offset,
+					is_visible:
+						params?.is_visible === undefined
+							? undefined
+							: params.is_visible
+								? "true"
+								: "false",
+					is_deleted:
+						params?.is_deleted === undefined
+							? undefined
+							: params.is_deleted
+								? "true"
+								: "false",
+				}),
 			});
 			return mapPage(page, normalizeProvider);
 		});
@@ -598,12 +1043,71 @@ export const vendorCoreApi = {
 		} satisfies PaginatedResult<ProviderDto>;
 	},
 
-	listProviderRosters: async () => {
+	getProvider: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.provider(id)
+		);
+		return normalizeProvider(raw);
+	},
+
+	createProvider: (body: ProviderCreateInput) =>
+		vendorCoreFetch<ProviderDto>(vendorCoreEndpoints.providersCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}).then((row) =>
+			normalizeProvider(row as unknown as Record<string, unknown>)
+		),
+
+	updateProvider: (id: string, body: ProviderUpdateInput) =>
+		vendorCoreFetch<ProviderDto>(vendorCoreEndpoints.providerUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}).then((row) =>
+			normalizeProvider(row as unknown as Record<string, unknown>)
+		),
+
+	deleteProvider: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.providerDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreProvider: (id: string) =>
+		vendorCoreFetch<ProviderDto>(vendorCoreEndpoints.providerRestore(id), {
+			method: "POST",
+		}).then((row) =>
+			normalizeProvider(row as unknown as Record<string, unknown>)
+		),
+
+	setProviderStatus: (id: string, body: ProviderStatusInput) =>
+		vendorCoreFetch<ProviderDto>(vendorCoreEndpoints.providerStatus(id), {
+			method: "POST",
+			body: JSON.stringify(body),
+		}).then((row) =>
+			normalizeProvider(row as unknown as Record<string, unknown>)
+		),
+
+	listProviderRosters: async (params?: ProviderRosterListQuery) => {
 		const results = await listAllPages(async ({ limit, offset }) => {
 			const page = await vendorCoreFetch<
 				PaginatedResult<Record<string, unknown>>
 			>(vendorCoreEndpoints.providerRostersList, {
-				params: pageParams({ limit, offset }),
+				params: pageParams({
+					...params,
+					limit,
+					offset,
+					is_visible:
+						params?.is_visible === undefined
+							? undefined
+							: params.is_visible
+								? "true"
+								: "false",
+					is_deleted:
+						params?.is_deleted === undefined
+							? undefined
+							: params.is_deleted
+								? "true"
+								: "false",
+				}),
 			});
 			return mapPage(page, normalizeProviderRoster);
 		});
@@ -616,6 +1120,56 @@ export const vendorCoreApi = {
 			results,
 		} satisfies PaginatedResult<ProviderRosterDto>;
 	},
+
+	getProviderRoster: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.providerRoster(id)
+		);
+		return normalizeProviderRoster(raw);
+	},
+
+	createProviderRoster: (body: ProviderRosterCreateInput) =>
+		vendorCoreFetch<ProviderRosterDto>(
+			vendorCoreEndpoints.providerRostersCreate,
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		).then((row) =>
+			normalizeProviderRoster(row as unknown as Record<string, unknown>)
+		),
+
+	updateProviderRoster: (id: string, body: ProviderRosterUpdateInput) =>
+		vendorCoreFetch<ProviderRosterDto>(
+			vendorCoreEndpoints.providerRosterUpdate(id),
+			{
+				method: "PATCH",
+				body: JSON.stringify(body),
+			}
+		).then((row) =>
+			normalizeProviderRoster(row as unknown as Record<string, unknown>)
+		),
+
+	deleteProviderRoster: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.providerRosterDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreProviderRoster: (id: string) =>
+		vendorCoreFetch<ProviderRosterDto>(
+			vendorCoreEndpoints.providerRosterRestore(id),
+			{ method: "POST" }
+		).then((row) =>
+			normalizeProviderRoster(row as unknown as Record<string, unknown>)
+		),
+
+	recountProviderRoster: (id: string) =>
+		vendorCoreFetch<ProviderRosterDto>(
+			vendorCoreEndpoints.providerRosterRecount(id),
+			{ method: "POST" }
+		).then((row) =>
+			normalizeProviderRoster(row as unknown as Record<string, unknown>)
+		),
 
 	seedProviders: (body?: {
 		vendor_id?: string;
@@ -811,4 +1365,229 @@ export const vendorCoreApi = {
 			results,
 		} satisfies PaginatedResult<LoginEventDto>;
 	},
+
+	listIdentityGroups: async (params?: IdentityGroupListQuery) => {
+		const page = await vendorCoreFetch<PaginatedResult<IdentityGroupDto>>(
+			vendorCoreEndpoints.identityGroupsList,
+			{
+				params: pageParams({
+					search: params?.search,
+					limit: params?.limit,
+					offset: params?.offset,
+					is_active:
+						params?.is_active === undefined
+							? undefined
+							: params.is_active
+								? "true"
+								: "false",
+				}),
+			}
+		);
+		return page;
+	},
+
+	listAllIdentityGroups: async (
+		params?: Omit<IdentityGroupListQuery, "limit" | "offset">
+	) => {
+		const results = await listAllPages(async ({ limit, offset }) =>
+			vendorCoreFetch<PaginatedResult<IdentityGroupDto>>(
+				vendorCoreEndpoints.identityGroupsList,
+				{
+					params: pageParams({
+						search: params?.search,
+						is_active:
+							params?.is_active === undefined
+								? undefined
+								: params.is_active
+									? "true"
+									: "false",
+						limit,
+						offset,
+					}),
+				}
+			)
+		);
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<IdentityGroupDto>;
+	},
+
+	getIdentityGroup: (id: string) =>
+		vendorCoreFetch<IdentityGroupDto>(vendorCoreEndpoints.identityGroup(id)),
+
+	createIdentityGroup: (body: IdentityGroupCreateInput) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupsCreate,
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		),
+
+	updateIdentityGroup: (id: string, body: IdentityGroupUpdateInput) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupUpdate(id),
+			{
+				method: "PATCH",
+				body: JSON.stringify(body),
+			}
+		),
+
+	deleteIdentityGroup: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.identityGroupDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreIdentityGroup: (id: string) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupRestore(id),
+			{ method: "POST" }
+		),
+
+	addIdentityGroupMembers: (
+		id: string,
+		members: IdentityGroupCreateInput["members"]
+	) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupMembersAdd(id),
+			{
+				method: "POST",
+				body: JSON.stringify({ members }),
+			}
+		),
+
+	removeIdentityGroupMembers: (
+		id: string,
+		body: { member_ids?: string[]; external_ids?: string[] }
+	) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupMembersRemove(id),
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		),
+
+	linkIdentityGroupMemberUser: (
+		id: string,
+		body: { member_id: string; user_id: string }
+	) =>
+		vendorCoreFetch<IdentityGroupDto>(
+			vendorCoreEndpoints.identityGroupMemberLinkUser(id),
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		),
+
+	listRoles: async (params?: RoleListQuery) =>
+		vendorCoreFetch<PaginatedResult<RoleDto>>(vendorCoreEndpoints.rolesList, {
+			params: pageParams(params),
+		}),
+
+	listAllRoles: async () => {
+		const results = await listAllPages(async ({ limit, offset }) =>
+			vendorCoreFetch<PaginatedResult<RoleDto>>(vendorCoreEndpoints.rolesList, {
+				params: pageParams({ limit, offset }),
+			})
+		);
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<RoleDto>;
+	},
+
+	getRole: (id: string) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.role(id)),
+
+	createRole: (body: RoleCreateInput) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.rolesCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateRole: (id: string, body: RoleUpdateInput) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.roleUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	deleteRole: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.roleDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreRole: (id: string) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.roleRestore(id), {
+			method: "POST",
+		}),
+
+	assignRoleUsers: (id: string, user_ids: string[]) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.roleUsersAssign(id), {
+			method: "POST",
+			body: JSON.stringify({ user_ids }),
+		}),
+
+	unassignRoleUsers: (id: string, user_ids: string[]) =>
+		vendorCoreFetch<RoleDto>(vendorCoreEndpoints.roleUsersUnassign(id), {
+			method: "POST",
+			body: JSON.stringify({ user_ids }),
+		}),
+
+	listAppSettings: async (params?: AppSettingListQuery) =>
+		vendorCoreFetch<PaginatedResult<AppSettingDto>>(
+			vendorCoreEndpoints.settingsList,
+			{ params: pageParams(params) }
+		),
+
+	listAllAppSettings: async () => {
+		const results = await listAllPages(async ({ limit, offset }) =>
+			vendorCoreFetch<PaginatedResult<AppSettingDto>>(
+				vendorCoreEndpoints.settingsList,
+				{ params: pageParams({ limit, offset }) }
+			)
+		);
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<AppSettingDto>;
+	},
+
+	getAppSetting: (id: string) =>
+		vendorCoreFetch<AppSettingDto>(vendorCoreEndpoints.setting(id)),
+
+	createAppSetting: (body: AppSettingCreateInput) =>
+		vendorCoreFetch<AppSettingDto>(vendorCoreEndpoints.settingsCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateAppSetting: (id: string, body: AppSettingUpdateInput) =>
+		vendorCoreFetch<AppSettingDto>(vendorCoreEndpoints.settingUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	deleteAppSetting: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.settingDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreAppSetting: (id: string) =>
+		vendorCoreFetch<AppSettingDto>(vendorCoreEndpoints.settingRestore(id), {
+			method: "POST",
+		}),
 };

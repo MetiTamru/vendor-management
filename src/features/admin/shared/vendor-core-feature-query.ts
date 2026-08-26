@@ -55,9 +55,11 @@ export function useVendorCoreFeatureMutation<TData, TVariables>(
 
 	return useMutation({
 		...rest,
-		onSuccess: (...args) => {
-			queryClient.invalidateQueries({ queryKey: featureQueryKey(domain) });
-			onSuccess?.(...args);
+		onSuccess: async (...args) => {
+			await onSuccess?.(...args);
+			await queryClient.invalidateQueries({
+				queryKey: featureQueryKey(domain),
+			});
 		},
 	});
 }

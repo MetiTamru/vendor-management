@@ -163,6 +163,7 @@ export async function vendorCoreFetch<T>(
 
 	const response = await fetch(buildUrl(path, params), {
 		...init,
+		cache: "no-store",
 		headers: reqHeaders,
 	});
 
@@ -196,4 +197,82 @@ export async function vendorCoreFetch<T>(
 		return (data as ApiEnvelope<T>).result;
 	}
 	return data as T;
+}
+
+export type VendorCoreBlobResult = {
+	blob: Blob;
+	contentType: string;
+	filename?: string;
+};
+
+function parseContentDispositionFilename(
+	header: string | null
+): string | undefined {
+	if (!header) return undefined;
+	const star = header.match(/filename\*=UTF-8''([^;]+)/i);
+	if (star?.[1]) {
+		try {
+			return decodeURIComponent(star[1].trim());
+		} catch {
+			return star[1].trim();
+		}
+	}
+	const plain = header.match(/filename="?([^";]+)"?/i);
+	return plain?.[1]?.trim();
+}
+
+/** Binary download (CSV/PDF/HTML) — skips JSON envelope parsing. */
+export async function vendorCoreFetchBlob(
+	path: string,
+	options: RequestOptions = {}
+): Promise<VendorCoreBlobResult> {
+	const { params, auth = true, headers, raw: _raw, ...init } = options;
+	const reqHeaders: HeadersInit = {
+		Accept: "*/*",
+		...headers,
+	};
+	if (auth) {
+		const token = getStoredAccessToken();
+		if (token) {
+			(reqHeaders as Record<string, string>).Authorization = `Bearer ${token}`;
+		}
+	}
+
+	const response = await fetch(buildUrl(path, params), {
+		...init,
+		cache: "no-store",
+		headers: reqHeaders,
+	});																																															
+
+	if (!response.ok) {
+		const text = await response.text();
+		let data: unknown;
+		try {
+			data = text ? JSON.parse(text) : undefined;
+		} catch {
+			data = text;
+		}
+		const body = data as {
+			result?: { detail?: string };
+			message?: string;
+			detail?: string;
+		};
+		throw new VendorCoreApiError(
+			body?.result?.detail ||
+				body?.message ||
+				body?.detail ||
+				`Request failed (${response.status})`,
+			response.status,
+			data
+		);
+	}
+
+	const blob = await response.blob();
+	return {
+		blob,
+		contentType: response.headers.get("content-type") ?? blob.type,
+		filename: parseContentDispositionFilename(
+			response.headers.get("content-disposition")
+		),
+	};
 }

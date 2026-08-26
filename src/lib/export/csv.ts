@@ -48,3 +48,21 @@ export function stampFilename(prefix: string, extension = "csv") {
 	const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
 	return `${prefix}-${stamp}.${extension}`;
 }
+
+/** Trigger a browser download from a Blob (CSV, PDF, etc.). */
+export function downloadBlob(filename: string, blob: Blob) {
+	const url = URL.createObjectURL(blob);
+	const anchor = document.createElement("a");
+	anchor.href = url;
+	anchor.download = filename;
+	anchor.click();
+	anchor.remove();
+	URL.revokeObjectURL(url);
+}
+
+/** Open a blob inline in a new tab (PDF preview). */
+export function openBlobInNewTab(blob: Blob) {
+	const url = URL.createObjectURL(blob);
+	window.open(url, "_blank", "noopener,noreferrer");
+	setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}

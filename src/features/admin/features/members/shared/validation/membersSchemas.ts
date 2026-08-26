@@ -4,35 +4,14 @@ export const apiMembersRecordSchema = z
 	.object({
 		id: z.union([z.string(), z.number()]).optional().nullable(),
 		name: z.string().optional().nullable(),
-		memberId: z.string().optional().nullable(),
-		firstName: z.string().optional().nullable(),
-		middleName: z.string().optional().nullable(),
-		lastName: z.string().optional().nullable(),
-		program: z.string().optional().nullable(),
-		planName: z.string().optional().nullable(),
-		status: z.string().optional().nullable(),
-		eligibilityLabel: z.string().optional().nullable(),
-		accountGroup: z.string().optional().nullable(),
-		alternateId: z.string().optional().nullable(),
 	})
 	.passthrough();
 
 export const membersCreateSchema = z.object({
-	memberId: z.string().min(1, "Member ID is required"),
-	firstName: z.string().min(1, "First name is required"),
-	lastName: z.string().min(1, "Last name is required"),
-	program: z.enum(["MDH", "DHCF", "BHP"]),
-	planName: z.string().min(1, "Plan name is required"),
+	name: z.string().min(1, "Name is required"),
 });
 
-export const membersUpdateSchema = membersCreateSchema.partial().extend({
-	status: z.enum(["active", "inactive", "pending", "termed"]).optional(),
-	eligibilityLabel: z
-		.enum(["Active", "Inactive", "Pending", "Termed"])
-		.optional(),
-	accountGroup: z.string().optional(),
-	alternateId: z.string().optional(),
-});
+export const membersUpdateSchema = membersCreateSchema.partial();
 
 export function parseMembersList(payload: unknown): {
 	data: z.infer<typeof apiMembersRecordSchema>[];
