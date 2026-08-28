@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { VendorCoreLoadingRow } from "@/components/vendor-core/VendorCoreLiveChrome";
-import { getProviderDto } from "@/features/admin/features/providers/feature/api/providersApi";
+import {
+	loadProviderWizardValues,
+	syncProviderWizardExtras,
+} from "@/features/admin/features/providers/feature/api/providersApi";
 import {
 	useProviderRostersQuery,
 	useSetProviderStatusMutation,
@@ -18,7 +21,6 @@ import {
 	EMPTY_PROVIDER_WIZARD,
 	ProviderFormWizard,
 	type ProviderWizardValues,
-	valuesFromProviderDto,
 	wizardValuesToPayload,
 } from "@/features/admin/features/providers/pages/ProviderFormWizard";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -65,14 +67,13 @@ function ProviderEditForm({ providerId }: { providerId: string }) {
 		let cancelled = false;
 		setLoading(true);
 		setLoadError(null);
-		getProviderDto(providerId)
-			.then((dto) => {
+		loadProviderWizardValues(providerId, rostersQ.data?.[0]?.id ?? "")
+			.then((next) => {
 				if (cancelled) return;
-				if (!dto) {
+				if (!next) {
 					setLoadError("Provider not found.");
 					return;
 				}
-				const next = valuesFromProviderDto(dto);
 				setValues(next);
 				setOriginalStatus(next.status);
 			})
@@ -112,6 +113,7 @@ function ProviderEditForm({ providerId }: { providerId: string }) {
 				id: providerId,
 				body: payload,
 			});
+			await syncProviderWizardExtras(providerId, values);
 			if (values.status !== originalStatus) {
 				await statusMutation.mutateAsync({
 					id: providerId,

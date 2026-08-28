@@ -20,14 +20,10 @@ import {
 	ChevronRight,
 	ClipboardList,
 	Download,
-	Globe,
-	GraduationCap,
 	Languages,
-	Mail,
 	MapPin,
 	Network,
 	PencilLine,
-	Phone,
 	Stethoscope,
 	UserRound,
 } from "lucide-react";
@@ -195,7 +191,7 @@ const PROVIDER_UI = {
 		"text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground",
 	labelAccent:
 		"text-[10px] font-medium uppercase tracking-[0.08em] text-primary/80",
-	title: "text-sm font-semibold tracking-tight text-foreground",
+	title: "text-xs font-semibold tracking-tight text-foreground",
 } as const;
 
 function SurfaceTopAccent() {
@@ -207,66 +203,6 @@ function SurfaceTopAccent() {
 	);
 }
 
-function Sheet({
-	children,
-	className,
-}: {
-	children: ReactNode;
-	className?: string;
-}) {
-	return (
-		<section
-			className={cn(
-				"overflow-hidden rounded-xl border border-border/40 bg-card",
-				className
-			)}
-		>
-			{children}
-		</section>
-	);
-}
-
-/** Vertical separator: solid in the middle, fades at top and bottom. */
-function FadeVLine({ className }: { className?: string }) {
-	return (
-		<span
-			aria-hidden
-			className={cn(
-				"pointer-events-none absolute inset-y-5 right-0 w-px bg-gradient-to-b from-transparent via-border to-transparent",
-				className
-			)}
-		/>
-	);
-}
-
-const FADE_SPLIT_LG =
-	"lg:[&>*+*]:relative lg:[&>*+*]:before:pointer-events-none lg:[&>*+*]:before:absolute lg:[&>*+*]:before:inset-y-5 lg:[&>*+*]:before:left-0 lg:[&>*+*]:before:w-px lg:[&>*+*]:before:bg-gradient-to-b lg:[&>*+*]:before:from-transparent lg:[&>*+*]:before:via-border lg:[&>*+*]:before:to-transparent lg:[&>*+*]:before:content-['']";
-
-const FADE_SPLIT_XL =
-	"xl:[&>*+*]:relative xl:[&>*+*]:before:pointer-events-none xl:[&>*+*]:before:absolute xl:[&>*+*]:before:inset-y-5 xl:[&>*+*]:before:left-0 xl:[&>*+*]:before:w-px xl:[&>*+*]:before:bg-gradient-to-b xl:[&>*+*]:before:from-transparent xl:[&>*+*]:before:via-border xl:[&>*+*]:before:to-transparent xl:[&>*+*]:before:content-['']";
-
-function SectionTitle({
-	title,
-	icon: Icon,
-	action,
-	className,
-}: {
-	title: string;
-	icon?: typeof BadgeCheck;
-	action?: ReactNode;
-	className?: string;
-}) {
-	return (
-		<div className={cn("flex items-center gap-2.5", className)}>
-			{Icon ? (
-				<Icon className="size-4 text-primary/75" strokeWidth={2} />
-			) : null}
-			<h3 className={cn("min-w-0 flex-1", PROVIDER_UI.title)}>{title}</h3>
-			{action}
-		</div>
-	);
-}
-
 function Panel({
 	title,
 	icon: Icon,
@@ -274,6 +210,7 @@ function Panel({
 	children,
 	className,
 	dense,
+	flush,
 }: {
 	title: string;
 	icon?: typeof BadgeCheck;
@@ -281,16 +218,36 @@ function Panel({
 	children: ReactNode;
 	className?: string;
 	dense?: boolean;
+	/** Edge-to-edge table body (no side padding) — use for data tables. */
+	flush?: boolean;
 }) {
 	return (
-		<section className={cn("flex min-w-0 flex-col", className)}>
-			<SectionTitle
-				title={title}
-				icon={Icon}
-				action={action}
-				className={dense ? "px-5 pt-5 pb-3" : "px-6 pt-5 pb-3"}
-			/>
-			<div className={cn("min-h-0 flex-1", dense ? "px-5 pb-5" : "px-6 pb-6")}>
+		<section
+			className={cn(
+				"flex min-w-0 flex-col overflow-hidden rounded-xl border border-border/40 bg-card",
+				className
+			)}
+		>
+			<div
+				className={cn(
+					"flex items-center gap-2 border-b border-border/35 bg-muted/[0.12]",
+					dense ? "px-3 py-1.5" : "px-3.5 py-2"
+				)}
+			>
+				{Icon ? (
+					<span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-primary/15 bg-primary/10 text-primary">
+						<Icon className="size-3" strokeWidth={2.25} />
+					</span>
+				) : null}
+				<h3 className={cn("min-w-0 flex-1", PROVIDER_UI.title)}>{title}</h3>
+				{action}
+			</div>
+			<div
+				className={cn(
+					"min-h-0 flex-1",
+					flush ? "p-0" : dense ? "p-2.5" : "p-3.5"
+				)}
+			>
 				{children}
 			</div>
 		</section>
@@ -308,46 +265,102 @@ function ViewAllLink({
 		<button
 			type="button"
 			onClick={onClick}
-			className="mt-4 text-sm font-medium text-primary hover:underline"
+			className="mt-2 text-xs font-medium text-primary hover:underline"
 		>
 			{label} →
 		</button>
 	);
 }
 
-function MetaField({ label, value }: { label: string; value: ReactNode }) {
+/** Table chrome — compact rows, dark field headers. */
+const DETAIL_TH =
+	"h-6 bg-muted/50 px-2 text-left text-[9px] font-bold uppercase tracking-wide text-foreground";
+const DETAIL_TD = "px-2.5 py-1.5 align-middle text-xs text-foreground";
+const DETAIL_TD_MUTED = cn(DETAIL_TD, "text-muted-foreground");
+const DETAIL_ROW =
+	"border-b border-border/30 hover:bg-muted/15 last:border-b-0";
+
+function DetailTableHead({
+	children,
+	className,
+}: {
+	children: ReactNode;
+	className?: string;
+}) {
+	return <TableHead className={cn(DETAIL_TH, className)}>{children}</TableHead>;
+}
+
+type AttrColumn = {
+	key: string;
+	label: string;
+	align?: "left" | "right";
+	className?: string;
+	mono?: boolean;
+};
+
+/** Horizontal attribute table — column headers across top, one+ data rows under. */
+function AttrTable({
+	columns,
+	rows,
+	className,
+}: {
+	columns: AttrColumn[];
+	rows: Array<Record<string, ReactNode>>;
+	className?: string;
+}) {
 	return (
-		<div className="min-w-0 space-y-1.5">
-			<p className="text-[11px] font-normal text-muted-foreground">{label}</p>
-			<div className="text-sm font-medium leading-snug text-foreground break-words">
-				{value ?? "—"}
-			</div>
+		<div
+			className={cn(
+				"overflow-hidden rounded-md border border-border/40",
+				className
+			)}
+		>
+			<Table className="w-full table-fixed">
+				<TableHeader>
+					<TableRow className="hover:bg-transparent border-0">
+						{columns.map((col) => (
+							<DetailTableHead
+								key={col.key}
+								className={cn(
+									col.align === "right" && "text-right",
+									col.className
+								)}
+							>
+								{col.label}
+							</DetailTableHead>
+						))}
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{rows.map((row, i) => (
+						<TableRow key={i} className={DETAIL_ROW}>
+							{columns.map((col) => (
+								<TableCell
+									key={col.key}
+									className={cn(
+										DETAIL_TD,
+										"font-medium",
+										col.align === "right" && "text-right",
+										col.mono && "font-mono tabular-nums tracking-tight",
+										col.className
+									)}
+								>
+									{row[col.key] ?? "—"}
+								</TableCell>
+							))}
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
 		</div>
 	);
 }
 
-function OverviewRow({
-	label,
-	value,
-	valueClassName,
-}: {
-	label: string;
-	value: ReactNode;
-	valueClassName?: string;
-}) {
+/** Shared wrapper for multi-row list tables (locations, claims, etc.). */
+function DataTableShell({ children }: { children: ReactNode }) {
 	return (
-		<div className="group flex items-center justify-between gap-4 border-b border-border/20 py-2.5 transition-colors last:border-b-0 hover:bg-muted/[0.08]">
-			<span className="shrink-0 text-[13px] leading-snug text-muted-foreground transition-colors group-hover:text-foreground/70">
-				{label}
-			</span>
-			<span
-				className={cn(
-					"min-w-0 text-right text-sm leading-snug font-medium text-foreground",
-					valueClassName
-				)}
-			>
-				{value ?? "—"}
-			</span>
+		<div className="overflow-hidden rounded-md border border-border/40">
+			{children}
 		</div>
 	);
 }
@@ -562,7 +575,7 @@ function ProviderTabsNav({
 	return (
 		<nav
 			className={cn(
-				"relative flex items-center gap-0.5 overflow-hidden border border-border/50 bg-card p-1",
+				"relative flex items-end gap-0.5 border border-border/50 bg-card p-1 pb-1.5",
 				PROVIDER_UI.radius
 			)}
 		>
@@ -572,7 +585,7 @@ function ProviderTabsNav({
 				disabled={!canLeft}
 				onClick={() => scrollByDir(-1)}
 				className={cn(
-					"flex size-7 shrink-0 items-center justify-center rounded-md transition-opacity",
+					"mb-0.5 flex size-7 shrink-0 items-center justify-center rounded-md transition-opacity",
 					canLeft
 						? "text-foreground/80 hover:bg-muted/70 hover:text-foreground"
 						: "pointer-events-none opacity-0"
@@ -582,7 +595,17 @@ function ProviderTabsNav({
 			</button>
 			<div
 				ref={scrollerRef}
-				className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+				className={cn(
+					"flex min-w-0 flex-1 gap-0.5 overflow-x-auto overflow-y-hidden pb-1",
+					/* Modern thin horizontal scrollbar */
+					"[scrollbar-width:thin] [scrollbar-color:oklch(0.55_0_0_/_0.35)_transparent]",
+					"[&::-webkit-scrollbar]:h-1.5",
+					"[&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-muted/40",
+					"[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/25",
+					"hover:[&::-webkit-scrollbar-thumb]:bg-foreground/40",
+					"[&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-transparent",
+					"[&::-webkit-scrollbar-thumb]:bg-clip-padding"
+				)}
 			>
 				{TABS.map((item) => (
 					<button
@@ -608,7 +631,7 @@ function ProviderTabsNav({
 				disabled={!canRight}
 				onClick={() => scrollByDir(1)}
 				className={cn(
-					"flex size-7 shrink-0 items-center justify-center rounded-md transition-opacity",
+					"mb-0.5 flex size-7 shrink-0 items-center justify-center rounded-md transition-opacity",
 					canRight
 						? "text-foreground/80 hover:bg-muted/70 hover:text-foreground"
 						: "pointer-events-none opacity-0"
@@ -993,566 +1016,535 @@ export function ProviderDetailPage({
 				<ProviderTabsNav tab={tab} onTabChange={setTab} />
 
 				{tab === "Overview" ? (
-					<div className="space-y-5">
-						<Sheet>
-							<div className="grid sm:grid-cols-2 xl:grid-cols-4">
-								<div className="relative px-5 py-5">
-									<FadeVLine className="hidden sm:block" />
-									<SectionTitle
-										title="Enrollment"
-										icon={BadgeCheck}
-										className="mb-3"
-									/>
-									<OverviewRow
-										label="Status"
-										value={
-											provider.enrollmentStatus === "enrolled" ? (
-												<span className="text-chart-2">Enrolled</span>
-											) : (
-												<span className="capitalize">
-													{provider.enrollmentStatus}
+					<div className="space-y-3">
+						<div className="space-y-3">
+							<Panel dense icon={BadgeCheck} title="Provider summary">
+								<AttrTable
+									columns={[
+										{ key: "enrollment", label: "Enrollment" },
+										{ key: "effective", label: "Effective" },
+										{ key: "program", label: "Program" },
+										{ key: "status", label: "Provider status" },
+										{ key: "org", label: "Organization" },
+										{ key: "address", label: "Address" },
+										{ key: "phone", label: "Phone" },
+										{ key: "email", label: "Email" },
+									]}
+									rows={[
+										{
+											enrollment:
+												provider.enrollmentStatus === "enrolled" ? (
+													<span className="text-chart-2">Enrolled</span>
+												) : (
+													<span className="capitalize">
+														{provider.enrollmentStatus}
+													</span>
+												),
+											effective: (
+												<span className="tabular-nums">
+													{formatDate(provider.enrollmentEffective)}
 												</span>
-											)
-										}
-									/>
-									<OverviewRow
-										label="Effective"
-										value={formatDate(provider.enrollmentEffective)}
-									/>
-									<OverviewRow label="Program" value={provider.program} />
-									<OverviewRow
-										label="Provider status"
-										value={<ProfileStatusBadge status={provider.status} />}
-									/>
-								</div>
-								<div className="relative border-t border-border/30 px-5 py-5 sm:border-t-0">
-									<FadeVLine className="hidden xl:block" />
-									<SectionTitle
-										title="Practice"
-										icon={Building2}
-										className="mb-3"
-									/>
-									<OverviewRow
-										label="Organization"
-										value={provider.practiceName}
-									/>
-									<OverviewRow
-										label="Address"
-										value={`${provider.practiceCity}, ${provider.practiceState}`}
-									/>
-									<OverviewRow label="Phone" value={provider.practicePhone} />
-									<OverviewRow
-										label="Email"
-										value={
-											<span
-												className="block max-w-[160px] truncate"
-												title={provider.email}
-											>
-												{provider.email}
-											</span>
-										}
-									/>
-								</div>
-								<div className="relative border-t border-border/30 px-5 py-5 xl:border-t-0">
-									<FadeVLine className="hidden sm:block" />
-									<SectionTitle
-										title="Network"
-										icon={Network}
-										className="mb-3"
-									/>
-									<OverviewRow
-										label="Plans"
-										value={String(provider.networks.length)}
-									/>
-									<OverviewRow
-										label="Primary"
-										value={primaryNetwork?.networkPlan ?? "—"}
-									/>
-									<OverviewRow
-										label="Status"
-										value={
-											primaryNetwork ? (
-												<NetworkPill status={primaryNetwork.status} />
-											) : (
-												"—"
-											)
-										}
-									/>
-									<OverviewRow
-										label="Locations"
-										value={String(provider.locations.length)}
-									/>
-								</div>
-								<div className="border-t border-border/30 px-5 py-5 xl:border-t-0">
-									<SectionTitle
-										title="Credentialing"
-										icon={ClipboardList}
-										className="mb-3"
-									/>
-									<OverviewRow label="Complete" value={`${credPct}%`} />
-									<OverviewRow
-										label="Complete / total"
-										value={`${credCounts.complete} / ${credTotal}`}
-									/>
-									<OverviewRow
-										label="Expiring"
-										value={String(credCounts.expiring)}
-									/>
-									<OverviewRow
-										label="Open exceptions"
-										value={String(provider.exceptions.length)}
-									/>
-								</div>
-							</div>
-							<div className="border-t border-border/30 bg-muted/10">
-								<MetricStrip
-									embedded
-									compact
-									title="12-month performance"
-									items={[
-										{
-											label: "Claims",
-											value: formatCompact(provider.claims12m),
-											sub: <Trend value={provider.claimsTrendPct} />,
-										},
-										{
-											label: "Encounters",
-											value: formatCompact(provider.encounters12m),
-											sub: <Trend value={provider.encountersTrendPct} />,
-										},
-										{
-											label: "Total billed",
-											value: formatCurrency(provider.billed12m),
-											sub: <Trend value={provider.billedTrendPct} />,
-										},
-										{
-											label: "Total paid",
-											value: formatCurrency(provider.paid12m),
-											sub: <Trend value={provider.paidTrendPct} />,
-										},
-										{
-											label: "Rejection rate",
-											value: `${provider.rejectionRate}%`,
-											sub: <Trend value={provider.rejectionTrendPct} />,
-											accent: provider.rejectionRate < 7,
-										},
-										{
-											label: "Net payment",
-											value: formatCurrency(provider.netPayment12m),
-											sub: <Trend value={provider.netPaymentTrendPct} />,
+											),
+											program: provider.program,
+											status: <ProfileStatusBadge status={provider.status} />,
+											org: provider.practiceName,
+											address: `${provider.practiceCity}, ${provider.practiceState}`,
+											phone: (
+												<span className="tabular-nums">
+													{provider.practicePhone}
+												</span>
+											),
+											email: (
+												<span className="block truncate" title={provider.email}>
+													{provider.email}
+												</span>
+											),
 										},
 									]}
 								/>
-							</div>
-						</Sheet>
+							</Panel>
 
-						<Sheet>
-							<div className={cn("grid lg:grid-cols-2", FADE_SPLIT_LG)}>
-								<Panel dense icon={MapPin} title="Locations">
-									<div className="overflow-x-auto">
-										<Table>
-											<TableHeader>
-												<TableRow className="hover:bg-transparent">
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Location
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Status
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Primary
-													</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{provider.locations.map((loc) => (
-													<TableRow key={loc.id}>
-														<TableCell className="py-3">
-															<p className="text-sm font-medium">{loc.name}</p>
-															<p className="text-xs leading-relaxed text-muted-foreground">
-																{loc.address}
-															</p>
-														</TableCell>
-														<TableCell className="py-3">
-															<StatusPill status={loc.status} />
-														</TableCell>
-														<TableCell className="py-3 text-xs">
-															{loc.isPrimary ? "Yes" : "No"}
-														</TableCell>
-													</TableRow>
-												))}
-											</TableBody>
-										</Table>
-									</div>
-									<ViewAllLink
-										label={`View all (${provider.locations.length})`}
-										onClick={() => setTab("Locations")}
-									/>
-								</Panel>
-								<Panel dense icon={Network} title="Network participation">
-									<div className="overflow-x-auto">
-										<Table>
-											<TableHeader>
-												<TableRow className="hover:bg-transparent">
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Network
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Status
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Effective
-													</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{provider.networks.slice(0, 5).map((n) => (
-													<TableRow key={n.id}>
-														<TableCell className="py-3">
-															<p className="text-sm font-medium">
-																{n.networkPlan}
-															</p>
-															<p className="text-xs text-muted-foreground">
-																{n.payer}
-															</p>
-														</TableCell>
-														<TableCell className="py-3">
-															<NetworkPill status={n.status} />
-														</TableCell>
-														<TableCell className="py-3 text-xs tabular-nums">
-															{formatDate(n.effectiveDate)}
-														</TableCell>
-													</TableRow>
-												))}
-											</TableBody>
-										</Table>
-									</div>
-									<ViewAllLink
-										label={`View all (${provider.networks.length})`}
-										onClick={() => setTab("Network Participation")}
-									/>
-								</Panel>
-							</div>
-							<div className="border-t border-border/30 px-5 py-5">
-								<SectionTitle
-									title="Identifiers"
-									icon={BadgeCheck}
-									action={
-										<button
-											type="button"
-											className="text-sm font-medium text-primary hover:underline"
-											onClick={() => setTab("Identifiers")}
-										>
-											View all →
-										</button>
-									}
-									className="mb-4"
+							<Panel dense icon={Network} title="Network & credentialing">
+								<AttrTable
+									columns={[
+										{ key: "plans", label: "Plans" },
+										{ key: "primary", label: "Primary network" },
+										{ key: "netStatus", label: "Network status" },
+										{ key: "locations", label: "Locations" },
+										{ key: "credPct", label: "Cred. complete" },
+										{ key: "credTotal", label: "Complete / total" },
+										{ key: "expiring", label: "Expiring" },
+										{ key: "exceptions", label: "Open exceptions" },
+									]}
+									rows={[
+										{
+											plans: String(provider.networks.length),
+											primary: primaryNetwork?.networkPlan ?? "—",
+											netStatus: primaryNetwork ? (
+												<NetworkPill status={primaryNetwork.status} />
+											) : (
+												"—"
+											),
+											locations: String(provider.locations.length),
+											credPct: <span className="tabular-nums">{credPct}%</span>,
+											credTotal: (
+												<span className="tabular-nums">
+													{credCounts.complete} / {credTotal}
+												</span>
+											),
+											expiring: (
+												<span className="tabular-nums">
+													{credCounts.expiring}
+												</span>
+											),
+											exceptions: (
+												<span className="tabular-nums">
+													{provider.exceptions.length}
+												</span>
+											),
+										},
+									]}
 								/>
-								<div className="flex flex-wrap gap-2.5">
-									{provider.identifiers.map((id) => (
-										<div
-											key={id.id}
-											className="min-w-0 rounded-lg bg-muted/35 px-3.5 py-2.5"
-										>
-											<p className={PROVIDER_UI.label}>{id.label}</p>
-											<p className="mt-1 font-mono text-sm font-medium tabular-nums">
-												{id.value}
-											</p>
-										</div>
-									))}
-								</div>
-							</div>
-						</Sheet>
+							</Panel>
 
-						<Sheet>
-							<div className={cn("grid lg:grid-cols-2", FADE_SPLIT_LG)}>
-								<Panel dense icon={Stethoscope} title="Claims & encounters">
-									<div className="h-[260px]">
-										<ResponsiveContainer width="100%" height="100%">
-											<ComposedChart data={provider.monthlyVolume}>
-												<CartesianGrid strokeDasharray="3 3" vertical={false} />
-												<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-												<YAxis tick={{ fontSize: 10 }} width={36} />
-												<Tooltip />
-												<Legend wrapperStyle={{ fontSize: 11 }} />
-												<Bar
-													dataKey="claims"
-													name="Claims"
-													fill="#13446c"
-													radius={[3, 3, 0, 0]}
-												/>
-												<Line
-													type="monotone"
-													dataKey="encounters"
-													name="Encounters"
-													stroke="#059669"
-													strokeWidth={2}
-													dot={{ r: 3 }}
-												/>
-											</ComposedChart>
-										</ResponsiveContainer>
-									</div>
-									<ViewAllLink
-										label="View claims & encounters"
-										onClick={() => setTab("Claims & Encounters")}
-									/>
-								</Panel>
-								<Panel dense icon={ArrowDownRight} title="Rejection trends">
-									<div className="h-[260px]">
-										<ResponsiveContainer width="100%" height="100%">
-											<ComposedChart data={provider.monthlyVolume}>
-												<CartesianGrid strokeDasharray="3 3" vertical={false} />
-												<XAxis dataKey="month" tick={{ fontSize: 10 }} />
-												<YAxis
-													yAxisId="left"
-													tick={{ fontSize: 10 }}
-													width={28}
-												/>
-												<YAxis
-													yAxisId="right"
-													orientation="right"
-													tick={{ fontSize: 10 }}
-													width={32}
-													unit="%"
-												/>
-												<Tooltip />
-												<Legend wrapperStyle={{ fontSize: 11 }} />
-												<Bar
-													yAxisId="left"
-													dataKey="rejectionCount"
-													name="Rejection Count"
-													fill="#fecaca"
-													radius={[3, 3, 0, 0]}
-												/>
-												<Area
-													yAxisId="right"
-													type="monotone"
-													dataKey="rejectionRate"
-													name="Rejection Rate (%)"
-													stroke="#ef4444"
-													fill="#ef444422"
-													strokeWidth={2}
-												/>
-											</ComposedChart>
-										</ResponsiveContainer>
-									</div>
-									<ViewAllLink
-										label="View rejection details"
-										onClick={() => setTab("Rejection Trends")}
-									/>
-								</Panel>
-							</div>
-							<div className="border-t border-border/30">
-								<Panel dense icon={ClipboardList} title="Top rejection reasons">
-									<div className="overflow-x-auto">
-										<Table>
-											<TableHeader>
-												<TableRow className="hover:bg-transparent">
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Reason
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-right text-[11px] font-medium uppercase tracking-wide">
-														Count
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-right text-[11px] font-medium uppercase tracking-wide">
-														%
-													</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{provider.rejectionReasons.map((r) => (
-													<TableRow key={r.id}>
-														<TableCell className="py-3 text-xs">
-															{r.reason}
-														</TableCell>
-														<TableCell className="py-3 text-right text-xs tabular-nums">
-															{r.count}
-														</TableCell>
-														<TableCell className="py-3 text-right text-xs tabular-nums">
-															{r.pct}%
-														</TableCell>
-													</TableRow>
-												))}
-											</TableBody>
-										</Table>
-									</div>
-								</Panel>
-							</div>
-						</Sheet>
+							<Panel dense icon={Stethoscope} title="12-month performance">
+								<AttrTable
+									columns={[
+										{ key: "claims", label: "Claims" },
+										{ key: "encounters", label: "Encounters" },
+										{ key: "billed", label: "Total billed" },
+										{ key: "paid", label: "Total paid" },
+										{ key: "rejection", label: "Rejection rate" },
+										{ key: "net", label: "Net payment" },
+									]}
+									rows={[
+										{
+											claims: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{formatCompact(provider.claims12m)}
+													</span>
+													<Trend value={provider.claimsTrendPct} />
+												</span>
+											),
+											encounters: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{formatCompact(provider.encounters12m)}
+													</span>
+													<Trend value={provider.encountersTrendPct} />
+												</span>
+											),
+											billed: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{formatCurrency(provider.billed12m)}
+													</span>
+													<Trend value={provider.billedTrendPct} />
+												</span>
+											),
+											paid: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{formatCurrency(provider.paid12m)}
+													</span>
+													<Trend value={provider.paidTrendPct} />
+												</span>
+											),
+											rejection: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{provider.rejectionRate}%
+													</span>
+													<Trend value={provider.rejectionTrendPct} />
+												</span>
+											),
+											net: (
+												<span className="inline-flex items-center gap-1.5">
+													<span className="tabular-nums">
+														{formatCurrency(provider.netPayment12m)}
+													</span>
+													<Trend value={provider.netPaymentTrendPct} />
+												</span>
+											),
+										},
+									]}
+								/>
+							</Panel>
+						</div>
 
-						<Sheet>
-							<div className={cn("grid lg:grid-cols-2", FADE_SPLIT_LG)}>
-								<Panel dense icon={Building2} title="Vendors / sources">
-									<div className="overflow-x-auto">
-										<Table>
-											<TableHeader>
-												<TableRow className="hover:bg-transparent">
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Vendor
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Feed
-													</TableHead>
-													<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-														Status
-													</TableHead>
+						<div className="grid gap-3 lg:grid-cols-2">
+							<Panel dense icon={MapPin} title="Locations">
+								<DataTableShell>
+									<Table className="w-full table-fixed">
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<DetailTableHead>Location</DetailTableHead>
+												<DetailTableHead>Status</DetailTableHead>
+												<DetailTableHead>Primary</DetailTableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.locations.map((loc) => (
+												<TableRow key={loc.id} className={DETAIL_ROW}>
+													<TableCell className={DETAIL_TD}>
+														<p className="font-medium">{loc.name}</p>
+														<p className="text-xs leading-relaxed text-muted-foreground">
+															{loc.address}
+														</p>
+													</TableCell>
+													<TableCell className={DETAIL_TD}>
+														<StatusPill status={loc.status} />
+													</TableCell>
+													<TableCell className={cn(DETAIL_TD, "text-xs")}>
+														{loc.isPrimary ? "Yes" : "No"}
+													</TableCell>
 												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{provider.vendors.map((v) => (
-													<TableRow key={v.id}>
-														<TableCell className="py-3">
-															<p className="text-sm font-medium">{v.vendor}</p>
-															<p className="text-xs text-muted-foreground">
-																{v.frequency} · {v.lastReceived}
-															</p>
-														</TableCell>
-														<TableCell className="py-3 text-xs">
-															{v.fileType}
-														</TableCell>
-														<TableCell className="py-3">
-															<FeedPill status={v.status} />
-														</TableCell>
-													</TableRow>
-												))}
-											</TableBody>
-										</Table>
-									</div>
-									<ViewAllLink
-										label="View all vendors / sources"
-										onClick={() => setTab("Vendors / Sources")}
-									/>
-								</Panel>
-								<Panel dense icon={BadgeCheck} title="Credentialing">
-									<div className="flex flex-col items-center gap-3 sm:flex-row">
-										<div className="relative h-[160px] w-[160px] shrink-0">
-											<ResponsiveContainer width="100%" height="100%">
-												<PieChart>
-													<Pie
-														data={donutData}
-														dataKey="value"
-														nameKey="name"
-														innerRadius={48}
-														outerRadius={68}
-														paddingAngle={2}
-													>
-														{donutData.map((d) => (
-															<Cell key={d.name} fill={d.fill} />
-														))}
-													</Pie>
-												</PieChart>
-											</ResponsiveContainer>
-											<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-												<p className="text-lg font-semibold tabular-nums">
-													{credPct}%
-												</p>
-												<p className="text-xs text-muted-foreground">
-													Complete
-												</p>
-											</div>
-										</div>
-										<ul className="w-full space-y-2 text-sm">
-											{[
-												{
-													label: "Complete",
-													value: credCounts.complete,
-													color: "bg-chart-2",
-												},
-												{
-													label: "Expiring",
-													value: credCounts.expiring,
-													color: "bg-chart-3",
-												},
-												{
-													label: "Expired",
-													value: credCounts.expired,
-													color: "bg-destructive",
-												},
-												{
-													label: "Pending",
-													value: credCounts.pending,
-													color: "bg-muted-foreground/50",
-												},
-											].map((row) => (
-												<li
-													key={row.label}
-													className="flex items-center justify-between gap-2"
-												>
-													<span className="flex items-center gap-2">
-														<span
-															className={cn("size-2.5 rounded-full", row.color)}
-														/>
-														{row.label}
-													</span>
-													<span className="font-medium tabular-nums">
-														{row.value}
-													</span>
-												</li>
 											))}
-										</ul>
-									</div>
-									<ViewAllLink
-										label="View credentialing details"
-										onClick={() => setTab("Credentialing & Exceptions")}
-									/>
-								</Panel>
-							</div>
-							<div className="border-t border-border/30">
-								<Panel
-									dense
-									icon={ClipboardList}
-									title="Credentialing & enrollment exceptions"
+										</TableBody>
+									</Table>
+								</DataTableShell>
+								<ViewAllLink
+									label={`View all (${provider.locations.length})`}
+									onClick={() => setTab("Locations")}
+								/>
+							</Panel>
+							<Panel dense icon={Network} title="Network participation">
+								<DataTableShell>
+									<Table className="w-full table-fixed">
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<DetailTableHead>Network</DetailTableHead>
+												<DetailTableHead>Status</DetailTableHead>
+												<DetailTableHead>Effective</DetailTableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.networks.slice(0, 5).map((n) => (
+												<TableRow key={n.id} className={DETAIL_ROW}>
+													<TableCell className={DETAIL_TD}>
+														<p className="font-medium">{n.networkPlan}</p>
+														<p className="text-xs text-muted-foreground">
+															{n.payer}
+														</p>
+													</TableCell>
+													<TableCell className={DETAIL_TD}>
+														<NetworkPill status={n.status} />
+													</TableCell>
+													<TableCell
+														className={cn(DETAIL_TD, "text-xs tabular-nums")}
+													>
+														{formatDate(n.effectiveDate)}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</DataTableShell>
+								<ViewAllLink
+									label={`View all (${provider.networks.length})`}
+									onClick={() => setTab("Network Participation")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel
+							dense
+							icon={BadgeCheck}
+							title="Identifiers"
+							action={
+								<button
+									type="button"
+									className="text-xs font-medium text-primary hover:underline"
+									onClick={() => setTab("Identifiers")}
 								>
-									{provider.exceptions.length === 0 ? (
-										<p className="text-sm text-muted-foreground">
-											No open exceptions.
-										</p>
-									) : (
-										<div className="overflow-x-auto">
-											<Table>
-												<TableHeader>
-													<TableRow className="hover:bg-transparent">
-														<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-															Type
-														</TableHead>
-														<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-															Status
-														</TableHead>
-														<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-															Date
-														</TableHead>
-													</TableRow>
-												</TableHeader>
-												<TableBody>
-													{provider.exceptions.map((ex) => (
-														<TableRow key={ex.id}>
-															<TableCell className="py-3">
-																<p className="text-sm font-medium text-chart-3">
-																	{ex.exceptionType}
-																</p>
-																<p className="text-xs text-muted-foreground">
-																	{ex.description}
-																</p>
-															</TableCell>
-															<TableCell className="py-3">
-																<ExceptionPill status={ex.status} />
-															</TableCell>
-															<TableCell className="py-3 text-xs tabular-nums">
-																{formatDate(ex.dateIdentified)}
-															</TableCell>
-														</TableRow>
+									View all →
+								</button>
+							}
+						>
+							<AttrTable
+								columns={provider.identifiers.map((id) => ({
+									key: id.id,
+									label: id.label,
+									mono: true,
+								}))}
+								rows={[
+									Object.fromEntries(
+										provider.identifiers.map((id) => [id.id, id.value])
+									),
+								]}
+							/>
+						</Panel>
+
+						<div className="grid gap-3 lg:grid-cols-2">
+							<Panel dense icon={Stethoscope} title="Claims & encounters">
+								<div className="h-[260px]">
+									<ResponsiveContainer width="100%" height="100%">
+										<ComposedChart data={provider.monthlyVolume}>
+											<CartesianGrid strokeDasharray="3 3" vertical={false} />
+											<XAxis dataKey="month" tick={{ fontSize: 10 }} />
+											<YAxis tick={{ fontSize: 10 }} width={36} />
+											<Tooltip />
+											<Legend wrapperStyle={{ fontSize: 11 }} />
+											<Bar
+												dataKey="claims"
+												name="Claims"
+												fill="#13446c"
+												radius={[3, 3, 0, 0]}
+											/>
+											<Line
+												type="monotone"
+												dataKey="encounters"
+												name="Encounters"
+												stroke="#059669"
+												strokeWidth={2}
+												dot={{ r: 3 }}
+											/>
+										</ComposedChart>
+									</ResponsiveContainer>
+								</div>
+								<ViewAllLink
+									label="View claims & encounters"
+									onClick={() => setTab("Claims & Encounters")}
+								/>
+							</Panel>
+							<Panel dense icon={ArrowDownRight} title="Rejection trends">
+								<div className="h-[260px]">
+									<ResponsiveContainer width="100%" height="100%">
+										<ComposedChart data={provider.monthlyVolume}>
+											<CartesianGrid strokeDasharray="3 3" vertical={false} />
+											<XAxis dataKey="month" tick={{ fontSize: 10 }} />
+											<YAxis
+												yAxisId="left"
+												tick={{ fontSize: 10 }}
+												width={28}
+											/>
+											<YAxis
+												yAxisId="right"
+												orientation="right"
+												tick={{ fontSize: 10 }}
+												width={32}
+												unit="%"
+											/>
+											<Tooltip />
+											<Legend wrapperStyle={{ fontSize: 11 }} />
+											<Bar
+												yAxisId="left"
+												dataKey="rejectionCount"
+												name="Rejection Count"
+												fill="#fecaca"
+												radius={[3, 3, 0, 0]}
+											/>
+											<Area
+												yAxisId="right"
+												type="monotone"
+												dataKey="rejectionRate"
+												name="Rejection Rate (%)"
+												stroke="#ef4444"
+												fill="#ef444422"
+												strokeWidth={2}
+											/>
+										</ComposedChart>
+									</ResponsiveContainer>
+								</div>
+								<ViewAllLink
+									label="View rejection details"
+									onClick={() => setTab("Rejection Trends")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel dense icon={ClipboardList} title="Top rejection reasons">
+							<DataTableShell>
+								<Table className="w-full table-fixed">
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<DetailTableHead>Reason</DetailTableHead>
+											<DetailTableHead className="text-right">
+												Count
+											</DetailTableHead>
+											<DetailTableHead className="text-right">
+												%
+											</DetailTableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{provider.rejectionReasons.map((r) => (
+											<TableRow key={r.id} className={DETAIL_ROW}>
+												<TableCell className={DETAIL_TD}>{r.reason}</TableCell>
+												<TableCell
+													className={cn(DETAIL_TD, "text-right tabular-nums")}
+												>
+													{r.count}
+												</TableCell>
+												<TableCell
+													className={cn(DETAIL_TD, "text-right tabular-nums")}
+												>
+													{r.pct}%
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</DataTableShell>
+						</Panel>
+
+						<div className="grid gap-3 lg:grid-cols-2">
+							<Panel dense icon={Building2} title="Vendors / sources">
+								<DataTableShell>
+									<Table className="w-full table-fixed">
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<DetailTableHead>Vendor</DetailTableHead>
+												<DetailTableHead>Feed</DetailTableHead>
+												<DetailTableHead>Status</DetailTableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.vendors.map((v) => (
+												<TableRow key={v.id} className={DETAIL_ROW}>
+													<TableCell className={DETAIL_TD}>
+														<p className="font-medium">{v.vendor}</p>
+														<p className="text-xs text-muted-foreground">
+															{v.frequency} · {v.lastReceived}
+														</p>
+													</TableCell>
+													<TableCell className={DETAIL_TD}>
+														{v.fileType}
+													</TableCell>
+													<TableCell className={DETAIL_TD}>
+														<FeedPill status={v.status} />
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</DataTableShell>
+								<ViewAllLink
+									label="View all vendors / sources"
+									onClick={() => setTab("Vendors / Sources")}
+								/>
+							</Panel>
+							<Panel dense icon={BadgeCheck} title="Credentialing">
+								<div className="flex flex-col items-center gap-3 sm:flex-row">
+									<div className="relative h-[160px] w-[160px] shrink-0">
+										<ResponsiveContainer width="100%" height="100%">
+											<PieChart>
+												<Pie
+													data={donutData}
+													dataKey="value"
+													nameKey="name"
+													innerRadius={48}
+													outerRadius={68}
+													paddingAngle={2}
+												>
+													{donutData.map((d) => (
+														<Cell key={d.name} fill={d.fill} />
 													))}
-												</TableBody>
-											</Table>
+												</Pie>
+											</PieChart>
+										</ResponsiveContainer>
+										<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+											<p className="text-lg font-semibold tabular-nums">
+												{credPct}%
+											</p>
+											<p className="text-xs text-muted-foreground">Complete</p>
 										</div>
-									)}
-									<ViewAllLink
-										label="View all exceptions"
-										onClick={() => setTab("Credentialing & Exceptions")}
-									/>
-								</Panel>
-							</div>
-						</Sheet>
+									</div>
+									<ul className="w-full space-y-2 text-sm">
+										{[
+											{
+												label: "Complete",
+												value: credCounts.complete,
+												color: "bg-chart-2",
+											},
+											{
+												label: "Expiring",
+												value: credCounts.expiring,
+												color: "bg-chart-3",
+											},
+											{
+												label: "Expired",
+												value: credCounts.expired,
+												color: "bg-destructive",
+											},
+											{
+												label: "Pending",
+												value: credCounts.pending,
+												color: "bg-muted-foreground/50",
+											},
+										].map((row) => (
+											<li
+												key={row.label}
+												className="flex items-center justify-between gap-2"
+											>
+												<span className="flex items-center gap-2">
+													<span
+														className={cn("size-2.5 rounded-full", row.color)}
+													/>
+													{row.label}
+												</span>
+												<span className="font-medium tabular-nums">
+													{row.value}
+												</span>
+											</li>
+										))}
+									</ul>
+								</div>
+								<ViewAllLink
+									label="View credentialing details"
+									onClick={() => setTab("Credentialing & Exceptions")}
+								/>
+							</Panel>
+						</div>
+
+						<Panel
+							dense
+							icon={ClipboardList}
+							title="Credentialing & enrollment exceptions"
+						>
+							{provider.exceptions.length === 0 ? (
+								<p className="text-sm text-muted-foreground">
+									No open exceptions.
+								</p>
+							) : (
+								<DataTableShell>
+									<Table className="w-full table-fixed">
+										<TableHeader>
+											<TableRow className="hover:bg-transparent">
+												<DetailTableHead>Type</DetailTableHead>
+												<DetailTableHead>Status</DetailTableHead>
+												<DetailTableHead>Date</DetailTableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{provider.exceptions.map((ex) => (
+												<TableRow key={ex.id} className={DETAIL_ROW}>
+													<TableCell className={DETAIL_TD}>
+														<p className="font-medium text-chart-3">
+															{ex.exceptionType}
+														</p>
+														<p className="text-xs text-muted-foreground">
+															{ex.description}
+														</p>
+													</TableCell>
+													<TableCell className={DETAIL_TD}>
+														<ExceptionPill status={ex.status} />
+													</TableCell>
+													<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+														{formatDate(ex.dateIdentified)}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</DataTableShell>
+							)}
+							<ViewAllLink
+								label="View all exceptions"
+								onClick={() => setTab("Credentialing & Exceptions")}
+							/>
+						</Panel>
 
 						<footer className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
 							<p>All dates and times are displayed in Eastern Time (ET).</p>
@@ -1598,46 +1590,60 @@ function ClaimsEncountersTab({
 		) / 100;
 
 	return (
-		<Sheet>
-			<div className="bg-muted/10">
-				<MetricStrip
-					title="12-month performance"
-					items={[
+		<div className="space-y-3">
+			<Panel dense icon={Stethoscope} title="12-month performance">
+				<AttrTable
+					columns={[
+						{ key: "claims", label: "Claims" },
+						{ key: "encounters", label: "Encounters" },
+						{ key: "billed", label: "Billed" },
+						{ key: "paid", label: "Paid" },
+						{ key: "net", label: "Net payment" },
+						{ key: "rejection", label: "Rejection rate" },
+					]}
+					rows={[
 						{
-							label: "Claims",
-							value: formatCompact(provider.claims12m),
-						},
-						{
-							label: "Encounters",
-							value: formatCompact(provider.encounters12m),
-						},
-						{
-							label: "Billed",
-							value: formatCurrency(provider.billed12m),
-						},
-						{
-							label: "Paid",
-							value: formatCurrency(provider.paid12m),
-						},
-						{
-							label: "Net payment",
-							value: formatCurrency(provider.netPayment12m),
-						},
-						{
-							label: "Rejection rate",
-							value: `${provider.rejectionRate}%`,
-							accent: provider.rejectionRate < 7,
+							claims: (
+								<span className="tabular-nums">
+									{formatCompact(provider.claims12m)}
+								</span>
+							),
+							encounters: (
+								<span className="tabular-nums">
+									{formatCompact(provider.encounters12m)}
+								</span>
+							),
+							billed: (
+								<span className="tabular-nums">
+									{formatCurrency(provider.billed12m)}
+								</span>
+							),
+							paid: (
+								<span className="tabular-nums">
+									{formatCurrency(provider.paid12m)}
+								</span>
+							),
+							net: (
+								<span className="tabular-nums">
+									{formatCurrency(provider.netPayment12m)}
+								</span>
+							),
+							rejection: (
+								<span
+									className={cn(
+										"tabular-nums",
+										provider.rejectionRate < 7 && "text-chart-2"
+									)}
+								>
+									{provider.rejectionRate}%
+								</span>
+							),
 						},
 					]}
 				/>
-			</div>
+			</Panel>
 
-			<div
-				className={cn(
-					"grid border-t border-border/30 lg:grid-cols-5",
-					FADE_SPLIT_LG
-				)}
-			>
+			<div className="grid gap-3 lg:grid-cols-5">
 				<Panel
 					dense
 					icon={Stethoscope}
@@ -1687,196 +1693,189 @@ function ClaimsEncountersTab({
 						</span>
 					}
 				>
-					<div className="space-y-3">
-						<div className="grid grid-cols-2 gap-2.5">
-							{[
+					<div className="space-y-4">
+						<AttrTable
+							columns={[
+								{ key: "claims", label: "Total claims" },
+								{ key: "encounters", label: "Total encounters" },
+								{ key: "rejections", label: "Rejections" },
+								{ key: "avg", label: "Avg rejection" },
+							]}
+							rows={[
 								{
-									label: "Total claims",
-									value: formatCompact(totals.claims),
-									trend: provider.claimsTrendPct,
+									claims: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="tabular-nums">
+												{formatCompact(totals.claims)}
+											</span>
+											<Trend value={provider.claimsTrendPct} />
+										</span>
+									),
+									encounters: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="tabular-nums">
+												{formatCompact(totals.encounters)}
+											</span>
+											<Trend value={provider.encountersTrendPct} />
+										</span>
+									),
+									rejections: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="tabular-nums">
+												{formatCompact(totals.rejections)}
+											</span>
+											<Trend value={provider.rejectionTrendPct} />
+										</span>
+									),
+									avg: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="tabular-nums">{avgRejection}%</span>
+											<Trend value={provider.rejectionTrendPct} />
+										</span>
+									),
 								},
-								{
-									label: "Total encounters",
-									value: formatCompact(totals.encounters),
-									trend: provider.encountersTrendPct,
-								},
-								{
-									label: "Rejections",
-									value: formatCompact(totals.rejections),
-									trend: provider.rejectionTrendPct,
-								},
-								{
-									label: "Avg rejection",
-									value: `${avgRejection}%`,
-									trend: provider.rejectionTrendPct,
-								},
-							].map((item) => (
-								<div
-									key={item.label}
-									className="rounded-lg border border-border/30 bg-muted/15 px-3 py-2.5"
-								>
-									<p className="text-[11px] text-muted-foreground">
-										{item.label}
-									</p>
-									<p className="mt-1 text-sm font-semibold tabular-nums">
-										{item.value}
-									</p>
-									<div className="mt-1">
-										<Trend value={item.trend} />
-									</div>
-								</div>
-							))}
-						</div>
-						<div className="overflow-x-auto rounded-lg border border-border/30">
-							<Table>
+							]}
+						/>
+						<DataTableShell>
+							<Table className="w-full table-fixed">
 								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-8 text-[11px]">Month</TableHead>
-										<TableHead className="h-8 text-right text-[11px]">
+									<TableRow className="hover:bg-transparent border-0">
+										<DetailTableHead>Month</DetailTableHead>
+										<DetailTableHead className="text-right">
 											Claims
-										</TableHead>
-										<TableHead className="h-8 text-right text-[11px]">
+										</DetailTableHead>
+										<DetailTableHead className="text-right">
 											Enc.
-										</TableHead>
-										<TableHead className="h-8 text-right text-[11px]">
+										</DetailTableHead>
+										<DetailTableHead className="text-right">
 											Rej %
-										</TableHead>
+										</DetailTableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{provider.monthlyVolume.slice(-4).map((m) => (
-										<TableRow key={m.month}>
-											<TableCell className="py-2.5 text-xs font-medium">
+										<TableRow key={m.month} className={DETAIL_ROW}>
+											<TableCell className={cn(DETAIL_TD, "font-medium")}>
 												{m.month}
 											</TableCell>
-											<TableCell className="py-2.5 text-right text-xs tabular-nums">
+											<TableCell
+												className={cn(DETAIL_TD, "text-right tabular-nums")}
+											>
 												{m.claims}
 											</TableCell>
-											<TableCell className="py-2.5 text-right text-xs tabular-nums">
+											<TableCell
+												className={cn(DETAIL_TD, "text-right tabular-nums")}
+											>
 												{m.encounters}
 											</TableCell>
-											<TableCell className="py-2.5 text-right text-xs tabular-nums">
+											<TableCell
+												className={cn(DETAIL_TD, "text-right tabular-nums")}
+											>
 												{m.rejectionRate}%
 											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
 							</Table>
-						</div>
+						</DataTableShell>
 					</div>
 				</Panel>
 			</div>
 
-			<div className="border-t border-border/30">
-				<Panel
-					dense
-					icon={Stethoscope}
-					title="Recent activity"
-					action={
-						<div className="flex items-center gap-0.5 rounded-sm bg-muted/40 p-0.5">
-							{(
-								[
-									{
-										id: "claims" as const,
-										label: `Claims (${provider.recentClaims.length})`,
-									},
-									{
-										id: "encounters" as const,
-										label: `Encounters (${provider.recentEncounters.length})`,
-									},
-								] as const
-							).map((p) => (
-								<button
-									key={p.id}
-									type="button"
-									onClick={() => setPane(p.id)}
-									className={cn(
-										"rounded-sm px-2.5 py-1 text-xs font-medium transition-all",
-										pane === p.id
-											? "bg-primary text-primary-foreground"
-											: "text-muted-foreground hover:bg-background/80 hover:text-foreground"
-									)}
-								>
-									{p.label}
-								</button>
-							))}
-						</div>
-					}
-				>
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow className="hover:bg-transparent">
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										DOS
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Claim #
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Member
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Type
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Code
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Vendor
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-right text-[11px] font-medium uppercase tracking-wide">
-										Billed
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-right text-[11px] font-medium uppercase tracking-wide">
-										Paid
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Status
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{rows.map((r) => (
-									<TableRow key={r.id}>
-										<TableCell className="py-3.5 text-sm tabular-nums">
-											{formatDate(r.dos)}
-										</TableCell>
-										<TableCell className="py-3.5 font-mono text-xs">
-											{r.claimNumber}
-										</TableCell>
-										<TableCell className="py-3">
-											<p className="text-sm font-medium">{r.memberName}</p>
-											<p className="font-mono text-[11px] text-muted-foreground">
-												{r.memberId}
-											</p>
-										</TableCell>
-										<TableCell className="py-3.5 text-sm">{r.type}</TableCell>
-										<TableCell className="py-3.5 font-mono text-xs">
-											{r.procedureCode}
-										</TableCell>
-										<TableCell className="py-3.5 text-sm">{r.vendor}</TableCell>
-										<TableCell className="py-3.5 text-right text-sm tabular-nums">
-											{formatCurrency(r.billed)}
-										</TableCell>
-										<TableCell className="py-3.5 text-right text-sm tabular-nums">
-											{formatCurrency(r.paid)}
-										</TableCell>
-										<TableCell className="py-3">
-											<ClaimStatusPill status={r.status} />
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+			<Panel
+				dense
+				icon={Stethoscope}
+				title="Recent activity"
+				action={
+					<div className="flex items-center gap-0.5 rounded-sm bg-muted/40 p-0.5">
+						{(
+							[
+								{
+									id: "claims" as const,
+									label: `Claims (${provider.recentClaims.length})`,
+								},
+								{
+									id: "encounters" as const,
+									label: `Encounters (${provider.recentEncounters.length})`,
+								},
+							] as const
+						).map((p) => (
+							<button
+								key={p.id}
+								type="button"
+								onClick={() => setPane(p.id)}
+								className={cn(
+									"rounded-sm px-2.5 py-1 text-xs font-medium transition-all",
+									pane === p.id
+										? "bg-primary text-primary-foreground"
+										: "text-muted-foreground hover:bg-background/80 hover:text-foreground"
+								)}
+							>
+								{p.label}
+							</button>
+						))}
 					</div>
-					<p className="mt-3 text-[11px] text-muted-foreground">
-						Showing recent {pane} for this provider · Data as of{" "}
-						{provider.dataAsOf}
-					</p>
-				</Panel>
-			</div>
-		</Sheet>
+				}
+			>
+				<DataTableShell>
+					<Table className="w-full table-fixed">
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<DetailTableHead>DOS</DetailTableHead>
+								<DetailTableHead>Claim #</DetailTableHead>
+								<DetailTableHead>Member</DetailTableHead>
+								<DetailTableHead>Type</DetailTableHead>
+								<DetailTableHead>Code</DetailTableHead>
+								<DetailTableHead>Vendor</DetailTableHead>
+								<DetailTableHead className="text-right">Billed</DetailTableHead>
+								<DetailTableHead className="text-right">Paid</DetailTableHead>
+								<DetailTableHead>Status</DetailTableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{rows.map((r) => (
+								<TableRow key={r.id} className={DETAIL_ROW}>
+									<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+										{formatDate(r.dos)}
+									</TableCell>
+									<TableCell className={cn(DETAIL_TD, "font-mono text-xs")}>
+										{r.claimNumber}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>
+										<p className="font-medium">{r.memberName}</p>
+										<p className="font-mono text-[11px] text-muted-foreground">
+											{r.memberId}
+										</p>
+									</TableCell>
+									<TableCell className={DETAIL_TD}>{r.type}</TableCell>
+									<TableCell className={cn(DETAIL_TD, "font-mono text-xs")}>
+										{r.procedureCode}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>{r.vendor}</TableCell>
+									<TableCell
+										className={cn(DETAIL_TD, "text-right tabular-nums")}
+									>
+										{formatCurrency(r.billed)}
+									</TableCell>
+									<TableCell
+										className={cn(DETAIL_TD, "text-right tabular-nums")}
+									>
+										{formatCurrency(r.paid)}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>
+										<ClaimStatusPill status={r.status} />
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</DataTableShell>
+				<p className="mt-3 text-[11px] text-muted-foreground">
+					Showing recent {pane} for this provider · Data as of{" "}
+					{provider.dataAsOf}
+				</p>
+			</Panel>
+		</div>
 	);
 }
 
@@ -1924,38 +1923,46 @@ function CredentialingTab({
 	);
 
 	return (
-		<Sheet>
-			<div className="bg-muted/10">
-				<MetricStrip
-					title="Credentialing health"
-					items={[
+		<div className="space-y-3">
+			<Panel dense icon={ClipboardList} title="Credentialing health">
+				<AttrTable
+					columns={[
+						{ key: "complete", label: "Complete" },
+						{ key: "expiring", label: "Expiring" },
+						{ key: "expired", label: "Expired" },
+						{ key: "pending", label: "Pending" },
+						{ key: "pct", label: "Completion" },
+						{ key: "exceptions", label: "Open exceptions" },
+					]}
+					rows={[
 						{
-							label: "Complete",
-							value: `${counts.complete}`,
-							accent: true,
-						},
-						{ label: "Expiring", value: `${counts.expiring}` },
-						{ label: "Expired", value: `${counts.expired}` },
-						{ label: "Pending", value: `${counts.pending}` },
-						{
-							label: "Completion",
-							value: `${completePct}%`,
-							accent: completePct >= 85,
-						},
-						{
-							label: "Open exceptions",
-							value: `${openExceptions}`,
+							complete: (
+								<span className="tabular-nums text-chart-2">
+									{counts.complete}
+								</span>
+							),
+							expiring: <span className="tabular-nums">{counts.expiring}</span>,
+							expired: <span className="tabular-nums">{counts.expired}</span>,
+							pending: <span className="tabular-nums">{counts.pending}</span>,
+							pct: (
+								<span
+									className={cn(
+										"tabular-nums",
+										completePct >= 85 && "text-chart-2"
+									)}
+								>
+									{completePct}%
+								</span>
+							),
+							exceptions: (
+								<span className="tabular-nums">{openExceptions}</span>
+							),
 						},
 					]}
 				/>
-			</div>
+			</Panel>
 
-			<div
-				className={cn(
-					"grid border-t border-border/30 lg:grid-cols-5",
-					FADE_SPLIT_LG
-				)}
-			>
+			<div className="grid gap-3 lg:grid-cols-5">
 				<Panel
 					dense
 					icon={ClipboardList}
@@ -1967,50 +1974,40 @@ function CredentialingTab({
 						</span>
 					}
 				>
-					<div className="overflow-x-auto">
-						<Table>
+					<DataTableShell>
+						<Table className="w-full table-fixed">
 							<TableHeader>
 								<TableRow className="hover:bg-transparent">
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Requirement
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Issuer
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Verified
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Expires
-									</TableHead>
-									<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-										Status
-									</TableHead>
+									<DetailTableHead>Requirement</DetailTableHead>
+									<DetailTableHead>Issuer</DetailTableHead>
+									<DetailTableHead>Verified</DetailTableHead>
+									<DetailTableHead>Expires</DetailTableHead>
+									<DetailTableHead>Status</DetailTableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{provider.credentialing.map((c) => (
 									<TableRow key={c.id}>
-										<TableCell className="py-3.5 text-sm font-medium">
+										<TableCell className={cn(DETAIL_TD, "font-medium")}>
 											{c.label}
 										</TableCell>
-										<TableCell className="py-3.5 text-sm text-muted-foreground">
+										<TableCell className={DETAIL_TD_MUTED}>
 											{c.issuer}
 										</TableCell>
-										<TableCell className="py-3.5 text-sm tabular-nums">
+										<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
 											{formatDate(c.verifiedDate)}
 										</TableCell>
-										<TableCell className="py-3.5 text-sm tabular-nums">
+										<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
 											{formatDate(c.expirationDate)}
 										</TableCell>
-										<TableCell className="py-3">
+										<TableCell className={DETAIL_TD}>
 											<CredStatusPill status={c.status} />
 										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
 						</Table>
-					</div>
+					</DataTableShell>
 				</Panel>
 
 				<div className="space-y-3 lg:col-span-2">
@@ -2020,66 +2017,78 @@ function CredentialingTab({
 								No expiring, expired, or pending credentials.
 							</p>
 						) : (
-							<ul className="space-y-2.5">
-								{actionNeeded.map((c) => (
-									<li
-										key={c.id}
-										className="flex items-start justify-between gap-3 rounded-lg border border-border/30 bg-muted/15 px-3 py-2.5"
-									>
-										<div className="min-w-0">
-											<p className="text-sm font-medium">{c.label}</p>
-											<p className="text-sm leading-relaxed text-muted-foreground">
-												{c.issuer}
-												{c.expirationDate
-													? ` · Exp ${formatDate(c.expirationDate)}`
-													: ""}
-											</p>
-										</div>
-										<CredStatusPill status={c.status} />
-									</li>
-								))}
-							</ul>
+							<DataTableShell>
+								<Table className="w-full table-fixed">
+									<TableHeader>
+										<TableRow className="hover:bg-transparent">
+											<DetailTableHead>Credential</DetailTableHead>
+											<DetailTableHead>Issuer</DetailTableHead>
+											<DetailTableHead>Expires</DetailTableHead>
+											<DetailTableHead>Status</DetailTableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{actionNeeded.map((c) => (
+											<TableRow key={c.id} className={DETAIL_ROW}>
+												<TableCell className={cn(DETAIL_TD, "font-medium")}>
+													{c.label}
+												</TableCell>
+												<TableCell className={DETAIL_TD_MUTED}>
+													{c.issuer}
+												</TableCell>
+												<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+													{c.expirationDate
+														? formatDate(c.expirationDate)
+														: "—"}
+												</TableCell>
+												<TableCell className={DETAIL_TD}>
+													<CredStatusPill status={c.status} />
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</DataTableShell>
 						)}
 					</Panel>
 
 					<Panel dense icon={BadgeCheck} title="Status mix">
-						<ul className="space-y-2.5 text-sm">
-							{(
-								[
-									{
-										label: "Complete",
-										value: counts.complete,
-										color: "bg-chart-2",
-									},
-									{
-										label: "Expiring",
-										value: counts.expiring,
-										color: "bg-chart-3",
-									},
-									{
-										label: "Expired",
-										value: counts.expired,
-										color: "bg-destructive",
-									},
-									{
-										label: "Pending",
-										value: counts.pending,
-										color: "bg-muted-foreground/50",
-									},
-								] as const
-							).map((row) => (
-								<li
-									key={row.label}
-									className="flex items-center justify-between gap-2"
-								>
-									<span className="flex items-center gap-2">
-										<span className={cn("size-2.5 rounded-full", row.color)} />
-										{row.label}
-									</span>
-									<span className="font-medium tabular-nums">{row.value}</span>
-								</li>
-							))}
-						</ul>
+						<AttrTable
+							columns={[
+								{ key: "complete", label: "Complete" },
+								{ key: "expiring", label: "Expiring" },
+								{ key: "expired", label: "Expired" },
+								{ key: "pending", label: "Pending" },
+							]}
+							rows={[
+								{
+									complete: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="size-2 rounded-full bg-chart-2" />
+											<span className="tabular-nums">{counts.complete}</span>
+										</span>
+									),
+									expiring: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="size-2 rounded-full bg-chart-3" />
+											<span className="tabular-nums">{counts.expiring}</span>
+										</span>
+									),
+									expired: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="size-2 rounded-full bg-destructive" />
+											<span className="tabular-nums">{counts.expired}</span>
+										</span>
+									),
+									pending: (
+										<span className="inline-flex items-center gap-1.5">
+											<span className="size-2 rounded-full bg-muted-foreground/50" />
+											<span className="tabular-nums">{counts.pending}</span>
+										</span>
+									),
+								},
+							]}
+						/>
 						<div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
 							<div
 								className="h-full rounded-full bg-chart-2"
@@ -2093,67 +2102,59 @@ function CredentialingTab({
 				</div>
 			</div>
 
-			<div className="border-t border-border/30">
-				<Panel
-					dense
-					icon={ClipboardList}
-					title="Credentialing & enrollment exceptions"
-					action={
-						<span className="text-[11px] text-muted-foreground">
-							{provider.exceptions.length} total
-						</span>
-					}
-				>
-					{provider.exceptions.length === 0 ? (
-						<p className="text-sm text-muted-foreground">
-							No exceptions on file.
-						</p>
-					) : (
-						<div className="overflow-x-auto">
-							<Table>
-								<TableHeader>
-									<TableRow className="hover:bg-transparent">
-										<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-											Type
-										</TableHead>
-										<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-											Description
-										</TableHead>
-										<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-											Status
-										</TableHead>
-										<TableHead className="h-9 bg-muted/20 text-[11px] font-medium uppercase tracking-wide">
-											Identified
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{provider.exceptions.map((ex) => (
-										<TableRow key={ex.id}>
-											<TableCell className="py-3.5 text-sm font-medium text-chart-3">
-												{ex.exceptionType}
-											</TableCell>
-											<TableCell className="py-3.5 text-sm leading-relaxed">
-												{ex.description}
-											</TableCell>
-											<TableCell className="py-3">
-												<ExceptionPill status={ex.status} />
-											</TableCell>
-											<TableCell className="py-3.5 text-sm tabular-nums">
-												{formatDate(ex.dateIdentified)}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-					)}
-					<p className="mt-3 text-[11px] text-muted-foreground">
-						Data as of {provider.dataAsOf}
+			<Panel
+				dense
+				icon={ClipboardList}
+				title="Credentialing & enrollment exceptions"
+				action={
+					<span className="text-[11px] text-muted-foreground">
+						{provider.exceptions.length} total
+					</span>
+				}
+			>
+				{provider.exceptions.length === 0 ? (
+					<p className="text-sm text-muted-foreground">
+						No exceptions on file.
 					</p>
-				</Panel>
-			</div>
-		</Sheet>
+				) : (
+					<DataTableShell>
+						<Table className="w-full table-fixed">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									<DetailTableHead>Type</DetailTableHead>
+									<DetailTableHead>Description</DetailTableHead>
+									<DetailTableHead>Status</DetailTableHead>
+									<DetailTableHead>Identified</DetailTableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{provider.exceptions.map((ex) => (
+									<TableRow key={ex.id}>
+										<TableCell
+											className={cn(DETAIL_TD, "font-medium text-chart-3")}
+										>
+											{ex.exceptionType}
+										</TableCell>
+										<TableCell className={cn(DETAIL_TD, "leading-relaxed")}>
+											{ex.description}
+										</TableCell>
+										<TableCell className={DETAIL_TD}>
+											<ExceptionPill status={ex.status} />
+										</TableCell>
+										<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+											{formatDate(ex.dateIdentified)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</DataTableShell>
+				)}
+				<p className="mt-3 text-[11px] text-muted-foreground">
+					Data as of {provider.dataAsOf}
+				</p>
+			</Panel>
+		</div>
 	);
 }
 
@@ -2176,410 +2177,367 @@ function TabBody({
 			.join(" ");
 
 		return (
-			<Sheet>
-				<div className={cn("grid xl:grid-cols-2", FADE_SPLIT_XL)}>
-					<MetricStrip
-						compact
-						title="Snapshot"
-						items={[
+			<div className="space-y-3">
+				<Panel dense icon={UserRound} title="Snapshot">
+					<AttrTable
+						columns={[
+							{ key: "status", label: "Status" },
+							{ key: "type", label: "Type" },
+							{ key: "gender", label: "Gender" },
+							{ key: "age", label: "Age" },
+							{ key: "practice", label: "Practice yrs" },
+							{ key: "program", label: "Program" },
+							{ key: "patients", label: "Patients" },
+						]}
+						rows={[
 							{
-								label: "Status",
-								value: <StatusPill status={provider.status} />,
-							},
-							{ label: "Type", value: provider.providerType },
-							{ label: "Gender", value: provider.gender },
-							{
-								label: "Age",
-								value: age != null ? `${age} yrs` : "—",
-							},
-							{
-								label: "Practice",
-								value: `${provider.yearsInPractice} yrs`,
-							},
-							{ label: "Program", value: provider.program },
-							{
-								label: "Patients",
-								value: provider.acceptingNewPatients ? "Accepting" : "Closed",
-								accent: provider.acceptingNewPatients,
+								status: <StatusPill status={provider.status} />,
+								type: provider.providerType,
+								gender: provider.gender,
+								age: age != null ? `${age} yrs` : "—",
+								practice: `${provider.yearsInPractice} yrs`,
+								program: provider.program,
+								patients: (
+									<span
+										className={cn(
+											"inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold",
+											provider.acceptingNewPatients
+												? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+												: "bg-muted text-muted-foreground"
+										)}
+									>
+										{provider.acceptingNewPatients ? "Accepting" : "Closed"}
+									</span>
+								),
 							},
 						]}
 					/>
+				</Panel>
 
-					<MetricStrip
-						compact
-						title="Identifiers"
-						items={provider.identifiers.map((id) => ({
+				<Panel dense icon={BadgeCheck} title="Identifiers">
+					<AttrTable
+						columns={provider.identifiers.map((id) => ({
+							key: id.id,
 							label: id.label,
-							value: id.value,
 							mono: true,
 						}))}
+						rows={[
+							Object.fromEntries(
+								provider.identifiers.map((id) => [id.id, id.value])
+							),
+						]}
 					/>
-				</div>
+				</Panel>
 
-				<div
-					className={cn(
-						"grid border-t border-border/30 lg:grid-cols-3",
-						FADE_SPLIT_LG
-					)}
-				>
-					<Panel dense icon={UserRound} title="Personal identity">
-						<div className="grid grid-cols-2 gap-x-4 gap-y-3">
-							<MetaField label="Legal name" value={legalName} />
-							<MetaField
-								label="Display name"
-								value={displayProviderName(provider)}
-							/>
-							<MetaField
-								label="Preferred name"
-								value={provider.preferredName ?? "—"}
-							/>
-							<MetaField label="Credentials" value={provider.credentials} />
-							<MetaField
-								label="Date of birth"
-								value={
+				<Panel dense icon={UserRound} title="Personal identity">
+					<AttrTable
+						columns={[
+							{ key: "legal", label: "Legal name" },
+							{ key: "display", label: "Display name" },
+							{ key: "preferred", label: "Preferred name" },
+							{ key: "creds", label: "Credentials" },
+							{ key: "dob", label: "Date of birth" },
+							{ key: "gender", label: "Gender" },
+							{ key: "race", label: "Race" },
+							{ key: "ethnicity", label: "Ethnicity" },
+							{ key: "language", label: "Language" },
+						]}
+						rows={[
+							{
+								legal: legalName,
+								display: displayProviderName(provider),
+								preferred: provider.preferredName ?? "—",
+								creds: provider.credentials,
+								dob: (
 									<span className="tabular-nums">
 										{formatDate(provider.dob)}
 										{age != null ? (
-											<span className="ml-1.5 font-normal text-muted-foreground">
+											<span className="ml-1 font-normal text-muted-foreground">
 												({age})
 											</span>
 										) : null}
 									</span>
-								}
-							/>
-							<MetaField label="Gender" value={provider.gender} />
-							<MetaField label="Race" value={provider.race} />
-							<MetaField label="Ethnicity" value={provider.ethnicity} />
-							<div className="col-span-2">
-								<MetaField
-									label="Preferred language"
-									value={
-										<span className="inline-flex items-center gap-1.5">
-											<Languages className="size-3.5 text-muted-foreground" />
-											{provider.preferredLanguage}
-										</span>
-									}
-								/>
-							</div>
-						</div>
-					</Panel>
+								),
+								gender: provider.gender,
+								race: provider.race,
+								ethnicity: provider.ethnicity,
+								language: (
+									<span className="inline-flex items-center gap-1">
+										<Languages className="size-3 text-muted-foreground" />
+										{provider.preferredLanguage}
+									</span>
+								),
+							},
+						]}
+					/>
+				</Panel>
 
-					<Panel dense icon={Stethoscope} title="Professional profile">
-						<div className="grid grid-cols-2 gap-x-4 gap-y-3">
-							<MetaField label="Provider type" value={provider.providerType} />
-							<MetaField
-								label="Years in practice"
-								value={`${provider.yearsInPractice} years`}
-							/>
-							<MetaField label="Specialty" value={provider.specialty} />
-							<MetaField label="Subspecialty" value={provider.subspecialty} />
-							<div className="col-span-2">
-								<MetaField
-									label="Taxonomy"
-									value={
-										<span>
-											<span className="font-mono">{provider.taxonomyCode}</span>
-											<span className="ml-1.5 font-normal text-muted-foreground">
-												· {provider.taxonomyDescription}
-											</span>
+				<Panel dense icon={Stethoscope} title="Professional profile">
+					<AttrTable
+						columns={[
+							{ key: "type", label: "Provider type" },
+							{ key: "years", label: "Years in practice" },
+							{ key: "specialty", label: "Specialty" },
+							{ key: "sub", label: "Subspecialty" },
+							{ key: "taxonomy", label: "Taxonomy" },
+							{ key: "board", label: "Board certification" },
+							{ key: "school", label: "Medical school" },
+							{ key: "patients", label: "Accepting patients" },
+						]}
+						rows={[
+							{
+								type: provider.providerType,
+								years: `${provider.yearsInPractice} years`,
+								specialty: provider.specialty,
+								sub: provider.subspecialty,
+								taxonomy: (
+									<span>
+										<span className="font-mono">{provider.taxonomyCode}</span>
+										<span className="ml-1 font-normal text-muted-foreground">
+											· {provider.taxonomyDescription}
 										</span>
-									}
-								/>
-							</div>
-							<div className="col-span-2">
-								<MetaField
-									label="Board certification"
-									value={provider.boardCertification}
-								/>
-							</div>
-							<div className="col-span-2">
-								<MetaField
-									label="Medical school"
-									value={
-										<span className="inline-flex items-start gap-1.5">
-											<GraduationCap className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-											<span>
-												{provider.medicalSchool}
-												<span className="text-muted-foreground">
-													{" "}
-													· Class of {provider.graduationYear}
-												</span>
-											</span>
+									</span>
+								),
+								board: provider.boardCertification,
+								school: (
+									<span>
+										{provider.medicalSchool}
+										<span className="text-muted-foreground">
+											{" "}
+											· Class of {provider.graduationYear}
 										</span>
-									}
-								/>
-							</div>
-							<MetaField
-								label="Accepting patients"
-								value={
+									</span>
+								),
+								patients: (
 									<span
 										className={cn(
-											"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold",
+											"inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold",
 											provider.acceptingNewPatients
-												? "border-chart-2/20 bg-chart-2/10 text-chart-2"
-												: "border-border/60 bg-muted text-muted-foreground"
+												? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+												: "bg-muted text-muted-foreground"
 										)}
 									>
 										{provider.acceptingNewPatients
 											? "Accepting"
 											: "Not accepting"}
 									</span>
-								}
-							/>
-						</div>
-					</Panel>
+								),
+							},
+						]}
+					/>
+				</Panel>
 
-					<Panel dense icon={BadgeCheck} title="Program & status">
-						<div className="grid grid-cols-2 gap-x-4 gap-y-3">
-							<MetaField label="Program" value={provider.program} />
-							<MetaField
-								label="Provider status"
-								value={<StatusPill status={provider.status} />}
-							/>
-							<MetaField
-								label="Enrollment"
-								value={
+				<Panel dense icon={BadgeCheck} title="Program & status">
+					<AttrTable
+						columns={[
+							{ key: "program", label: "Program" },
+							{ key: "status", label: "Provider status" },
+							{ key: "enrollment", label: "Enrollment" },
+							{ key: "effective", label: "Effective" },
+							{ key: "asOf", label: "Data as of" },
+						]}
+						rows={[
+							{
+								program: provider.program,
+								status: <StatusPill status={provider.status} />,
+								enrollment: (
 									<span
 										className={cn(
-											"inline-flex rounded-sm border px-1.5 py-px text-[10px] font-semibold capitalize",
+											"inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize",
 											provider.enrollmentStatus === "enrolled" &&
-												"border-chart-2/20 bg-chart-2/10 text-chart-2",
+												"bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
 											provider.enrollmentStatus === "pending" &&
-												"border-chart-3/20 bg-chart-3/10 text-chart-3",
+												"bg-amber-500/15 text-amber-800 dark:text-amber-300",
 											provider.enrollmentStatus === "terminated" &&
-												"border-destructive/20 bg-destructive/10 text-destructive"
+												"bg-destructive/15 text-destructive"
 										)}
 									>
 										{provider.enrollmentStatus}
 									</span>
-								}
-							/>
-							<MetaField
-								label="Effective"
-								value={
+								),
+								effective: (
 									<span className="tabular-nums">
 										{formatDate(provider.enrollmentEffective)}
 									</span>
-								}
-							/>
-							<div className="col-span-2 border-t border-border/30 pt-3">
-								<p className="text-[11px] leading-relaxed text-muted-foreground">
-									Locations and networks are maintained on their dedicated tabs.
-									<span className="mt-1 block">
-										Data as of {provider.dataAsOf}
-									</span>
-								</p>
-							</div>
-						</div>
-					</Panel>
-				</div>
+								),
+								asOf: provider.dataAsOf,
+							},
+						]}
+					/>
+				</Panel>
 
-				<div className="border-t border-border/30">
-					<Panel dense icon={Building2} title="Primary practice & contact">
-						<div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
-							<MetaField
-								label="Practice / organization"
-								value={provider.practiceName}
-							/>
-							<MetaField
-								label="Service address"
-								value={
-									<span className="inline-flex items-start gap-1.5">
-										<MapPin className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-										<span>
-											{provider.practiceAddress}
-											<span className="block font-normal text-muted-foreground">
-												{provider.practiceCity}, {provider.practiceState}{" "}
-												{provider.practiceZip}
-											</span>
+				<Panel dense icon={Building2} title="Primary practice & contact">
+					<AttrTable
+						columns={[
+							{ key: "org", label: "Practice / organization" },
+							{ key: "address", label: "Service address" },
+							{ key: "mailing", label: "Mailing address" },
+							{ key: "phone", label: "Phone" },
+							{ key: "fax", label: "Fax" },
+							{ key: "email", label: "Email" },
+							...(provider.website
+								? [{ key: "website", label: "Website" }]
+								: []),
+						]}
+						rows={[
+							{
+								org: provider.practiceName,
+								address: (
+									<span>
+										{provider.practiceAddress}
+										<span className="block font-normal text-muted-foreground">
+											{provider.practiceCity}, {provider.practiceState}{" "}
+											{provider.practiceZip}
 										</span>
 									</span>
-								}
-							/>
-							<MetaField
-								label="Mailing address"
-								value={provider.mailingAddress}
-							/>
-							<div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:col-span-2 xl:col-span-1 xl:grid-cols-1">
-								<MetaField
-									label="Phone"
-									value={
-										<span className="inline-flex items-center gap-1.5 tabular-nums">
-											<Phone className="size-3.5 text-muted-foreground" />
-											{provider.practicePhone}
-										</span>
-									}
-								/>
-								<MetaField
-									label="Fax"
-									value={<span className="tabular-nums">{provider.fax}</span>}
-								/>
-								<MetaField
-									label="Email"
-									value={
-										<span className="inline-flex items-center gap-1.5 truncate">
-											<Mail className="size-3.5 shrink-0 text-muted-foreground" />
-											<span className="truncate">{provider.email}</span>
-										</span>
-									}
-								/>
-								{provider.website ? (
-									<MetaField
-										label="Website"
-										value={
-											<a
-												href={provider.website}
-												target="_blank"
-												rel="noreferrer"
-												className="inline-flex items-center gap-1.5 text-primary hover:underline"
-											>
-												<Globe className="size-3.5 shrink-0" />
-												{provider.website.replace(/^https?:\/\//, "")}
-											</a>
+								),
+								mailing: provider.mailingAddress,
+								phone: (
+									<span className="tabular-nums">{provider.practicePhone}</span>
+								),
+								fax: <span className="tabular-nums">{provider.fax}</span>,
+								email: (
+									<span className="truncate" title={provider.email}>
+										{provider.email}
+									</span>
+								),
+								...(provider.website
+									? {
+											website: (
+												<a
+													href={provider.website}
+													target="_blank"
+													rel="noreferrer"
+													className="text-primary hover:underline"
+												>
+													{provider.website.replace(/^https?:\/\//, "")}
+												</a>
+											),
 										}
-									/>
-								) : null}
-							</div>
-						</div>
-					</Panel>
-				</div>
-			</Sheet>
+									: {}),
+							},
+						]}
+					/>
+				</Panel>
+			</div>
 		);
 	}
 
 	if (tab === "Identifiers") {
 		return (
-			<Sheet>
-				<div className="bg-muted/10">
-					<MetricStrip
-						title="Core identifiers"
-						items={provider.identifiers.map((id) => ({
-							label: id.label,
-							value: id.value,
-							mono: true,
-						}))}
-					/>
-				</div>
-				<div className="border-t border-border/30">
-					<Panel dense icon={BadgeCheck} title="Identifier details">
-						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{provider.identifiers.map((id) => (
-								<MetaField
-									key={id.id}
-									label={id.label}
-									value={
-										<span className="font-mono text-sm tabular-nums tracking-tight">
-											{id.value}
-										</span>
-									}
-								/>
-							))}
-						</div>
-					</Panel>
-				</div>
-			</Sheet>
+			<Panel dense icon={BadgeCheck} title="Identifier details">
+				<AttrTable
+					columns={provider.identifiers.map((id) => ({
+						key: id.id,
+						label: id.label,
+						mono: true,
+					}))}
+					rows={[
+						Object.fromEntries(
+							provider.identifiers.map((id) => [id.id, id.value])
+						),
+					]}
+				/>
+			</Panel>
 		);
 	}
 
 	if (tab === "Enrollment") {
 		return (
-			<Sheet>
-				<Panel dense icon={BadgeCheck} title="Enrollment">
-					<div className="grid gap-5 sm:grid-cols-3">
-						<MetaField
-							label="Status"
-							value={
+			<Panel dense icon={BadgeCheck} title="Enrollment">
+				<AttrTable
+					columns={[
+						{ key: "status", label: "Status" },
+						{ key: "effective", label: "Effective date" },
+						{ key: "program", label: "Program" },
+					]}
+					rows={[
+						{
+							status: (
 								<span className="capitalize">{provider.enrollmentStatus}</span>
-							}
-						/>
-						<MetaField
-							label="Effective date"
-							value={formatDate(provider.enrollmentEffective)}
-						/>
-						<MetaField label="Program" value={provider.program} />
-					</div>
-				</Panel>
-			</Sheet>
+							),
+							effective: formatDate(provider.enrollmentEffective),
+							program: provider.program,
+						},
+					]}
+				/>
+			</Panel>
 		);
 	}
 
 	if (tab === "Network Participation") {
 		return (
-			<Sheet>
-				<Panel dense icon={Network} title="Network Participation">
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Network / Plan</TableHead>
-									<TableHead>Payer</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Effective</TableHead>
-									<TableHead>End</TableHead>
+			<Panel dense icon={Network} title="Network Participation">
+				<DataTableShell>
+					<Table className="w-full table-fixed">
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<DetailTableHead>Network / Plan</DetailTableHead>
+								<DetailTableHead>Payer</DetailTableHead>
+								<DetailTableHead>Status</DetailTableHead>
+								<DetailTableHead>Effective</DetailTableHead>
+								<DetailTableHead>End</DetailTableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{provider.networks.map((n) => (
+								<TableRow key={n.id} className={DETAIL_ROW}>
+									<TableCell className={cn(DETAIL_TD, "font-medium")}>
+										{n.networkPlan}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>{n.payer}</TableCell>
+									<TableCell className={DETAIL_TD}>
+										<NetworkPill status={n.status} />
+									</TableCell>
+									<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+										{formatDate(n.effectiveDate)}
+									</TableCell>
+									<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+										{formatDate(n.endDate)}
+									</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{provider.networks.map((n) => (
-									<TableRow key={n.id}>
-										<TableCell className="text-sm font-medium">
-											{n.networkPlan}
-										</TableCell>
-										<TableCell className="text-sm">{n.payer}</TableCell>
-										<TableCell>
-											<NetworkPill status={n.status} />
-										</TableCell>
-										<TableCell className="tabular-nums text-sm">
-											{formatDate(n.effectiveDate)}
-										</TableCell>
-										<TableCell className="tabular-nums text-sm">
-											{formatDate(n.endDate)}
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
-				</Panel>
-			</Sheet>
+							))}
+						</TableBody>
+					</Table>
+				</DataTableShell>
+			</Panel>
 		);
 	}
 
 	if (tab === "Locations") {
 		return (
-			<Sheet>
-				<Panel dense icon={MapPin} title="Locations">
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Location</TableHead>
-									<TableHead>Address</TableHead>
-									<TableHead>Phone</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Primary</TableHead>
+			<Panel dense icon={MapPin} title="Locations">
+				<DataTableShell>
+					<Table className="w-full table-fixed">
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<DetailTableHead>Location</DetailTableHead>
+								<DetailTableHead>Address</DetailTableHead>
+								<DetailTableHead>Phone</DetailTableHead>
+								<DetailTableHead>Status</DetailTableHead>
+								<DetailTableHead>Primary</DetailTableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{provider.locations.map((loc) => (
+								<TableRow key={loc.id} className={DETAIL_ROW}>
+									<TableCell className={cn(DETAIL_TD, "font-medium")}>
+										{loc.name}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>{loc.address}</TableCell>
+									<TableCell className={DETAIL_TD}>{loc.phone}</TableCell>
+									<TableCell className={DETAIL_TD}>
+										<StatusPill status={loc.status} />
+									</TableCell>
+									<TableCell className={DETAIL_TD}>
+										{loc.isPrimary ? "Yes" : "No"}
+									</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{provider.locations.map((loc) => (
-									<TableRow key={loc.id}>
-										<TableCell className="text-sm font-medium">
-											{loc.name}
-										</TableCell>
-										<TableCell className="text-sm">{loc.address}</TableCell>
-										<TableCell className="text-sm">{loc.phone}</TableCell>
-										<TableCell>
-											<StatusPill status={loc.status} />
-										</TableCell>
-										<TableCell className="text-sm">
-											{loc.isPrimary ? "Yes" : "No"}
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
-				</Panel>
-			</Sheet>
+							))}
+						</TableBody>
+					</Table>
+				</DataTableShell>
+			</Panel>
 		);
 	}
 
@@ -2589,95 +2547,99 @@ function TabBody({
 
 	if (tab === "Rejection Trends") {
 		return (
-			<Sheet>
-				<div className={cn("grid lg:grid-cols-2", FADE_SPLIT_LG)}>
-					<Panel dense icon={ArrowDownRight} title="Rejection Trends">
-						<div className="h-[280px]">
-							<ResponsiveContainer width="100%" height="100%">
-								<BarChart data={provider.monthlyVolume}>
-									<CartesianGrid strokeDasharray="3 3" vertical={false} />
-									<XAxis dataKey="month" tick={{ fontSize: 11 }} />
-									<YAxis tick={{ fontSize: 11 }} width={36} />
-									<Tooltip />
-									<Bar
-										dataKey="rejectionCount"
-										name="Rejections"
-										fill="#ef4444"
-										radius={[4, 4, 0, 0]}
-									/>
-								</BarChart>
-							</ResponsiveContainer>
-						</div>
-					</Panel>
-					<Panel dense icon={ClipboardList} title="Rejection Reasons">
-						<div className="overflow-x-auto">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Reason</TableHead>
-										<TableHead className="text-right">Count</TableHead>
-										<TableHead className="text-right">% of total</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{provider.rejectionReasons.map((r) => (
-										<TableRow key={r.id}>
-											<TableCell className="text-sm">{r.reason}</TableCell>
-											<TableCell className="text-right tabular-nums text-sm">
-												{r.count}
-											</TableCell>
-											<TableCell className="text-right tabular-nums text-sm">
-												{r.pct}%
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-					</Panel>
-				</div>
-			</Sheet>
-		);
-	}
-
-	if (tab === "Vendors / Sources") {
-		return (
-			<Sheet>
-				<Panel dense icon={Building2} title="Vendors / Source Associations">
-					<div className="overflow-x-auto">
-						<Table>
+			<div className="grid gap-3 lg:grid-cols-2">
+				<Panel dense icon={ArrowDownRight} title="Rejection Trends">
+					<div className="h-[280px]">
+						<ResponsiveContainer width="100%" height="100%">
+							<BarChart data={provider.monthlyVolume}>
+								<CartesianGrid strokeDasharray="3 3" vertical={false} />
+								<XAxis dataKey="month" tick={{ fontSize: 11 }} />
+								<YAxis tick={{ fontSize: 11 }} width={36} />
+								<Tooltip />
+								<Bar
+									dataKey="rejectionCount"
+									name="Rejections"
+									fill="#ef4444"
+									radius={[4, 4, 0, 0]}
+								/>
+							</BarChart>
+						</ResponsiveContainer>
+					</div>
+				</Panel>
+				<Panel dense icon={ClipboardList} title="Rejection Reasons">
+					<DataTableShell>
+						<Table className="w-full table-fixed">
 							<TableHeader>
-								<TableRow>
-									<TableHead>Vendor / Source</TableHead>
-									<TableHead>File type</TableHead>
-									<TableHead>Data sent</TableHead>
-									<TableHead>Frequency</TableHead>
-									<TableHead>Last received</TableHead>
-									<TableHead>Status</TableHead>
+								<TableRow className="hover:bg-transparent">
+									<DetailTableHead>Reason</DetailTableHead>
+									<DetailTableHead className="text-right">
+										Count
+									</DetailTableHead>
+									<DetailTableHead className="text-right">
+										% of total
+									</DetailTableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{provider.vendors.map((v) => (
-									<TableRow key={v.id}>
-										<TableCell className="text-sm font-medium">
-											{v.vendor}
+								{provider.rejectionReasons.map((r) => (
+									<TableRow key={r.id} className={DETAIL_ROW}>
+										<TableCell className={DETAIL_TD}>{r.reason}</TableCell>
+										<TableCell
+											className={cn(DETAIL_TD, "text-right tabular-nums")}
+										>
+											{r.count}
 										</TableCell>
-										<TableCell className="text-sm">{v.fileType}</TableCell>
-										<TableCell className="text-sm">{v.dataSent}</TableCell>
-										<TableCell className="text-sm">{v.frequency}</TableCell>
-										<TableCell className="tabular-nums text-sm">
-											{v.lastReceived}
-										</TableCell>
-										<TableCell>
-											<FeedPill status={v.status} />
+										<TableCell
+											className={cn(DETAIL_TD, "text-right tabular-nums")}
+										>
+											{r.pct}%
 										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
 						</Table>
-					</div>
+					</DataTableShell>
 				</Panel>
-			</Sheet>
+			</div>
+		);
+	}
+
+	if (tab === "Vendors / Sources") {
+		return (
+			<Panel dense icon={Building2} title="Vendors / Source Associations">
+				<DataTableShell>
+					<Table className="w-full table-fixed">
+						<TableHeader>
+							<TableRow className="hover:bg-transparent">
+								<DetailTableHead>Vendor / Source</DetailTableHead>
+								<DetailTableHead>File type</DetailTableHead>
+								<DetailTableHead>Data sent</DetailTableHead>
+								<DetailTableHead>Frequency</DetailTableHead>
+								<DetailTableHead>Last received</DetailTableHead>
+								<DetailTableHead>Status</DetailTableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{provider.vendors.map((v) => (
+								<TableRow key={v.id} className={DETAIL_ROW}>
+									<TableCell className={cn(DETAIL_TD, "font-medium")}>
+										{v.vendor}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>{v.fileType}</TableCell>
+									<TableCell className={DETAIL_TD}>{v.dataSent}</TableCell>
+									<TableCell className={DETAIL_TD}>{v.frequency}</TableCell>
+									<TableCell className={cn(DETAIL_TD, "tabular-nums")}>
+										{v.lastReceived}
+									</TableCell>
+									<TableCell className={DETAIL_TD}>
+										<FeedPill status={v.status} />
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</DataTableShell>
+			</Panel>
 		);
 	}
 

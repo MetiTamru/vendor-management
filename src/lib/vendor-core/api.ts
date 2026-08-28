@@ -34,6 +34,14 @@ import type {
 	MemberListDto,
 	MemberListQuery,
 	MemberWriteBody,
+	MigrationCaseBulkStatusInput,
+	MigrationCaseBulkStatusResultDto,
+	MigrationCaseCreateInput,
+	MigrationCaseDto,
+	MigrationCaseEventDto,
+	MigrationCaseListQuery,
+	MigrationCaseUpdateInput,
+	MigrationStatusDto,
 	MonitoringDashboardDto,
 	PaginatedResult,
 	PharmacyClaimFileDto,
@@ -45,16 +53,27 @@ import type {
 	PharmacyClaimRowUpdateInput,
 	ProcessingEventDto,
 	ProviderCreateInput,
+	ProviderCredentialDto,
 	ProviderDashboardStatsDto,
 	ProviderDashboardStatsQuery,
 	ProviderDto,
+	ProviderExceptionDto,
+	ProviderIdentifierCreateInput,
+	ProviderIdentifierDto,
+	ProviderIdentifierUpdateInput,
 	ProviderListQuery,
+	ProviderLocationDto,
+	ProviderNetworkDto,
+	ProviderProfileDto,
+	ProviderProfileUpdateInput,
 	ProviderRosterCreateInput,
 	ProviderRosterDto,
 	ProviderRosterListQuery,
 	ProviderRosterUpdateInput,
 	ProviderStatusInput,
+	ProviderSummaryDto,
 	ProviderUpdateInput,
+	ProviderVendorSourceDto,
 	RoleCreateInput,
 	RoleDto,
 	RoleListQuery,
@@ -62,6 +81,11 @@ import type {
 	RoutingRuleDto,
 	ValidationResultDto,
 	VendorDto,
+	WhitelistStatusDto,
+	WorkQueueImportResultDto,
+	WorkQueueKpisDto,
+	WorkQueueSeedInput,
+	WorkQueueSeedResultDto,
 } from "@/lib/vendor-core/types";
 import {
 	normalizeAccount,
@@ -73,11 +97,13 @@ import {
 	normalizeJob,
 	normalizeJobRun,
 	normalizeMemberCoverage,
+	normalizeMigrationCase,
 	normalizeProcessingEvent,
 	normalizeProvider,
 	normalizeProviderRoster,
 	normalizeValidationResult,
 	normalizeVendor,
+	normalizeWorkQueueKpis,
 } from "@/lib/vendor-core/types";
 
 /**
@@ -198,6 +224,26 @@ export const vendorCoreEndpoints = {
 	providerRestore: (id: string) => `/api/v1/providers/${id}/restore/`,
 	providerHardDelete: (id: string) => `/api/v1/providers/${id}/hard-delete/`,
 	providerStatus: (id: string) => `/api/v1/providers/${id}/status/`,
+	providerProfile: (id: string) => `/api/v1/providers/${id}/profile/`,
+	providerProfileUpdate: (id: string) =>
+		`/api/v1/providers/${id}/profile/update/`,
+	providerSummary: (id: string) => `/api/v1/providers/${id}/summary/`,
+	providerVendorSourcesList: (id: string) =>
+		`/api/v1/providers/${id}/vendor-sources/list/`,
+	providerLocationsList: (id: string) =>
+		`/api/v1/providers/${id}/locations/list/`,
+	providerIdentifiersList: (id: string) =>
+		`/api/v1/providers/${id}/identifiers/list/`,
+	providerIdentifiersCreate: (id: string) =>
+		`/api/v1/providers/${id}/identifiers/create/`,
+	providerIdentifierUpdate: (id: string, identifierId: string) =>
+		`/api/v1/providers/${id}/identifiers/${identifierId}/update/`,
+	providerNetworksList: (id: string) =>
+		`/api/v1/providers/${id}/networks/list/`,
+	providerCredentialsList: (id: string) =>
+		`/api/v1/providers/${id}/credentials/list/`,
+	providerExceptionsList: (id: string) =>
+		`/api/v1/providers/${id}/exceptions/list/`,
 	providerRostersList: "/api/v1/provider-rosters/list/",
 	providerRostersCreate: "/api/v1/provider-rosters/create/",
 	providerRoster: (id: string) => `/api/v1/provider-rosters/${id}/`,
@@ -211,6 +257,38 @@ export const vendorCoreEndpoints = {
 		`/api/v1/provider-rosters/${id}/hard-delete/`,
 	providerRosterRecount: (id: string) =>
 		`/api/v1/provider-rosters/${id}/recount/`,
+	migrationCasesList: "/api/v1/migration-cases/list/",
+	migrationCasesCreate: "/api/v1/migration-cases/create/",
+	migrationCasesBulkStatus: "/api/v1/migration-cases/bulk-status/",
+	migrationCase: (id: string) => `/api/v1/migration-cases/${id}/`,
+	migrationCaseUpdate: (id: string) => `/api/v1/migration-cases/${id}/update/`,
+	migrationCaseDelete: (id: string) => `/api/v1/migration-cases/${id}/delete/`,
+	migrationCaseRestore: (id: string) =>
+		`/api/v1/migration-cases/${id}/restore/`,
+	migrationCaseHardDelete: (id: string) =>
+		`/api/v1/migration-cases/${id}/hard-delete/`,
+	migrationCaseAssign: (id: string) => `/api/v1/migration-cases/${id}/assign/`,
+	migrationCaseStatus: (id: string) => `/api/v1/migration-cases/${id}/status/`,
+	migrationCaseWhitelist: (id: string) =>
+		`/api/v1/migration-cases/${id}/whitelist/`,
+	migrationCaseMarkTesting: (id: string) =>
+		`/api/v1/migration-cases/${id}/mark-testing/`,
+	migrationCaseMarkReady: (id: string) =>
+		`/api/v1/migration-cases/${id}/mark-ready/`,
+	migrationCaseMarkWaitingOnVendor: (id: string) =>
+		`/api/v1/migration-cases/${id}/mark-waiting-on-vendor/`,
+	migrationCaseMarkException: (id: string) =>
+		`/api/v1/migration-cases/${id}/mark-exception/`,
+	migrationCaseMarkProductionReady: (id: string) =>
+		`/api/v1/migration-cases/${id}/mark-production-ready/`,
+	migrationCaseEvents: (id: string) => `/api/v1/migration-cases/${id}/events/`,
+	migrationCaseDocumentsUpload: (id: string) =>
+		`/api/v1/migration-cases/${id}/documents/upload/`,
+	migrationCaseDocumentsList: (id: string) =>
+		`/api/v1/migration-cases/${id}/documents/list/`,
+	workQueueKpis: "/api/v1/work-queue/kpis/",
+	workQueueImport: "/api/v1/work-queue/import/",
+	workQueueSeed: "/api/v1/work-queue/seed/",
 	claimLinesList: "/api/v1/claim-lines/list/",
 	claimLinesCreate: "/api/v1/claim-lines/create/",
 	claimLinesSeed: "/api/v1/claim-lines/seed/",
@@ -1260,6 +1338,74 @@ export const vendorCoreApi = {
 			normalizeProvider(row as unknown as Record<string, unknown>)
 		),
 
+	getProviderProfile: (id: string) =>
+		vendorCoreFetch<ProviderProfileDto>(
+			vendorCoreEndpoints.providerProfile(id)
+		),
+
+	updateProviderProfile: (id: string, body: ProviderProfileUpdateInput) =>
+		vendorCoreFetch<ProviderProfileDto>(
+			vendorCoreEndpoints.providerProfileUpdate(id),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	getProviderSummary: (id: string) =>
+		vendorCoreFetch<ProviderSummaryDto>(
+			vendorCoreEndpoints.providerSummary(id)
+		),
+
+	listProviderVendorSources: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderVendorSourceDto>>(
+			vendorCoreEndpoints.providerVendorSourcesList(id),
+			{ params: pageParams({ limit: 100 }) }
+		),
+
+	listProviderLocations: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderLocationDto>>(
+			vendorCoreEndpoints.providerLocationsList(id),
+			{ params: pageParams({ limit: 200 }) }
+		),
+
+	listProviderIdentifiers: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderIdentifierDto>>(
+			vendorCoreEndpoints.providerIdentifiersList(id),
+			{ params: pageParams({ limit: 200 }) }
+		),
+
+	createProviderIdentifier: (id: string, body: ProviderIdentifierCreateInput) =>
+		vendorCoreFetch<ProviderIdentifierDto>(
+			vendorCoreEndpoints.providerIdentifiersCreate(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateProviderIdentifier: (
+		id: string,
+		identifierId: string,
+		body: ProviderIdentifierUpdateInput
+	) =>
+		vendorCoreFetch<ProviderIdentifierDto>(
+			vendorCoreEndpoints.providerIdentifierUpdate(id, identifierId),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		),
+
+	listProviderNetworks: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderNetworkDto>>(
+			vendorCoreEndpoints.providerNetworksList(id),
+			{ params: pageParams({ limit: 200 }) }
+		),
+
+	listProviderCredentials: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderCredentialDto>>(
+			vendorCoreEndpoints.providerCredentialsList(id),
+			{ params: pageParams({ limit: 200 }) }
+		),
+
+	listProviderExceptions: (id: string) =>
+		vendorCoreFetch<PaginatedResult<ProviderExceptionDto>>(
+			vendorCoreEndpoints.providerExceptionsList(id),
+			{ params: pageParams({ limit: 200 }) }
+		),
+
 	listProviderRosters: async (params?: ProviderRosterListQuery) => {
 		const results = await listAllPages(async ({ limit, offset }) => {
 			const page = await vendorCoreFetch<
@@ -1764,4 +1910,270 @@ export const vendorCoreApi = {
 		vendorCoreFetch<AppSettingDto>(vendorCoreEndpoints.settingRestore(id), {
 			method: "POST",
 		}),
+
+	listMigrationCasesPage: async (params?: MigrationCaseListQuery) => {
+		const page = await vendorCoreFetch<
+			PaginatedResult<Record<string, unknown>>
+		>(vendorCoreEndpoints.migrationCasesList, {
+			params: pageParams({
+				...params,
+				is_visible:
+					params?.is_visible === undefined
+						? undefined
+						: params.is_visible
+							? "true"
+							: "false",
+				is_deleted:
+					params?.is_deleted === undefined
+						? undefined
+						: params.is_deleted
+							? "true"
+							: "false",
+			}),
+		});
+		return mapPage(page, normalizeMigrationCase);
+	},
+
+	listMigrationCases: async (params?: MigrationCaseListQuery) => {
+		const results = await listAllPages(async ({ limit, offset }) => {
+			const page = await vendorCoreFetch<
+				PaginatedResult<Record<string, unknown>>
+			>(vendorCoreEndpoints.migrationCasesList, {
+				params: pageParams({
+					...params,
+					limit,
+					offset,
+					is_visible:
+						params?.is_visible === undefined
+							? undefined
+							: params.is_visible
+								? "true"
+								: "false",
+					is_deleted:
+						params?.is_deleted === undefined
+							? undefined
+							: params.is_deleted
+								? "true"
+								: "false",
+				}),
+			});
+			return mapPage(page, normalizeMigrationCase);
+		});
+		return {
+			limit: results.length,
+			offset: 0,
+			count: results.length,
+			next: null,
+			previous: null,
+			results,
+		} satisfies PaginatedResult<MigrationCaseDto>;
+	},
+
+	getMigrationCase: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCase(id)
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	createMigrationCase: async (body: MigrationCaseCreateInput) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCasesCreate,
+			{ method: "POST", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	updateMigrationCase: async (id: string, body: MigrationCaseUpdateInput) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseUpdate(id),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	deleteMigrationCase: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.migrationCaseDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreMigrationCase: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseRestore(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	assignMigrationCase: async (
+		id: string,
+		body: { assigned_to_id?: string | null }
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseAssign(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	setMigrationCaseStatus: async (
+		id: string,
+		body: { migration_status: MigrationStatusDto | string }
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseStatus(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	setMigrationCaseWhitelist: async (
+		id: string,
+		body: { whitelist_status: WhitelistStatusDto | string }
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseWhitelist(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	markMigrationCaseTesting: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseMarkTesting(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	markMigrationCaseReady: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseMarkReady(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	markMigrationCaseWaitingOnVendor: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseMarkWaitingOnVendor(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	markMigrationCaseException: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseMarkException(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	markMigrationCaseProductionReady: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseMarkProductionReady(id),
+			{ method: "POST" }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	bulkSetMigrationCaseStatus: (body: MigrationCaseBulkStatusInput) =>
+		vendorCoreFetch<MigrationCaseBulkStatusResultDto>(
+			vendorCoreEndpoints.migrationCasesBulkStatus,
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	listMigrationCaseEvents: async (
+		id: string,
+		params?: { event_type?: string; limit?: number; offset?: number }
+	) => {
+		const page = await vendorCoreFetch<
+			PaginatedResult<Record<string, unknown>>
+		>(vendorCoreEndpoints.migrationCaseEvents(id), {
+			params: pageParams(params),
+		});
+		return mapPage(page, (row): MigrationCaseEventDto => {
+			const actorRaw =
+				row.actor && typeof row.actor === "object"
+					? (row.actor as Record<string, unknown>)
+					: null;
+			return {
+				id: String(row.id ?? ""),
+				event_type: String(row.event_type ?? ""),
+				message: String(row.message ?? ""),
+				tone: String(row.tone ?? "blue"),
+				actor: actorRaw
+					? {
+							id: String(actorRaw.id ?? ""),
+							username:
+								typeof actorRaw.username === "string"
+									? actorRaw.username
+									: undefined,
+							email:
+								typeof actorRaw.email === "string" ? actorRaw.email : undefined,
+							first_name:
+								typeof actorRaw.first_name === "string"
+									? actorRaw.first_name
+									: undefined,
+							last_name:
+								typeof actorRaw.last_name === "string"
+									? actorRaw.last_name
+									: undefined,
+							full_name:
+								typeof actorRaw.full_name === "string"
+									? actorRaw.full_name
+									: undefined,
+						}
+					: null,
+				created_at: String(row.created_at ?? ""),
+			};
+		});
+	},
+
+	getWorkQueueKpis: async () => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.workQueueKpis
+		);
+		return normalizeWorkQueueKpis(raw);
+	},
+
+	importWorkQueueSpreadsheet: async (file: File) => {
+		const form = new FormData();
+		form.append("file", file);
+		return vendorCoreFetch<WorkQueueImportResultDto>(
+			vendorCoreEndpoints.workQueueImport,
+			{
+				method: "POST",
+				body: form,
+				headers: {},
+			}
+		);
+	},
+
+	seedWorkQueue: (body?: WorkQueueSeedInput) =>
+		vendorCoreFetch<WorkQueueSeedResultDto>(vendorCoreEndpoints.workQueueSeed, {
+			method: "POST",
+			body: JSON.stringify(body ?? {}),
+		}),
+
+	uploadMigrationCaseDocument: async (id: string, file: File) => {
+		const form = new FormData();
+		form.append("file", file);
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseDocumentsUpload(id),
+			{
+				method: "POST",
+				body: form,
+				headers: {},
+			}
+		);
+		return {
+			id: String(raw.id ?? ""),
+			reference_id:
+				typeof raw.reference_id === "string" ? raw.reference_id : undefined,
+			name: String(raw.name ?? file.name),
+			web_url: typeof raw.web_url === "string" ? raw.web_url : undefined,
+		};
+	},
 };

@@ -4,7 +4,18 @@ import type {
 	ProviderStatus,
 	ProviderSummary,
 } from "@/features/admin/features/providers/mock-data";
-import type { ProviderDto, ProviderRosterRef } from "@/lib/vendor-core/types";
+import type {
+	ProviderCredentialDto,
+	ProviderDto,
+	ProviderExceptionDto,
+	ProviderIdentifierDto,
+	ProviderLocationDto,
+	ProviderNetworkDto,
+	ProviderProfileDto,
+	ProviderRosterRef,
+	ProviderSummaryDto,
+	ProviderVendorSourceDto,
+} from "@/lib/vendor-core/types";
 
 export const TAXONOMY_LABELS: Record<string, string> = {
 	"207R00000X": "Internal Medicine",
@@ -18,6 +29,175 @@ export const TAXONOMY_LABELS: Record<string, string> = {
 	"2084N0400X": "Neurology",
 	"207P00000X": "Emergency Medicine",
 };
+
+function parseGender(raw?: string | null): ProviderSummary["gender"] {
+	const value = (raw ?? "unknown").toLowerCase();
+	if (value === "male") return "Male";
+	if (value === "female") return "Female";
+	if (value === "other") return "Other";
+	return "Unknown";
+}
+
+function parseEnrollmentStatus(
+	raw?: string | null
+): ProviderSummary["enrollmentStatus"] {
+	const value = (raw ?? "").toLowerCase();
+	if (value.includes("term")) return "terminated";
+	if (value.includes("pend")) return "pending";
+	return "enrolled";
+}
+
+function parseProgram(raw?: string | null): ProviderSummary["program"] {
+	const value = (raw ?? "DHCF").toUpperCase();
+	if (value === "MDH" || value === "BHP") return value;
+	return "DHCF";
+}
+
+function formatAddress(parts: Array<string | undefined | null>): string {
+	const joined = parts
+		.map((part) => part?.trim())
+		.filter((part): part is string => Boolean(part))
+		.join(", ");
+	return joined || "—";
+}
+
+function identifierValue(
+	identifiers: ProviderIdentifierDto[] | undefined,
+	label: string,
+	fallback?: string
+): string {
+	const hit = identifiers?.find(
+		(row) => row.label.trim().toLowerCase() === label.toLowerCase()
+	);
+	return hit?.value?.trim() || fallback || "—";
+}
+
+export type ProviderDetailContext = {
+	profile?: ProviderProfileDto | null;
+	summary?: ProviderSummaryDto | null;
+	locations?: ProviderLocationDto[];
+	identifiers?: ProviderIdentifierDto[];
+	networks?: ProviderNetworkDto[];
+	credentials?: ProviderCredentialDto[];
+	exceptions?: ProviderExceptionDto[];
+	vendorSources?: ProviderVendorSourceDto[];
+};
+
+function mapLocations(
+	rows: ProviderLocationDto[]
+): ProviderDetail["locations"] {
+	return rows.map((row) => ({
+		id: row.id,
+		name: dash(row.name),
+		address: formatAddress([
+			row.address_line1,
+			row.address_line2,
+			[row.city, row.state, row.postal_code].filter(Boolean).join(" "),
+		]),
+		phone: dash(row.phone),
+		status: parseStatus(row.status),
+		isPrimary: row.is_primary,
+	}));
+}
+
+function mapNetworks(rows: ProviderNetworkDto[]): ProviderDetail["networks"] {
+	return rows.map((row) => ({
+		id: row.id,
+		networkPlan: dash(row.network_plan),
+		payer: dash(row.payer),
+		status: (row.status ||
+			"pending") as ProviderDetail["networks"][number]["status"],
+		effectiveDate: row.effective_date?.slice(0, 10) ?? "—",
+		endDate: row.end_date?.slice(0, 10) ?? null,
+	}));
+}
+
+function mapCredentials(
+	rows: ProviderCredentialDto[]
+): ProviderDetail["credentialing"] {
+	return rows.map((row) => ({
+		id: row.id,
+		label: dash(row.label),
+		status: (row.status ||
+			"pending") as ProviderDetail["credentialing"][number]["status"],
+		issuer: dash(row.issuer),
+		verifiedDate: row.verified_date?.slice(0, 10) ?? null,
+		expirationDate: row.expiration_date?.slice(0, 10) ?? null,
+	}));
+}
+
+function mapExceptions(
+	rows: ProviderExceptionDto[]
+): ProviderDetail["exceptions"] {
+	return rows.map((row) => ({
+		id: row.id,
+		exceptionType: dash(row.exception_type),
+		description: dash(row.description),
+		status: (row.status ||
+			"open") as ProviderDetail["exceptions"][number]["status"],
+		dateIdentified: row.date_identified?.slice(0, 10) ?? "—",
+	}));
+}
+
+function mapVendorSources(
+	rows: ProviderVendorSourceDto[]
+): ProviderDetail["vendors"] {
+	return rows.map((row) => ({
+		id: row.id,
+		vendor: dash(row.vendor_name),
+		fileType: dash(row.file_type) || "provider_roster",
+		dataSent: "Provider roster",
+		frequency: "—",
+		lastReceived: row.received_at?.slice(0, 10) ?? "—",
+		status: "active" satisfies FeedStatus,
+	}));
+}
+
+function buildIdentifierRows(
+	provider: ProviderDto,
+	identifiers: ProviderIdentifierDto[] | undefined
+): ProviderDetail["identifiers"] {
+	const rows: ProviderDetail["identifiers"] = [
+		{ id: "npi", label: "NPI", value: dash(provider.npi) },
+		{
+			id: "reference",
+			label: "Reference ID",
+			value: dash(provider.reference_id),
+		},
+		{
+			id: "taxonomy",
+			label: "Taxonomy",
+			value: dash(provider.taxonomy),
+		},
+		{
+			id: "entity",
+			label: "Entity type",
+			value: dash(provider.entity_type),
+		},
+	];
+	const seen = new Set(rows.map((row) => row.label.toLowerCase()));
+	for (const row of identifiers ?? []) {
+		const label = row.label.trim();
+		if (!label) continue;
+		const key = label.toLowerCase();
+		if (seen.has(key)) continue;
+		seen.add(key);
+		rows.push({ id: row.id, label, value: dash(row.value) });
+	}
+	const metadataExtras: Array<[string, string]> = [
+		["tax_id", "Tax ID"],
+		["upin", "UPIN"],
+		["medicaid_id", "Medicaid ID"],
+		["state_license", "State license"],
+		["dea", "DEA"],
+	];
+	for (const [key, label] of metadataExtras) {
+		if (seen.has(label.toLowerCase())) continue;
+		const value = metaString(provider.metadata, key);
+		if (value) rows.push({ id: key, label, value });
+	}
+	return rows;
+}
 
 function parseStatus(raw?: string | null): ProviderStatus {
 	const value = (raw ?? "active").toLowerCase();
@@ -107,17 +287,23 @@ function enrollmentFromStatus(
 /** Map vendor-core providers into the admin provider directory row shape. */
 export function providersToSummaries(
 	providers: ProviderDto[],
-	program: ProviderSummary["program"] = "DHCF"
+	program: ProviderSummary["program"] = "DHCF",
+	identifiersByProviderId?: Record<string, ProviderIdentifierDto[]>
 ): ProviderSummary[] {
 	return providers.map((provider) => {
+		const profile = provider.profile;
+		const identifiers = identifiersByProviderId?.[provider.id];
 		const { displayName, credentials } = parseNameParts(provider.name);
 		const seed = parseSeedMeta(provider.raw_object_id);
+		const resolvedProgram = parseProgram(profile?.program || program);
 		const specialty =
+			profile?.specialty?.trim() ||
 			metaString(provider.metadata, "specialty") ||
 			seed.specialty ||
 			TAXONOMY_LABELS[provider.taxonomy ?? ""] ||
 			"—";
 		const practiceName =
+			profile?.practice_name?.trim() ||
 			metaString(provider.metadata, "practice") ||
 			seed.practiceName ||
 			vendorLabel(provider) ||
@@ -126,31 +312,55 @@ export function providersToSummaries(
 				: undefined) ||
 			"—";
 		const status = parseStatus(provider.status);
-		const taxId = metaString(provider.metadata, "tax_id") ?? "—";
-		const upin = metaString(provider.metadata, "upin") ?? "—";
-		const medicaidId = metaString(provider.metadata, "medicaid_id") ?? "—";
+		const taxId =
+			identifierValue(identifiers, "Tax ID") !== "—"
+				? identifierValue(identifiers, "Tax ID")
+				: (metaString(provider.metadata, "tax_id") ?? "—");
+		const upin =
+			identifierValue(identifiers, "UPIN") !== "—"
+				? identifierValue(identifiers, "UPIN")
+				: (metaString(provider.metadata, "upin") ?? "—");
+		const medicaidId =
+			identifierValue(identifiers, "Medicaid ID") !== "—"
+				? identifierValue(identifiers, "Medicaid ID")
+				: (metaString(provider.metadata, "medicaid_id") ?? "—");
 
 		return {
 			id: provider.id,
 			npi: provider.npi,
-			name: displayName,
-			credentials,
+			name: profile?.first_name
+				? [profile.first_name, profile.middle_name, profile.last_name]
+						.filter(Boolean)
+						.join(" ")
+						.trim() || displayName
+				: displayName,
+			credentials: profile?.credentials?.trim() || credentials,
 			specialty,
-			subspecialty: metaString(provider.metadata, "subspecialty") ?? "—",
+			subspecialty:
+				profile?.subspecialty?.trim() ||
+				metaString(provider.metadata, "subspecialty") ||
+				"—",
 			taxId,
 			upin,
 			medicaidId,
 			status,
-			program,
-			providerType: parseProviderType(provider.entity_type),
-			gender: "Unknown",
-			dob: "—",
+			program: resolvedProgram,
+			providerType: profile?.provider_type
+				? (profile.provider_type as ProviderSummary["providerType"])
+				: parseProviderType(provider.entity_type),
+			gender: parseGender(profile?.gender),
+			dob: profile?.dob?.slice(0, 10) ?? "—",
 			yearsInPractice: 0,
 			practiceName,
 			practiceAddress: "—",
-			practicePhone: "—",
-			enrollmentStatus: enrollmentFromStatus(status),
-			enrollmentEffective: provider.effective_date ?? "—",
+			practicePhone: dash(profile?.phone),
+			enrollmentStatus: profile?.enrollment_status
+				? parseEnrollmentStatus(profile.enrollment_status)
+				: enrollmentFromStatus(status),
+			enrollmentEffective:
+				profile?.enrollment_effective?.slice(0, 10) ??
+				provider.effective_date?.slice(0, 10) ??
+				"—",
 			claims12m: 0,
 			encounters12m: 0,
 			billed12m: 0,
@@ -189,116 +399,160 @@ function splitPersonName(displayName: string): {
 }
 
 function identifierRows(provider: ProviderDto): ProviderDetail["identifiers"] {
-	const rows: ProviderDetail["identifiers"] = [
-		{ id: "npi", label: "NPI", value: dash(provider.npi) },
-		{
-			id: "reference",
-			label: "Reference ID",
-			value: dash(provider.reference_id),
-		},
-		{
-			id: "taxonomy",
-			label: "Taxonomy",
-			value: dash(provider.taxonomy),
-		},
-		{
-			id: "entity",
-			label: "Entity type",
-			value: dash(provider.entity_type),
-		},
-	];
-	const extras: Array<[string, string]> = [
-		["tax_id", "Tax ID"],
-		["upin", "UPIN"],
-		["medicaid_id", "Medicaid ID"],
-		["state_license", "State license"],
-		["dea", "DEA"],
-	];
-	for (const [key, label] of extras) {
-		const value = metaString(provider.metadata, key);
-		if (value) rows.push({ id: key, label, value });
-	}
-	return rows;
+	return buildIdentifierRows(provider, undefined);
 }
 
-/** Map a vendor-core provider into the admin detail shell from live fields only. */
+/** Map a vendor-core provider into the admin detail shell from live API data. */
 export function providerDtoToDetail(
 	dto: ProviderDto,
-	program: ProviderSummary["program"] = "DHCF"
+	program: ProviderSummary["program"] = "DHCF",
+	context: ProviderDetailContext = {}
 ): ProviderDetail {
-	const summary = providersToSummaries([dto], program)[0]!;
-	const person = splitPersonName(summary.name);
+	const {
+		profile,
+		summary: summaryDto,
+		locations = [],
+		identifiers = [],
+		networks = [],
+		credentials = [],
+		exceptions = [],
+		vendorSources = [],
+	} = context;
+	const mergedDto =
+		profile && !dto.profile
+			? {
+					...dto,
+					profile: {
+						id: profile.id,
+						first_name: profile.first_name,
+						last_name: profile.last_name,
+						middle_name: profile.middle_name,
+						suffix: profile.suffix,
+						credentials: profile.credentials,
+						gender: profile.gender,
+						dob: profile.dob,
+						email: profile.email,
+						phone: profile.phone,
+						specialty: profile.specialty,
+						subspecialty: profile.subspecialty,
+						program: profile.program,
+						provider_type: profile.provider_type,
+						enrollment_status: profile.enrollment_status,
+						enrollment_effective: profile.enrollment_effective,
+						practice_name: profile.practice_name,
+						accepting_new_patients: profile.accepting_new_patients,
+					},
+				}
+			: dto;
+	const summary = providersToSummaries(
+		[mergedDto],
+		program,
+		identifiers.length ? { [dto.id]: identifiers } : undefined
+	)[0]!;
+	const person = profile?.first_name
+		? {
+				firstName: dash(profile.first_name),
+				middleName: profile.middle_name?.trim() || null,
+				lastName: dash(profile.last_name),
+			}
+		: splitPersonName(summary.name);
 	const taxonomyDescription =
-		TAXONOMY_LABELS[dto.taxonomy ?? ""] ?? summary.specialty;
+		profile?.taxonomy_description?.trim() ||
+		TAXONOMY_LABELS[dto.taxonomy ?? ""] ||
+		summary.specialty;
 	const roster = rosterRef(dto);
-	const vendorName = vendorLabel(dto);
-	const vendorId =
-		dto.vendor_id ??
-		(typeof dto.vendor === "object" ? dto.vendor?.id : undefined) ??
-		roster?.vendor_id ??
-		(typeof roster?.vendor === "object" ? roster.vendor?.id : undefined);
+	const mappedLocations = mapLocations(locations);
+	const mappedVendors = mapVendorSources(vendorSources);
 
 	return {
 		...summary,
 		...person,
 		preferredName: null,
-		suffix: summary.credentials || null,
-		email: "—",
-		fax: "—",
+		suffix: profile?.suffix?.trim() || summary.credentials || null,
+		email: dash(profile?.email),
+		fax: dash(profile?.fax),
 		preferredLanguage: "—",
 		race: "—",
 		ethnicity: "—",
 		taxonomyCode: dash(dto.taxonomy),
 		taxonomyDescription,
-		boardCertification: "—",
-		medicalSchool: "—",
-		graduationYear: 0,
-		acceptingNewPatients: true,
-		mailingAddress: "—",
-		practiceCity: "—",
-		practiceState: "—",
-		practiceZip: "—",
-		website: null,
-		stateLicense: metaString(dto.metadata, "state_license") ?? "—",
-		deaNumber: metaString(dto.metadata, "dea") ?? "—",
+		boardCertification: dash(profile?.board_certification),
+		medicalSchool: dash(profile?.medical_school),
+		graduationYear: profile?.graduation_year ?? 0,
+		yearsInPractice: profile?.years_in_practice ?? summary.yearsInPractice,
+		acceptingNewPatients: profile?.accepting_new_patients ?? true,
+		mailingAddress: dash(profile?.mailing_address),
+		practiceCity: dash(profile?.practice_city),
+		practiceState: dash(profile?.practice_state),
+		practiceZip: dash(profile?.practice_postal_code),
+		practiceAddress: formatAddress([
+			profile?.practice_address_line1,
+			profile?.practice_address_line2,
+			[
+				profile?.practice_city,
+				profile?.practice_state,
+				profile?.practice_postal_code,
+			]
+				.filter(Boolean)
+				.join(" "),
+		]),
+		practicePhone: dash(profile?.phone) || summary.practicePhone,
+		website: profile?.website?.trim() || null,
+		stateLicense:
+			profile?.state_license?.trim() ||
+			metaString(dto.metadata, "state_license") ||
+			"—",
+		deaNumber:
+			profile?.dea_number?.trim() || metaString(dto.metadata, "dea") || "—",
 		locations:
-			summary.practiceName !== "—"
-				? [
-						{
-							id: `${dto.id}-practice`,
-							name: summary.practiceName,
-							address: "—",
-							phone: "—",
-							status: summary.status,
-							isPrimary: true,
-						},
-					]
-				: [],
-		networks: [],
-		identifiers: identifierRows(dto),
+			mappedLocations.length > 0
+				? mappedLocations
+				: summary.practiceName !== "—"
+					? [
+							{
+								id: `${dto.id}-practice`,
+								name: summary.practiceName,
+								address: summary.practiceAddress,
+								phone: summary.practicePhone,
+								status: summary.status,
+								isPrimary: true,
+							},
+						]
+					: [],
+		networks: mapNetworks(networks),
+		identifiers: buildIdentifierRows(dto, identifiers),
 		monthlyVolume: [],
 		rejectionReasons: [],
 		recentClaims: [],
 		recentEncounters: [],
 		vendors:
-			vendorName || roster
-				? [
-						{
-							id: vendorId ?? dto.roster_file_id ?? dto.id,
-							vendor: vendorName ?? "—",
-							fileType: program,
-							dataSent: "Provider roster",
-							frequency: "—",
-							lastReceived:
-								roster?.received_at?.slice(0, 10) ??
-								dto.updated_at?.slice(0, 10) ??
-								"—",
-							status: "active" satisfies FeedStatus,
-						},
-					]
-				: [],
-		credentialing: [],
-		exceptions: [],
+			mappedVendors.length > 0
+				? mappedVendors
+				: roster || vendorLabel(dto)
+					? [
+							{
+								id: dto.vendor_id ?? dto.roster_file_id ?? dto.id,
+								vendor: vendorLabel(dto) ?? "—",
+								fileType:
+									roster?.original_filename?.split(".").pop() || program,
+								dataSent: "Provider roster",
+								frequency: "—",
+								lastReceived:
+									roster?.received_at?.slice(0, 10) ??
+									dto.updated_at?.slice(0, 10) ??
+									"—",
+								status: "active" satisfies FeedStatus,
+							},
+						]
+					: [],
+		credentialing: mapCredentials(credentials),
+		exceptions: mapExceptions(exceptions),
+		claims12m: summaryDto?.claims12m ?? summary.claims12m,
+		encounters12m: summaryDto?.encounters12m ?? summary.encounters12m,
+		billed12m: summaryDto?.billed12m ?? summary.billed12m,
+		paid12m: summaryDto?.paid12m ?? summary.paid12m,
+		rejectionRate: summaryDto?.rejection_rate ?? summary.rejectionRate,
+		netPayment12m: summaryDto?.net_payment12m ?? summary.netPayment12m,
 		claimsTrendPct: 0,
 		encountersTrendPct: 0,
 		billedTrendPct: 0,
@@ -306,7 +560,9 @@ export function providerDtoToDetail(
 		rejectionTrendPct: 0,
 		netPaymentTrendPct: 0,
 		dataAsOf:
-			dto.updated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+			summaryDto?.data_as_of?.slice(0, 10) ??
+			dto.updated_at?.slice(0, 10) ??
+			new Date().toISOString().slice(0, 10),
 	};
 }
 

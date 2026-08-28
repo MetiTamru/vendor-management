@@ -811,6 +811,8 @@ export type ProviderDto = {
 	effective_date?: string | null;
 	raw_object_id?: string | null;
 	metadata?: Record<string, unknown> | null;
+	profile?: ProviderProfileCompactDto | null;
+	tab_counts?: ProviderTabCountsDto | null;
 	created_at?: string;
 	updated_at?: string;
 };
@@ -878,6 +880,384 @@ export type ProviderDashboardStatsDto = {
 	program?: string;
 	vendor_id?: string | null;
 	roster_file_id?: string | null;
+};
+
+export type ProviderProfileCompactDto = {
+	id?: string | null;
+	first_name?: string;
+	last_name?: string;
+	middle_name?: string;
+	suffix?: string;
+	credentials?: string;
+	gender?: string;
+	dob?: string | null;
+	email?: string;
+	phone?: string;
+	specialty?: string;
+	subspecialty?: string;
+	program?: string;
+	provider_type?: string;
+	enrollment_status?: string;
+	enrollment_effective?: string | null;
+	practice_name?: string;
+	accepting_new_patients?: boolean;
+};
+
+export type ProviderTabCountsDto = {
+	location_count: number;
+	identifier_count: number;
+	network_count: number;
+	credential_count: number;
+	exception_count: number;
+};
+
+export type ProviderProfileDto = ProviderProfileCompactDto & {
+	provider_id?: string;
+	reference_id?: string;
+	fax?: string;
+	taxonomy_description?: string;
+	practice_address_line1?: string;
+	practice_address_line2?: string;
+	practice_city?: string;
+	practice_state?: string;
+	practice_postal_code?: string;
+	mailing_address?: string;
+	website?: string;
+	years_in_practice?: number | null;
+	board_certification?: string;
+	medical_school?: string;
+	graduation_year?: number | null;
+	state_license?: string;
+	dea_number?: string;
+	is_visible?: boolean;
+	created_at?: string | null;
+	updated_at?: string | null;
+};
+
+export type ProviderProfileUpdateInput = Partial<{
+	first_name: string;
+	last_name: string;
+	middle_name: string;
+	suffix: string;
+	credentials: string;
+	gender: "male" | "female" | "other" | "unknown";
+	dob: string | null;
+	email: string;
+	fax: string;
+	phone: string;
+	specialty: string;
+	subspecialty: string;
+	taxonomy_description: string;
+	program: "MDH" | "DHCF" | "BHP" | "";
+	provider_type: "Individual" | "Group" | "Facility";
+	enrollment_status: "enrolled" | "pending" | "terminated";
+	enrollment_effective: string | null;
+	practice_name: string;
+	practice_address_line1: string;
+	practice_address_line2: string;
+	practice_city: string;
+	practice_state: string;
+	practice_postal_code: string;
+	mailing_address: string;
+	website: string;
+	accepting_new_patients: boolean;
+	years_in_practice: number | null;
+	board_certification: string;
+	medical_school: string;
+	graduation_year: number | null;
+	state_license: string;
+	dea_number: string;
+	is_visible: boolean;
+}>;
+
+export type ProviderSummaryDto = {
+	provider_id: string;
+	reference_id?: string;
+	npi: string;
+	name: string;
+	status: string;
+	vendor_id?: string | null;
+	roster_file_id: string;
+	program?: string;
+	enrollment_status?: string;
+	enrollment_effective?: string | null;
+	specialty?: string;
+	location_count: number;
+	network_count: number;
+	identifier_count: number;
+	credential_count: number;
+	open_exception_count: number;
+	expiring_credential_count: number;
+	claims12m: number;
+	encounters12m: number;
+	billed12m: number;
+	paid12m: number;
+	rejection_rate: number;
+	net_payment12m: number;
+	data_as_of?: string;
+};
+
+export type ProviderLocationDto = {
+	id: string;
+	reference_id?: string;
+	name: string;
+	address_line1: string;
+	address_line2: string;
+	city: string;
+	state: string;
+	postal_code: string;
+	phone: string;
+	status: string;
+	is_primary: boolean;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ProviderIdentifierDto = {
+	id: string;
+	reference_id?: string;
+	label: string;
+	value: string;
+	is_primary: boolean;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ProviderIdentifierCreateInput = {
+	label: string;
+	value: string;
+	is_primary?: boolean;
+};
+
+export type ProviderIdentifierUpdateInput =
+	Partial<ProviderIdentifierCreateInput>;
+
+export type ProviderNetworkDto = {
+	id: string;
+	reference_id?: string;
+	network_plan: string;
+	payer: string;
+	status: string;
+	effective_date?: string | null;
+	end_date?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ProviderCredentialDto = {
+	id: string;
+	reference_id?: string;
+	label: string;
+	status: string;
+	issuer: string;
+	verified_date?: string | null;
+	expiration_date?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ProviderExceptionDto = {
+	id: string;
+	reference_id?: string;
+	exception_type: string;
+	description: string;
+	status: string;
+	date_identified?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ProviderVendorSourceDto = {
+	id: string;
+	vendor_id?: string | null;
+	vendor_name?: string;
+	original_filename: string;
+	received_at?: string;
+	file_type?: string;
+	provider_count: number;
+	inbound_file_id?: string | null;
+};
+
+/** Work queue / migration cases (My Work Queue). */
+export type MigrationVendorType = "tpa" | "tpv";
+
+export type MigrationStatusDto =
+	| "not_started"
+	| "waiting_on_vendor"
+	| "need_testing"
+	| "testing"
+	| "ready"
+	| "production_ready"
+	| "exception";
+
+export type WhitelistStatusDto = "not_started" | "pending" | "complete";
+
+export type MigrationCurrentStageDto =
+	| "not_started"
+	| "data_exchange"
+	| "connectivity_testing"
+	| "whitelist_review"
+	| "contract_review"
+	| "go_live_readiness"
+	| "exception_handling"
+	| "production";
+
+export type MigrationCaseUserCompactDto = {
+	id: string;
+	username?: string;
+	email?: string;
+	first_name?: string;
+	last_name?: string;
+	full_name?: string;
+};
+
+export type MigrationCaseVendorCompactDto = {
+	id: string;
+	legal_name?: string;
+	vendor_code?: string;
+};
+
+export type MigrationCaseEventDto = {
+	id: string;
+	event_type: string;
+	message: string;
+	tone: string;
+	actor?: MigrationCaseUserCompactDto | null;
+	created_at: string;
+};
+
+export type MigrationCaseDocumentDto = {
+	id: string;
+	reference_id?: string;
+	name: string;
+	web_url?: string;
+};
+
+export type MigrationCaseDto = {
+	id: string;
+	reference_id?: string;
+	code: string;
+	name: string;
+	vendor_type: MigrationVendorType | string;
+	wave: number;
+	server_type?: string;
+	whitelist_status: WhitelistStatusDto | string;
+	migration_status: MigrationStatusDto | string;
+	current_stage: MigrationCurrentStageDto | string;
+	next_step?: string;
+	notes?: string;
+	last_communication_at?: string | null;
+	migration_start_date?: string | null;
+	waiting_on_vendor_date?: string | null;
+	primary_contact?: string;
+	primary_email?: string;
+	primary_phone?: string;
+	secondary_contact?: string;
+	secondary_email?: string;
+	secondary_phone?: string;
+	assigned_to?: MigrationCaseUserCompactDto | null;
+	vendor?: MigrationCaseVendorCompactDto | null;
+	events?: MigrationCaseEventDto[];
+	documents?: MigrationCaseDocumentDto[];
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+	is_deleted?: boolean;
+	deleted_at?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type MigrationCaseListQuery = {
+	is_visible?: boolean;
+	is_deleted?: boolean;
+	reference_id?: string;
+	code?: string;
+	name?: string;
+	vendor_type?: string;
+	wave?: number;
+	server_type?: string;
+	migration_status?: string;
+	whitelist_status?: string;
+	current_stage?: string;
+	assigned_to_id?: string;
+	vendor_id?: string;
+	search?: string;
+	order_by?: string;
+	limit?: number;
+	offset?: number;
+};
+
+export type MigrationCaseCreateInput = {
+	name: string;
+	code: string;
+	vendor_type: MigrationVendorType | string;
+	wave?: number;
+	server_type?: string;
+	notes?: string;
+	next_step?: string;
+	current_stage?: MigrationCurrentStageDto | string;
+	vendor_id?: string | null;
+	assigned_to_id?: string | null;
+	last_communication_at?: string | null;
+	migration_start_date?: string | null;
+	waiting_on_vendor_date?: string | null;
+	primary_contact?: string;
+	primary_email?: string;
+	primary_phone?: string;
+	secondary_contact?: string;
+	secondary_email?: string;
+	secondary_phone?: string;
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+export type MigrationCaseUpdateInput = Partial<
+	Omit<MigrationCaseCreateInput, "code" | "name" | "vendor_type">
+> & {
+	name?: string;
+	code?: string;
+	vendor_type?: MigrationVendorType | string;
+};
+
+export type WorkQueueKpisDto = {
+	assigned: number;
+	connected: number;
+	in_migration: number;
+	testing: number;
+	exceptions: number;
+	not_started: number;
+};
+
+export type WorkQueueImportResultDto = {
+	created_count: number;
+	updated_count: number;
+	error_count: number;
+	created: string[];
+	updated: string[];
+	errors: Record<string, unknown>[];
+};
+
+export type WorkQueueSeedInput = {
+	force?: boolean;
+};
+
+export type WorkQueueSeedResultDto = {
+	created: number;
+	skipped?: boolean;
+	existing_cases?: number;
+	purged?: number;
+	case_ids?: string[];
+	case_codes?: string[];
+};
+
+export type MigrationCaseBulkStatusInput = {
+	ids: string[];
+	migration_status: MigrationStatusDto | string;
+};
+
+export type MigrationCaseBulkStatusResultDto = {
+	succeeded: string[];
+	failed: Array<{ id?: string; error?: string } & Record<string, unknown>>;
 };
 
 export type ProviderRosterCreateInput = {
@@ -1633,6 +2013,14 @@ export function normalizeProvider(raw: Record<string, unknown>): ProviderDto {
 		effective_date: pickString(raw, "effective_date") || null,
 		raw_object_id: pickString(raw, "raw_object_id") || null,
 		metadata,
+		profile:
+			raw.profile && typeof raw.profile === "object"
+				? (raw.profile as ProviderProfileCompactDto)
+				: null,
+		tab_counts:
+			raw.tab_counts && typeof raw.tab_counts === "object"
+				? (raw.tab_counts as ProviderTabCountsDto)
+				: null,
 		created_at: pickString(raw, "created_at") || undefined,
 		updated_at: pickString(raw, "updated_at") || undefined,
 	};
@@ -1710,5 +2098,117 @@ export function normalizeClaimLine(raw: Record<string, unknown>): ClaimLineDto {
 		denial_reason_code: pickString(raw, "denial_reason_code") || null,
 		created_at: pickString(raw, "created_at") || undefined,
 		updated_at: pickString(raw, "updated_at") || undefined,
+	};
+}
+
+function normalizeMigrationUser(
+	raw: unknown
+): MigrationCaseUserCompactDto | null {
+	if (!raw || typeof raw !== "object") return null;
+	const u = raw as Record<string, unknown>;
+	const id = String(u.id ?? "");
+	if (!id) return null;
+	return {
+		id,
+		username: pickString(u, "username") || undefined,
+		email: pickString(u, "email") || undefined,
+		first_name: pickString(u, "first_name") || undefined,
+		last_name: pickString(u, "last_name") || undefined,
+		full_name: pickString(u, "full_name") || undefined,
+	};
+}
+
+function normalizeMigrationEvent(
+	raw: Record<string, unknown>
+): MigrationCaseEventDto {
+	return {
+		id: String(raw.id ?? ""),
+		event_type: pickString(raw, "event_type") || "",
+		message: pickString(raw, "message") || "",
+		tone: pickString(raw, "tone") || "blue",
+		actor: normalizeMigrationUser(raw.actor),
+		created_at: pickString(raw, "created_at") || "",
+	};
+}
+
+export function normalizeMigrationCase(
+	raw: Record<string, unknown>
+): MigrationCaseDto {
+	const vendorRaw = raw.vendor;
+	const vendorObj =
+		vendorRaw && typeof vendorRaw === "object"
+			? (vendorRaw as Record<string, unknown>)
+			: null;
+	const eventsRaw = Array.isArray(raw.events) ? raw.events : undefined;
+	const docsRaw = Array.isArray(raw.documents) ? raw.documents : undefined;
+
+	return {
+		...(raw as unknown as MigrationCaseDto),
+		id: String(raw.id ?? ""),
+		reference_id: pickString(raw, "reference_id") || undefined,
+		code: String(raw.code ?? ""),
+		name: String(raw.name ?? ""),
+		vendor_type: pickString(raw, "vendor_type") || "tpa",
+		wave: raw.wave != null ? Number(raw.wave) : 1,
+		server_type: pickString(raw, "server_type") || "",
+		whitelist_status: pickString(raw, "whitelist_status") || "not_started",
+		migration_status: pickString(raw, "migration_status") || "not_started",
+		current_stage: pickString(raw, "current_stage") || "not_started",
+		next_step: pickString(raw, "next_step") || "",
+		notes: pickString(raw, "notes") || "",
+		last_communication_at: pickString(raw, "last_communication_at") || null,
+		migration_start_date: pickString(raw, "migration_start_date") || null,
+		waiting_on_vendor_date: pickString(raw, "waiting_on_vendor_date") || null,
+		primary_contact: pickString(raw, "primary_contact") || "",
+		primary_email: pickString(raw, "primary_email") || "",
+		primary_phone: pickString(raw, "primary_phone") || "",
+		secondary_contact: pickString(raw, "secondary_contact") || "",
+		secondary_email: pickString(raw, "secondary_email") || "",
+		secondary_phone: pickString(raw, "secondary_phone") || "",
+		assigned_to: normalizeMigrationUser(raw.assigned_to),
+		vendor: vendorObj
+			? {
+					id: String(vendorObj.id ?? ""),
+					legal_name: pickString(vendorObj, "legal_name") || undefined,
+					vendor_code: pickString(vendorObj, "vendor_code") || undefined,
+				}
+			: null,
+		events: eventsRaw
+			? eventsRaw
+					.filter(
+						(e): e is Record<string, unknown> => !!e && typeof e === "object"
+					)
+					.map(normalizeMigrationEvent)
+			: undefined,
+		documents: docsRaw
+			? docsRaw
+					.filter(
+						(d): d is Record<string, unknown> => !!d && typeof d === "object"
+					)
+					.map((d) => ({
+						id: String(d.id ?? ""),
+						reference_id: pickString(d, "reference_id") || undefined,
+						name: pickString(d, "name") || "",
+						web_url: pickString(d, "web_url") || undefined,
+					}))
+			: undefined,
+		is_visible: raw.is_visible !== false,
+		is_deleted: Boolean(raw.is_deleted),
+		deleted_at: pickString(raw, "deleted_at") || null,
+		created_at: pickString(raw, "created_at") || undefined,
+		updated_at: pickString(raw, "updated_at") || undefined,
+	};
+}
+
+export function normalizeWorkQueueKpis(
+	raw: Record<string, unknown>
+): WorkQueueKpisDto {
+	return {
+		assigned: Number(raw.assigned ?? 0) || 0,
+		connected: Number(raw.connected ?? 0) || 0,
+		in_migration: Number(raw.in_migration ?? 0) || 0,
+		testing: Number(raw.testing ?? 0) || 0,
+		exceptions: Number(raw.exceptions ?? 0) || 0,
+		not_started: Number(raw.not_started ?? 0) || 0,
 	};
 }

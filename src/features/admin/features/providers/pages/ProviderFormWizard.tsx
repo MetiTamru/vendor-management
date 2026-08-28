@@ -9,12 +9,15 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	ClipboardList,
+	GraduationCap,
 	IdCard,
 	Loader2,
+	MapPin,
 	Stethoscope,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -23,32 +26,51 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	TAXONOMY_LABELS,
 	parseNameParts,
 } from "@/features/admin/features/providers/live-providers";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import type { ProviderDto, ProviderRosterDto } from "@/lib/vendor-core/types";
+import type {
+	ProviderDto,
+	ProviderIdentifierDto,
+	ProviderProfileDto,
+	ProviderProfileUpdateInput,
+	ProviderRosterDto,
+} from "@/lib/vendor-core/types";
 
 export const PROVIDER_WIZARD_STEPS = [
 	{
 		id: "identity",
 		title: "Identity",
-		hint: "Name, NPI, type",
+		hint: "NPI, name & demographics",
 		icon: IdCard,
 	},
 	{
 		id: "practice",
 		title: "Practice",
-		hint: "Specialty & taxonomy",
+		hint: "Specialty, taxonomy & program",
 		icon: Stethoscope,
+	},
+	{
+		id: "contact",
+		title: "Contact",
+		hint: "Phone, email & addresses",
+		icon: MapPin,
 	},
 	{
 		id: "enrollment",
 		title: "Enrollment",
-		hint: "Roster, IDs & status",
+		hint: "License, roster & identifiers",
 		icon: Building2,
+	},
+	{
+		id: "credentials",
+		title: "Credentials",
+		hint: "Education & certifications",
+		icon: GraduationCap,
 	},
 	{
 		id: "review",
@@ -62,14 +84,43 @@ export type ProviderWizardStepId = (typeof PROVIDER_WIZARD_STEPS)[number]["id"];
 
 export type ProviderWizardStatus = "active" | "pending" | "inactive" | "termed";
 
+export type ProviderWizardGender = "male" | "female" | "other" | "unknown";
+export type ProviderWizardProgram = "MDH" | "DHCF" | "BHP";
+export type ProviderWizardEnrollmentStatus =
+	| "enrolled"
+	| "pending"
+	| "terminated";
+
 export type ProviderWizardValues = {
 	npi: string;
-	name: string;
+	first_name: string;
+	middle_name: string;
+	last_name: string;
+	suffix: string;
 	credentials: string;
+	gender: ProviderWizardGender;
+	dob: string;
 	entity_type: string;
 	taxonomy: string;
 	specialty: string;
+	subspecialty: string;
 	practice: string;
+	program: ProviderWizardProgram;
+	accepting_new_patients: boolean;
+	email: string;
+	phone: string;
+	fax: string;
+	practice_address_line1: string;
+	practice_address_line2: string;
+	practice_city: string;
+	practice_state: string;
+	practice_postal_code: string;
+	mailing_address: string;
+	website: string;
+	board_certification: string;
+	medical_school: string;
+	graduation_year: string;
+	years_in_practice: string;
 	tax_id: string;
 	upin: string;
 	medicaid_id: string;
@@ -77,17 +128,40 @@ export type ProviderWizardValues = {
 	dea: string;
 	roster_file_id: string;
 	effective_date: string;
+	enrollment_status: ProviderWizardEnrollmentStatus;
 	status: ProviderWizardStatus;
 };
 
 export const EMPTY_PROVIDER_WIZARD: ProviderWizardValues = {
 	npi: "",
-	name: "",
+	first_name: "",
+	middle_name: "",
+	last_name: "",
+	suffix: "",
 	credentials: "",
+	gender: "unknown",
+	dob: "",
 	entity_type: "1",
 	taxonomy: "",
 	specialty: "",
+	subspecialty: "",
 	practice: "",
+	program: "DHCF",
+	accepting_new_patients: true,
+	email: "",
+	phone: "",
+	fax: "",
+	practice_address_line1: "",
+	practice_address_line2: "",
+	practice_city: "",
+	practice_state: "",
+	practice_postal_code: "",
+	mailing_address: "",
+	website: "",
+	board_certification: "",
+	medical_school: "",
+	graduation_year: "",
+	years_in_practice: "",
 	tax_id: "",
 	upin: "",
 	medicaid_id: "",
@@ -95,6 +169,7 @@ export const EMPTY_PROVIDER_WIZARD: ProviderWizardValues = {
 	dea: "",
 	roster_file_id: "",
 	effective_date: "",
+	enrollment_status: "pending",
 	status: "active",
 };
 
@@ -111,6 +186,58 @@ const STATUS_LABELS: Record<ProviderWizardStatus, string> = {
 	termed: "Termed",
 };
 
+const ENROLLMENT_STATUS_LABELS: Record<ProviderWizardEnrollmentStatus, string> =
+	{
+		enrolled: "Enrolled",
+		pending: "Pending",
+		terminated: "Terminated",
+	};
+
+const GENDER_LABELS: Record<ProviderWizardGender, string> = {
+	male: "Male",
+	female: "Female",
+	other: "Other",
+	unknown: "Unknown",
+};
+
+const PROGRAM_LABELS: Record<ProviderWizardProgram, string> = {
+	MDH: "MDH",
+	DHCF: "DHCF",
+	BHP: "BHP",
+};
+
+function parseOptionalInt(value: string): number | null {
+	const trimmed = value.trim();
+	if (!trimmed) return null;
+	const parsed = Number(trimmed);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Directory display name sent to provider create/update. */
+export function composeProviderName(
+	values: Pick<
+		ProviderWizardValues,
+		"first_name" | "middle_name" | "last_name" | "suffix" | "credentials"
+	>
+): string {
+	const first = values.first_name.trim();
+	const last = values.last_name.trim();
+	const middle = values.middle_name.trim();
+	const suffix = values.suffix.trim();
+	const cred = values.credentials.trim();
+
+	let display = "";
+	if (last && first) {
+		display = middle ? `${last}, ${first} ${middle}` : `${last}, ${first}`;
+	} else {
+		display = [first, middle, last].filter(Boolean).join(" ");
+	}
+
+	const tail = [suffix, cred].filter(Boolean).join(", ");
+	if (tail) display = display ? `${display}, ${tail}` : tail;
+	return display;
+}
+
 function metaString(
 	metadata: Record<string, unknown> | null | undefined,
 	key: string
@@ -119,41 +246,103 @@ function metaString(
 	return typeof value === "string" ? value : "";
 }
 
+function identifierField(
+	identifiers: ProviderIdentifierDto[] | undefined,
+	label: string
+): string {
+	const hit = identifiers?.find(
+		(row) => row.label.trim().toLowerCase() === label.toLowerCase()
+	);
+	return hit?.value?.trim() ?? "";
+}
+
 export function valuesFromProviderDto(
 	dto: ProviderDto,
-	fallbackRosterId = ""
+	fallbackRosterId = "",
+	extras?: {
+		profile?: ProviderProfileDto | null;
+		identifiers?: ProviderIdentifierDto[];
+	}
 ): ProviderWizardValues {
+	const profile = extras?.profile;
+	const identifiers = extras?.identifiers;
 	const parts = parseNameParts(dto.name);
 	const metadata = dto.metadata ?? {};
+	const fallbackName = parts.displayName.trim().split(/\s+/).filter(Boolean);
+	const firstFallback = fallbackName[0] ?? "";
+	const lastFallback =
+		fallbackName.length > 1 ? fallbackName[fallbackName.length - 1]! : "";
+	const middleFallback =
+		fallbackName.length > 2 ? fallbackName.slice(1, -1).join(" ") : "";
+
+	const gender = (profile?.gender ?? "unknown").toLowerCase();
+	const enrollment = (profile?.enrollment_status ?? "pending").toLowerCase();
+	const program = (profile?.program ?? "DHCF").toUpperCase();
+
 	return {
 		npi: dto.npi ?? "",
-		name: parts.displayName,
-		credentials: parts.credentials,
+		first_name: profile?.first_name?.trim() || firstFallback,
+		middle_name: profile?.middle_name?.trim() || middleFallback,
+		last_name: profile?.last_name?.trim() || lastFallback,
+		suffix: profile?.suffix?.trim() ?? "",
+		credentials: profile?.credentials?.trim() || parts.credentials,
+		gender: ["male", "female", "other", "unknown"].includes(gender)
+			? (gender as ProviderWizardGender)
+			: "unknown",
+		dob: profile?.dob?.slice(0, 10) ?? "",
 		entity_type: dto.entity_type || "1",
 		taxonomy: dto.taxonomy ?? "",
-		specialty: metaString(metadata, "specialty"),
-		practice: metaString(metadata, "practice"),
-		tax_id: metaString(metadata, "tax_id"),
-		upin: metaString(metadata, "upin"),
-		medicaid_id: metaString(metadata, "medicaid_id"),
-		state_license: metaString(metadata, "state_license"),
-		dea: metaString(metadata, "dea"),
+		specialty: profile?.specialty?.trim() || metaString(metadata, "specialty"),
+		subspecialty: profile?.subspecialty?.trim() ?? "",
+		practice:
+			profile?.practice_name?.trim() || metaString(metadata, "practice"),
+		program: ["MDH", "DHCF", "BHP"].includes(program)
+			? (program as ProviderWizardProgram)
+			: "DHCF",
+		accepting_new_patients: profile?.accepting_new_patients ?? true,
+		email: profile?.email?.trim() ?? "",
+		phone: profile?.phone?.trim() ?? "",
+		fax: profile?.fax?.trim() ?? "",
+		practice_address_line1: profile?.practice_address_line1?.trim() ?? "",
+		practice_address_line2: profile?.practice_address_line2?.trim() ?? "",
+		practice_city: profile?.practice_city?.trim() ?? "",
+		practice_state: profile?.practice_state?.trim() ?? "",
+		practice_postal_code: profile?.practice_postal_code?.trim() ?? "",
+		mailing_address: profile?.mailing_address?.trim() ?? "",
+		website: profile?.website?.trim() ?? "",
+		board_certification: profile?.board_certification?.trim() ?? "",
+		medical_school: profile?.medical_school?.trim() ?? "",
+		graduation_year:
+			profile?.graduation_year != null ? String(profile.graduation_year) : "",
+		years_in_practice:
+			profile?.years_in_practice != null
+				? String(profile.years_in_practice)
+				: "",
+		tax_id:
+			identifierField(identifiers, "Tax ID") || metaString(metadata, "tax_id"),
+		upin: identifierField(identifiers, "UPIN") || metaString(metadata, "upin"),
+		medicaid_id:
+			identifierField(identifiers, "Medicaid ID") ||
+			metaString(metadata, "medicaid_id"),
+		state_license:
+			profile?.state_license?.trim() || metaString(metadata, "state_license"),
+		dea: profile?.dea_number?.trim() || metaString(metadata, "dea"),
 		roster_file_id: dto.roster_file_id || fallbackRosterId,
-		effective_date: dto.effective_date ?? "",
+		effective_date:
+			profile?.enrollment_effective?.slice(0, 10) ??
+			dto.effective_date?.slice(0, 10) ??
+			"",
+		enrollment_status: ["enrolled", "pending", "terminated"].includes(
+			enrollment
+		)
+			? (enrollment as ProviderWizardEnrollmentStatus)
+			: "pending",
 		status: ["active", "pending", "inactive", "termed"].includes(
 			(dto.status ?? "").toLowerCase()
 		)
 			? (dto.status as ProviderWizardStatus)
 			: "active",
 	};
-}
-
-export function composeProviderName(name: string, credentials: string): string {
-	const trimmed = name.trim();
-	const cred = credentials.trim();
-	if (!cred) return trimmed;
-	if (trimmed.toLowerCase().endsWith(cred.toLowerCase())) return trimmed;
-	return `${trimmed}, ${cred}`;
 }
 
 export function wizardValuesToPayload(values: ProviderWizardValues) {
@@ -176,12 +365,61 @@ export function wizardValuesToPayload(values: ProviderWizardValues) {
 	return {
 		...(rosterId ? { roster_file_id: rosterId } : {}),
 		npi: values.npi.trim(),
-		name: composeProviderName(values.name, values.credentials),
+		name: composeProviderName(values),
 		...(taxonomy ? { taxonomy } : {}),
 		...(entityType ? { entity_type: entityType.slice(0, 8) } : {}),
 		effective_date: effectiveDate || null,
 		...(Object.keys(metadata).length > 0 ? { metadata } : {}),
 		is_visible: true,
+	};
+}
+
+/** Profile fields persisted after create/update via profile API. */
+export function wizardValuesToProfileUpdate(
+	values: ProviderWizardValues
+): ProviderProfileUpdateInput {
+	const taxonomyLabel = values.taxonomy.trim()
+		? (TAXONOMY_LABELS[values.taxonomy] ?? values.specialty.trim())
+		: values.specialty.trim();
+
+	return {
+		first_name: values.first_name.trim() || undefined,
+		middle_name: values.middle_name.trim() || undefined,
+		last_name: values.last_name.trim() || undefined,
+		suffix: values.suffix.trim() || undefined,
+		credentials: values.credentials.trim() || undefined,
+		gender: values.gender,
+		dob: values.dob.trim() || null,
+		email: values.email.trim() || undefined,
+		fax: values.fax.trim() || undefined,
+		phone: values.phone.trim() || undefined,
+		specialty: values.specialty.trim() || undefined,
+		subspecialty: values.subspecialty.trim() || undefined,
+		taxonomy_description: taxonomyLabel || undefined,
+		program: values.program,
+		provider_type:
+			values.entity_type === "2"
+				? "Group"
+				: values.entity_type === "3"
+					? "Facility"
+					: "Individual",
+		enrollment_status: values.enrollment_status,
+		enrollment_effective: values.effective_date.trim() || null,
+		practice_name: values.practice.trim() || undefined,
+		practice_address_line1: values.practice_address_line1.trim() || undefined,
+		practice_address_line2: values.practice_address_line2.trim() || undefined,
+		practice_city: values.practice_city.trim() || undefined,
+		practice_state: values.practice_state.trim() || undefined,
+		practice_postal_code: values.practice_postal_code.trim() || undefined,
+		mailing_address: values.mailing_address.trim() || undefined,
+		website: values.website.trim() || undefined,
+		accepting_new_patients: values.accepting_new_patients,
+		years_in_practice: parseOptionalInt(values.years_in_practice),
+		board_certification: values.board_certification.trim() || undefined,
+		medical_school: values.medical_school.trim() || undefined,
+		graduation_year: parseOptionalInt(values.graduation_year),
+		state_license: values.state_license.trim() || undefined,
+		dea_number: values.dea.trim() || undefined,
 	};
 }
 
@@ -213,11 +451,13 @@ export function ProviderFormWizard({
 	const last = PROVIDER_WIZARD_STEPS.length - 1;
 
 	const identityError = useMemo(() => {
-		if (!values.name.trim()) return "Provider name is required.";
+		if (!values.first_name.trim() && !values.last_name.trim()) {
+			return "First or last name is required.";
+		}
 		if (!/^\d{10}$/.test(values.npi.trim()))
 			return "NPI must be exactly 10 digits.";
 		return null;
-	}, [values.name, values.npi]);
+	}, [values.first_name, values.last_name, values.npi]);
 
 	const enrollmentError = useMemo(() => {
 		if (!values.roster_file_id) return "Select a roster file.";
@@ -271,8 +511,8 @@ export function ProviderFormWizard({
 						</h1>
 						<p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
 							{mode === "create"
-								? "Walk through identity, practice, and enrollment, then confirm before saving to vendor-core."
-								: "Update the live provider record. Status changes apply after the profile is saved."}
+								? "Six-step flow: identity, practice, contact, enrollment, credentials, then review."
+								: "Update the live provider record. Profile and identifiers sync after save."}
 						</p>
 					</div>
 					<p className="text-xs tabular-nums text-muted-foreground">
@@ -316,12 +556,18 @@ export function ProviderFormWizard({
 						{step === "practice" ? (
 							<PracticeStep values={values} onChange={onChange} />
 						) : null}
+						{step === "contact" ? (
+							<ContactStep values={values} onChange={onChange} />
+						) : null}
 						{step === "enrollment" ? (
 							<EnrollmentStep
 								values={values}
 								onChange={onChange}
 								rosters={rosters}
 							/>
+						) : null}
+						{step === "credentials" ? (
+							<CredentialsStep values={values} onChange={onChange} />
 						) : null}
 						{step === "review" ? (
 							<ReviewStep values={values} rosters={rosters} />
@@ -564,21 +810,40 @@ function IdentityStep({
 	values: ProviderWizardValues;
 	onChange: (patch: Partial<ProviderWizardValues>) => void;
 }) {
-	const directoryName = composeProviderName(values.name, values.credentials);
+	const directoryName = composeProviderName(values);
 
 	return (
 		<div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
 			<div className="grid gap-5 sm:grid-cols-2">
-				<Field
-					label="Display name"
-					required
-					className="sm:col-span-2"
-					hint="Legal or directory name. Credentials can be added separately."
-				>
+				<Field label="First name" required>
 					<Input
-						value={values.name}
-						onChange={(e) => onChange({ name: e.target.value })}
-						placeholder="Nguyen, Ava"
+						value={values.first_name}
+						onChange={(e) => onChange({ first_name: e.target.value })}
+						placeholder="Ava"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Last name" required>
+					<Input
+						value={values.last_name}
+						onChange={(e) => onChange({ last_name: e.target.value })}
+						placeholder="Nguyen"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Middle name">
+					<Input
+						value={values.middle_name}
+						onChange={(e) => onChange({ middle_name: e.target.value })}
+						placeholder="Marie"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Suffix" hint="Jr., III, etc.">
+					<Input
+						value={values.suffix}
+						onChange={(e) => onChange({ suffix: e.target.value })}
+						placeholder="Jr."
 						className="h-11"
 					/>
 				</Field>
@@ -606,7 +871,7 @@ function IdentityStep({
 						className="h-11 font-mono"
 					/>
 				</Field>
-				<Field label="Entity type" required className="sm:col-span-2">
+				<Field label="Entity type" required>
 					<Select
 						value={values.entity_type}
 						onValueChange={(entity_type) => onChange({ entity_type })}
@@ -620,6 +885,35 @@ function IdentityStep({
 							<SelectItem value="3">Facility</SelectItem>
 						</SelectContent>
 					</Select>
+				</Field>
+				<Field label="Gender">
+					<Select
+						value={values.gender}
+						onValueChange={(gender) =>
+							onChange({ gender: gender as ProviderWizardGender })
+						}
+					>
+						<SelectTrigger className="h-11">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{(Object.keys(GENDER_LABELS) as ProviderWizardGender[]).map(
+								(key) => (
+									<SelectItem key={key} value={key}>
+										{GENDER_LABELS[key]}
+									</SelectItem>
+								)
+							)}
+						</SelectContent>
+					</Select>
+				</Field>
+				<Field label="Date of birth">
+					<Input
+						type="date"
+						value={values.dob}
+						onChange={(e) => onChange({ dob: e.target.value })}
+						className="h-11"
+					/>
 				</Field>
 			</div>
 			<aside className="h-fit rounded-xl border border-border/60 bg-card p-4 shadow-sm">
@@ -653,10 +947,10 @@ function IdentityStep({
 					</div>
 					<div className="flex items-center justify-between gap-3 rounded-md border border-border/50 px-2.5 py-2">
 						<span className="text-[11px] font-medium text-muted-foreground">
-							Credentials
+							Gender
 						</span>
 						<span className="text-xs font-semibold text-foreground">
-							{values.credentials || "—"}
+							{GENDER_LABELS[values.gender]}
 						</span>
 					</div>
 				</div>
@@ -722,11 +1016,222 @@ function PracticeStep({
 					className="h-11"
 				/>
 			</Field>
-			<Field label="Practice / organization">
+			<Field label="Practice / organization" className="sm:col-span-2">
 				<Input
 					value={values.practice}
 					onChange={(e) => onChange({ practice: e.target.value })}
 					placeholder="Capitol Primary Care"
+					className="h-11"
+				/>
+			</Field>
+			<Field label="Subspecialty">
+				<Input
+					value={values.subspecialty}
+					onChange={(e) => onChange({ subspecialty: e.target.value })}
+					placeholder="Interventional Cardiology"
+					className="h-11"
+				/>
+			</Field>
+			<Field label="Program">
+				<Select
+					value={values.program}
+					onValueChange={(program) =>
+						onChange({ program: program as ProviderWizardProgram })
+					}
+				>
+					<SelectTrigger className="h-11">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{(Object.keys(PROGRAM_LABELS) as ProviderWizardProgram[]).map(
+							(key) => (
+								<SelectItem key={key} value={key}>
+									{PROGRAM_LABELS[key]}
+								</SelectItem>
+							)
+						)}
+					</SelectContent>
+				</Select>
+			</Field>
+			<div className="flex items-center gap-2 sm:col-span-2">
+				<Checkbox
+					id="accepting-patients"
+					checked={values.accepting_new_patients}
+					onCheckedChange={(checked) =>
+						onChange({ accepting_new_patients: checked === true })
+					}
+				/>
+				<label
+					htmlFor="accepting-patients"
+					className="text-sm font-medium text-foreground"
+				>
+					Accepting new patients
+				</label>
+			</div>
+		</div>
+	);
+}
+
+function ContactStep({
+	values,
+	onChange,
+}: {
+	values: ProviderWizardValues;
+	onChange: (patch: Partial<ProviderWizardValues>) => void;
+}) {
+	return (
+		<div className="space-y-6">
+			<div className="grid gap-5 sm:grid-cols-2">
+				<Field label="Email">
+					<Input
+						type="email"
+						value={values.email}
+						onChange={(e) => onChange({ email: e.target.value })}
+						placeholder="provider@practice.org"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Phone">
+					<Input
+						value={values.phone}
+						onChange={(e) => onChange({ phone: e.target.value })}
+						placeholder="(202) 555-0100"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Fax">
+					<Input
+						value={values.fax}
+						onChange={(e) => onChange({ fax: e.target.value })}
+						placeholder="(202) 555-0101"
+						className="h-11"
+					/>
+				</Field>
+				<Field label="Website">
+					<Input
+						value={values.website}
+						onChange={(e) => onChange({ website: e.target.value })}
+						placeholder="https://practice.org"
+						className="h-11"
+					/>
+				</Field>
+			</div>
+
+			<div>
+				<p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
+					Practice address
+				</p>
+				<div className="grid gap-5 sm:grid-cols-2">
+					<Field label="Address line 1" className="sm:col-span-2">
+						<Input
+							value={values.practice_address_line1}
+							onChange={(e) =>
+								onChange({ practice_address_line1: e.target.value })
+							}
+							placeholder="123 Main St"
+							className="h-11"
+						/>
+					</Field>
+					<Field label="Address line 2" className="sm:col-span-2">
+						<Input
+							value={values.practice_address_line2}
+							onChange={(e) =>
+								onChange({ practice_address_line2: e.target.value })
+							}
+							placeholder="Suite 200"
+							className="h-11"
+						/>
+					</Field>
+					<Field label="City">
+						<Input
+							value={values.practice_city}
+							onChange={(e) => onChange({ practice_city: e.target.value })}
+							placeholder="Washington"
+							className="h-11"
+						/>
+					</Field>
+					<Field label="State">
+						<Input
+							value={values.practice_state}
+							onChange={(e) => onChange({ practice_state: e.target.value })}
+							placeholder="DC"
+							className="h-11"
+							maxLength={16}
+						/>
+					</Field>
+					<Field label="Postal code">
+						<Input
+							value={values.practice_postal_code}
+							onChange={(e) =>
+								onChange({ practice_postal_code: e.target.value })
+							}
+							placeholder="20001"
+							className="h-11"
+						/>
+					</Field>
+				</div>
+			</div>
+
+			<Field label="Mailing address" hint="If different from practice address.">
+				<Textarea
+					value={values.mailing_address}
+					onChange={(e) => onChange({ mailing_address: e.target.value })}
+					placeholder="PO Box or alternate mailing address"
+					rows={3}
+				/>
+			</Field>
+		</div>
+	);
+}
+
+function CredentialsStep({
+	values,
+	onChange,
+}: {
+	values: ProviderWizardValues;
+	onChange: (patch: Partial<ProviderWizardValues>) => void;
+}) {
+	return (
+		<div className="grid gap-5 sm:grid-cols-2">
+			<Field label="Board certification" className="sm:col-span-2">
+				<Input
+					value={values.board_certification}
+					onChange={(e) => onChange({ board_certification: e.target.value })}
+					placeholder="American Board of Internal Medicine"
+					className="h-11"
+				/>
+			</Field>
+			<Field label="Medical school" className="sm:col-span-2">
+				<Input
+					value={values.medical_school}
+					onChange={(e) => onChange({ medical_school: e.target.value })}
+					placeholder="Georgetown University School of Medicine"
+					className="h-11"
+				/>
+			</Field>
+			<Field label="Graduation year">
+				<Input
+					inputMode="numeric"
+					value={values.graduation_year}
+					onChange={(e) =>
+						onChange({
+							graduation_year: e.target.value.replace(/\D/g, "").slice(0, 4),
+						})
+					}
+					placeholder="2010"
+					className="h-11"
+				/>
+			</Field>
+			<Field label="Years in practice">
+				<Input
+					inputMode="numeric"
+					value={values.years_in_practice}
+					onChange={(e) =>
+						onChange({
+							years_in_practice: e.target.value.replace(/\D/g, "").slice(0, 2),
+						})
+					}
+					placeholder="12"
 					className="h-11"
 				/>
 			</Field>
@@ -783,7 +1288,7 @@ function EnrollmentStep({
 						</Select>
 					)}
 				</Field>
-				<Field label="Effective date">
+				<Field label="Enrollment effective date">
 					<Input
 						type="date"
 						value={values.effective_date}
@@ -791,7 +1296,33 @@ function EnrollmentStep({
 						className="h-11"
 					/>
 				</Field>
-				<Field label="Status">
+				<Field label="Enrollment status">
+					<Select
+						value={values.enrollment_status}
+						onValueChange={(enrollment_status) =>
+							onChange({
+								enrollment_status:
+									enrollment_status as ProviderWizardEnrollmentStatus,
+							})
+						}
+					>
+						<SelectTrigger className="h-11">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{(
+								Object.keys(
+									ENROLLMENT_STATUS_LABELS
+								) as ProviderWizardEnrollmentStatus[]
+							).map((key) => (
+								<SelectItem key={key} value={key}>
+									{ENROLLMENT_STATUS_LABELS[key]}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</Field>
+				<Field label="Provider status">
 					<Select
 						value={values.status}
 						onValueChange={(status) =>
@@ -813,30 +1344,9 @@ function EnrollmentStep({
 
 			<div>
 				<p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
-					Optional identifiers
+					Licenses & identifiers
 				</p>
 				<div className="grid gap-5 sm:grid-cols-2">
-					<Field label="Tax ID">
-						<Input
-							value={values.tax_id}
-							onChange={(e) => onChange({ tax_id: e.target.value })}
-							className="h-11 font-mono"
-						/>
-					</Field>
-					<Field label="UPIN">
-						<Input
-							value={values.upin}
-							onChange={(e) => onChange({ upin: e.target.value })}
-							className="h-11 font-mono"
-						/>
-					</Field>
-					<Field label="Medicaid ID">
-						<Input
-							value={values.medicaid_id}
-							onChange={(e) => onChange({ medicaid_id: e.target.value })}
-							className="h-11 font-mono"
-						/>
-					</Field>
 					<Field label="State license">
 						<Input
 							value={values.state_license}
@@ -851,10 +1361,45 @@ function EnrollmentStep({
 							className="h-11 font-mono"
 						/>
 					</Field>
+					<Field label="Tax ID">
+						<Input
+							value={values.tax_id}
+							onChange={(e) => onChange({ tax_id: e.target.value })}
+							className="h-11 font-mono"
+						/>
+					</Field>
+					<Field label="UPIN">
+						<Input
+							value={values.upin}
+							onChange={(e) => onChange({ upin: e.target.value })}
+							className="h-11 font-mono"
+						/>
+					</Field>
+					<Field label="Medicaid ID" className="sm:col-span-2">
+						<Input
+							value={values.medicaid_id}
+							onChange={(e) => onChange({ medicaid_id: e.target.value })}
+							className="h-11 font-mono"
+						/>
+					</Field>
 				</div>
 			</div>
 		</div>
 	);
+}
+
+function formatAddress(values: ProviderWizardValues): string {
+	const line = [
+		values.practice_address_line1,
+		values.practice_address_line2,
+		[values.practice_city, values.practice_state, values.practice_postal_code]
+			.filter(Boolean)
+			.join(" "),
+	]
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.join(", ");
+	return line || "—";
 }
 
 function ReviewStep({
@@ -865,57 +1410,97 @@ function ReviewStep({
 	rosters: ProviderRosterDto[];
 }) {
 	const roster = rosters.find((row) => row.id === values.roster_file_id);
-	const rows: Array<{ label: string; value: string }> = [
+	const groups: Array<{
+		title: string;
+		items: Array<{ label: string; value: string }>;
+	}> = [
 		{
-			label: "Name",
-			value: composeProviderName(values.name, values.credentials) || "—",
+			title: "Identity",
+			items: [
+				{ label: "Name", value: composeProviderName(values) || "—" },
+				{ label: "NPI", value: values.npi || "—" },
+				{
+					label: "Entity type",
+					value: ENTITY_LABELS[values.entity_type] ?? values.entity_type,
+				},
+				{ label: "Gender", value: GENDER_LABELS[values.gender] },
+				{ label: "Date of birth", value: values.dob || "—" },
+			],
 		},
-		{ label: "NPI", value: values.npi || "—" },
 		{
-			label: "Entity type",
-			value: ENTITY_LABELS[values.entity_type] ?? values.entity_type,
+			title: "Practice",
+			items: [
+				{
+					label: "Taxonomy",
+					value: values.taxonomy
+						? `${TAXONOMY_LABELS[values.taxonomy] ?? "Custom"} · ${values.taxonomy}`
+						: "—",
+				},
+				{ label: "Specialty", value: values.specialty || "—" },
+				{ label: "Subspecialty", value: values.subspecialty || "—" },
+				{ label: "Practice", value: values.practice || "—" },
+				{ label: "Program", value: PROGRAM_LABELS[values.program] },
+				{
+					label: "Accepting patients",
+					value: values.accepting_new_patients ? "Yes" : "No",
+				},
+			],
 		},
 		{
-			label: "Taxonomy",
-			value: values.taxonomy
-				? `${TAXONOMY_LABELS[values.taxonomy] ?? "Custom"} · ${values.taxonomy}`
-				: "—",
+			title: "Contact",
+			items: [
+				{ label: "Email", value: values.email || "—" },
+				{ label: "Phone", value: values.phone || "—" },
+				{ label: "Fax", value: values.fax || "—" },
+				{ label: "Website", value: values.website || "—" },
+				{ label: "Practice address", value: formatAddress(values) },
+				{ label: "Mailing address", value: values.mailing_address || "—" },
+			],
 		},
-		{ label: "Specialty", value: values.specialty || "—" },
-		{ label: "Practice", value: values.practice || "—" },
 		{
-			label: "Roster",
-			value:
-				roster?.reference_id ??
-				roster?.original_filename ??
-				values.roster_file_id ??
-				"—",
+			title: "Credentials",
+			items: [
+				{
+					label: "Board certification",
+					value: values.board_certification || "—",
+				},
+				{ label: "Medical school", value: values.medical_school || "—" },
+				{ label: "Graduation year", value: values.graduation_year || "—" },
+				{
+					label: "Years in practice",
+					value: values.years_in_practice || "—",
+				},
+			],
 		},
-		{ label: "Effective date", value: values.effective_date || "—" },
-		{ label: "Status", value: STATUS_LABELS[values.status] },
-		{ label: "Tax ID", value: values.tax_id || "—" },
-		{ label: "UPIN", value: values.upin || "—" },
-		{ label: "Medicaid ID", value: values.medicaid_id || "—" },
-		{ label: "State license", value: values.state_license || "—" },
-		{ label: "DEA", value: values.dea || "—" },
+		{
+			title: "Enrollment",
+			items: [
+				{
+					label: "Roster",
+					value:
+						roster?.reference_id ??
+						roster?.original_filename ??
+						values.roster_file_id ??
+						"—",
+				},
+				{ label: "Effective date", value: values.effective_date || "—" },
+				{
+					label: "Enrollment status",
+					value: ENROLLMENT_STATUS_LABELS[values.enrollment_status],
+				},
+				{ label: "Provider status", value: STATUS_LABELS[values.status] },
+				{ label: "State license", value: values.state_license || "—" },
+				{ label: "DEA", value: values.dea || "—" },
+				{ label: "Tax ID", value: values.tax_id || "—" },
+				{ label: "UPIN", value: values.upin || "—" },
+				{ label: "Medicaid ID", value: values.medicaid_id || "—" },
+			],
+		},
 	];
 
 	return (
 		<div className="space-y-4">
-			{[
-				{
-					title: "Identity",
-					items: rows.slice(0, 3),
-				},
-				{
-					title: "Practice",
-					items: rows.slice(3, 6),
-				},
-				{
-					title: "Enrollment",
-					items: rows.slice(6),
-				},
-			].map((group) => (
+			{groups.map((group) => (
 				<section
 					key={group.title}
 					className="overflow-hidden rounded-lg border border-border/60 bg-card"
@@ -938,7 +1523,7 @@ function ReviewStep({
 								<span className="text-xs font-medium text-muted-foreground">
 									{row.label}
 								</span>
-								<span className="text-right text-sm font-semibold text-foreground">
+								<span className="max-w-[58%] text-right text-sm font-semibold text-foreground">
 									{row.value}
 								</span>
 							</div>

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { syncProviderWizardExtras } from "@/features/admin/features/providers/feature/api/providersApi";
 import {
 	useCreateProviderMutation,
 	useProviderRostersQuery,
@@ -70,6 +71,9 @@ function ProviderCreateForm() {
 			const created = await createMutation.mutateAsync(
 				payload as ProviderCreateInput
 			);
+			if (created.id) {
+				await syncProviderWizardExtras(created.id, form);
+			}
 			if (form.status !== "active" && created.id) {
 				await statusMutation.mutateAsync({
 					id: created.id,

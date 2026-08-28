@@ -5,6 +5,7 @@ import type {
 	ProviderCreateInput,
 	ProviderDashboardStatsQuery,
 	ProviderDto,
+	ProviderIdentifierDto,
 	ProviderListQuery,
 	ProviderRosterCreateInput,
 	ProviderRosterListQuery,
@@ -23,6 +24,11 @@ import {
 	getProvider,
 	getProviderSummaries,
 } from "../../mock-data";
+import type { ProviderWizardValues } from "../../pages/ProviderFormWizard";
+import {
+	valuesFromProviderDto,
+	wizardValuesToProfileUpdate,
+} from "../../pages/ProviderFormWizard";
 
 export {
 	displayProviderName,
@@ -95,9 +101,45 @@ export async function getProviderDetail(
 	if (isMockEnabled()) return getProvider(idOrNpi);
 	const programCode = program ?? "DHCF";
 
+	async function loadById(id: string) {
+		const [
+			dto,
+			profile,
+			summary,
+			locationsPage,
+			identifiersPage,
+			networksPage,
+			credentialsPage,
+			exceptionsPage,
+			vendorSourcesPage,
+		] = await Promise.all([
+			getProviderDto(id),
+			vendorCoreApi.getProviderProfile(id).catch(() => null),
+			vendorCoreApi.getProviderSummary(id).catch(() => null),
+			vendorCoreApi.listProviderLocations(id).catch(() => ({ results: [] })),
+			vendorCoreApi.listProviderIdentifiers(id).catch(() => ({ results: [] })),
+			vendorCoreApi.listProviderNetworks(id).catch(() => ({ results: [] })),
+			vendorCoreApi.listProviderCredentials(id).catch(() => ({ results: [] })),
+			vendorCoreApi.listProviderExceptions(id).catch(() => ({ results: [] })),
+			vendorCoreApi
+				.listProviderVendorSources(id)
+				.catch(() => ({ results: [] })),
+		]);
+		if (!dto) return null;
+		return providerDtoToDetail(dto, programCode, {
+			profile,
+			summary,
+			locations: locationsPage.results ?? [],
+			identifiers: identifiersPage.results ?? [],
+			networks: networksPage.results ?? [],
+			credentials: credentialsPage.results ?? [],
+			exceptions: exceptionsPage.results ?? [],
+			vendorSources: vendorSourcesPage.results ?? [],
+		});
+	}
+
 	if (isProviderUuid(idOrNpi)) {
-		const dto = await getProviderDto(idOrNpi);
-		return dto ? providerDtoToDetail(dto, programCode) : null;
+		return loadById(idOrNpi);
 	}
 
 	const page = await vendorCoreApi.listProvidersPage({
@@ -106,14 +148,82 @@ export async function getProviderDetail(
 		offset: 0,
 	});
 	const hit = page.results?.[0];
-	if (hit) return providerDtoToDetail(hit, programCode);
+	if (hit?.id) return loadById(hit.id);
 	const byName = await vendorCoreApi.listProvidersPage({
 		name: idOrNpi,
 		limit: 5,
 		offset: 0,
 	});
 	const named = byName.results?.[0];
-	return named ? providerDtoToDetail(named, programCode) : null;
+	return named?.id ? loadById(named.id) : null;
+}
+
+const WIZARD_IDENTIFIER_FIELDS: Array<{
+	key: keyof Pick<ProviderWizardValues, "tax_id" | "upin" | "medicaid_id">;
+	label: string;
+}> = [
+	{ key: "tax_id", label: "Tax ID" },
+	{ key: "upin", label: "UPIN" },
+	{ key: "medicaid_id", label: "Medicaid ID" },
+];
+
+async function syncProviderIdentifiers(
+	providerId: string,
+	values: ProviderWizardValues,
+	existing?: ProviderIdentifierDto[]
+) {
+	const rows =
+		existing ??
+		(await vendorCoreApi.listProviderIdentifiers(providerId)).results ??
+		[];
+
+	for (const { key, label } of WIZARD_IDENTIFIER_FIELDS) {
+		const value = values[key].trim();
+		const hit = rows.find(
+			(row) => row.label.trim().toLowerCase() === label.toLowerCase()
+		);
+		if (value && !hit) {
+			await vendorCoreApi.createProviderIdentifier(providerId, {
+				label,
+				value,
+			});
+		} else if (value && hit) {
+			await vendorCoreApi.updateProviderIdentifier(providerId, hit.id, {
+				label,
+				value,
+			});
+		}
+	}
+}
+
+/** Persist wizard profile + identifier fields after create/update. */
+export async function syncProviderWizardExtras(
+	providerId: string,
+	values: ProviderWizardValues
+) {
+	await vendorCoreApi.updateProviderProfile(
+		providerId,
+		wizardValuesToProfileUpdate(values)
+	);
+	await syncProviderIdentifiers(providerId, values);
+}
+
+export async function loadProviderWizardValues(
+	providerId: string,
+	fallbackRosterId = ""
+): Promise<ProviderWizardValues | null> {
+	const [dto, profile, identifiersPage] = await Promise.all([
+		getProviderDto(providerId),
+		vendorCoreApi.getProviderProfile(providerId).catch(() => null),
+		vendorCoreApi.listProviderIdentifiers(providerId).catch(() => ({
+			results: [] as ProviderIdentifierDto[],
+		})),
+	]);
+	if (!dto) return null;
+	return valuesFromProviderDto(dto, fallbackRosterId, {
+		profile,
+		identifiers: identifiersPage.results ?? [],
+	});
 }
 
 export async function listProviders(params?: ProviderListQuery) {
