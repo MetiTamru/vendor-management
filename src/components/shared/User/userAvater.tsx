@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVendorCoreSessionOptional } from "@/components/vendor-core/VendorCoreGate";
-import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import {
 	readDevSignedOutFromDocument,
@@ -23,6 +22,7 @@ import {
 } from "@/lib/auth/dev-session";
 import { MOCK_ADMIN_USER, isMockAuthEnabled } from "@/lib/auth/mock-auth";
 import { AUTH_PATHS } from "@/lib/auth/paths";
+import { redirectToLogin } from "@/lib/auth/redirect-to-login";
 import { serverUserFromMe } from "@/lib/auth/session-user";
 import { getInitials } from "@/lib/utils/nameUtils";
 
@@ -82,11 +82,14 @@ const UserAvatar = ({ className: _className }: UserAvatarProps) => {
 
 	if (!user) {
 		return (
-			<Button variant="outline" size="sm" className="h-9 gap-1.5" asChild>
-				<Link href={AUTH_PATHS.login}>
-					<LogIn className="size-3.5" />
-					Sign in
-				</Link>
+			<Button
+				variant="outline"
+				size="sm"
+				className="h-9 gap-1.5"
+				onClick={() => redirectToLogin(locale)}
+			>
+				<LogIn className="size-3.5" />
+				Sign in
 			</Button>
 		);
 	}

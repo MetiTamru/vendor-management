@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { AbstractIntlMessages } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 
+import { ConfirmDialogProvider } from "@/components/confirm-dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { VendorCoreSessionProvider } from "@/components/vendor-core/VendorCoreGate";
 import { defaultTimeZone } from "@/i18n/config";
@@ -36,8 +37,10 @@ export function Providers({ children, messages, locale }: ProvidersProps) {
 							<VendorCoreSessionProvider>
 								<PermissionProvider>
 									<LoadingProvider>
-										{children}
-										<Toaster position="bottom-right" />
+										<ConfirmDialogProvider>
+											{children}
+											<Toaster position="bottom-right" />
+										</ConfirmDialogProvider>
 									</LoadingProvider>
 								</PermissionProvider>
 							</VendorCoreSessionProvider>

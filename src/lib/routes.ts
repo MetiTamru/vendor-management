@@ -35,18 +35,25 @@ export function isAdminPath(pathname: string): boolean {
 	return withoutLocale === "/admin" || withoutLocale.startsWith("/admin/");
 }
 
-export function isPublicPath(pathname: string): boolean {
-	const locale = getLocaleFromPathname(pathname);
-	if (locale && (pathname === `/${locale}` || pathname === `/${locale}/`)) {
-		return true;
-	}
+const AUTH_PUBLIC_PATHS: readonly string[] = [
+	AUTH_PATHS.login,
+	AUTH_PATHS.signUp,
+	AUTH_PATHS.forgotPassword,
+	AUTH_PATHS.resetPassword,
+	AUTH_PATHS.invite,
+];
 
-	const publicSegments = Object.values(AUTH_PATHS);
-	return publicSegments.some((segment) => pathname.includes(segment));
+/** Login / invite / password-reset screens. Dashboard home is not public. */
+export function isPublicPath(pathname: string): boolean {
+	const withoutLocale = stripLocalePrefix(pathname);
+	return AUTH_PUBLIC_PATHS.some(
+		(segment) =>
+			withoutLocale === segment || withoutLocale.startsWith(`${segment}/`)
+	);
 }
 
 export function isProtectedPath(pathname: string): boolean {
-	return isAdminPath(pathname) || !isPublicPath(pathname);
+	return !isPublicPath(pathname);
 }
 
 export type AuthRedirectInput = {
@@ -56,21 +63,25 @@ export type AuthRedirectInput = {
 	homePath: string;
 };
 
-/** Pure auth routing decision for tests and middleware. */
+/**
+ * Pure auth routing decision for tests and middleware.
+ *
+ * Auth screens stay reachable even with a stale session cookie — JWT lives in
+ * localStorage, which middleware cannot see. The client sends already-authed
+ * users from login to home.
+ */
 export function resolveAuthRedirect({
 	pathname,
 	authenticated,
 	loginPath,
-	homePath,
+	homePath: _homePath,
 }: AuthRedirectInput): string | null {
-	if (!authenticated && isProtectedPath(pathname)) {
-		if (pathname !== loginPath) {
-			return loginPath;
-		}
+	if (isPublicPath(pathname)) {
+		return null;
 	}
 
-	if (authenticated && pathname === loginPath) {
-		return homePath;
+	if (!authenticated) {
+		return loginPath;
 	}
 
 	return null;

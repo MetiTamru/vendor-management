@@ -50,7 +50,7 @@ describe("routes", () => {
 		).toBeNull();
 	});
 
-	it("redirects authenticated users away from login", () => {
+	it("allows authenticated users to stay on login (client sends them home)", () => {
 		expect(
 			resolveAuthRedirect({
 				pathname: "/en/auth/login",
@@ -58,6 +58,17 @@ describe("routes", () => {
 				loginPath: "/en/auth/login",
 				homePath: "/en/admin",
 			})
-		).toBe("/en/admin");
+		).toBeNull();
+	});
+
+	it("redirects unauthenticated users from dashboard home to login", () => {
+		expect(
+			resolveAuthRedirect({
+				pathname: "/en",
+				authenticated: false,
+				loginPath: "/en/auth/login",
+				homePath: "/en",
+			})
+		).toBe("/en/auth/login");
 	});
 });

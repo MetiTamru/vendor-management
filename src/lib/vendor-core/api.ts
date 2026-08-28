@@ -45,6 +45,8 @@ import type {
 	PharmacyClaimRowUpdateInput,
 	ProcessingEventDto,
 	ProviderCreateInput,
+	ProviderDashboardStatsDto,
+	ProviderDashboardStatsQuery,
 	ProviderDto,
 	ProviderListQuery,
 	ProviderRosterCreateInput,
@@ -188,6 +190,7 @@ export const vendorCoreEndpoints = {
 		`/api/v1/members/${id}/family-links/${linkId}/transfer/`,
 	providersList: "/api/v1/providers/list/",
 	providersCreate: "/api/v1/providers/create/",
+	providersStats: "/api/v1/providers/stats/",
 	providersSeed: "/api/v1/providers/seed/",
 	provider: (id: string) => `/api/v1/providers/${id}/`,
 	providerUpdate: (id: string) => `/api/v1/providers/${id}/update/`,
@@ -1170,6 +1173,55 @@ export const vendorCoreApi = {
 			vendorCoreEndpoints.provider(id)
 		);
 		return normalizeProvider(raw);
+	},
+
+	/** Single page — use for npi lookup / directory pagination. */
+	listProvidersPage: async (params?: ProviderListQuery) => {
+		const page = await vendorCoreFetch<
+			PaginatedResult<Record<string, unknown>>
+		>(vendorCoreEndpoints.providersList, {
+			params: pageParams({
+				...params,
+				limit: params?.limit ?? 50,
+				offset: params?.offset ?? 0,
+				is_visible:
+					params?.is_visible === undefined
+						? undefined
+						: params.is_visible
+							? "true"
+							: "false",
+				is_deleted:
+					params?.is_deleted === undefined
+						? undefined
+						: params.is_deleted
+							? "true"
+							: "false",
+			}),
+		});
+		return mapPage(page, normalizeProvider);
+	},
+
+	getProviderDashboardStats: async (params?: ProviderDashboardStatsQuery) => {
+		const raw = await vendorCoreFetch<ProviderDashboardStatsDto>(
+			vendorCoreEndpoints.providersStats,
+			{
+				params: pageParams({
+					program: params?.program || undefined,
+					vendor_id: params?.vendor_id || undefined,
+					roster_file_id: params?.roster_file_id || undefined,
+				}),
+			}
+		);
+		return {
+			total: Number(raw.total ?? 0),
+			active: Number(raw.active ?? 0),
+			pending: Number(raw.pending ?? 0),
+			termed: Number(raw.termed ?? 0),
+			inactive: Number(raw.inactive ?? 0),
+			program: raw.program ?? "",
+			vendor_id: raw.vendor_id ?? null,
+			roster_file_id: raw.roster_file_id ?? null,
+		} satisfies ProviderDashboardStatsDto;
 	},
 
 	createProvider: (body: ProviderCreateInput) =>
