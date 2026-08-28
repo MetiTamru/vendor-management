@@ -51,13 +51,25 @@ export function CommandPalette() {
 	}, []);
 
 	const pages = useMemo(() => {
-		const nav = getModuleSidebarNav(moduleId)
-			.filter((item) => item.href)
-			.map((item) => ({ title: item.title, href: item.href as string }));
-		if (moduleId !== "vendor_management") return nav;
-		const seen = new Set(nav.map((item) => item.href));
+		const nav = getModuleSidebarNav(moduleId).flatMap((item) => {
+			const entries: { title: string; href: string }[] = [];
+			if (item.href) {
+				entries.push({ title: item.title, href: item.href });
+			}
+			for (const child of item.items ?? []) {
+				if (child.href) {
+					entries.push({ title: child.title, href: child.href });
+				}
+			}
+			return entries;
+		});
+		const deduped = Array.from(
+			new Map(nav.map((item) => [item.href, item])).values()
+		);
+		if (moduleId !== "vendor_management") return deduped;
+		const seen = new Set(deduped.map((item) => item.href));
 		const extras = EXTRA_PAGES.filter((item) => !seen.has(item.href));
-		return [...nav, ...extras];
+		return [...deduped, ...extras];
 	}, [moduleId]);
 
 	const filteredRuns = useMemo(
@@ -159,6 +171,37 @@ export function CommandPalette() {
 								>
 									<span className="truncate">
 										{run.fileName ?? run.runId} · {run.vendor}
+									</span>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</>
+				) : moduleId === "eligibility_operations" ? (
+					<>
+						<CommandSeparator />
+						<CommandGroup heading="Members">
+							{memberResults.map((member) => (
+								<CommandItem
+									key={member.id}
+									value={`member ${displayName(member)} ${member.memberId}`}
+									onSelect={() => go(`/admin/members/${member.id}`)}
+								>
+									<span className="truncate">
+										{displayName(member)} · {member.memberId}
+									</span>
+								</CommandItem>
+							))}
+						</CommandGroup>
+						<CommandSeparator />
+						<CommandGroup heading="Providers">
+							{providerResults.map((provider) => (
+								<CommandItem
+									key={provider.id}
+									value={`provider ${displayProviderName(provider)} ${provider.npi}`}
+									onSelect={() => go(`/admin/providers/${provider.id}`)}
+								>
+									<span className="truncate">
+										{displayProviderName(provider)} · {provider.npi}
 									</span>
 								</CommandItem>
 							))}

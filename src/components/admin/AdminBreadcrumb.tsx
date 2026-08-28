@@ -42,6 +42,7 @@ import {
 } from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, usePathname } from "@/i18n/navigation";
+import { MODULE_HOME_HREF, useAdminModuleStore } from "@/stores/admin-module-store";
 
 type Crumb = {
 	label: string;
@@ -142,6 +143,7 @@ const STATIC_LABELS: Record<string, string> = {
 	"edge-server-data": "Edge Server Data",
 	"master-data-entry": "Master Data Entry",
 	"error-correction": "Error Correction",
+	"my-work-queue": "TPA/TPV Tracking",
 	batches: "Submission Batches",
 	files: "Files",
 	review: "Review",
@@ -173,6 +175,8 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const { vendors } = useVendorsList();
+	const moduleId = useAdminModuleStore((s) => s.moduleId);
+	const moduleHomeHref = MODULE_HOME_HREF[moduleId];
 
 	const crumbs = useMemo(() => {
 		const segments = pathname.split("/").filter(Boolean);
@@ -392,7 +396,7 @@ export function AdminBreadcrumb({ appTitle }: { appTitle: string }) {
 			<BreadcrumbList className="flex-nowrap">
 				<BreadcrumbItem className="shrink-0">
 					<BreadcrumbLink asChild>
-						<Link href="/admin" className="font-semibold text-primary">
+						<Link href={moduleHomeHref} className="font-semibold text-primary">
 							{appTitle}
 						</Link>
 					</BreadcrumbLink>

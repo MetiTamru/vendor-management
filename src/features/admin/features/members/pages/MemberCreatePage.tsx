@@ -158,6 +158,7 @@ function MemberCreatePageInner() {
 					vendors={vendors}
 					pending={busy || create.isPending}
 					submitLabel="Create member"
+					requireIdentityFields
 					showFamily
 					onCancel={() => router.push("/admin/members")}
 					onSubmit={(body, pendingFamily) => {

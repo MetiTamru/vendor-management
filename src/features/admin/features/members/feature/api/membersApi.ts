@@ -2,15 +2,32 @@ import { isMockEnabled } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type { VendorCoreBlobResult } from "@/lib/vendor-core/client";
 import type {
+	AccumulatorFileDto,
+	AccumulatorFileListQuery,
+	AccumulatorRowCreateInput,
+	AccumulatorRowDetailDto,
+	AccumulatorRowListDto,
+	AccumulatorRowListQuery,
+	AccumulatorRowUpdateInput,
 	MemberCreateBody,
 	MemberDetailDto,
 	MemberListQuery,
 	MemberWriteBody,
+	PharmacyClaimFileDto,
+	PharmacyClaimFileListQuery,
+	PharmacyClaimRowCreateInput,
+	PharmacyClaimRowDetailDto,
+	PharmacyClaimRowListDto,
+	PharmacyClaimRowListQuery,
+	PharmacyClaimRowUpdateInput,
 	ProviderDto,
 	VendorDto,
 } from "@/lib/vendor-core/types";
 
 import {
+	buildAccumulatorSummaryForMember,
+	mapAccumulatorSummary,
+	mapAccumulatorFileRowToTransaction,
 	mapAccumulators,
 	mapChangeEvents,
 	mapClaims,
@@ -18,14 +35,17 @@ import {
 	mapExceptions,
 	mapFamilyLinks,
 	mapFamilyLinkDetail,
+	mapPharmacyClaimRowToTransaction,
 	mapPlanHistory,
 	mapSourceRecordList,
 	memberDetailDtoToDetail,
 	memberListDtoToSummary,
+	mergeRecentAccumulatorTransactions,
 	sanitizeMemberWriteBody,
 } from "../../map-member-core";
 import {
 	type AccumulatorRow,
+	type AccumulatorSummary,
 	type DependentRow,
 	type EligibilityExceptionRow,
 	type EligibilityHistoryRow,
@@ -36,11 +56,16 @@ import {
 	getMember,
 	getMemberSummaries,
 } from "../../mock-data";
+import type {
+	MemberAccumulatorCreateBody,
+	MemberAccumulatorUpdateBody,
+} from "../dto/membersDto";
 
 export {
 	displayName,
 	formatCurrency,
 	formatDate,
+	formatDateTime,
 	getMember,
 	maskSsn,
 	memberAge,
@@ -219,6 +244,231 @@ export async function listMemberAccumulators(
 	return mapAccumulators(page.results as Record<string, unknown>[]);
 }
 
+/**
+ * Accumulators tab summary. Tries dedicated GET; on miss/error reshapes from
+ * flat list + member context (optional `memberContext` avoids extra detail fetch).
+ * Live: overlays Recent Transactions from accumulator-rows + pharmacy-claim-rows
+ * filtered by cardholder_id (= member.memberId).
+ */
+export async function getMemberAccumulatorSummary(
+	memberId: string,
+	memberContext?: Pick<
+		MemberDetail,
+		| "planName"
+		| "planCode"
+		| "planId"
+		| "accountGroup"
+		| "groupName"
+		| "groupId"
+		| "memberId"
+		| "coverageStart"
+		| "coverageEnd"
+		| "dataAsOf"
+		| "paidYtd"
+		| "accumulators"
+		| "vendorSource"
+		| "accumulatorSummary"
+	>
+): Promise<AccumulatorSummary | undefined> {
+	if (isMockEnabled()) {
+		const m = getMember(memberId);
+		if (!m) return undefined;
+		return (
+			m.accumulatorSummary ?? buildAccumulatorSummaryForMember(m)
+		);
+	}
+
+	let summary: AccumulatorSummary | undefined;
+	let ctxMemberId = memberContext?.memberId?.trim() || "";
+	let ctxPlanId =
+		memberContext?.planCode?.trim() ||
+		memberContext?.planId?.trim() ||
+		"";
+
+	try {
+		const dto = await vendorCoreApi.getMemberAccumulatorSummary(memberId);
+		summary = mapAccumulatorSummary(dto);
+	} catch {
+		/* 404 / not shipped — fall through to reshape */
+	}
+
+	if (!summary) {
+		const [accumulators, detail] = await Promise.all([
+			listMemberAccumulators(memberId),
+			memberContext
+				? Promise.resolve(undefined)
+				: getMemberDetail(memberId),
+		]);
+		const ctx = memberContext ?? detail;
+		if (ctx?.memberId?.trim()) ctxMemberId = ctx.memberId.trim();
+		if (!ctxPlanId) {
+			ctxPlanId =
+				ctx?.planCode?.trim() || ctx?.planId?.trim() || "";
+		}
+		if (!ctx) {
+			summary = buildAccumulatorSummaryForMember({
+				planName: "—",
+				planCode: "",
+				planId: "",
+				accountGroup: "",
+				groupName: "",
+				groupId: "",
+				memberId: memberId,
+				coverageStart: "",
+				coverageEnd: "",
+				dataAsOf: "",
+				paidYtd: 0,
+				accumulators,
+				vendorSource: "",
+				accumulatorSummary: undefined,
+			});
+		} else {
+			summary = buildAccumulatorSummaryForMember({
+				...ctx,
+				accumulators,
+				// Force reshape from live nested list — do not reuse stale demo KPIs.
+				accumulatorSummary: undefined,
+			});
+		}
+	}
+
+	let cardholderId =
+		ctxMemberId ||
+		summary.medicalRows[0]?.internalMemberId?.trim() ||
+		summary.pharmacyRows[0]?.internalMemberId?.trim() ||
+		"";
+	const planId =
+		ctxPlanId ||
+		summary.medicalRows[0]?.planId ||
+		summary.pharmacyRows[0]?.planId ||
+		"—";
+
+	if (!cardholderId) {
+		try {
+			const detail = await getMemberDetail(memberId);
+			cardholderId = detail?.memberId?.trim() || "";
+		} catch {
+			cardholderId = "";
+		}
+	}
+
+	if (!cardholderId) {
+		return { ...summary, recentTransactions: [] };
+	}
+
+	const [accPage, rxPage] = await Promise.all([
+		listAccumulatorRows({
+			cardholder_id: cardholderId,
+			limit: 50,
+		}).catch(() => ({ results: [] as AccumulatorRowListDto[] })),
+		listPharmacyClaimRows({
+			cardholder_id: cardholderId,
+			limit: 50,
+		}).catch(() => ({ results: [] as PharmacyClaimRowListDto[] })),
+	]);
+
+	const recentTransactions = mergeRecentAccumulatorTransactions(
+		(accPage.results ?? []).map((r) =>
+			mapAccumulatorFileRowToTransaction(r, planId)
+		),
+		(rxPage.results ?? []).map((r) =>
+			mapPharmacyClaimRowToTransaction(r, planId)
+		)
+	);
+
+	return { ...summary, recentTransactions };
+}
+
+export async function listAccumulatorFiles(
+	params?: AccumulatorFileListQuery
+): Promise<{ results: AccumulatorFileDto[]; count?: number }> {
+	if (isMockEnabled()) return { results: [], count: 0 };
+	const page = await vendorCoreApi.listAccumulatorFiles(params);
+	return { results: page.results ?? [], count: page.count };
+}
+
+export async function getAccumulatorFile(
+	id: string
+): Promise<AccumulatorFileDto> {
+	return vendorCoreApi.getAccumulatorFile(id);
+}
+
+export async function listAccumulatorRows(
+	params?: AccumulatorRowListQuery
+): Promise<{ results: AccumulatorRowListDto[]; count?: number }> {
+	if (isMockEnabled()) return { results: [], count: 0 };
+	const page = await vendorCoreApi.listAccumulatorRows(params);
+	return { results: page.results ?? [], count: page.count };
+}
+
+export async function getAccumulatorRow(
+	id: string
+): Promise<AccumulatorRowDetailDto> {
+	return vendorCoreApi.getAccumulatorRow(id);
+}
+
+export async function createAccumulatorRow(
+	body: AccumulatorRowCreateInput
+): Promise<AccumulatorRowDetailDto> {
+	return vendorCoreApi.createAccumulatorRow(body);
+}
+
+export async function updateAccumulatorRow(
+	id: string,
+	body: AccumulatorRowUpdateInput
+): Promise<AccumulatorRowDetailDto> {
+	return vendorCoreApi.updateAccumulatorRow(id, body);
+}
+
+export async function deleteAccumulatorRow(id: string): Promise<void> {
+	return vendorCoreApi.deleteAccumulatorRow(id);
+}
+
+export async function listPharmacyClaimFiles(
+	params?: PharmacyClaimFileListQuery
+): Promise<{ results: PharmacyClaimFileDto[]; count?: number }> {
+	if (isMockEnabled()) return { results: [], count: 0 };
+	const page = await vendorCoreApi.listPharmacyClaimFiles(params);
+	return { results: page.results ?? [], count: page.count };
+}
+
+export async function getPharmacyClaimFile(
+	id: string
+): Promise<PharmacyClaimFileDto> {
+	return vendorCoreApi.getPharmacyClaimFile(id);
+}
+
+export async function listPharmacyClaimRows(
+	params?: PharmacyClaimRowListQuery
+): Promise<{ results: PharmacyClaimRowListDto[]; count?: number }> {
+	if (isMockEnabled()) return { results: [], count: 0 };
+	const page = await vendorCoreApi.listPharmacyClaimRows(params);
+	return { results: page.results ?? [], count: page.count };
+}
+
+export async function getPharmacyClaimRow(
+	id: string
+): Promise<PharmacyClaimRowDetailDto> {
+	return vendorCoreApi.getPharmacyClaimRow(id);
+}
+
+export async function createPharmacyClaimRow(
+	body: PharmacyClaimRowCreateInput
+): Promise<PharmacyClaimRowDetailDto> {
+	return vendorCoreApi.createPharmacyClaimRow(body);
+}
+
+export async function updatePharmacyClaimRow(
+	id: string,
+	body: PharmacyClaimRowUpdateInput
+): Promise<PharmacyClaimRowDetailDto> {
+	return vendorCoreApi.updatePharmacyClaimRow(id, body);
+}
+
+export async function deletePharmacyClaimRow(id: string): Promise<void> {
+	return vendorCoreApi.deletePharmacyClaimRow(id);
+}
+
 export async function listMemberClaims(
 	memberId: string,
 	claimKind?: string
@@ -286,13 +536,7 @@ export async function createMemberException(
 
 export async function createMemberAccumulator(
 	memberId: string,
-	body: {
-		label: string;
-		individual?: number;
-		family?: number;
-		remaining?: number;
-		limit?: number;
-	}
+	body: MemberAccumulatorCreateBody
 ): Promise<AccumulatorRow> {
 	if (isMockEnabled()) {
 		return mapAccumulators([
@@ -306,7 +550,10 @@ export async function createMemberAccumulator(
 			},
 		])[0]!;
 	}
-	const row = await vendorCoreApi.createMemberAccumulator(memberId, body);
+	const row = await vendorCoreApi.createMemberAccumulator(
+		memberId,
+		body as Record<string, unknown>
+	);
 	return mapAccumulators([row as Record<string, unknown>])[0]!;
 }
 
@@ -367,7 +614,7 @@ export async function deleteMemberException(
 export async function updateMemberAccumulator(
 	memberId: string,
 	accumulatorId: string,
-	body: Record<string, unknown>
+	body: MemberAccumulatorUpdateBody
 ) {
 	if (isMockEnabled()) {
 		return mapAccumulators([{ id: accumulatorId, ...body }])[0]!;
@@ -375,7 +622,7 @@ export async function updateMemberAccumulator(
 	const row = await vendorCoreApi.updateMemberAccumulator(
 		memberId,
 		accumulatorId,
-		body
+		body as Record<string, unknown>
 	);
 	return mapAccumulators([row as Record<string, unknown>])[0]!;
 }

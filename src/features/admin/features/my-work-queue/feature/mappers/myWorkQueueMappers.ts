@@ -4,7 +4,12 @@ import type {
 	TpaTpvContactsUpdateDto,
 	TpaTpvInfoUpdateDto,
 	TpaTpvMigrationUpdateDto,
+	TpaTpvProgressUpdateDto,
 } from "../dto/myWorkQueueDto";
+import {
+	computeMigrationProgressPercent,
+	type MigrationProgressMilestones,
+} from "../progress";
 import type {
 	HistoryEvent,
 	TpaTpvModel,
@@ -60,6 +65,27 @@ export function toTpaTpvModel(
 		currentStage: str(row.currentStage, "Not Started"),
 		nextStep: str(row.nextStep),
 		history,
+		initialContactSentAt: str(row.initialContactSentAt),
+		secondContactSentAt: str(row.secondContactSentAt),
+		responseReceivedAt: str(row.responseReceivedAt),
+		ipAddressesWhitelistedAt: str(row.ipAddressesWhitelistedAt),
+		credentialsProvidedAt: str(row.credentialsProvidedAt),
+		sftpConnectionConfirmedAt: str(row.sftpConnectionConfirmedAt),
+		progressPercent:
+			typeof row.progressPercent === "number"
+				? row.progressPercent
+				: computeMigrationProgressPercent({
+						initialContactSentAt: str(row.initialContactSentAt),
+						secondContactSentAt: str(row.secondContactSentAt),
+						responseReceivedAt: str(row.responseReceivedAt),
+						ipAddressesWhitelistedAt: str(row.ipAddressesWhitelistedAt),
+						credentialsProvidedAt: str(row.credentialsProvidedAt),
+						sftpConnectionConfirmedAt: str(
+							row.sftpConnectionConfirmedAt
+						),
+					}),
+		progressUpdatedBy: str(row.progressUpdatedBy),
+		progressUpdatedAt: str(row.progressUpdatedAt),
 	};
 }
 
@@ -125,5 +151,41 @@ export function toTpaTpvMigrationUpdateDto(
 		waitingOnVendorDate: model.waitingOnVendorDate,
 		currentStage: model.currentStage,
 		nextStep: model.nextStep,
+	};
+}
+
+export function toTpaTpvProgressUpdateDto(
+	model: Pick<
+		TpaTpvModel,
+		| "initialContactSentAt"
+		| "secondContactSentAt"
+		| "responseReceivedAt"
+		| "ipAddressesWhitelistedAt"
+		| "credentialsProvidedAt"
+		| "sftpConnectionConfirmedAt"
+		| "notes"
+	>
+): TpaTpvProgressUpdateDto {
+	return {
+		initialContactSentAt: model.initialContactSentAt,
+		secondContactSentAt: model.secondContactSentAt,
+		responseReceivedAt: model.responseReceivedAt,
+		ipAddressesWhitelistedAt: model.ipAddressesWhitelistedAt,
+		credentialsProvidedAt: model.credentialsProvidedAt,
+		sftpConnectionConfirmedAt: model.sftpConnectionConfirmedAt,
+		notes: model.notes,
+	};
+}
+
+export function milestonesFromProgressUpdate(
+	body: TpaTpvProgressUpdateDto
+): MigrationProgressMilestones {
+	return {
+		initialContactSentAt: body.initialContactSentAt,
+		secondContactSentAt: body.secondContactSentAt,
+		responseReceivedAt: body.responseReceivedAt,
+		ipAddressesWhitelistedAt: body.ipAddressesWhitelistedAt,
+		credentialsProvidedAt: body.credentialsProvidedAt,
+		sftpConnectionConfirmedAt: body.sftpConnectionConfirmedAt,
 	};
 }

@@ -24,9 +24,13 @@ import {
 	deleteMemberException,
 	deleteMemberFamilyLink,
 	getMemberDetail,
+	getMemberAccumulatorSummary,
 	getMemberFamilyLink,
 	getMemberSourceRecord,
 	hardDeleteMember,
+	listAccumulatorFiles,
+	listAccumulatorRows,
+	listPharmacyClaimRows,
 	listMemberAccumulators,
 	listMemberChangeEvents,
 	listMemberClaims,
@@ -126,6 +130,63 @@ export function useMemberAccumulatorsQuery(memberId: string, enabled = true) {
 		() => listMemberAccumulators(memberId),
 		enabled && Boolean(memberId) && apiOnly,
 		[memberId]
+	);
+}
+
+export function useMemberAccumulatorSummaryQuery(
+	memberId: string,
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"accumulator-summary",
+		() => getMemberAccumulatorSummary(memberId),
+		enabled && Boolean(memberId),
+		[memberId]
+	);
+}
+
+/** Flat accumulator-rows by cardholder (Recent Transactions feed). */
+export function useMemberAccumulatorFileRowsQuery(
+	cardholderId: string,
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"accumulator-file-rows",
+		() =>
+			listAccumulatorRows({
+				cardholder_id: cardholderId,
+				limit: 50,
+			}),
+		enabled && Boolean(cardholderId) && apiOnly,
+		[cardholderId]
+	);
+}
+
+export function useAccumulatorFilesQuery(
+	params?: Parameters<typeof listAccumulatorFiles>[0],
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"accumulator-files",
+		() => listAccumulatorFiles(params),
+		enabled && apiOnly,
+		[params]
+	);
+}
+
+export function usePharmacyClaimRowsQuery(
+	params?: Parameters<typeof listPharmacyClaimRows>[0],
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"pharmacy-claim-rows",
+		() => listPharmacyClaimRows(params),
+		enabled && apiOnly,
+		[params]
 	);
 }
 
@@ -248,7 +309,7 @@ export function useUpdateMemberAccumulatorMutation(memberId: string) {
 			body,
 		}: {
 			accumulatorId: string;
-			body: Record<string, unknown>;
+			body: Parameters<typeof updateMemberAccumulator>[2];
 		}) => updateMemberAccumulator(memberId, accumulatorId, body),
 	});
 }

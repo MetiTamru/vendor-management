@@ -212,6 +212,375 @@ export type MemberListDto = {
 	updated_at?: string;
 };
 
+/**
+ * Applied / remaining / total for one accumulator bucket on a table row.
+ * Unused triples on a row MUST be `null` (UI renders "—").
+ */
+export type MemberAccumulatorAmountDto = {
+	applied: number | null;
+	remaining: number | null;
+	total: number | null;
+};
+
+/**
+ * One Medical or Pharmacy Accumulators table row.
+ * `category`: `"medical"` | `"pharmacy"`.
+ * `level`: `"individual"` | `"family"`.
+ * Fill only the amount triple that matches `accumulator_type`; leave others null.
+ * `source_accumulator_id` optional link to legacy flat MemberAccumulator for CRUD.
+ */
+export type MemberAccumulatorTableRowDto = {
+	id: string;
+	category: "medical" | "pharmacy";
+	plan_id: string;
+	account_group_id: string;
+	internal_member_id: string;
+	internal_family_id: string;
+	/** e.g. "Medical Deductible", "Pharmacy Out-of-Pocket" */
+	accumulator_type: string;
+	level: "individual" | "family";
+	deductible: MemberAccumulatorAmountDto;
+	oop: MemberAccumulatorAmountDto;
+	benefit_max: MemberAccumulatorAmountDto;
+	/** Dollar amount under Plan Year column */
+	plan_year_amount: number | null;
+	/** YYYY-MM-DD */
+	plan_year_start: string | null;
+	plan_year_end: string | null;
+	reset_date: string | null;
+	source_accumulator_id?: string | null;
+};
+
+/**
+ * Fixed KPI card for Accumulator Summary header.
+ * Keys (in UI order): `medical_deductible` | `medical_oop` | `medical_benefit_max` |
+ * `pharmacy_deductible` | `pharmacy_oop` | `pharmacy_benefit_max` | `total_paid`.
+ * For `total_paid`, `individual_total` and `family_total` are null (no limit).
+ */
+export type MemberAccumulatorKpiDto = {
+	key: string;
+	label: string;
+	individual_applied: number;
+	individual_total: number | null;
+	family_applied: number;
+	family_total: number | null;
+};
+
+/**
+ * Recent Accumulator Transactions row.
+ * `level`: `"individual"` | `"family"`.
+ * Dates: YYYY-MM-DD (or ISO); UI formats display.
+ */
+export type MemberAccumulatorTransactionDto = {
+	id: string;
+	date: string;
+	plan_id: string;
+	accumulator_type: string;
+	level: "individual" | "family";
+	service_date: string | null;
+	description: string;
+	amount: number;
+	individual_amount: number;
+	family_amount: number;
+	source: string;
+};
+
+/**
+ * Target BE payload for Member Detail Accumulators tab.
+ * Prefer nesting on member detail as `accumulator_summary`, or
+ * dedicated `GET /api/v1/members/<id>/accumulators/summary/`.
+ * `kpis` MUST be length 7 in the fixed UI order (see MemberAccumulatorKpiDto).
+ * Legacy flat `accumulators[]` remains for Overview + CRUD until this lands.
+ */
+export type MemberAccumulatorSummaryDto = {
+	current_plan_name: string;
+	effective_date: string | null;
+	as_of_date: string | null;
+	kpis: MemberAccumulatorKpiDto[];
+	medical_rows: MemberAccumulatorTableRowDto[];
+	pharmacy_rows: MemberAccumulatorTableRowDto[];
+	recent_transactions: MemberAccumulatorTransactionDto[];
+};
+
+/** Flat ingest: `GET /api/v1/accumulator-files/…` */
+export type AccumulatorFileListQuery = {
+	vendor_id?: string;
+	layout_id?: string;
+	limit?: number;
+	offset?: number;
+	ordering?: string;
+};
+
+export type AccumulatorFileDto = {
+	id: string;
+	reference_id: string;
+	vendor_id: string | null;
+	source_inbound_file_id: string | null;
+	original_filename: string;
+	received_at: string;
+	row_count: number;
+	layout_id: string;
+	created_at: string;
+	updated_at: string;
+	metadata?: Record<string, unknown>;
+};
+
+export type AccumulatorRowListQuery = {
+	file_id?: string;
+	cardholder_id?: string;
+	client_id?: string;
+	date_of_service?: string;
+	date_of_service_from?: string;
+	date_of_service_to?: string;
+	limit?: number;
+	offset?: number;
+	ordering?: string;
+};
+
+export type AccumulatorRowListDto = {
+	id: string;
+	reference_id: string;
+	file_id: string;
+	member_id: string | null;
+	row_number: number;
+	cardholder_id: string;
+	patient_first_name: string;
+	patient_last_name: string;
+	date_of_service: string | null;
+	amount_applied_to_deductible: number | null;
+	amount_applied_to_oop: number | null;
+	plan_paid_amount: number | null;
+	client_id: string;
+	created_at: string;
+};
+
+export type AccumulatorRowDetailDto = {
+	id: string;
+	reference_id: string;
+	file_id: string;
+	member_id: string | null;
+	row_number: number;
+	cardholder_id: string;
+	cardholder_ssn: string;
+	patient_last_name: string;
+	patient_first_name: string;
+	patient_date_of_birth: string | null;
+	gender: string;
+	patient_relationship_code: string;
+	date_of_service: string | null;
+	amount_applied_to_deductible: number | null;
+	amount_applied_to_oop: number | null;
+	benefit_code: string;
+	file_date: string | null;
+	period_begin: string | null;
+	notes: string;
+	client_id: string;
+	person_code: string;
+	plan_paid_amount: number | null;
+	alternate_id: string;
+	raw: Record<string, unknown>;
+	created_at: string;
+	updated_at: string;
+	metadata?: Record<string, unknown>;
+};
+
+export type AccumulatorRowCreateInput = {
+	file_id: string;
+	member_id?: string | null;
+	row_number?: number;
+	cardholder_id?: string;
+	cardholder_ssn?: string;
+	patient_last_name?: string;
+	patient_first_name?: string;
+	patient_date_of_birth?: string | null;
+	gender?: string;
+	patient_relationship_code?: string;
+	date_of_service?: string | null;
+	amount_applied_to_deductible?: number | null;
+	amount_applied_to_oop?: number | null;
+	benefit_code?: string;
+	file_date?: string | null;
+	period_begin?: string | null;
+	notes?: string;
+	client_id?: string;
+	person_code?: string;
+	plan_paid_amount?: number | null;
+	alternate_id?: string;
+	raw?: Record<string, unknown>;
+};
+
+export type AccumulatorRowUpdateInput = {
+	member_id?: string | null;
+	row_number?: number;
+	cardholder_id?: string;
+	cardholder_ssn?: string;
+	patient_last_name?: string;
+	patient_first_name?: string;
+	patient_date_of_birth?: string | null;
+	gender?: string;
+	patient_relationship_code?: string;
+	date_of_service?: string | null;
+	amount_applied_to_deductible?: number | null;
+	amount_applied_to_oop?: number | null;
+	benefit_code?: string;
+	file_date?: string | null;
+	period_begin?: string | null;
+	notes?: string;
+	client_id?: string;
+	person_code?: string;
+	plan_paid_amount?: number | null;
+	alternate_id?: string;
+	raw?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+/** Flat ingest: `GET /api/v1/pharmacy-claim-files/…` */
+export type PharmacyClaimFileListQuery = {
+	vendor_id?: string;
+	layout_id?: string;
+	limit?: number;
+	offset?: number;
+	ordering?: string;
+};
+
+export type PharmacyClaimFileDto = {
+	id: string;
+	reference_id: string;
+	vendor_id: string | null;
+	source_inbound_file_id: string | null;
+	original_filename: string;
+	received_at: string;
+	row_count: number;
+	layout_id: string;
+	created_at: string;
+	updated_at: string;
+	metadata?: Record<string, unknown>;
+};
+
+export type PharmacyClaimRowListQuery = {
+	file_id?: string;
+	cardholder_id?: string;
+	claim_no?: string;
+	client_id?: string;
+	date_of_service?: string;
+	date_of_service_from?: string;
+	date_of_service_to?: string;
+	limit?: number;
+	offset?: number;
+	ordering?: string;
+};
+
+export type PharmacyClaimRowListDto = {
+	id: string;
+	reference_id: string;
+	file_id: string;
+	member_id: string | null;
+	row_number: number;
+	claim_no: string;
+	date_of_service: string | null;
+	cardholder_id: string;
+	patient_first_name: string;
+	patient_last_name: string;
+	product_id: string;
+	drug_name: string;
+	total_amount_paid: number | null;
+	patient_pay_amount: number | null;
+	client_id: string;
+	created_at: string;
+};
+
+export type PharmacyClaimRowDetailDto = {
+	id: string;
+	reference_id: string;
+	file_id: string;
+	member_id: string | null;
+	row_number: number;
+	claim_no: string;
+	original_claim_no: string;
+	is_reversed: boolean;
+	claim_date: string | null;
+	date_of_service: string | null;
+	cardholder_id: string;
+	person_code: string;
+	patient_first_name: string;
+	patient_last_name: string;
+	date_of_birth: string | null;
+	gender: string;
+	product_id: string;
+	drug_name: string;
+	quantity_dispensed: number | null;
+	days_supply: number | null;
+	total_amount_paid: number | null;
+	patient_pay_amount: number | null;
+	service_provider_id: string;
+	prescriber_id: string;
+	client_id: string;
+	group_id: string;
+	transaction_response_status: string;
+	payload: Record<string, unknown>;
+	created_at: string;
+	updated_at: string;
+	metadata?: Record<string, unknown>;
+};
+
+export type PharmacyClaimRowCreateInput = {
+	file_id: string;
+	member_id?: string | null;
+	row_number?: number;
+	claim_no?: string;
+	original_claim_no?: string;
+	is_reversed?: boolean;
+	claim_date?: string | null;
+	date_of_service?: string | null;
+	cardholder_id?: string;
+	person_code?: string;
+	patient_first_name?: string;
+	patient_last_name?: string;
+	date_of_birth?: string | null;
+	gender?: string;
+	product_id?: string;
+	drug_name?: string;
+	quantity_dispensed?: number | null;
+	days_supply?: number | null;
+	total_amount_paid?: number | null;
+	patient_pay_amount?: number | null;
+	service_provider_id?: string;
+	prescriber_id?: string;
+	client_id?: string;
+	group_id?: string;
+	transaction_response_status?: string;
+	payload?: Record<string, unknown>;
+};
+
+export type PharmacyClaimRowUpdateInput = {
+	member_id?: string | null;
+	row_number?: number;
+	claim_no?: string;
+	original_claim_no?: string;
+	is_reversed?: boolean;
+	claim_date?: string | null;
+	date_of_service?: string | null;
+	cardholder_id?: string;
+	person_code?: string;
+	patient_first_name?: string;
+	patient_last_name?: string;
+	date_of_birth?: string | null;
+	gender?: string;
+	product_id?: string;
+	drug_name?: string;
+	quantity_dispensed?: number | null;
+	days_supply?: number | null;
+	total_amount_paid?: number | null;
+	patient_pay_amount?: number | null;
+	service_provider_id?: string;
+	prescriber_id?: string;
+	client_id?: string;
+	group_id?: string;
+	transaction_response_status?: string;
+	payload?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
 /** Nested slices on `GET /api/v1/members/<id>/`. */
 export type MemberDetailDto = MemberListDto & {
 	data_as_of?: string | null;
@@ -229,7 +598,13 @@ export type MemberDetailDto = MemberListDto & {
 	plan_history?: Record<string, unknown>[];
 	claims?: Record<string, unknown>[];
 	encounters?: Record<string, unknown>[];
+	/** Legacy flat list — keep until BE ships accumulator_summary. */
 	accumulators?: Record<string, unknown>[];
+	/**
+	 * Accumulators tab contract (KPI cards + Medical/Pharmacy tables + transactions).
+	 * See MemberAccumulatorSummaryDto.
+	 */
+	accumulator_summary?: MemberAccumulatorSummaryDto;
 	exceptions?: Record<string, unknown>[];
 	vendor_history?: Record<string, unknown>[];
 	preferred_name?: string;

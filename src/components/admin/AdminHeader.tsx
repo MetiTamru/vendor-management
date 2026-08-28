@@ -3,7 +3,6 @@
 import { Suspense, useMemo, useState } from "react";
 
 import { Search } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import { ModeToggle } from "@/components/shared/DropDown/modeToggle";
@@ -30,7 +29,6 @@ import type { AdminModuleId, ProgramFileType } from "@/types/UI/system.types";
 
 export function AdminHeader() {
 	const router = useRouter();
-	const t = useTranslations("Admin");
 	const { vendors } = useVendorsList();
 	const [query, setQuery] = useState("");
 	const [open, setOpen] = useState(false);
@@ -95,7 +93,7 @@ export function AdminHeader() {
 					</div>
 				}
 			>
-				<AdminBreadcrumb appTitle={t("title")} />
+				<AdminBreadcrumb appTitle={siteConfig.modules[moduleId].label} />
 			</Suspense>
 			<div className="relative hidden w-full max-w-md lg:block">
 				<form onSubmit={handleSubmit}>
@@ -137,7 +135,7 @@ export function AdminHeader() {
 				<Select value={moduleId} onValueChange={handleModuleChange}>
 					<SelectTrigger
 						aria-label="Module"
-						className="h-9 w-[168px] bg-card text-xs sm:w-[190px] sm:text-sm"
+						className="h-9 w-[168px] bg-card text-xs sm:w-[220px] sm:text-sm"
 					>
 						<SelectValue placeholder="Module" />
 					</SelectTrigger>
@@ -148,24 +146,29 @@ export function AdminHeader() {
 						<SelectItem value="claim_encounter">
 							{siteConfig.modules.claim_encounter.label}
 						</SelectItem>
+						<SelectItem value="eligibility_operations">
+							{siteConfig.modules.eligibility_operations.label}
+						</SelectItem>
 					</SelectContent>
 				</Select>
-				<Select
-					value={fileType}
-					onValueChange={(value) => setFileType(value as ProgramFileType)}
-				>
-					<SelectTrigger
-						aria-label="File Type"
-						className="h-9 w-[108px] bg-card text-xs sm:text-sm"
+				{moduleId !== "eligibility_operations" ? (
+					<Select
+						value={fileType}
+						onValueChange={(value) => setFileType(value as ProgramFileType)}
 					>
-						<SelectValue placeholder="File Type" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="MDH">MDH</SelectItem>
-						<SelectItem value="DHCF">DHCF</SelectItem>
-						<SelectItem value="BHP">BHP</SelectItem>
-					</SelectContent>
-				</Select>
+						<SelectTrigger
+							aria-label="File Type"
+							className="h-9 w-[108px] bg-card text-xs sm:text-sm"
+						>
+							<SelectValue placeholder="File Type" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="MDH">MDH</SelectItem>
+							<SelectItem value="DHCF">DHCF</SelectItem>
+							<SelectItem value="BHP">BHP</SelectItem>
+						</SelectContent>
+					</Select>
+				) : null}
 				{siteConfig.settings.themeToggle ? <ModeToggle /> : null}
 				<UserAvatar />
 			</div>

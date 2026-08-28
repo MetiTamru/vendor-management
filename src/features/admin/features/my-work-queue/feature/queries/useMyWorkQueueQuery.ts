@@ -12,12 +12,14 @@ import {
 	updateTpaTpvContacts,
 	updateTpaTpvInfo,
 	updateTpaTpvMigration,
+	updateTpaTpvProgress,
 } from "../api/myWorkQueueApi";
 import type {
 	MyWorkQueueListFiltersDto,
 	TpaTpvContactsUpdateDto,
 	TpaTpvInfoUpdateDto,
 	TpaTpvMigrationUpdateDto,
+	TpaTpvProgressUpdateDto,
 } from "../dto/myWorkQueueDto";
 
 const domain = "my-work-queue";
@@ -103,6 +105,20 @@ export function useUpdateTpaTpvMigrationMutation() {
 			id: string;
 			body: TpaTpvMigrationUpdateDto;
 		}) => updateTpaTpvMigration(id, body),
+		onSuccess: () => invalidate(),
+	});
+}
+
+export function useUpdateTpaTpvProgressMutation() {
+	const invalidate = useInvalidateWorkQueue();
+	return useMutation({
+		mutationFn: ({
+			id,
+			body,
+		}: {
+			id: string;
+			body: TpaTpvProgressUpdateDto;
+		}) => updateTpaTpvProgress(id, body),
 		onSuccess: () => invalidate(),
 	});
 }

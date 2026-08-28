@@ -66,6 +66,7 @@ export function MemberWriteForm({
 	onCancel,
 	showFooter = true,
 	showFamily,
+	requireIdentityFields = false,
 	className,
 }: {
 	member?: MemberDetail;
@@ -83,6 +84,8 @@ export function MemberWriteForm({
 	showFooter?: boolean;
 	/** Override family editor visibility (default: when editing existing member). */
 	showFamily?: boolean;
+	/** Mark Vendor / Cardholder / First / Last as required (create flow). */
+	requireIdentityFields?: boolean;
 	className?: string;
 }) {
 	const [body, setBody] = useState<MemberWriteBody>(() =>
@@ -101,6 +104,67 @@ export function MemberWriteForm({
 		showFamily ?? Boolean(member?.id);
 
 	async function submitWithFamily() {
+		if (requireIdentityFields) {
+			if (vendors && onVendorIdChange && !vendorId?.trim()) {
+				toast.error("Select a vendor");
+				return;
+			}
+			if (!body.cardholder_id?.trim()) {
+				toast.error("Cardholder ID is required");
+				return;
+			}
+			if (!body.person_code?.trim()) {
+				toast.error("Person code is required");
+				return;
+			}
+			if (!body.relationship_code?.trim()) {
+				toast.error("Relationship code is required");
+				return;
+			}
+			if (!body.first_name?.trim() || !body.last_name?.trim()) {
+				toast.error("First and last name are required");
+				return;
+			}
+			if (!body.status?.trim()) {
+				toast.error("Member status is required");
+				return;
+			}
+			const d = body.demographics ?? {};
+			if (!d.date_of_birth) {
+				toast.error("Date of birth is required");
+				return;
+			}
+			if (!d.gender?.trim()) {
+				toast.error("Gender is required");
+				return;
+			}
+			if (!d.phone?.trim()) {
+				toast.error("Phone is required");
+				return;
+			}
+			const e = body.eligibility ?? {};
+			if (!e.status?.trim()) {
+				toast.error("Eligibility status is required");
+				return;
+			}
+			if (!e.enrollment_date) {
+				toast.error("Enrollment date is required");
+				return;
+			}
+			const p = body.plan_coverage ?? {};
+			if (!p.plan_name?.trim()) {
+				toast.error("Plan name is required");
+				return;
+			}
+			if (!p.plan_code?.trim()) {
+				toast.error("Plan code is required");
+				return;
+			}
+			if (!p.coverage_effective_date) {
+				toast.error("Coverage effective date is required");
+				return;
+			}
+		}
 		try {
 			if (member?.id && familyLiveRef.current) {
 				await familyLiveRef.current.flushAndLink();
@@ -128,11 +192,16 @@ export function MemberWriteForm({
 					description="Required. Member is created under this vendor."
 				>
 					<RecordFormRow>
-						<RecordFormField label="Vendor">
+						<RecordFormField
+							label="Vendor"
+							required={requireIdentityFields}
+						>
 							<select
 								className="h-8 w-full rounded-md border border-input bg-background px-3 text-sm"
 								value={vendorId ?? ""}
 								onChange={(e) => onVendorIdChange(e.target.value)}
+								required={requireIdentityFields}
+								aria-required={requireIdentityFields || undefined}
 							>
 								<option value="">Select vendor</option>
 								{vendors
@@ -153,23 +222,33 @@ export function MemberWriteForm({
 				description="Core member identifiers and display name."
 			>
 				<RecordFormRow>
-					<RecordFormField label="Cardholder ID">
+					<RecordFormField
+						label="Cardholder ID"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={body.cardholder_id ?? ""}
 							onChange={(e) =>
 								setBody({ ...body, cardholder_id: e.target.value })
 							}
-							placeholder="Required"
+							placeholder={requireIdentityFields ? "Required" : undefined}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField label="Person code">
+					<RecordFormField
+						label="Person code"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={body.person_code ?? ""}
 							onChange={(e) =>
 								setBody({ ...body, person_code: e.target.value })
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
@@ -183,7 +262,10 @@ export function MemberWriteForm({
 							}
 						/>
 					</RecordFormField>
-					<RecordFormField label="Relationship code">
+					<RecordFormField
+						label="Relationship code"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={body.relationship_code ?? ""}
@@ -191,17 +273,24 @@ export function MemberWriteForm({
 								setBody({ ...body, relationship_code: e.target.value })
 							}
 							placeholder="18 = Self, 01 = Spouse…"
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="First name">
+					<RecordFormField
+						label="First name"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={body.first_name ?? ""}
 							onChange={(e) =>
 								setBody({ ...body, first_name: e.target.value })
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
@@ -217,18 +306,26 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Last name">
+					<RecordFormField
+						label="Last name"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={body.last_name ?? ""}
 							onChange={(e) =>
 								setBody({ ...body, last_name: e.target.value })
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Status">
+					<RecordFormField
+						label="Status"
+						required={requireIdentityFields}
+					>
 						<RecordFormChoice
 							tone="primary"
 							value={body.status || "active"}
@@ -316,7 +413,10 @@ export function MemberWriteForm({
 				description="Contact, address, and demographic attributes."
 			>
 				<RecordFormRow>
-					<RecordFormField label="Date of birth">
+					<RecordFormField
+						label="Date of birth"
+						required={requireIdentityFields}
+					>
 						<Input
 							type="date"
 							className={fieldClass}
@@ -328,9 +428,14 @@ export function MemberWriteForm({
 									})
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField label="Gender">
+					<RecordFormField
+						label="Gender"
+						required={requireIdentityFields}
+					>
 						<RecordFormChoice
 							value={demo.gender || "M"}
 							onChange={(v) =>
@@ -375,7 +480,10 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Phone">
+					<RecordFormField
+						label="Phone"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={demo.phone ?? ""}
@@ -384,6 +492,8 @@ export function MemberWriteForm({
 									patchNested(body, "demographics", { phone: e.target.value })
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 					<RecordFormField label="Email">
@@ -663,7 +773,10 @@ export function MemberWriteForm({
 				description="Coverage eligibility status and dates."
 			>
 				<RecordFormRow>
-					<RecordFormField label="Status">
+					<RecordFormField
+						label="Status"
+						required={requireIdentityFields}
+					>
 						<RecordFormChoice
 							tone="primary"
 							value={elig.status || "active"}
@@ -710,7 +823,10 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Enrollment date">
+					<RecordFormField
+						label="Enrollment date"
+						required={requireIdentityFields}
+					>
 						<Input
 							type="date"
 							className={fieldClass}
@@ -722,6 +838,8 @@ export function MemberWriteForm({
 									})
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 					<RecordFormField label="Disenrollment">
@@ -764,7 +882,10 @@ export function MemberWriteForm({
 				description="Active plan assignment and coverage window."
 			>
 				<RecordFormRow>
-					<RecordFormField label="Plan name">
+					<RecordFormField
+						label="Plan name"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={plan.plan_name ?? ""}
@@ -775,9 +896,14 @@ export function MemberWriteForm({
 									})
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField label="Plan code">
+					<RecordFormField
+						label="Plan code"
+						required={requireIdentityFields}
+					>
 						<Input
 							className={fieldClass}
 							value={plan.plan_code ?? ""}
@@ -788,6 +914,8 @@ export function MemberWriteForm({
 									})
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
@@ -839,7 +967,10 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField label="Coverage effective">
+					<RecordFormField
+						label="Coverage effective"
+						required={requireIdentityFields}
+					>
 						<Input
 							type="date"
 							className={fieldClass}
@@ -851,6 +982,8 @@ export function MemberWriteForm({
 									})
 								)
 							}
+							required={requireIdentityFields}
+							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 					<RecordFormField label="Coverage term">
@@ -1038,6 +1171,7 @@ export function MemberEditPanel({
 			member={member}
 			pending={update.isPending}
 			submitLabel="Save changes"
+			requireIdentityFields
 			onCancel={onCancel}
 			onSubmit={(body) =>
 				update.mutate(

@@ -463,6 +463,30 @@ const claimEncounterNav: SidebarNavItem[] = [
 	},
 ];
 
+const eligibilityOperationsNav: SidebarNavItem[] = [
+	{
+		title: "Member",
+		href: "/admin/members",
+		permission: "vendors-list",
+		section: "member_operations",
+		module: "eligibility_operations",
+	},
+	{
+		title: "Provider",
+		href: "/admin/providers",
+		permission: "vendors-list",
+		section: "provider_operations",
+		module: "eligibility_operations",
+	},
+	{
+		title: "TPA/TPV Tracking",
+		href: "/admin/my-work-queue",
+		permission: "dashboard-view",
+		section: "tpa_tpv_tracking",
+		module: "eligibility_operations",
+	},
+];
+
 export const siteConfig = {
 	name: "Vendor Management",
 	description:
@@ -503,11 +527,18 @@ export const siteConfig = {
 			homeHref: "/admin/claim-encounter",
 			sidebarNav: claimEncounterNav,
 		},
+		eligibility_operations: {
+			id: "eligibility_operations" as const,
+			label: "Eligibility Operations Dashboard",
+			homeHref: "/admin/members",
+			sidebarNav: eligibilityOperationsNav,
+		},
 	},
 	/** @deprecated Prefer getModuleSidebarNav(moduleId) — kept for breadcrumb lookups */
 	sidebarNav: [
 		...vendorManagementNav,
 		...claimEncounterNav,
+		...eligibilityOperationsNav,
 	] as SidebarNavItem[],
 	settings: {
 		themeToggle: true,

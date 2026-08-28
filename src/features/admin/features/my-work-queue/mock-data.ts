@@ -1,3 +1,8 @@
+import {
+	computeMigrationProgressPercent,
+	type MigrationProgressMilestones,
+} from "./feature/progress";
+
 export type WhitelistStatus = "complete" | "pending" | "not_started";
 
 export type MigrationStatus =
@@ -43,6 +48,16 @@ export type TpaTpvRow = {
 	currentStage: string;
 	nextStep: string;
 	history: HistoryEvent[];
+	/** Milestone completion dates (MM/DD/YYYY). Empty = not completed. */
+	initialContactSentAt: string;
+	secondContactSentAt: string;
+	responseReceivedAt: string;
+	ipAddressesWhitelistedAt: string;
+	credentialsProvidedAt: string;
+	sftpConnectionConfirmedAt: string;
+	progressPercent: number;
+	progressUpdatedBy: string;
+	progressUpdatedAt: string;
 };
 
 export const MIGRATION_STATUS_LABEL: Record<MigrationStatus, string> = {
@@ -146,7 +161,18 @@ function historyFor(
 	];
 }
 
-export const TPA_TPV_ROWS: TpaTpvRow[] = [
+export const TPA_TPV_ROWS_BASE: Omit<
+	TpaTpvRow,
+	| "initialContactSentAt"
+	| "secondContactSentAt"
+	| "responseReceivedAt"
+	| "ipAddressesWhitelistedAt"
+	| "credentialsProvidedAt"
+	| "sftpConnectionConfirmedAt"
+	| "progressPercent"
+	| "progressUpdatedBy"
+	| "progressUpdatedAt"
+>[] = [
 	{
 		id: "tpa-1",
 		wave: 1,
@@ -460,3 +486,127 @@ export const TPA_TPV_ROWS: TpaTpvRow[] = [
 		history: historyFor("exception", "Priya Patel", "Sarah Johnson"),
 	},
 ];
+
+type ProgressSeed = Partial<MigrationProgressMilestones> & {
+	progressUpdatedBy?: string;
+	progressUpdatedAt?: string;
+};
+
+/** Varied milestone seeds so Progress column / overall % look real. */
+const PROGRESS_SEED: Record<string, ProgressSeed> = {
+	"tpa-1": {
+		initialContactSentAt: "08/01/2026",
+		secondContactSentAt: "08/05/2026",
+		responseReceivedAt: "08/08/2026",
+		progressUpdatedBy: "Sarah Johnson",
+		progressUpdatedAt: "08/08/2026 2:00 PM",
+	},
+	"tpa-2": {
+		initialContactSentAt: "07/20/2026",
+		secondContactSentAt: "07/22/2026",
+		responseReceivedAt: "07/25/2026",
+		ipAddressesWhitelistedAt: "08/01/2026",
+		credentialsProvidedAt: "08/10/2026",
+		progressUpdatedBy: "Michael Lee",
+		progressUpdatedAt: "08/10/2026 11:30 AM",
+	},
+	"tpa-3": {
+		initialContactSentAt: "08/05/2026",
+		secondContactSentAt: "08/07/2026",
+		responseReceivedAt: "08/09/2026",
+		ipAddressesWhitelistedAt: "08/12/2026",
+		progressUpdatedBy: "Sarah Johnson",
+		progressUpdatedAt: "08/12/2026 4:00 PM",
+	},
+	"tpa-4": {
+		initialContactSentAt: "07/01/2026",
+		secondContactSentAt: "07/03/2026",
+		responseReceivedAt: "07/05/2026",
+		ipAddressesWhitelistedAt: "07/10/2026",
+		credentialsProvidedAt: "07/15/2026",
+		sftpConnectionConfirmedAt: "07/28/2026",
+		progressUpdatedBy: "Priya Patel",
+		progressUpdatedAt: "07/28/2026 9:00 AM",
+	},
+	"tpa-5": {},
+	"tpa-6": {
+		initialContactSentAt: "06/15/2026",
+		secondContactSentAt: "06/17/2026",
+		responseReceivedAt: "06/20/2026",
+		ipAddressesWhitelistedAt: "06/25/2026",
+		credentialsProvidedAt: "06/28/2026",
+		sftpConnectionConfirmedAt: "07/01/2026",
+		progressUpdatedBy: "Sarah Johnson",
+		progressUpdatedAt: "07/01/2026 3:15 PM",
+	},
+	"tpa-7": {
+		initialContactSentAt: "08/02/2026",
+		secondContactSentAt: "08/04/2026",
+		progressUpdatedBy: "James Okoro",
+		progressUpdatedAt: "08/04/2026 10:00 AM",
+	},
+	"tpa-8": {
+		initialContactSentAt: "07/25/2026",
+		secondContactSentAt: "07/27/2026",
+		responseReceivedAt: "07/30/2026",
+		ipAddressesWhitelistedAt: "08/05/2026",
+		credentialsProvidedAt: "08/08/2026",
+		progressUpdatedBy: "Priya Patel",
+		progressUpdatedAt: "08/08/2026 1:20 PM",
+	},
+	"tpa-9": {
+		initialContactSentAt: "07/10/2026",
+		secondContactSentAt: "07/12/2026",
+		responseReceivedAt: "07/15/2026",
+		ipAddressesWhitelistedAt: "07/20/2026",
+		progressUpdatedBy: "Sarah Johnson",
+		progressUpdatedAt: "07/20/2026 5:00 PM",
+	},
+	"tpa-10": {
+		initialContactSentAt: "08/03/2026",
+		secondContactSentAt: "08/05/2026",
+		responseReceivedAt: "08/07/2026",
+		progressUpdatedBy: "Michael Lee",
+		progressUpdatedAt: "08/07/2026 8:45 AM",
+	},
+	"tpa-11": {
+		initialContactSentAt: "06/28/2026",
+		secondContactSentAt: "06/30/2026",
+		responseReceivedAt: "07/02/2026",
+		ipAddressesWhitelistedAt: "07/08/2026",
+		credentialsProvidedAt: "07/12/2026",
+		sftpConnectionConfirmedAt: "07/18/2026",
+		progressUpdatedBy: "James Okoro",
+		progressUpdatedAt: "07/18/2026 4:30 PM",
+	},
+	"tpa-12": {
+		initialContactSentAt: "07/05/2026",
+		secondContactSentAt: "07/08/2026",
+		responseReceivedAt: "07/12/2026",
+		progressUpdatedBy: "Priya Patel",
+		progressUpdatedAt: "07/12/2026 12:00 PM",
+	},
+};
+
+function withProgressSeed(
+	row: (typeof TPA_TPV_ROWS_BASE)[number]
+): TpaTpvRow {
+	const seed = PROGRESS_SEED[row.id] ?? {};
+	const milestones: MigrationProgressMilestones = {
+		initialContactSentAt: seed.initialContactSentAt ?? "",
+		secondContactSentAt: seed.secondContactSentAt ?? "",
+		responseReceivedAt: seed.responseReceivedAt ?? "",
+		ipAddressesWhitelistedAt: seed.ipAddressesWhitelistedAt ?? "",
+		credentialsProvidedAt: seed.credentialsProvidedAt ?? "",
+		sftpConnectionConfirmedAt: seed.sftpConnectionConfirmedAt ?? "",
+	};
+	return {
+		...row,
+		...milestones,
+		progressPercent: computeMigrationProgressPercent(milestones),
+		progressUpdatedBy: seed.progressUpdatedBy ?? "",
+		progressUpdatedAt: seed.progressUpdatedAt ?? "",
+	};
+}
+
+export const TPA_TPV_ROWS: TpaTpvRow[] = TPA_TPV_ROWS_BASE.map(withProgressSeed);

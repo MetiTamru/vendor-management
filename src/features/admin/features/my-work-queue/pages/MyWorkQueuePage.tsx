@@ -17,6 +17,7 @@ import {
 	MoreVertical,
 	Plus,
 	Search,
+	TrendingUp,
 	Truck,
 	Upload,
 	UserRound,
@@ -58,6 +59,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import {
+	computeMigrationProgressPercent,
+	computeOverallMigrationProgress,
+	MIGRATION_PROGRESS_STEPS,
 	MIGRATION_STATUS_LABEL,
 	WHITELIST_STATUS_LABEL,
 } from "../feature/api/myWorkQueueApi";
@@ -66,6 +70,7 @@ import {
 	useUpdateTpaTpvContactsMutation,
 	useUpdateTpaTpvInfoMutation,
 	useUpdateTpaTpvMigrationMutation,
+	useUpdateTpaTpvProgressMutation,
 	useWorkQueueKpisList,
 } from "../feature/queries/useMyWorkQueueQuery";
 import type {
@@ -74,7 +79,13 @@ import type {
 	WhitelistStatus,
 } from "../feature/types/myWorkQueueModel";
 
-type ActionModal = "info" | "contacts" | "migration" | "history" | null;
+type ActionModal =
+	| "info"
+	| "contacts"
+	| "migration"
+	| "progress"
+	| "history"
+	| null;
 
 const KPI_ICON = {
 	blue: Users,
@@ -201,6 +212,7 @@ export function MyWorkQueuePage() {
 	const updateInfo = useUpdateTpaTpvInfoMutation();
 	const updateContacts = useUpdateTpaTpvContactsMutation();
 	const updateMigration = useUpdateTpaTpvMigrationMutation();
+	const updateProgress = useUpdateTpaTpvProgressMutation();
 
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
@@ -234,6 +246,15 @@ export function MyWorkQueuePage() {
 		currentStage: "",
 		nextStep: "",
 	});
+	const [progressForm, setProgressForm] = useState({
+		initialContactSentAt: "",
+		secondContactSentAt: "",
+		responseReceivedAt: "",
+		ipAddressesWhitelistedAt: "",
+		credentialsProvidedAt: "",
+		sftpConnectionConfirmedAt: "",
+		notes: "",
+	});
 
 	useEffect(() => {
 		if (!activeRow) return;
@@ -260,7 +281,34 @@ export function MyWorkQueuePage() {
 			currentStage: activeRow.currentStage,
 			nextStep: activeRow.nextStep,
 		});
+		setProgressForm({
+			initialContactSentAt: activeRow.initialContactSentAt,
+			secondContactSentAt: activeRow.secondContactSentAt,
+			responseReceivedAt: activeRow.responseReceivedAt,
+			ipAddressesWhitelistedAt: activeRow.ipAddressesWhitelistedAt,
+			credentialsProvidedAt: activeRow.credentialsProvidedAt,
+			sftpConnectionConfirmedAt: activeRow.sftpConnectionConfirmedAt,
+			notes: activeRow.notes,
+		});
 	}, [activeRow]);
+
+	const liveProgressPercent = useMemo(
+		() =>
+			computeMigrationProgressPercent({
+				initialContactSentAt: progressForm.initialContactSentAt,
+				secondContactSentAt: progressForm.secondContactSentAt,
+				responseReceivedAt: progressForm.responseReceivedAt,
+				ipAddressesWhitelistedAt: progressForm.ipAddressesWhitelistedAt,
+				credentialsProvidedAt: progressForm.credentialsProvidedAt,
+				sftpConnectionConfirmedAt: progressForm.sftpConnectionConfirmedAt,
+			}),
+		[progressForm]
+	);
+
+	const overallProgress = useMemo(
+		() => computeOverallMigrationProgress(allRows),
+		[allRows]
+	);
 
 	const analysts = useMemo(
 		() => Array.from(new Set(allRows.map((r) => r.assignedAnalyst))).sort(),
@@ -357,6 +405,16 @@ export function MyWorkQueuePage() {
 		closeModal();
 	}
 
+	async function saveProgress() {
+		if (!activeRow) return;
+		await updateProgress.mutateAsync({
+			id: activeRow.id,
+			body: progressForm,
+		});
+		toast.success(`Progress updated for ${activeRow.name}`);
+		closeModal();
+	}
+
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-start justify-between gap-3">
@@ -421,6 +479,33 @@ export function MyWorkQueuePage() {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
+				</div>
+			</div>
+
+			<div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<div className="flex items-center gap-2">
+						<span className="flex size-8 items-center justify-center rounded-lg bg-sky-500/15 text-sky-700 dark:text-sky-300">
+							<TrendingUp className="size-3.5" />
+						</span>
+						<div>
+							<p className="text-sm font-medium text-foreground">
+								Overall migration progress
+							</p>
+							<p className="text-xs text-muted-foreground">
+								Average across all TPA/TPV tracking rows
+							</p>
+						</div>
+					</div>
+					<p className="text-lg font-semibold tabular-nums text-foreground">
+						{overallProgress}%
+					</p>
+				</div>
+				<div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+					<div
+						className="h-full rounded-full bg-sky-600 transition-[width] dark:bg-sky-500"
+						style={{ width: `${overallProgress}%` }}
+					/>
 				</div>
 			</div>
 
@@ -556,8 +641,9 @@ export function MyWorkQueuePage() {
 								<TableHead className={cn(th, "w-[9%]")}>IP Whitelist</TableHead>
 								<TableHead className={cn(th, "w-[9%]")}>Last Comm</TableHead>
 								<TableHead className={cn(th, "w-[11%]")}>Status</TableHead>
-								<TableHead className={cn(th, "w-[11%]")}>Analyst</TableHead>
-								<TableHead className={cn(th, "w-[12%]")}>Updated</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Progress</TableHead>
+								<TableHead className={cn(th, "w-[10%]")}>Analyst</TableHead>
+								<TableHead className={cn(th, "w-[11%]")}>Updated</TableHead>
 								<TableHead className={cn(th, "w-[4%] text-right")}>
 									···
 								</TableHead>
@@ -604,6 +690,19 @@ export function MyWorkQueuePage() {
 									</TableCell>
 									<TableCell className={td}>
 										<MigrationStatusPill status={row.status} />
+									</TableCell>
+									<TableCell className={td}>
+										<div className="space-y-1">
+											<p className="tabular-nums text-xs font-medium">
+												{row.progressPercent}%
+											</p>
+											<div className="h-1 overflow-hidden rounded-full bg-muted">
+												<div
+													className="h-full rounded-full bg-sky-600 dark:bg-sky-500"
+													style={{ width: `${row.progressPercent}%` }}
+												/>
+											</div>
+										</div>
 									</TableCell>
 									<TableCell
 										className={cn(td, "truncate")}
@@ -652,6 +751,12 @@ export function MyWorkQueuePage() {
 													Migration Information
 												</DropdownMenuItem>
 												<DropdownMenuItem
+													onClick={() => openModal(row, "progress")}
+												>
+													<TrendingUp className="mr-2 size-3.5 text-primary" />
+													Update Progress
+												</DropdownMenuItem>
+												<DropdownMenuItem
 													onClick={() => openModal(row, "history")}
 												>
 													<History className="mr-2 size-3.5 text-primary" />
@@ -665,7 +770,7 @@ export function MyWorkQueuePage() {
 							{pageRows.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={11}
+										colSpan={12}
 										className="h-20 text-center text-sm text-muted-foreground"
 									>
 										No TPA/TPV records match your filters.
@@ -1049,6 +1154,81 @@ export function MyWorkQueuePage() {
 							rows={3}
 						/>
 					</div>
+				</div>
+			</ModalShell>
+
+			{/* Update Progress */}
+			<ModalShell
+				open={modal === "progress"}
+				onOpenChange={(open) => !open && closeModal()}
+				title="Update Progress"
+				icon={TrendingUp}
+				footer={
+					<>
+						<Button variant="outline" size="sm" onClick={closeModal}>
+							Cancel
+						</Button>
+						<Button size="sm" onClick={() => void saveProgress()}>
+							Save
+						</Button>
+					</>
+				}
+			>
+				<div className="mb-1 flex items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+					<p className="text-xs text-muted-foreground">Calculated progress</p>
+					<p className="text-sm font-semibold tabular-nums text-foreground">
+						{liveProgressPercent}%
+					</p>
+				</div>
+				<div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
+					<div
+						className="h-full rounded-full bg-sky-600 transition-[width] dark:bg-sky-500"
+						style={{ width: `${liveProgressPercent}%` }}
+					/>
+				</div>
+				<div className="grid gap-3 sm:grid-cols-2">
+					{MIGRATION_PROGRESS_STEPS.map((step) => (
+						<div key={step.key}>
+							<FieldLabel>
+								{step.label} — Date
+								<span className="ml-1 font-normal text-muted-foreground">
+									({step.percent}%)
+								</span>
+							</FieldLabel>
+							<Input
+								value={progressForm[step.key]}
+								onChange={(e) =>
+									setProgressForm((f) => ({
+										...f,
+										[step.key]: e.target.value,
+									}))
+								}
+								placeholder="MM/DD/YYYY"
+								className="h-9"
+							/>
+						</div>
+					))}
+					<div className="sm:col-span-2">
+						<FieldLabel>Notes</FieldLabel>
+						<Textarea
+							value={progressForm.notes}
+							onChange={(e) =>
+								setProgressForm((f) => ({ ...f, notes: e.target.value }))
+							}
+							rows={3}
+						/>
+					</div>
+					{(activeRow?.progressUpdatedBy || activeRow?.progressUpdatedAt) && (
+						<p className="sm:col-span-2 text-[11px] text-muted-foreground">
+							Last updated
+							{activeRow.progressUpdatedBy
+								? ` by ${activeRow.progressUpdatedBy}`
+								: ""}
+							{activeRow.progressUpdatedAt
+								? ` · ${activeRow.progressUpdatedAt}`
+								: ""}
+						</p>
+					)}
 				</div>
 			</ModalShell>
 

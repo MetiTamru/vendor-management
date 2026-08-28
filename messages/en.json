@@ -60,7 +60,10 @@
 			"administration": "Administration",
 			"claim_encounter": "Claims & Encounters",
 			"regulatory_compliance": "Regulatory & Compliance",
-			"program_monitoring": "Program Monitoring"
+			"program_monitoring": "Program Monitoring",
+			"member_operations": "Member Operations",
+			"provider_operations": "Provider Operations",
+			"tpa_tpv_tracking": "TPA/TPV Tracking"
 		},
 		"nav": {
 			"dashboard": "Dashboard",
@@ -151,7 +154,11 @@
 			"homehealth": "Home Health",
 			"hospice": "Hospice",
 			"ltss": "LTSS",
-			"behavioralhealth": "Behavioral Health"
+			"behavioralhealth": "Behavioral Health",
+			"memberoperations": "Member Operations",
+			"member": "Member",
+			"provider": "Provider",
+			"tpatpvtracking": "TPA/TPV Tracking"
 		},
 		"placeholders": {
 			"usersTitle": "Users",

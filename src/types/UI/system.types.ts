@@ -1,4 +1,7 @@
-export type AdminModuleId = "vendor_management" | "claim_encounter";
+export type AdminModuleId =
+	| "vendor_management"
+	| "claim_encounter"
+	| "eligibility_operations";
 
 export type ProgramFileType = "MDH" | "DHCF" | "BHP";
 

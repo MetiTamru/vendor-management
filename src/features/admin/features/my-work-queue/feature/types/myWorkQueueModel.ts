@@ -44,6 +44,15 @@ export type TpaTpvModel = Required<
 	currentStage: string;
 	nextStep: string;
 	history: HistoryEvent[];
+	initialContactSentAt: string;
+	secondContactSentAt: string;
+	responseReceivedAt: string;
+	ipAddressesWhitelistedAt: string;
+	credentialsProvidedAt: string;
+	sftpConnectionConfirmedAt: string;
+	progressPercent: number;
+	progressUpdatedBy: string;
+	progressUpdatedAt: string;
 };
 
 export type MyWorkQueueDashboardModel = {

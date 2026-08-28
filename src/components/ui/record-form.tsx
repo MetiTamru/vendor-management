@@ -67,12 +67,14 @@ export function RecordFormRow({
 	label,
 	htmlFor,
 	align = "center",
+	required = false,
 	className,
 	children,
 }: {
 	label?: string;
 	htmlFor?: string;
 	align?: "center" | "start";
+	required?: boolean;
 	className?: string;
 	children: React.ReactNode;
 }) {
@@ -114,9 +116,15 @@ export function RecordFormRow({
 			>
 				<label
 					htmlFor={htmlFor}
+					aria-required={required || undefined}
 					className="text-[11px] leading-none font-semibold tracking-[0.12em] text-muted-foreground uppercase"
 				>
 					{label}
+					{required ? (
+						<span className="ml-0.5 text-destructive" aria-hidden="true">
+							*
+						</span>
+					) : null}
 				</label>
 			</div>
 			<div
@@ -136,12 +144,14 @@ export function RecordFormField({
 	label,
 	htmlFor,
 	align = "center",
+	required = false,
 	className,
 	children,
 }: {
 	label: string;
 	htmlFor?: string;
 	align?: "center" | "start";
+	required?: boolean;
 	className?: string;
 	children: React.ReactNode;
 }) {
@@ -162,9 +172,15 @@ export function RecordFormField({
 			>
 				<label
 					htmlFor={htmlFor}
+					aria-required={required || undefined}
 					className="text-[11px] leading-none font-semibold tracking-[0.12em] text-muted-foreground uppercase"
 				>
 					{label}
+					{required ? (
+						<span className="ml-0.5 text-destructive" aria-hidden="true">
+							*
+						</span>
+					) : null}
 				</label>
 			</div>
 			<div

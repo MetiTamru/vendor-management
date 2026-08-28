@@ -3,6 +3,15 @@ import type { MembersModel } from "../types/membersModel";
 
 export { toMembersModel } from "../../shared/mappers/membersMappers";
 
+export {
+	buildAccumulatorSummaryForMember,
+	mapAccumulators,
+	mapAccumulatorSummary,
+	mapAccumulatorFileRowToTransaction,
+	mapPharmacyClaimRowToTransaction,
+	mergeRecentAccumulatorTransactions,
+} from "@/features/admin/features/members/map-member-core";
+
 export function toMembersCreateDto(
 	model: Pick<MembersModel, "name">
 ): MembersCreateDto {

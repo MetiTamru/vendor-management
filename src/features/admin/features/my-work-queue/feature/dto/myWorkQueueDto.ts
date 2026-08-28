@@ -45,6 +45,15 @@ export type ApiTpaTpvRecordDto = {
 	currentStage?: string | null;
 	nextStep?: string | null;
 	history?: ApiHistoryEventDto[] | null;
+	initialContactSentAt?: string | null;
+	secondContactSentAt?: string | null;
+	responseReceivedAt?: string | null;
+	ipAddressesWhitelistedAt?: string | null;
+	credentialsProvidedAt?: string | null;
+	sftpConnectionConfirmedAt?: string | null;
+	progressPercent?: number | null;
+	progressUpdatedBy?: string | null;
+	progressUpdatedAt?: string | null;
 };
 
 export type ApiWorkQueueKpiDto = {
@@ -78,6 +87,16 @@ export type TpaTpvMigrationUpdateDto = {
 	waitingOnVendorDate: string;
 	currentStage: string;
 	nextStep: string;
+};
+
+export type TpaTpvProgressUpdateDto = {
+	initialContactSentAt: string;
+	secondContactSentAt: string;
+	responseReceivedAt: string;
+	ipAddressesWhitelistedAt: string;
+	credentialsProvidedAt: string;
+	sftpConnectionConfirmedAt: string;
+	notes: string;
 };
 
 export type MyWorkQueueListFiltersDto = {

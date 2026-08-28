@@ -3,7 +3,12 @@
  * Keep UI types unchanged; fill gaps with safe empty defaults.
  */
 import type {
+	AccumulatorAmountTriple,
+	AccumulatorKpi,
 	AccumulatorRow,
+	AccumulatorSummary,
+	AccumulatorTableRow,
+	AccumulatorTransaction,
 	DependentRow,
 	EligibilityExceptionRow,
 	EligibilityHistoryRow,
@@ -18,11 +23,22 @@ import type {
 	PlanHistoryRow,
 	VendorSourceRow,
 } from "@/features/admin/features/members/mock-data";
+import { buildMockAccumulatorTransactions } from "@/features/admin/features/members/mock-data";
+import { isMockEnabled } from "@/lib/mock-mode";
 import type {
+	AccumulatorRowDetailDto,
+	AccumulatorRowListDto,
+	MemberAccumulatorAmountDto,
+	MemberAccumulatorKpiDto,
+	MemberAccumulatorSummaryDto,
+	MemberAccumulatorTableRowDto,
+	MemberAccumulatorTransactionDto,
 	MemberCreateBody,
 	MemberDetailDto,
 	MemberListDto,
 	MemberWriteBody,
+	PharmacyClaimRowDetailDto,
+	PharmacyClaimRowListDto,
 } from "@/lib/vendor-core/types";
 
 function str(v: unknown, fallback = ""): string {
@@ -206,7 +222,7 @@ export function mapPlanHistory(
 		id: str(r.id),
 		planName: str(r.plan_name, "—"),
 		planType: str(r.plan_type, "—"),
-		planId: str(r.plan_id, "—"),
+		planId: str(r.plan_id || r.plan_code, "—"),
 		carrier: str(r.carrier, "—"),
 		startDate: dateStr(r.start_date),
 		endDate: r.end_date ? dateStr(r.end_date) : null,
@@ -319,6 +335,526 @@ export function mapAccumulators(
 	}));
 }
 
+const EMPTY_AMOUNT: AccumulatorAmountTriple = {
+	applied: null,
+	remaining: null,
+	total: null,
+};
+
+function mapAmountTriple(
+	raw: unknown
+): AccumulatorAmountTriple {
+	if (!raw || typeof raw !== "object") return { ...EMPTY_AMOUNT };
+	const o = raw as MemberAccumulatorAmountDto;
+	return {
+		applied: o.applied == null ? null : num(o.applied),
+		remaining: o.remaining == null ? null : num(o.remaining),
+		total: o.total == null ? null : num(o.total),
+	};
+}
+
+function mapAccumulatorTableRow(
+	r: MemberAccumulatorTableRowDto | Record<string, unknown>
+): AccumulatorTableRow {
+	const row = r as MemberAccumulatorTableRowDto & Record<string, unknown>;
+	const levelRaw = str(row.level).toLowerCase();
+	const catRaw = str(row.category).toLowerCase();
+	return {
+		id: str(row.id),
+		category: catRaw === "pharmacy" ? "pharmacy" : "medical",
+		planId: str(row.plan_id, "—"),
+		accountGroupId: str(row.account_group_id, "—"),
+		internalMemberId: str(row.internal_member_id, "—"),
+		internalFamilyId: str(row.internal_family_id, "—"),
+		accumulatorType: str(row.accumulator_type, "—"),
+		level: levelRaw === "family" ? "family" : "individual",
+		deductible: mapAmountTriple(row.deductible),
+		oop: mapAmountTriple(row.oop),
+		benefitMax: mapAmountTriple(row.benefit_max),
+		planYearAmount:
+			row.plan_year_amount == null ? null : num(row.plan_year_amount),
+		planYearStart: row.plan_year_start
+			? dateStr(row.plan_year_start)
+			: null,
+		planYearEnd: row.plan_year_end ? dateStr(row.plan_year_end) : null,
+		resetDate: row.reset_date ? dateStr(row.reset_date) : null,
+		sourceAccumulatorId: row.source_accumulator_id
+			? str(row.source_accumulator_id)
+			: null,
+	};
+}
+
+function mapAccumulatorKpi(k: MemberAccumulatorKpiDto): AccumulatorKpi {
+	return {
+		key: str(k.key),
+		label: str(k.label),
+		individualApplied: num(k.individual_applied),
+		individualTotal:
+			k.individual_total == null ? null : num(k.individual_total),
+		familyApplied: num(k.family_applied),
+		familyTotal: k.family_total == null ? null : num(k.family_total),
+	};
+}
+
+function mapAccumulatorTransaction(
+	t: MemberAccumulatorTransactionDto | Record<string, unknown>
+): AccumulatorTransaction {
+	const row = t as MemberAccumulatorTransactionDto;
+	const levelRaw = str(row.level).toLowerCase();
+	return {
+		id: str(row.id),
+		date: dateStr(row.date),
+		planId: str(row.plan_id, "—"),
+		accumulatorType: str(row.accumulator_type, "—"),
+		level: levelRaw === "family" ? "family" : "individual",
+		serviceDate: row.service_date ? dateStr(row.service_date) : null,
+		description: str(row.description, "—"),
+		amount: num(row.amount),
+		individualAmount: num(row.individual_amount),
+		familyAmount: num(row.family_amount),
+		source: str(row.source, "—"),
+	};
+}
+
+/** Map flat `accumulator-rows` list item → Accumulators tab transaction. */
+export function mapAccumulatorFileRowToTransaction(
+	row: AccumulatorRowListDto | AccumulatorRowDetailDto,
+	planId = "—"
+): AccumulatorTransaction {
+	const ded = num(row.amount_applied_to_deductible);
+	const oop = num(row.amount_applied_to_oop);
+	const paid = num(row.plan_paid_amount);
+	const amount = ded || oop || paid;
+	const name =
+		[row.patient_first_name, row.patient_last_name]
+			.map((p) => str(p).trim())
+			.filter(Boolean)
+			.join(" ") || "—";
+	const type = ded
+		? "Deductible"
+		: oop
+			? "Out-of-Pocket"
+			: paid
+				? "Plan Paid"
+				: "—";
+	const dos = row.date_of_service ? dateStr(row.date_of_service) : null;
+	const created =
+		"created_at" in row && row.created_at
+			? dateStr(row.created_at)
+			: "—";
+	return {
+		id: str(row.id),
+		date: dos || created,
+		planId,
+		accumulatorType: type,
+		level: "individual",
+		serviceDate: dos,
+		description: name,
+		amount,
+		individualAmount: amount,
+		familyAmount: 0,
+		source: "Accumulator File",
+	};
+}
+
+/** Map flat `pharmacy-claim-rows` list item → Accumulators tab transaction. */
+export function mapPharmacyClaimRowToTransaction(
+	row: PharmacyClaimRowListDto | PharmacyClaimRowDetailDto,
+	planId = "—"
+): AccumulatorTransaction {
+	const paid = num(row.total_amount_paid);
+	const patientPay = num(row.patient_pay_amount);
+	const amount = paid || patientPay;
+	const drug = str(row.drug_name).trim();
+	const claimNo = str(row.claim_no).trim();
+	const name =
+		[row.patient_first_name, row.patient_last_name]
+			.map((p) => str(p).trim())
+			.filter(Boolean)
+			.join(" ") || "—";
+	const description = [drug || null, claimNo ? `Claim ${claimNo}` : null, name]
+		.filter(Boolean)
+		.join(" · ") || "—";
+	const dos = row.date_of_service ? dateStr(row.date_of_service) : null;
+	const created =
+		"created_at" in row && row.created_at
+			? dateStr(row.created_at)
+			: "—";
+	return {
+		id: str(row.id),
+		date: dos || created,
+		planId,
+		accumulatorType: "Pharmacy",
+		level: "individual",
+		serviceDate: dos,
+		description,
+		amount,
+		individualAmount: amount,
+		familyAmount: 0,
+		source: "Pharmacy Claim",
+	};
+}
+
+/** Merge + sort recent txs by date desc. */
+export function mergeRecentAccumulatorTransactions(
+	...groups: AccumulatorTransaction[][]
+): AccumulatorTransaction[] {
+	return groups
+		.flat()
+		.sort((a, b) => str(b.date).localeCompare(str(a.date)));
+}
+
+/** Map BE `accumulator_summary` (or partial) → UI AccumulatorSummary. */
+export function mapAccumulatorSummary(
+	raw: MemberAccumulatorSummaryDto | Record<string, unknown> | undefined | null
+): AccumulatorSummary | undefined {
+	if (!raw || typeof raw !== "object") return undefined;
+	const s = raw as MemberAccumulatorSummaryDto;
+	const medical = (s.medical_rows ?? []).map(mapAccumulatorTableRow);
+	const pharmacy = (s.pharmacy_rows ?? []).map(mapAccumulatorTableRow);
+	const kpis = (s.kpis ?? []).map(mapAccumulatorKpi);
+	const tx = (s.recent_transactions ?? []).map(mapAccumulatorTransaction);
+	if (
+		medical.length === 0 &&
+		pharmacy.length === 0 &&
+		kpis.length === 0 &&
+		tx.length === 0 &&
+		!s.current_plan_name
+	) {
+		return undefined;
+	}
+	return {
+		currentPlanName: str(s.current_plan_name, "—"),
+		effectiveDate: s.effective_date ? dateStr(s.effective_date) : null,
+		asOfDate: s.as_of_date ? dateStr(s.as_of_date) : null,
+		kpis,
+		medicalRows: medical,
+		pharmacyRows: pharmacy,
+		recentTransactions: tx,
+	};
+}
+
+function classifyAccumulatorLabel(
+	label: string
+): {
+	category: "medical" | "pharmacy";
+	bucket: "deductible" | "oop" | "benefit_max";
+	typeLabel: string;
+} {
+	const lower = label.toLowerCase();
+	const category: "medical" | "pharmacy" =
+		lower.includes("pharmacy") || lower.includes("rx")
+			? "pharmacy"
+			: "medical";
+	let bucket: "deductible" | "oop" | "benefit_max" = "deductible";
+	if (
+		lower.includes("oop") ||
+		lower.includes("out-of-pocket") ||
+		lower.includes("out of pocket")
+	) {
+		bucket = "oop";
+	} else if (lower.includes("benefit") || lower.includes("max")) {
+		bucket = "benefit_max";
+	} else if (lower.includes("deductible")) {
+		bucket = "deductible";
+	}
+	const prefix = category === "pharmacy" ? "Pharmacy" : "Medical";
+	const suffix =
+		bucket === "oop"
+			? "Out-of-Pocket"
+			: bucket === "benefit_max"
+				? "Benefit Max"
+				: "Deductible";
+	return { category, bucket, typeLabel: `${prefix} ${suffix}` };
+}
+
+function reshapeFlatToTableRows(
+	flat: AccumulatorRow[],
+	ctx: {
+		planId: string;
+		accountGroupId: string;
+		internalMemberId: string;
+		internalFamilyId: string;
+		planYearStart: string | null;
+		planYearEnd: string | null;
+		resetDate: string | null;
+	}
+): { medical: AccumulatorTableRow[]; pharmacy: AccumulatorTableRow[] } {
+	const medical: AccumulatorTableRow[] = [];
+	const pharmacy: AccumulatorTableRow[] = [];
+	for (const a of flat) {
+		const { category, bucket, typeLabel } = classifyAccumulatorLabel(a.label);
+		const make = (
+			level: "individual" | "family",
+			applied: number
+		): AccumulatorTableRow => {
+			const levelTotal =
+				level === "individual"
+					? a.limit || null
+					: a.limit > 0
+						? a.limit * 2
+						: null;
+			const remaining =
+				levelTotal != null
+					? Math.max(0, levelTotal - applied)
+					: level === "individual"
+						? a.remaining
+						: null;
+			const triple: AccumulatorAmountTriple = {
+				applied,
+				remaining,
+				total: levelTotal,
+			};
+			return {
+				id: `${a.id}-${level}`,
+				category,
+				planId: ctx.planId,
+				accountGroupId: ctx.accountGroupId,
+				internalMemberId: ctx.internalMemberId,
+				internalFamilyId: ctx.internalFamilyId,
+				accumulatorType: typeLabel,
+				level,
+				deductible: bucket === "deductible" ? triple : EMPTY_AMOUNT,
+				oop: bucket === "oop" ? triple : EMPTY_AMOUNT,
+				benefitMax: bucket === "benefit_max" ? triple : EMPTY_AMOUNT,
+				planYearAmount: applied,
+				planYearStart: ctx.planYearStart,
+				planYearEnd: ctx.planYearEnd,
+				resetDate: ctx.resetDate,
+				sourceAccumulatorId: a.id,
+			};
+		};
+		const ind = make("individual", a.individual);
+		const fam = make("family", a.family);
+		if (category === "medical") {
+			medical.push(ind, fam);
+		} else {
+			pharmacy.push(ind, fam);
+		}
+	}
+	return { medical, pharmacy };
+}
+
+function findFlatBucket(
+	flat: AccumulatorRow[],
+	category: "medical" | "pharmacy",
+	bucket: "deductible" | "oop" | "benefit_max"
+): AccumulatorRow | undefined {
+	return flat.find((a) => {
+		const c = classifyAccumulatorLabel(a.label);
+		return c.category === category && c.bucket === bucket;
+	});
+}
+
+function kpiFromFlat(
+	key: string,
+	label: string,
+	row: AccumulatorRow | undefined,
+	fallbackInd?: number,
+	fallbackFam?: number,
+	fallbackIndTotal?: number | null,
+	fallbackFamTotal?: number | null
+): AccumulatorKpi {
+	if (row) {
+		const indTotal = row.limit || null;
+		const famTotal = row.limit > 0 ? row.limit * 2 : null;
+		return {
+			key,
+			label,
+			individualApplied: row.individual,
+			individualTotal: indTotal,
+			familyApplied: row.family,
+			familyTotal: famTotal,
+		};
+	}
+	return {
+		key,
+		label,
+		individualApplied: fallbackInd ?? 0,
+		individualTotal: fallbackIndTotal ?? null,
+		familyApplied: fallbackFam ?? 0,
+		familyTotal: fallbackFamTotal ?? null,
+	};
+}
+
+/**
+ * Build Accumulators tab summary from BE summary DTO, or reshape legacy flat
+ * accumulators + member context.
+ * Live (mock off): no demo KPI / transaction fillers — empty MAC → zeros + [].
+ * Mock on: keep demo KPI fallbacks + mock recent transactions for UI polish.
+ */
+export function buildAccumulatorSummaryForMember(
+	member: Pick<
+		MemberDetail,
+		| "planName"
+		| "planCode"
+		| "planId"
+		| "accountGroup"
+		| "groupName"
+		| "groupId"
+		| "memberId"
+		| "coverageStart"
+		| "coverageEnd"
+		| "dataAsOf"
+		| "paidYtd"
+		| "accumulators"
+		| "vendorSource"
+		| "accumulatorSummary"
+	>,
+	rawSummary?: MemberAccumulatorSummaryDto | Record<string, unknown> | null
+): AccumulatorSummary {
+	const useDemoFill = isMockEnabled();
+	const mapped = mapAccumulatorSummary(rawSummary ?? undefined);
+	if (mapped && (mapped.medicalRows.length > 0 || mapped.pharmacyRows.length > 0)) {
+		if (mapped.recentTransactions.length === 0 && useDemoFill) {
+			mapped.recentTransactions = buildMockAccumulatorTransactions({
+				planId: mapped.medicalRows[0]?.planId || member.planCode || "PLAN_A",
+				vendorSource: member.vendorSource || "Claims Feed",
+				asOfDate: mapped.asOfDate || member.dataAsOf || "2026-01-20",
+			});
+		}
+		return mapped;
+	}
+	if (member.accumulatorSummary) {
+		return member.accumulatorSummary;
+	}
+
+	const planId =
+		member.planCode?.trim() ||
+		member.planId?.trim() ||
+		(useDemoFill ? "PLAN_A" : "—");
+	const accountGroupId =
+		member.groupId?.trim() ||
+		member.accountGroup?.trim() ||
+		member.groupName?.trim() ||
+		"—";
+	const internalMemberId = member.memberId?.trim() || "—";
+	const internalFamilyId = `FAM${internalMemberId.replace(/\D/g, "").slice(-8).padStart(8, "0") || "00000001"}`;
+	const year = (member.coverageStart || new Date().getFullYear().toString()).slice(
+		0,
+		4
+	);
+	const planYearStart = `${year}-01-01`;
+	const planYearEnd = member.coverageEnd?.slice(0, 10) || `${year}-12-31`;
+	const flat = member.accumulators ?? [];
+	const { medical, pharmacy } = reshapeFlatToTableRows(flat, {
+		planId,
+		accountGroupId,
+		internalMemberId,
+		internalFamilyId,
+		planYearStart,
+		planYearEnd,
+		resetDate: planYearEnd,
+	});
+
+	const medDed = findFlatBucket(flat, "medical", "deductible");
+	const medOop = findFlatBucket(flat, "medical", "oop");
+	const medMax = findFlatBucket(flat, "medical", "benefit_max");
+	const rxDed = findFlatBucket(flat, "pharmacy", "deductible");
+	const rxOop = findFlatBucket(flat, "pharmacy", "oop");
+	const rxMax = findFlatBucket(flat, "pharmacy", "benefit_max");
+
+	const kpis: AccumulatorKpi[] = useDemoFill
+		? [
+				kpiFromFlat(
+					"medical_deductible",
+					"Medical Deductible",
+					medDed,
+					125,
+					250,
+					1000,
+					2000
+				),
+				kpiFromFlat(
+					"medical_oop",
+					"Medical Out-of-Pocket",
+					medOop,
+					250,
+					750,
+					5000,
+					10000
+				),
+				kpiFromFlat(
+					"medical_benefit_max",
+					"Medical Benefit Max",
+					medMax,
+					250,
+					750,
+					10000,
+					20000
+				),
+				kpiFromFlat(
+					"pharmacy_deductible",
+					"Pharmacy Deductible",
+					rxDed,
+					25,
+					50,
+					500,
+					1000
+				),
+				kpiFromFlat(
+					"pharmacy_oop",
+					"Pharmacy Out-of-Pocket",
+					rxOop,
+					150,
+					450,
+					2000,
+					4000
+				),
+				kpiFromFlat(
+					"pharmacy_benefit_max",
+					"Pharmacy Benefit Max",
+					rxMax,
+					250,
+					750,
+					10000,
+					20000
+				),
+				{
+					key: "total_paid",
+					label: "Total Amount Paid",
+					individualApplied: member.paidYtd ?? 0,
+					individualTotal: null,
+					familyApplied: Math.round((member.paidYtd ?? 0) * 2.75),
+					familyTotal: null,
+				},
+			]
+		: [
+				kpiFromFlat("medical_deductible", "Medical Deductible", medDed),
+				kpiFromFlat("medical_oop", "Medical Out-of-Pocket", medOop),
+				kpiFromFlat("medical_benefit_max", "Medical Benefit Max", medMax),
+				kpiFromFlat("pharmacy_deductible", "Pharmacy Deductible", rxDed),
+				kpiFromFlat("pharmacy_oop", "Pharmacy Out-of-Pocket", rxOop),
+				kpiFromFlat("pharmacy_benefit_max", "Pharmacy Benefit Max", rxMax),
+				{
+					key: "total_paid",
+					label: "Total Amount Paid",
+					individualApplied: member.paidYtd ?? 0,
+					individualTotal: null,
+					familyApplied: 0,
+					familyTotal: null,
+				},
+			];
+
+	const recentTransactions = useDemoFill
+		? buildMockAccumulatorTransactions({
+				planId,
+				vendorSource: member.vendorSource || "Claims Feed",
+				asOfDate: member.dataAsOf || "2026-01-20",
+			})
+		: [];
+
+	return {
+		currentPlanName: member.planName?.trim() || "—",
+		effectiveDate: member.coverageStart || null,
+		asOfDate: member.dataAsOf || null,
+		kpis,
+		medicalRows: medical,
+		pharmacyRows: pharmacy,
+		recentTransactions,
+	};
+}
+
 export function mapVendorHistory(
 	rows: Record<string, unknown>[] | undefined
 ): VendorSourceRow[] {
@@ -428,7 +964,7 @@ export function memberDetailDtoToDetail(row: MemberDetailDto): MemberDetail {
 	const demo = (row.demographics ?? {}) as Record<string, unknown>;
 	const latest = (row.latest_source ?? {}) as Record<string, unknown>;
 
-	return {
+	const detail: MemberDetail = {
 		...base,
 		eligibilityStatus: mapEligibilityStatus(
 			str(row.eligibility_status || elig.status)
@@ -530,6 +1066,11 @@ export function memberDetailDtoToDetail(row: MemberDetailDto): MemberDetail {
 		exceptions: mapExceptions(row.exceptions),
 		otherStatuses: mapOtherStatuses(row.other_statuses),
 	};
+	detail.accumulatorSummary = buildAccumulatorSummaryForMember(
+		detail,
+		row.accumulator_summary
+	);
+	return detail;
 }
 
 function dashToEmpty(v: string | undefined | null): string {

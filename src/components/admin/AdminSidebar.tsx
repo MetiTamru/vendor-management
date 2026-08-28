@@ -52,6 +52,7 @@ import {
 	UserRound,
 	Users,
 	UsersRound,
+	Truck,
 	Workflow,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -82,7 +83,7 @@ import {
 import { getModuleSidebarNav, siteConfig } from "@/constants/siteconfig";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
-import type { SidebarNavItem } from "@/types/UI/system.types";
+import type { AdminModuleId, SidebarNavItem } from "@/types/UI/system.types";
 
 const NAV_ICONS: Record<string, typeof Home> = {
 	Dashboard: Home,
@@ -147,6 +148,9 @@ const NAV_ICONS: Record<string, typeof Home> = {
 	"Master Data Entry": Database,
 	"Error Correction": FileWarning,
 	"My Work Queue": Inbox,
+	Member: UserRound,
+	Provider: Stethoscope,
+	"TPA/TPV Tracking": Truck,
 };
 
 const VENDOR_SECTION_ORDER = [
@@ -166,6 +170,18 @@ const CLAIM_SECTION_ORDER = [
 	"operations",
 	"administration",
 ] as const;
+
+const ELIGIBILITY_SECTION_ORDER = [
+	"member_operations",
+	"provider_operations",
+	"tpa_tpv_tracking",
+] as const;
+
+function moduleSectionOrder(moduleId: AdminModuleId) {
+	if (moduleId === "claim_encounter") return CLAIM_SECTION_ORDER;
+	if (moduleId === "eligibility_operations") return ELIGIBILITY_SECTION_ORDER;
+	return VENDOR_SECTION_ORDER;
+}
 
 function isActivePath(pathname: string, href: string) {
 	if (href === "/" || href === "/admin/claim-encounter") {
@@ -315,8 +331,7 @@ export function AdminSidebar() {
 	// Static nav from siteConfig — never fetched / never gated on live session
 	const visibleNav = getModuleSidebarNav(moduleId);
 
-	const sections =
-		moduleId === "claim_encounter" ? CLAIM_SECTION_ORDER : VENDOR_SECTION_ORDER;
+	const sections = moduleSectionOrder(moduleId);
 
 	return (
 		<Sidebar collapsible="icon">

@@ -56,7 +56,10 @@
 			"integration_file_operations": "ውህደት እና የፋይል ክንውኖች",
 			"operations": "ክንውኖች",
 			"administration": "አስተዳደር",
-			"claim_encounter": "ይገባኛል እና ግንኙነቶች"
+			"claim_encounter": "ይገባኛል እና ግንኙነቶች",
+			"member_operations": "የአባል ክንውኖ",
+			"provider_operations": "የአቅራቢ ክንውኖ",
+			"tpa_tpv_tracking": "TPA/TPV ክትትል"
 		},
 		"nav": {
 			"dashboard": "ዳሽቦርድ",
@@ -108,7 +111,11 @@
 			"roles": "ሚናዎች",
 			"users": "ተጠቃሚዎች",
 			"exportcenter": "የማውጫ ማዕከል",
-			"riskscoring": "የአደጋ ደረጃ"
+			"riskscoring": "የአደጋ ደረጃ",
+			"memberoperations": "የአባል ክንውኖ",
+			"member": "አባል",
+			"provider": "አቅራቢ",
+			"tpatpvtracking": "TPA/TPV ክትትል"
 		},
 		"placeholders": {
 			"usersTitle": "ተጠቃሚዎች",

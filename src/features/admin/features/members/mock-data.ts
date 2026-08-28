@@ -114,6 +114,65 @@ export type AccumulatorRow = {
 	limit: number;
 };
 
+export type AccumulatorAmountTriple = {
+	applied: number | null;
+	remaining: number | null;
+	total: number | null;
+};
+
+export type AccumulatorTableRow = {
+	id: string;
+	category: "medical" | "pharmacy";
+	planId: string;
+	accountGroupId: string;
+	internalMemberId: string;
+	internalFamilyId: string;
+	accumulatorType: string;
+	level: "individual" | "family";
+	deductible: AccumulatorAmountTriple;
+	oop: AccumulatorAmountTriple;
+	benefitMax: AccumulatorAmountTriple;
+	planYearAmount: number | null;
+	planYearStart: string | null;
+	planYearEnd: string | null;
+	resetDate: string | null;
+	/** Links to legacy flat AccumulatorRow for row CRUD */
+	sourceAccumulatorId?: string | null;
+};
+
+export type AccumulatorKpi = {
+	key: string;
+	label: string;
+	individualApplied: number;
+	individualTotal: number | null;
+	familyApplied: number;
+	familyTotal: number | null;
+};
+
+export type AccumulatorTransaction = {
+	id: string;
+	date: string;
+	planId: string;
+	accumulatorType: string;
+	level: "individual" | "family";
+	serviceDate: string | null;
+	description: string;
+	amount: number;
+	individualAmount: number;
+	familyAmount: number;
+	source: string;
+};
+
+export type AccumulatorSummary = {
+	currentPlanName: string;
+	effectiveDate: string | null;
+	asOfDate: string | null;
+	kpis: AccumulatorKpi[];
+	medicalRows: AccumulatorTableRow[];
+	pharmacyRows: AccumulatorTableRow[];
+	recentTransactions: AccumulatorTransaction[];
+};
+
 export type VendorSourceRow = {
 	id: string;
 	vendor: string;
@@ -193,6 +252,8 @@ export type MemberDetail = MemberSummary & {
 	claims: MemberClaimRow[];
 	encounters: MemberClaimRow[];
 	accumulators: AccumulatorRow[];
+	/** Accumulators tab summary (KPI + Medical/Pharmacy tables + transactions). */
+	accumulatorSummary?: AccumulatorSummary;
 	vendorHistory: VendorSourceRow[];
 	exceptions: EligibilityExceptionRow[];
 	otherStatuses: OtherStatusRow[];
@@ -258,6 +319,404 @@ const PROGRAMS: Array<"MDH" | "DHCF" | "BHP"> = ["MDH", "DHCF", "BHP"];
 
 function pad(n: number, w = 8) {
 	return String(n).padStart(w, "0");
+}
+
+const EMPTY_AMOUNT: AccumulatorAmountTriple = {
+	applied: null,
+	remaining: null,
+	total: null,
+};
+
+function amountTriple(
+	applied: number,
+	total: number
+): AccumulatorAmountTriple {
+	return {
+		applied,
+		remaining: Math.max(0, total - applied),
+		total,
+	};
+}
+
+function tableRowFromBucket(args: {
+	id: string;
+	category: "medical" | "pharmacy";
+	planId: string;
+	accountGroupId: string;
+	internalMemberId: string;
+	internalFamilyId: string;
+	accumulatorType: string;
+	level: "individual" | "family";
+	bucket: "deductible" | "oop" | "benefit_max";
+	applied: number;
+	total: number;
+	planYearStart: string;
+	planYearEnd: string;
+	resetDate: string;
+	sourceAccumulatorId: string;
+}): AccumulatorTableRow {
+	const triple = amountTriple(args.applied, args.total);
+	return {
+		id: args.id,
+		category: args.category,
+		planId: args.planId,
+		accountGroupId: args.accountGroupId,
+		internalMemberId: args.internalMemberId,
+		internalFamilyId: args.internalFamilyId,
+		accumulatorType: args.accumulatorType,
+		level: args.level,
+		deductible: args.bucket === "deductible" ? triple : EMPTY_AMOUNT,
+		oop: args.bucket === "oop" ? triple : EMPTY_AMOUNT,
+		benefitMax: args.bucket === "benefit_max" ? triple : EMPTY_AMOUNT,
+		planYearAmount: args.applied,
+		planYearStart: args.planYearStart,
+		planYearEnd: args.planYearEnd,
+		resetDate: args.resetDate,
+		sourceAccumulatorId: args.sourceAccumulatorId,
+	};
+}
+
+/** Screenshot-aligned accumulator summary + transactions for Member Detail tab. */
+export function buildMockAccumulatorSummary(args: {
+	isJohn: boolean;
+	idx: number;
+	planName: string;
+	planCode: string;
+	accountGroup: string;
+	memberId: string;
+	familyId: string;
+	coverageStart: string;
+	asOfDate: string;
+	paidYtdIndividual: number;
+	paidYtdFamily: number;
+	vendorSource: string;
+}): AccumulatorSummary {
+	const year = args.coverageStart.slice(0, 4) || "2026";
+	const planYearStart = `${year}-01-01`;
+	const planYearEnd = `${year}-12-31`;
+	const resetDate = planYearEnd;
+	const planId = args.planCode || "PLAN_A";
+	const ctx = {
+		planId,
+		accountGroupId: args.accountGroup,
+		internalMemberId: args.memberId,
+		internalFamilyId: args.familyId,
+		planYearStart,
+		planYearEnd,
+		resetDate,
+	};
+
+	const buckets: {
+		sourceId: string;
+		category: "medical" | "pharmacy";
+		type: string;
+		bucket: "deductible" | "oop" | "benefit_max";
+		indApplied: number;
+		indTotal: number;
+		famApplied: number;
+		famTotal: number;
+	}[] = args.isJohn
+		? [
+				{
+					sourceId: "ac1",
+					category: "medical",
+					type: "Medical Deductible",
+					bucket: "deductible",
+					indApplied: 125,
+					indTotal: 1000,
+					famApplied: 250,
+					famTotal: 2000,
+				},
+				{
+					sourceId: "ac2",
+					category: "medical",
+					type: "Medical Out-of-Pocket",
+					bucket: "oop",
+					indApplied: 250,
+					indTotal: 5000,
+					famApplied: 750,
+					famTotal: 10000,
+				},
+				{
+					sourceId: "ac5",
+					category: "medical",
+					type: "Medical Benefit Max",
+					bucket: "benefit_max",
+					indApplied: 250,
+					indTotal: 10000,
+					famApplied: 750,
+					famTotal: 20000,
+				},
+				{
+					sourceId: "ac3",
+					category: "pharmacy",
+					type: "Pharmacy Deductible",
+					bucket: "deductible",
+					indApplied: 25,
+					indTotal: 500,
+					famApplied: 50,
+					famTotal: 1000,
+				},
+				{
+					sourceId: "ac4",
+					category: "pharmacy",
+					type: "Pharmacy Out-of-Pocket",
+					bucket: "oop",
+					indApplied: 150,
+					indTotal: 2000,
+					famApplied: 450,
+					famTotal: 4000,
+				},
+				{
+					sourceId: "ac6",
+					category: "pharmacy",
+					type: "Pharmacy Benefit Max",
+					bucket: "benefit_max",
+					indApplied: 250,
+					indTotal: 10000,
+					famApplied: 750,
+					famTotal: 20000,
+				},
+			]
+		: [
+				{
+					sourceId: "ac1",
+					category: "medical",
+					type: "Medical Deductible",
+					bucket: "deductible",
+					indApplied: 180 + (args.idx % 100),
+					indTotal: 1000,
+					famApplied: 400,
+					famTotal: 2000,
+				},
+				{
+					sourceId: "ac2",
+					category: "medical",
+					type: "Medical Out-of-Pocket",
+					bucket: "oop",
+					indApplied: 1200 + (args.idx % 400),
+					indTotal: 5000,
+					famApplied: 2800,
+					famTotal: 10000,
+				},
+				{
+					sourceId: "ac5",
+					category: "medical",
+					type: "Medical Benefit Max",
+					bucket: "benefit_max",
+					indApplied: 400,
+					indTotal: 10000,
+					famApplied: 900,
+					famTotal: 20000,
+				},
+				{
+					sourceId: "ac3",
+					category: "pharmacy",
+					type: "Pharmacy Deductible",
+					bucket: "deductible",
+					indApplied: 25,
+					indTotal: 500,
+					famApplied: 75,
+					famTotal: 1000,
+				},
+				{
+					sourceId: "ac4",
+					category: "pharmacy",
+					type: "Pharmacy Out-of-Pocket",
+					bucket: "oop",
+					indApplied: 90,
+					indTotal: 2000,
+					famApplied: 200,
+					famTotal: 4000,
+				},
+				{
+					sourceId: "ac6",
+					category: "pharmacy",
+					type: "Pharmacy Benefit Max",
+					bucket: "benefit_max",
+					indApplied: 300,
+					indTotal: 10000,
+					famApplied: 800,
+					famTotal: 20000,
+				},
+			];
+
+	const medicalRows: AccumulatorTableRow[] = [];
+	const pharmacyRows: AccumulatorTableRow[] = [];
+	for (const b of buckets) {
+		const ind = tableRowFromBucket({
+			...ctx,
+			id: `${b.sourceId}-ind`,
+			category: b.category,
+			accumulatorType: b.type,
+			level: "individual",
+			bucket: b.bucket,
+			applied: b.indApplied,
+			total: b.indTotal,
+			sourceAccumulatorId: b.sourceId,
+		});
+		const fam = tableRowFromBucket({
+			...ctx,
+			id: `${b.sourceId}-fam`,
+			category: b.category,
+			accumulatorType: b.type,
+			level: "family",
+			bucket: b.bucket,
+			applied: b.famApplied,
+			total: b.famTotal,
+			sourceAccumulatorId: b.sourceId,
+		});
+		if (b.category === "medical") {
+			medicalRows.push(ind, fam);
+		} else {
+			pharmacyRows.push(ind, fam);
+		}
+	}
+
+	const byKey = Object.fromEntries(
+		buckets.map((b) => [
+			`${b.category}_${b.bucket === "benefit_max" ? "benefit_max" : b.bucket === "oop" ? "oop" : "deductible"}`,
+			b,
+		])
+	) as Record<string, (typeof buckets)[0]>;
+
+	const kpiFrom = (
+		key: string,
+		label: string,
+		b: (typeof buckets)[0] | undefined
+	): AccumulatorKpi => ({
+		key,
+		label,
+		individualApplied: b?.indApplied ?? 0,
+		individualTotal: b?.indTotal ?? null,
+		familyApplied: b?.famApplied ?? 0,
+		familyTotal: b?.famTotal ?? null,
+	});
+
+	const kpis: AccumulatorKpi[] = [
+		kpiFrom(
+			"medical_deductible",
+			"Medical Deductible",
+			byKey.medical_deductible
+		),
+		kpiFrom("medical_oop", "Medical Out-of-Pocket", byKey.medical_oop),
+		kpiFrom(
+			"medical_benefit_max",
+			"Medical Benefit Max",
+			byKey.medical_benefit_max
+		),
+		kpiFrom(
+			"pharmacy_deductible",
+			"Pharmacy Deductible",
+			byKey.pharmacy_deductible
+		),
+		kpiFrom("pharmacy_oop", "Pharmacy Out-of-Pocket", byKey.pharmacy_oop),
+		kpiFrom(
+			"pharmacy_benefit_max",
+			"Pharmacy Benefit Max",
+			byKey.pharmacy_benefit_max
+		),
+		{
+			key: "total_paid",
+			label: "Total Amount Paid",
+			individualApplied: args.paidYtdIndividual,
+			individualTotal: null,
+			familyApplied: args.paidYtdFamily,
+			familyTotal: null,
+		},
+	];
+
+	return {
+		currentPlanName: args.planName,
+		effectiveDate: args.coverageStart,
+		asOfDate: args.asOfDate,
+		kpis,
+		medicalRows,
+		pharmacyRows,
+		recentTransactions: buildMockAccumulatorTransactions({
+			planId,
+			vendorSource: args.vendorSource,
+			asOfDate: args.asOfDate,
+			isJohn: args.isJohn,
+		}),
+	};
+}
+
+/** Placeholder transactions until BE ships accumulator transaction history. */
+export function buildMockAccumulatorTransactions(args: {
+	planId: string;
+	vendorSource: string;
+	asOfDate: string;
+	isJohn?: boolean;
+}): AccumulatorTransaction[] {
+	const d = args.asOfDate.slice(0, 10) || "2026-01-20";
+	return [
+		{
+			id: "atx1",
+			date: d,
+			planId: args.planId,
+			accumulatorType: "Pharmacy Out-of-Pocket",
+			level: "individual",
+			serviceDate: d,
+			description: "Pharmacy Claim Paid",
+			amount: 45,
+			individualAmount: 45,
+			familyAmount: 45,
+			source: args.vendorSource || "NIH Claims Feed",
+		},
+		{
+			id: "atx2",
+			date: d,
+			planId: args.planId,
+			accumulatorType: "Medical Deductible",
+			level: "individual",
+			serviceDate: d,
+			description: "Applied to Deductible",
+			amount: 125,
+			individualAmount: 125,
+			familyAmount: 125,
+			source: args.vendorSource || "NIH Claims Feed",
+		},
+		{
+			id: "atx3",
+			date: "2026-01-15",
+			planId: args.planId,
+			accumulatorType: "Medical Out-of-Pocket",
+			level: "family",
+			serviceDate: "2026-01-14",
+			description: "Medical Claim Paid",
+			amount: 200,
+			individualAmount: 80,
+			familyAmount: 200,
+			source: args.vendorSource || "NIH Claims Feed",
+		},
+		{
+			id: "atx4",
+			date: "2026-01-10",
+			planId: args.planId,
+			accumulatorType: "Pharmacy Deductible",
+			level: "individual",
+			serviceDate: "2026-01-10",
+			description: "Pharmacy Claim Paid",
+			amount: 25,
+			individualAmount: 25,
+			familyAmount: 50,
+			source: args.vendorSource || "NIH Claims Feed",
+		},
+		{
+			id: "atx5",
+			date: "2026-01-01",
+			planId: args.planId,
+			accumulatorType: "Medical Deductible",
+			level: "family",
+			serviceDate: null,
+			description: "Plan Year Reset",
+			amount: 0,
+			individualAmount: 0,
+			familyAmount: 0,
+			source: "System",
+		},
+	];
 }
 
 function buildSummaries(): MemberSummary[] {
@@ -783,34 +1242,68 @@ function detailFor(summary: MemberSummary): MemberDetail {
 				label: "Medical Deductible",
 				individual: isJohn ? 125 : 180 + (idx % 100),
 				family: isJohn ? 250 : 400,
-				remaining: isJohn ? 125 : 70,
-				limit: isJohn ? 250 : 250,
+				remaining: isJohn ? 875 : 70,
+				limit: isJohn ? 1000 : 250,
 			},
 			{
 				id: "ac2",
-				label: "Medical OOP",
+				label: "Medical Out-of-Pocket",
 				individual: isJohn ? 250 : 1200 + (idx % 400),
 				family: isJohn ? 750 : 2800,
-				remaining: isJohn ? 500 : 1400,
-				limit: isJohn ? 750 : 3500,
+				remaining: isJohn ? 4750 : 1400,
+				limit: isJohn ? 5000 : 3500,
+			},
+			{
+				id: "ac5",
+				label: "Medical Benefit Max",
+				individual: isJohn ? 250 : 400,
+				family: isJohn ? 750 : 900,
+				remaining: isJohn ? 9750 : 9100,
+				limit: isJohn ? 10000 : 10000,
 			},
 			{
 				id: "ac3",
 				label: "Pharmacy Deductible",
 				individual: isJohn ? 25 : 25,
 				family: isJohn ? 50 : 75,
-				remaining: isJohn ? 25 : 25,
-				limit: isJohn ? 50 : 50,
+				remaining: isJohn ? 475 : 25,
+				limit: isJohn ? 500 : 50,
 			},
 			{
 				id: "ac4",
-				label: "Pharmacy OOP",
+				label: "Pharmacy Out-of-Pocket",
 				individual: isJohn ? 150 : 90,
 				family: isJohn ? 450 : 200,
-				remaining: isJohn ? 300 : 110,
-				limit: isJohn ? 450 : 200,
+				remaining: isJohn ? 1850 : 110,
+				limit: isJohn ? 2000 : 200,
+			},
+			{
+				id: "ac6",
+				label: "Pharmacy Benefit Max",
+				individual: isJohn ? 250 : 300,
+				family: isJohn ? 750 : 800,
+				remaining: isJohn ? 9750 : 9200,
+				limit: isJohn ? 10000 : 10000,
 			},
 		],
+		accumulatorSummary: buildMockAccumulatorSummary({
+			isJohn,
+			idx,
+			planName: summary.planName,
+			planCode: isJohn ? "PLAN_A" : `PLAN_${summary.program}`,
+			accountGroup:
+				summary.accountGroup ??
+				(isJohn ? "NIH GROUP 001" : `${summary.program} GROUP`),
+			memberId: isJohn ? "MEM00012345" : summary.memberId,
+			familyId: isJohn ? "FAM00012345" : `FAM${pad(idx, 8)}`,
+			coverageStart: isJohn
+				? "2026-01-01"
+				: `${summary.memberSince.slice(0, 4)}-01-01`,
+			asOfDate: isJohn ? "2026-01-20" : "2026-01-28",
+			paidYtdIndividual: isJohn ? 670 : summary.paidYtd,
+			paidYtdFamily: isJohn ? 1845 : summary.paidYtd * 2.5,
+			vendorSource: summary.vendorSource,
+		}),
 		vendorHistory: [
 			{
 				id: "vh1",
@@ -1059,10 +1552,41 @@ export function formatCurrency(value: number) {
 }
 
 export function formatDate(iso: string | null | undefined) {
-	if (!iso) return "—";
-	const [y, m, d] = iso.split("-");
-	if (!y || !m || !d) return iso;
-	return `${m}/${d}/${y}`;
+	if (!iso || iso === "—") return "—";
+	const trimmed = String(iso).trim();
+	// Already MM/DD/YYYY (optional time after)
+	const us = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(.*)$/);
+	if (us) {
+		const [, m, d, y, rest] = us;
+		const base = `${m!.padStart(2, "0")}/${d!.padStart(2, "0")}/${y}`;
+		return rest?.trim() ? `${base} ${rest.trim()}` : base;
+	}
+	const parsed = new Date(trimmed);
+	if (!Number.isNaN(parsed.getTime())) {
+		const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+		const dd = String(parsed.getDate()).padStart(2, "0");
+		return `${mm}/${dd}/${parsed.getFullYear()}`;
+	}
+	const dayPart = trimmed.split("T")[0] ?? trimmed;
+	const [y, m, d] = dayPart.split("-");
+	if (y && m && d && y.length === 4) return `${m}/${d.slice(0, 2)}/${y}`;
+	return trimmed;
+}
+
+/** Human-readable date + time (e.g. 08/26/2026 3:25 PM). */
+export function formatDateTime(iso: string | null | undefined) {
+	if (!iso || iso === "—") return "—";
+	const trimmed = String(iso).trim();
+	// Already has a readable time suffix
+	if (/^\d{1,2}\/\d{1,2}\/\d{4}\s+\d/.test(trimmed)) return trimmed;
+	const parsed = new Date(trimmed);
+	if (Number.isNaN(parsed.getTime())) return formatDate(trimmed);
+	const date = formatDate(parsed.toISOString());
+	let hours = parsed.getHours();
+	const mins = String(parsed.getMinutes()).padStart(2, "0");
+	const ampm = hours >= 12 ? "AM" : "PM";
+	hours = hours % 12 || 12;
+	return `${date} ${hours}:${mins} ${ampm}`;
 }
 
 export function maskSsn(last4: string) {

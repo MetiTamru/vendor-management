@@ -1,24 +1,15 @@
 "use client";
 
-import { useState } from "react";
-
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
 	useDeleteMemberMutation,
 	useSeedMembersMutation,
-	useUpdateMemberMutation,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 export function MemberDirectoryActions() {
 	const seed = useSeedMembersMutation();
@@ -63,17 +54,14 @@ export function MemberDirectoryActions() {
 
 export function MemberListRowDelete({
 	memberId,
-	firstName,
-	lastName,
 }: {
 	memberId: string;
-	firstName: string;
-	lastName: string;
+	/** @deprecated unused — edit opens detail Edit tab */
+	firstName?: string;
+	/** @deprecated unused — edit opens detail Edit tab */
+	lastName?: string;
 }) {
-	const [open, setOpen] = useState(false);
-	const [nextFirst, setNextFirst] = useState(firstName);
-	const [nextLast, setNextLast] = useState(lastName);
-	const update = useUpdateMemberMutation();
+	const router = useRouter();
 	const remove = useDeleteMemberMutation();
 
 	return (
@@ -86,11 +74,13 @@ export function MemberListRowDelete({
 				size="icon"
 				variant="ghost"
 				className="size-7"
-				title="Update member"
-				onClick={() => setOpen(true)}
+				title="Edit member"
+				onClick={() =>
+					router.push(`/admin/members/${encodeURIComponent(memberId)}?edit=1`)
+				}
 			>
 				<Pencil className="size-3.5" />
-				<span className="sr-only">Update</span>
+				<span className="sr-only">Edit</span>
 			</Button>
 			<Button
 				type="button"
@@ -116,57 +106,6 @@ export function MemberListRowDelete({
 				<Trash2 className="size-3.5" />
 				<span className="sr-only">Delete</span>
 			</Button>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Update member</DialogTitle>
-					</DialogHeader>
-					<div className="space-y-3">
-						<div className="space-y-1.5">
-							<label className="text-sm font-medium">First name</label>
-							<input
-								className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-								value={nextFirst}
-								onChange={(e) => setNextFirst(e.target.value)}
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<label className="text-sm font-medium">Last name</label>
-							<input
-								className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-								value={nextLast}
-								onChange={(e) => setNextLast(e.target.value)}
-							/>
-						</div>
-						<Button
-							disabled={update.isPending}
-							onClick={() =>
-								update.mutate(
-									{
-										id: memberId,
-										body: {
-											first_name: nextFirst,
-											last_name: nextLast,
-										},
-									},
-									{
-										onSuccess: () => {
-											toast.success("Member updated");
-											setOpen(false);
-										},
-										onError: (err) =>
-											toast.error(
-												err instanceof Error ? err.message : "Update failed"
-											),
-									}
-								)
-							}
-						>
-							Save
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	);
 }

@@ -12,11 +12,17 @@ import type {
 	TpaTpvContactsUpdateDto,
 	TpaTpvInfoUpdateDto,
 	TpaTpvMigrationUpdateDto,
+	TpaTpvProgressUpdateDto,
 } from "../dto/myWorkQueueDto";
 import {
+	milestonesFromProgressUpdate,
 	toTpaTpvModel,
 	toWorkQueueKpi,
 } from "../mappers/myWorkQueueMappers";
+import {
+	computeMigrationProgressPercent,
+	computeOverallMigrationProgress,
+} from "../progress";
 import type {
 	MyWorkQueueDashboardModel,
 	MyWorkQueueListResult,
@@ -27,6 +33,12 @@ export {
 	MIGRATION_STATUS_LABEL,
 	WHITELIST_STATUS_LABEL,
 } from "../../mock-data";
+
+export {
+	computeMigrationProgressPercent,
+	computeOverallMigrationProgress,
+	MIGRATION_PROGRESS_STEPS,
+} from "../progress";
 
 export async function listWorkQueueKpis() {
 	return withMockOrRemote(
@@ -187,5 +199,58 @@ export async function updateTpaTpvMigration(
 		},
 		async () => undefined,
 		undefined
+	);
+}
+
+function formatNow(): string {
+	return new Date().toLocaleString("en-US", {
+		month: "2-digit",
+		day: "2-digit",
+		year: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+	});
+}
+
+export async function updateTpaTpvProgress(
+	id: string,
+	body: TpaTpvProgressUpdateDto
+): Promise<TpaTpvModel | undefined> {
+	return withMockOrRemote(
+		() => {
+			const row = TPA_TPV_ROWS.find((item) => item.id === id);
+			if (!row) return undefined;
+			const milestones = milestonesFromProgressUpdate(body);
+			const progressPercent = computeMigrationProgressPercent(milestones);
+			const now = formatNow();
+			const actor = row.assignedAnalyst || "EDI Analyst";
+			Object.assign(row, milestones, {
+				notes: body.notes,
+				progressPercent,
+				progressUpdatedBy: actor,
+				progressUpdatedAt: now,
+				lastUpdated: now,
+			});
+			row.history = [
+				{
+					id: `h-${Date.now()}`,
+					at: now,
+					message: `Progress updated to ${progressPercent}% by ${actor}`,
+					tone: progressPercent === 100 ? "green" : "blue",
+				},
+				...row.history,
+			];
+			return toTpaTpvModel(row);
+		},
+		async () => undefined,
+		undefined
+	);
+}
+
+export async function getOverallMigrationProgress(): Promise<number> {
+	return withMockOrRemote(
+		() => computeOverallMigrationProgress(TPA_TPV_ROWS),
+		async () => 0,
+		0
 	);
 }

@@ -22,12 +22,27 @@ import type {
 	LoginEventDto,
 	MemberCoverageDto,
 	MemberCreateBody,
+	MemberAccumulatorSummaryDto,
 	MemberDetailDto,
 	MemberListDto,
 	MemberWriteBody,
 	MemberListQuery,
 	MonitoringDashboardDto,
 	PaginatedResult,
+	AccumulatorFileDto,
+	AccumulatorFileListQuery,
+	AccumulatorRowCreateInput,
+	AccumulatorRowDetailDto,
+	AccumulatorRowListDto,
+	AccumulatorRowListQuery,
+	AccumulatorRowUpdateInput,
+	PharmacyClaimFileDto,
+	PharmacyClaimFileListQuery,
+	PharmacyClaimRowCreateInput,
+	PharmacyClaimRowDetailDto,
+	PharmacyClaimRowListDto,
+	PharmacyClaimRowListQuery,
+	PharmacyClaimRowUpdateInput,
 	ProcessingEventDto,
 	ProviderCreateInput,
 	ProviderDto,
@@ -123,12 +138,32 @@ export const vendorCoreEndpoints = {
 		`/api/v1/members/${id}/exceptions/${exceptionId}/delete/`,
 	memberAccumulatorsList: (id: string) =>
 		`/api/v1/members/${id}/accumulators/list/`,
+	memberAccumulatorsSummary: (id: string) =>
+		`/api/v1/members/${id}/accumulators/summary/`,
 	memberAccumulatorsCreate: (id: string) =>
 		`/api/v1/members/${id}/accumulators/create/`,
 	memberAccumulatorUpdate: (id: string, accumulatorId: string) =>
 		`/api/v1/members/${id}/accumulators/${accumulatorId}/update/`,
 	memberAccumulatorDelete: (id: string, accumulatorId: string) =>
 		`/api/v1/members/${id}/accumulators/${accumulatorId}/delete/`,
+	accumulatorFilesList: "/api/v1/accumulator-files/list/",
+	accumulatorFile: (id: string) => `/api/v1/accumulator-files/${id}/`,
+	accumulatorRowsList: "/api/v1/accumulator-rows/list/",
+	accumulatorRowsCreate: "/api/v1/accumulator-rows/create/",
+	accumulatorRow: (id: string) => `/api/v1/accumulator-rows/${id}/`,
+	accumulatorRowUpdate: (id: string) =>
+		`/api/v1/accumulator-rows/${id}/update/`,
+	accumulatorRowDelete: (id: string) =>
+		`/api/v1/accumulator-rows/${id}/delete/`,
+	pharmacyClaimFilesList: "/api/v1/pharmacy-claim-files/list/",
+	pharmacyClaimFile: (id: string) => `/api/v1/pharmacy-claim-files/${id}/`,
+	pharmacyClaimRowsList: "/api/v1/pharmacy-claim-rows/list/",
+	pharmacyClaimRowsCreate: "/api/v1/pharmacy-claim-rows/create/",
+	pharmacyClaimRow: (id: string) => `/api/v1/pharmacy-claim-rows/${id}/`,
+	pharmacyClaimRowUpdate: (id: string) =>
+		`/api/v1/pharmacy-claim-rows/${id}/update/`,
+	pharmacyClaimRowDelete: (id: string) =>
+		`/api/v1/pharmacy-claim-rows/${id}/delete/`,
 	memberClaimsList: (id: string) => `/api/v1/members/${id}/claims/list/`,
 	memberClaimsCreate: (id: string) => `/api/v1/members/${id}/claims/create/`,
 	memberClaimUpdate: (id: string, claimId: string) =>
@@ -692,6 +727,15 @@ export const vendorCoreApi = {
 			{ params: pageParams() }
 		),
 
+	/**
+	 * Accumulators tab summary (KPI + Medical/Pharmacy tables + transactions).
+	 * BE may not ship yet — callers should fall back to reshape from flat list.
+	 */
+	getMemberAccumulatorSummary: (memberId: string) =>
+		vendorCoreFetch<MemberAccumulatorSummaryDto>(
+			vendorCoreEndpoints.memberAccumulatorsSummary(memberId)
+		),
+
 	createMemberAccumulator: (memberId: string, body: Record<string, unknown>) =>
 		vendorCoreFetch<Record<string, unknown>>(
 			vendorCoreEndpoints.memberAccumulatorsCreate(memberId),
@@ -713,6 +757,84 @@ export const vendorCoreApi = {
 			vendorCoreEndpoints.memberAccumulatorDelete(memberId, accumulatorId),
 			{ method: "DELETE" }
 		),
+
+	listAccumulatorFiles: (params?: AccumulatorFileListQuery) =>
+		vendorCoreFetch<PaginatedResult<AccumulatorFileDto>>(
+			vendorCoreEndpoints.accumulatorFilesList,
+			{ params: pageParams(params) }
+		),
+
+	getAccumulatorFile: (id: string) =>
+		vendorCoreFetch<AccumulatorFileDto>(
+			vendorCoreEndpoints.accumulatorFile(id)
+		),
+
+	listAccumulatorRows: (params?: AccumulatorRowListQuery) =>
+		vendorCoreFetch<PaginatedResult<AccumulatorRowListDto>>(
+			vendorCoreEndpoints.accumulatorRowsList,
+			{ params: pageParams(params) }
+		),
+
+	getAccumulatorRow: (id: string) =>
+		vendorCoreFetch<AccumulatorRowDetailDto>(
+			vendorCoreEndpoints.accumulatorRow(id)
+		),
+
+	createAccumulatorRow: (body: AccumulatorRowCreateInput) =>
+		vendorCoreFetch<AccumulatorRowDetailDto>(
+			vendorCoreEndpoints.accumulatorRowsCreate,
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updateAccumulatorRow: (id: string, body: AccumulatorRowUpdateInput) =>
+		vendorCoreFetch<AccumulatorRowDetailDto>(
+			vendorCoreEndpoints.accumulatorRowUpdate(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	deleteAccumulatorRow: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.accumulatorRowDelete(id), {
+			method: "POST",
+		}),
+
+	listPharmacyClaimFiles: (params?: PharmacyClaimFileListQuery) =>
+		vendorCoreFetch<PaginatedResult<PharmacyClaimFileDto>>(
+			vendorCoreEndpoints.pharmacyClaimFilesList,
+			{ params: pageParams(params) }
+		),
+
+	getPharmacyClaimFile: (id: string) =>
+		vendorCoreFetch<PharmacyClaimFileDto>(
+			vendorCoreEndpoints.pharmacyClaimFile(id)
+		),
+
+	listPharmacyClaimRows: (params?: PharmacyClaimRowListQuery) =>
+		vendorCoreFetch<PaginatedResult<PharmacyClaimRowListDto>>(
+			vendorCoreEndpoints.pharmacyClaimRowsList,
+			{ params: pageParams(params) }
+		),
+
+	getPharmacyClaimRow: (id: string) =>
+		vendorCoreFetch<PharmacyClaimRowDetailDto>(
+			vendorCoreEndpoints.pharmacyClaimRow(id)
+		),
+
+	createPharmacyClaimRow: (body: PharmacyClaimRowCreateInput) =>
+		vendorCoreFetch<PharmacyClaimRowDetailDto>(
+			vendorCoreEndpoints.pharmacyClaimRowsCreate,
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	updatePharmacyClaimRow: (id: string, body: PharmacyClaimRowUpdateInput) =>
+		vendorCoreFetch<PharmacyClaimRowDetailDto>(
+			vendorCoreEndpoints.pharmacyClaimRowUpdate(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		),
+
+	deletePharmacyClaimRow: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.pharmacyClaimRowDelete(id), {
+			method: "POST",
+		}),
 
 	listMemberClaims: (memberId: string, params?: { claim_kind?: string }) =>
 		vendorCoreFetch<PaginatedResult<Record<string, unknown>>>(

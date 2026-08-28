@@ -59,6 +59,7 @@ export function useVendorCoreFeatureMutation<TData, TVariables>(
 			await onSuccess?.(...args);
 			await queryClient.invalidateQueries({
 				queryKey: featureQueryKey(domain),
+				refetchType: "active",
 			});
 		},
 	});
