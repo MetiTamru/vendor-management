@@ -248,7 +248,12 @@ export async function updateTpaTpvProgress(
 
 export async function getOverallMigrationProgress(): Promise<number> {
 	return withMockOrRemote(
-		() => computeOverallMigrationProgress(TPA_TPV_ROWS),
+		() =>
+			computeOverallMigrationProgress(
+				TPA_TPV_ROWS.map((row) => ({
+					progressPercent: row.sftpProgress.percent,
+				}))
+			),
 		async () => 0,
 		0
 	);

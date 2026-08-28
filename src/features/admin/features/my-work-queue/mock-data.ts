@@ -1,7 +1,12 @@
+import type { ConnectionProgress } from "./progress-data";
 import {
-	type MigrationProgressMilestones,
-	computeMigrationProgressPercent,
-} from "./feature/progress";
+	EDI_MILESTONE_DEFS,
+	EMPTY_EDI_PROGRESS,
+	EMPTY_SFTP_PROGRESS,
+	SFTP_MILESTONE_DEFS,
+	buildMilestones,
+	progressFromMilestones,
+} from "./progress-data";
 
 export type WhitelistStatus = "complete" | "pending" | "not_started";
 
@@ -48,17 +53,31 @@ export type TpaTpvRow = {
 	currentStage: string;
 	nextStep: string;
 	history: HistoryEvent[];
-	/** Milestone completion dates (MM/DD/YYYY). Empty = not completed. */
-	initialContactSentAt: string;
-	secondContactSentAt: string;
-	responseReceivedAt: string;
-	ipAddressesWhitelistedAt: string;
-	credentialsProvidedAt: string;
-	sftpConnectionConfirmedAt: string;
-	progressPercent: number;
-	progressUpdatedBy: string;
-	progressUpdatedAt: string;
+	sftpProgress: ConnectionProgress;
+	ediProgress: ConnectionProgress;
 };
+
+function mockSftp(
+	completedKeys: string[],
+	dates: Partial<Record<string, string>>,
+	meta: { updatedBy: string; updatedAt: string; notes?: string }
+): ConnectionProgress {
+	return progressFromMilestones(
+		buildMilestones(SFTP_MILESTONE_DEFS, completedKeys, dates),
+		meta
+	);
+}
+
+function mockEdi(
+	completedKeys: string[],
+	dates: Partial<Record<string, string>>,
+	meta: { updatedBy: string; updatedAt: string; notes?: string }
+): ConnectionProgress {
+	return progressFromMilestones(
+		buildMilestones(EDI_MILESTONE_DEFS, completedKeys, dates),
+		meta
+	);
+}
 
 export const MIGRATION_STATUS_LABEL: Record<MigrationStatus, string> = {
 	waiting_on_vendor: "Waiting on Vendor",
@@ -161,18 +180,7 @@ function historyFor(
 	];
 }
 
-export const TPA_TPV_ROWS_BASE: Omit<
-	TpaTpvRow,
-	| "initialContactSentAt"
-	| "secondContactSentAt"
-	| "responseReceivedAt"
-	| "ipAddressesWhitelistedAt"
-	| "credentialsProvidedAt"
-	| "sftpConnectionConfirmedAt"
-	| "progressPercent"
-	| "progressUpdatedBy"
-	| "progressUpdatedAt"
->[] = [
+export const TPA_TPV_ROWS: TpaTpvRow[] = [
 	{
 		id: "tpa-1",
 		wave: 1,
@@ -198,6 +206,37 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Data Exchange",
 		nextStep: "Awaiting test file from vendor.",
 		history: historyFor("waiting_on_vendor", "Sarah Johnson", "Michael Lee"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{
+				initial_contact_sent: "08/01/2026",
+				second_contact_sent: "08/05/2026",
+				response_received: "08/08/2026",
+				ip_whitelisted: "08/12/2026",
+				credentials_provided: "08/15/2026",
+				sftp_confirmed: "08/18/2026",
+			},
+			{
+				updatedBy: "Sarah Johnson",
+				updatedAt: "08/19/2026 9:15 AM",
+				notes: "Vendor confirmed public IPs are whitelisted on their firewall.",
+			}
+		),
+		ediProgress: mockEdi(
+			["sftp_complete", "vendor_mgmt_configured"],
+			{
+				sftp_complete: "08/18/2026",
+				vendor_mgmt_configured: "08/19/2026",
+			},
+			{ updatedBy: "Sarah Johnson", updatedAt: "08/19/2026 9:15 AM" }
+		),
 	},
 	{
 		id: "tpa-2",
@@ -224,6 +263,34 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Connectivity Testing",
 		nextStep: "Validate 837 sample batch.",
 		history: historyFor("testing", "Michael Lee", "Sarah Johnson"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{
+				sftp_confirmed: "08/17/2026",
+				credentials_provided: "08/14/2026",
+				ip_whitelisted: "08/10/2026",
+				response_received: "08/06/2026",
+				second_contact_sent: "08/03/2026",
+				initial_contact_sent: "07/28/2026",
+			},
+			{ updatedBy: "Michael Lee", updatedAt: "08/19/2026 8:42 AM" }
+		),
+		ediProgress: mockEdi(
+			["sftp_complete", "vendor_mgmt_configured", "testing_complete"],
+			{
+				testing_complete: "08/19/2026",
+				vendor_mgmt_configured: "08/18/2026",
+				sftp_complete: "08/17/2026",
+			},
+			{ updatedBy: "Michael Lee", updatedAt: "08/19/2026 8:42 AM" }
+		),
 	},
 	{
 		id: "tpa-3",
@@ -250,6 +317,16 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Whitelist Review",
 		nextStep: "Confirm vendor firewall rules.",
 		history: historyFor("need_testing", "Sarah Johnson", "Michael Lee"),
+		sftpProgress: mockSftp(
+			["initial_contact_sent", "second_contact_sent", "response_received"],
+			{
+				response_received: "08/16/2026",
+				second_contact_sent: "08/12/2026",
+				initial_contact_sent: "08/08/2026",
+			},
+			{ updatedBy: "Sarah Johnson", updatedAt: "08/18/2026 4:20 PM" }
+		),
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 	{
 		id: "tpa-4",
@@ -276,6 +353,28 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Go-Live Readiness",
 		nextStep: "Schedule production cutover.",
 		history: historyFor("ready", "Priya Patel", "Sarah Johnson"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{ sftp_confirmed: "08/15/2026" },
+			{ updatedBy: "Priya Patel", updatedAt: "08/19/2026 11:05 AM" }
+		),
+		ediProgress: mockEdi(
+			[
+				"sftp_complete",
+				"vendor_mgmt_configured",
+				"testing_complete",
+				"edi_complete",
+			],
+			{ edi_complete: "08/19/2026" },
+			{ updatedBy: "Priya Patel", updatedAt: "08/19/2026 11:05 AM" }
+		),
 	},
 	{
 		id: "tpa-5",
@@ -302,6 +401,8 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Not Started",
 		nextStep: "Send onboarding packet.",
 		history: historyFor("not_started", "Michael Lee", "Michael Lee"),
+		sftpProgress: EMPTY_SFTP_PROGRESS,
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 	{
 		id: "tpa-6",
@@ -328,6 +429,28 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Production",
 		nextStep: "Monitor first production cycle.",
 		history: historyFor("production_ready", "Sarah Johnson", "Priya Patel"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{ sftp_confirmed: "08/10/2026" },
+			{ updatedBy: "Sarah Johnson", updatedAt: "08/19/2026 7:55 AM" }
+		),
+		ediProgress: mockEdi(
+			[
+				"sftp_complete",
+				"vendor_mgmt_configured",
+				"testing_complete",
+				"edi_complete",
+			],
+			{ edi_complete: "08/18/2026" },
+			{ updatedBy: "Sarah Johnson", updatedAt: "08/19/2026 7:55 AM" }
+		),
 	},
 	{
 		id: "tpa-7",
@@ -354,6 +477,15 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Contract Review",
 		nextStep: "Follow up on signed API addendum.",
 		history: historyFor("waiting_on_vendor", "James Okoro", "Michael Lee"),
+		sftpProgress: mockSftp(
+			["initial_contact_sent", "second_contact_sent"],
+			{
+				second_contact_sent: "08/12/2026",
+				initial_contact_sent: "08/05/2026",
+			},
+			{ updatedBy: "James Okoro", updatedAt: "08/17/2026 3:30 PM" }
+		),
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 	{
 		id: "tpa-8",
@@ -380,6 +512,23 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Connectivity Testing",
 		nextStep: "Compare acknowledgment rates.",
 		history: historyFor("testing", "Priya Patel", "Sarah Johnson"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{ sftp_confirmed: "08/14/2026" },
+			{ updatedBy: "Priya Patel", updatedAt: "08/19/2026 10:22 AM" }
+		),
+		ediProgress: mockEdi(
+			["sftp_complete", "vendor_mgmt_configured"],
+			{ vendor_mgmt_configured: "08/18/2026", sftp_complete: "08/14/2026" },
+			{ updatedBy: "Priya Patel", updatedAt: "08/19/2026 10:22 AM" }
+		),
 	},
 	{
 		id: "tpa-9",
@@ -406,6 +555,17 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Exception Handling",
 		nextStep: "Resolve naming convention with vendor.",
 		history: historyFor("exception", "Sarah Johnson", "Michael Lee"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+			],
+			{ ip_whitelisted: "08/14/2026" },
+			{ updatedBy: "Sarah Johnson", updatedAt: "08/18/2026 1:05 PM" }
+		),
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 	{
 		id: "tpa-10",
@@ -432,6 +592,12 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Data Exchange",
 		nextStep: "Confirm inbound roster directory.",
 		history: historyFor("waiting_on_vendor", "Michael Lee", "James Okoro"),
+		sftpProgress: mockSftp(
+			["initial_contact_sent", "second_contact_sent", "response_received"],
+			{ response_received: "08/13/2026" },
+			{ updatedBy: "Michael Lee", updatedAt: "08/16/2026 9:40 AM" }
+		),
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 	{
 		id: "tpa-11",
@@ -458,6 +624,28 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Go-Live Readiness",
 		nextStep: "Final UAT sign-off.",
 		history: historyFor("ready", "James Okoro", "Priya Patel"),
+		sftpProgress: mockSftp(
+			[
+				"initial_contact_sent",
+				"second_contact_sent",
+				"response_received",
+				"ip_whitelisted",
+				"credentials_provided",
+				"sftp_confirmed",
+			],
+			{ sftp_confirmed: "08/12/2026" },
+			{ updatedBy: "James Okoro", updatedAt: "08/19/2026 6:18 AM" }
+		),
+		ediProgress: mockEdi(
+			[
+				"sftp_complete",
+				"vendor_mgmt_configured",
+				"testing_complete",
+				"edi_complete",
+			],
+			{ edi_complete: "08/17/2026" },
+			{ updatedBy: "James Okoro", updatedAt: "08/19/2026 6:18 AM" }
+		),
 	},
 	{
 		id: "tpa-12",
@@ -484,128 +672,11 @@ export const TPA_TPV_ROWS_BASE: Omit<
 		currentStage: "Exception Handling",
 		nextStep: "Receive renewed SFTP certificate.",
 		history: historyFor("exception", "Priya Patel", "Sarah Johnson"),
+		sftpProgress: mockSftp(
+			["initial_contact_sent", "second_contact_sent"],
+			{ second_contact_sent: "08/08/2026", initial_contact_sent: "08/01/2026" },
+			{ updatedBy: "Priya Patel", updatedAt: "08/14/2026 5:45 PM" }
+		),
+		ediProgress: EMPTY_EDI_PROGRESS,
 	},
 ];
-
-type ProgressSeed = Partial<MigrationProgressMilestones> & {
-	progressUpdatedBy?: string;
-	progressUpdatedAt?: string;
-};
-
-/** Varied milestone seeds so Progress column / overall % look real. */
-const PROGRESS_SEED: Record<string, ProgressSeed> = {
-	"tpa-1": {
-		initialContactSentAt: "08/01/2026",
-		secondContactSentAt: "08/05/2026",
-		responseReceivedAt: "08/08/2026",
-		progressUpdatedBy: "Sarah Johnson",
-		progressUpdatedAt: "08/08/2026 2:00 PM",
-	},
-	"tpa-2": {
-		initialContactSentAt: "07/20/2026",
-		secondContactSentAt: "07/22/2026",
-		responseReceivedAt: "07/25/2026",
-		ipAddressesWhitelistedAt: "08/01/2026",
-		credentialsProvidedAt: "08/10/2026",
-		progressUpdatedBy: "Michael Lee",
-		progressUpdatedAt: "08/10/2026 11:30 AM",
-	},
-	"tpa-3": {
-		initialContactSentAt: "08/05/2026",
-		secondContactSentAt: "08/07/2026",
-		responseReceivedAt: "08/09/2026",
-		ipAddressesWhitelistedAt: "08/12/2026",
-		progressUpdatedBy: "Sarah Johnson",
-		progressUpdatedAt: "08/12/2026 4:00 PM",
-	},
-	"tpa-4": {
-		initialContactSentAt: "07/01/2026",
-		secondContactSentAt: "07/03/2026",
-		responseReceivedAt: "07/05/2026",
-		ipAddressesWhitelistedAt: "07/10/2026",
-		credentialsProvidedAt: "07/15/2026",
-		sftpConnectionConfirmedAt: "07/28/2026",
-		progressUpdatedBy: "Priya Patel",
-		progressUpdatedAt: "07/28/2026 9:00 AM",
-	},
-	"tpa-5": {},
-	"tpa-6": {
-		initialContactSentAt: "06/15/2026",
-		secondContactSentAt: "06/17/2026",
-		responseReceivedAt: "06/20/2026",
-		ipAddressesWhitelistedAt: "06/25/2026",
-		credentialsProvidedAt: "06/28/2026",
-		sftpConnectionConfirmedAt: "07/01/2026",
-		progressUpdatedBy: "Sarah Johnson",
-		progressUpdatedAt: "07/01/2026 3:15 PM",
-	},
-	"tpa-7": {
-		initialContactSentAt: "08/02/2026",
-		secondContactSentAt: "08/04/2026",
-		progressUpdatedBy: "James Okoro",
-		progressUpdatedAt: "08/04/2026 10:00 AM",
-	},
-	"tpa-8": {
-		initialContactSentAt: "07/25/2026",
-		secondContactSentAt: "07/27/2026",
-		responseReceivedAt: "07/30/2026",
-		ipAddressesWhitelistedAt: "08/05/2026",
-		credentialsProvidedAt: "08/08/2026",
-		progressUpdatedBy: "Priya Patel",
-		progressUpdatedAt: "08/08/2026 1:20 PM",
-	},
-	"tpa-9": {
-		initialContactSentAt: "07/10/2026",
-		secondContactSentAt: "07/12/2026",
-		responseReceivedAt: "07/15/2026",
-		ipAddressesWhitelistedAt: "07/20/2026",
-		progressUpdatedBy: "Sarah Johnson",
-		progressUpdatedAt: "07/20/2026 5:00 PM",
-	},
-	"tpa-10": {
-		initialContactSentAt: "08/03/2026",
-		secondContactSentAt: "08/05/2026",
-		responseReceivedAt: "08/07/2026",
-		progressUpdatedBy: "Michael Lee",
-		progressUpdatedAt: "08/07/2026 8:45 AM",
-	},
-	"tpa-11": {
-		initialContactSentAt: "06/28/2026",
-		secondContactSentAt: "06/30/2026",
-		responseReceivedAt: "07/02/2026",
-		ipAddressesWhitelistedAt: "07/08/2026",
-		credentialsProvidedAt: "07/12/2026",
-		sftpConnectionConfirmedAt: "07/18/2026",
-		progressUpdatedBy: "James Okoro",
-		progressUpdatedAt: "07/18/2026 4:30 PM",
-	},
-	"tpa-12": {
-		initialContactSentAt: "07/05/2026",
-		secondContactSentAt: "07/08/2026",
-		responseReceivedAt: "07/12/2026",
-		progressUpdatedBy: "Priya Patel",
-		progressUpdatedAt: "07/12/2026 12:00 PM",
-	},
-};
-
-function withProgressSeed(row: (typeof TPA_TPV_ROWS_BASE)[number]): TpaTpvRow {
-	const seed = PROGRESS_SEED[row.id] ?? {};
-	const milestones: MigrationProgressMilestones = {
-		initialContactSentAt: seed.initialContactSentAt ?? "",
-		secondContactSentAt: seed.secondContactSentAt ?? "",
-		responseReceivedAt: seed.responseReceivedAt ?? "",
-		ipAddressesWhitelistedAt: seed.ipAddressesWhitelistedAt ?? "",
-		credentialsProvidedAt: seed.credentialsProvidedAt ?? "",
-		sftpConnectionConfirmedAt: seed.sftpConnectionConfirmedAt ?? "",
-	};
-	return {
-		...row,
-		...milestones,
-		progressPercent: computeMigrationProgressPercent(milestones),
-		progressUpdatedBy: seed.progressUpdatedBy ?? "",
-		progressUpdatedAt: seed.progressUpdatedAt ?? "",
-	};
-}
-
-export const TPA_TPV_ROWS: TpaTpvRow[] =
-	TPA_TPV_ROWS_BASE.map(withProgressSeed);
