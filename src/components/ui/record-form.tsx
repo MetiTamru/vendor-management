@@ -88,9 +88,7 @@ export function RecordFormRow({
 				data-slot="record-form-row"
 				className={cn(
 					"grid border-b border-border/60 last:border-b-0",
-					fieldCount >= 2
-						? "grid-cols-1 sm:grid-cols-2"
-						: "grid-cols-1",
+					fieldCount >= 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1",
 					className
 				)}
 			>

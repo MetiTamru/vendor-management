@@ -99,7 +99,8 @@ export class VendorCoreApiError extends Error {
 /** Flatten nested DRF / problem-details field errors for toasts. */
 function flattenVendorCoreErrors(errors: unknown, prefix = ""): string | null {
 	if (errors == null || errors === "") return null;
-	if (typeof errors === "string") return prefix ? `${prefix}: ${errors}` : errors;
+	if (typeof errors === "string")
+		return prefix ? `${prefix}: ${errors}` : errors;
 	if (Array.isArray(errors)) {
 		const parts = errors
 			.map((item) => flattenVendorCoreErrors(item, prefix))
@@ -508,4 +509,3 @@ export async function vendorCoreFetchBlob(
 		),
 	};
 }
-

@@ -42,7 +42,10 @@ import {
 } from "@/features/admin/features/providers/mock-data";
 import { useVendorsList } from "@/features/shared/vms/queries";
 import { Link, usePathname } from "@/i18n/navigation";
-import { MODULE_HOME_HREF, useAdminModuleStore } from "@/stores/admin-module-store";
+import {
+	MODULE_HOME_HREF,
+	useAdminModuleStore,
+} from "@/stores/admin-module-store";
 
 type Crumb = {
 	label: string;

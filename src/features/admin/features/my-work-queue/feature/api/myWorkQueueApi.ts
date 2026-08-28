@@ -188,8 +188,7 @@ export async function updateTpaTpvMigration(
 							? "orange"
 							: body.status === "testing" || body.status === "need_testing"
 								? "purple"
-								: body.status === "ready" ||
-									  body.status === "production_ready"
+								: body.status === "ready" || body.status === "production_ready"
 									? "green"
 									: "blue",
 				},

@@ -59,11 +59,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import {
-	computeMigrationProgressPercent,
-	computeOverallMigrationProgress,
 	MIGRATION_PROGRESS_STEPS,
 	MIGRATION_STATUS_LABEL,
 	WHITELIST_STATUS_LABEL,
+	computeMigrationProgressPercent,
+	computeOverallMigrationProgress,
 } from "../feature/api/myWorkQueueApi";
 import {
 	useTpaTpvRowsList,

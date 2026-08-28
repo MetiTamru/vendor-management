@@ -26,15 +26,15 @@ import type {
 
 import {
 	buildAccumulatorSummaryForMember,
-	mapAccumulatorSummary,
 	mapAccumulatorFileRowToTransaction,
+	mapAccumulatorSummary,
 	mapAccumulators,
 	mapChangeEvents,
 	mapClaims,
 	mapEligibilityHistory,
 	mapExceptions,
-	mapFamilyLinks,
 	mapFamilyLinkDetail,
+	mapFamilyLinks,
 	mapPharmacyClaimRowToTransaction,
 	mapPlanHistory,
 	mapSourceRecordList,
@@ -273,17 +273,13 @@ export async function getMemberAccumulatorSummary(
 	if (isMockEnabled()) {
 		const m = getMember(memberId);
 		if (!m) return undefined;
-		return (
-			m.accumulatorSummary ?? buildAccumulatorSummaryForMember(m)
-		);
+		return m.accumulatorSummary ?? buildAccumulatorSummaryForMember(m);
 	}
 
 	let summary: AccumulatorSummary | undefined;
 	let ctxMemberId = memberContext?.memberId?.trim() || "";
 	let ctxPlanId =
-		memberContext?.planCode?.trim() ||
-		memberContext?.planId?.trim() ||
-		"";
+		memberContext?.planCode?.trim() || memberContext?.planId?.trim() || "";
 
 	try {
 		const dto = await vendorCoreApi.getMemberAccumulatorSummary(memberId);
@@ -295,15 +291,12 @@ export async function getMemberAccumulatorSummary(
 	if (!summary) {
 		const [accumulators, detail] = await Promise.all([
 			listMemberAccumulators(memberId),
-			memberContext
-				? Promise.resolve(undefined)
-				: getMemberDetail(memberId),
+			memberContext ? Promise.resolve(undefined) : getMemberDetail(memberId),
 		]);
 		const ctx = memberContext ?? detail;
 		if (ctx?.memberId?.trim()) ctxMemberId = ctx.memberId.trim();
 		if (!ctxPlanId) {
-			ctxPlanId =
-				ctx?.planCode?.trim() || ctx?.planId?.trim() || "";
+			ctxPlanId = ctx?.planCode?.trim() || ctx?.planId?.trim() || "";
 		}
 		if (!ctx) {
 			summary = buildAccumulatorSummaryForMember({
@@ -652,7 +645,9 @@ export async function deleteMemberClaim(memberId: string, claimId: string) {
 	await vendorCoreApi.deleteMemberClaim(memberId, claimId);
 }
 
-export async function createMember(body: MemberCreateBody | Record<string, unknown>) {
+export async function createMember(
+	body: MemberCreateBody | Record<string, unknown>
+) {
 	if (isMockEnabled()) {
 		const existing = getMemberSummaries()[0];
 		if (!existing) throw new Error("No mock members");
@@ -686,7 +681,10 @@ export async function updateMember(
 		if (!member) throw new Error("Member not found");
 		return member;
 	}
-	const dto = await vendorCoreApi.updateMember(id, sanitizeMemberWriteBody(body));
+	const dto = await vendorCoreApi.updateMember(
+		id,
+		sanitizeMemberWriteBody(body)
+	);
 	return memberDetailDtoToDetail(dto);
 }
 

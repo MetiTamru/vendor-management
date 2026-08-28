@@ -48,11 +48,11 @@ import {
 	Tags,
 	Timer,
 	TrendingUp,
+	Truck,
 	UserPlus,
 	UserRound,
 	Users,
 	UsersRound,
-	Truck,
 	Workflow,
 } from "lucide-react";
 import { useTranslations } from "next-intl";

@@ -327,10 +327,7 @@ const EMPTY_AMOUNT: AccumulatorAmountTriple = {
 	total: null,
 };
 
-function amountTriple(
-	applied: number,
-	total: number
-): AccumulatorAmountTriple {
+function amountTriple(applied: number, total: number): AccumulatorAmountTriple {
 	return {
 		applied,
 		remaining: Math.max(0, total - applied),

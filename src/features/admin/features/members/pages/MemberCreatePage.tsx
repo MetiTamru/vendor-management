@@ -6,9 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
-import {
-	createMemberFamilyLink,
-} from "@/features/admin/features/members/feature/api/membersApi";
+import { createMemberFamilyLink } from "@/features/admin/features/members/feature/api/membersApi";
 import {
 	useCreateMemberMutation,
 	useVendorCoreVendors,

@@ -51,14 +51,24 @@ export function useMyWorkQueueDashboardQuery() {
 export function useTpaTpvDetailQuery(id: string | undefined) {
 	return useQuery({
 		queryKey: featureQueryKey(domain, "detail", id ?? ""),
-		queryFn: () => getTpaTpvDetail(id!),
+		queryFn: async () => {
+			const detail = await getTpaTpvDetail(id!);
+			if (!detail) {
+				throw new Error(`TPA/TPV record not found: ${id}`);
+			}
+			return detail;
+		},
 		enabled: Boolean(id),
 	});
 }
 
 export function useTpaTpvRowsList(filters?: MyWorkQueueListFiltersDto) {
 	const query = useTpaTpvRowsQuery(filters);
-	return { ...query, rows: query.data?.items ?? [], total: query.data?.total ?? 0 };
+	return {
+		...query,
+		rows: query.data?.items ?? [],
+		total: query.data?.total ?? 0,
+	};
 }
 
 export function useWorkQueueKpisList() {
@@ -84,13 +94,8 @@ export function useUpdateTpaTpvInfoMutation() {
 export function useUpdateTpaTpvContactsMutation() {
 	const invalidate = useInvalidateWorkQueue();
 	return useMutation({
-		mutationFn: ({
-			id,
-			body,
-		}: {
-			id: string;
-			body: TpaTpvContactsUpdateDto;
-		}) => updateTpaTpvContacts(id, body),
+		mutationFn: ({ id, body }: { id: string; body: TpaTpvContactsUpdateDto }) =>
+			updateTpaTpvContacts(id, body),
 		onSuccess: () => invalidate(),
 	});
 }
@@ -112,13 +117,8 @@ export function useUpdateTpaTpvMigrationMutation() {
 export function useUpdateTpaTpvProgressMutation() {
 	const invalidate = useInvalidateWorkQueue();
 	return useMutation({
-		mutationFn: ({
-			id,
-			body,
-		}: {
-			id: string;
-			body: TpaTpvProgressUpdateDto;
-		}) => updateTpaTpvProgress(id, body),
+		mutationFn: ({ id, body }: { id: string; body: TpaTpvProgressUpdateDto }) =>
+			updateTpaTpvProgress(id, body),
 		onSuccess: () => invalidate(),
 	});
 }

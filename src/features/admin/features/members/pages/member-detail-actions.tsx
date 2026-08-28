@@ -30,8 +30,8 @@ import {
 	useDeleteMemberExceptionMutation,
 	useDeleteMemberMutation,
 	useHardDeleteMemberMutation,
-	useMemberAccumulatorsQuery,
 	useMemberAccumulatorSummaryQuery,
+	useMemberAccumulatorsQuery,
 	useMemberChangeEventsQuery,
 	useMemberClaimsQuery,
 	useMemberEligibilityHistoryQuery,
@@ -46,8 +46,8 @@ import {
 	useUpdateMemberExceptionMutation,
 	useUpdateMemberMutation,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import type { MemberDetail } from "@/features/admin/features/members/mock-data";
 import { buildAccumulatorSummaryForMember } from "@/features/admin/features/members/map-member-core";
+import type { MemberDetail } from "@/features/admin/features/members/mock-data";
 import { MemberWriteForm } from "@/features/admin/features/members/pages/member-write-form";
 import { useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
@@ -108,8 +108,7 @@ export function useMemberTabData(
 	);
 	const sources = useMemberSourceRecordsQuery(
 		memberId,
-		useApi &&
-			(tab === "Vendor / Source History" || tab === "Eligibility")
+		useApi && (tab === "Vendor / Source History" || tab === "Eligibility")
 	);
 	const familyLinks = useMemberFamilyLinksQuery(
 		memberId,
@@ -153,12 +152,11 @@ export function useMemberTabData(
 				vendor: s.originalFilename || s.sourceSystem,
 				fileFeedType: s.sourceSystem || "Eligibility",
 				lastReceived: s.fileReceivedAt,
-				status:
-					String(s.recordStatus || "")
-						.toLowerCase()
-						.includes("process")
-						? ("success" as const)
-						: ("warning" as const),
+				status: String(s.recordStatus || "")
+					.toLowerCase()
+					.includes("process")
+					? ("success" as const)
+					: ("warning" as const),
 				frequency: s.recordEffectiveDate || "—",
 				recordsProcessed: 1,
 				direction: "Inbound" as const,
@@ -481,7 +479,9 @@ function confirmDelete(label: string) {
 function toDateInputValue(iso: string | null | undefined): string {
 	if (!iso || iso === "—") return "";
 	const trimmed = String(iso).trim();
-	const day = trimmed.includes("T") ? trimmed.slice(0, 10) : trimmed.slice(0, 10);
+	const day = trimmed.includes("T")
+		? trimmed.slice(0, 10)
+		: trimmed.slice(0, 10);
 	if (/^\d{4}-\d{2}-\d{2}$/.test(day)) return day;
 	const us = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
 	if (us) {

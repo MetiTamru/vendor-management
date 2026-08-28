@@ -1,6 +1,6 @@
 import {
-	computeMigrationProgressPercent,
 	type MigrationProgressMilestones,
+	computeMigrationProgressPercent,
 } from "./feature/progress";
 
 export type WhitelistStatus = "complete" | "pending" | "not_started";
@@ -588,9 +588,7 @@ const PROGRESS_SEED: Record<string, ProgressSeed> = {
 	},
 };
 
-function withProgressSeed(
-	row: (typeof TPA_TPV_ROWS_BASE)[number]
-): TpaTpvRow {
+function withProgressSeed(row: (typeof TPA_TPV_ROWS_BASE)[number]): TpaTpvRow {
 	const seed = PROGRESS_SEED[row.id] ?? {};
 	const milestones: MigrationProgressMilestones = {
 		initialContactSentAt: seed.initialContactSentAt ?? "",
@@ -609,4 +607,5 @@ function withProgressSeed(
 	};
 }
 
-export const TPA_TPV_ROWS: TpaTpvRow[] = TPA_TPV_ROWS_BASE.map(withProgressSeed);
+export const TPA_TPV_ROWS: TpaTpvRow[] =
+	TPA_TPV_ROWS_BASE.map(withProgressSeed);

@@ -12,18 +12,18 @@ import {
 	RecordFormRow,
 	RecordFormSection,
 } from "@/components/ui/record-form";
+import { useUpdateMemberMutation } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import { memberToWriteBody } from "@/features/admin/features/members/map-member-core";
+import type { MemberDetail } from "@/features/admin/features/members/mock-data";
 import {
 	MemberFamilyDraftEditor,
-	MemberFamilyEditor,
 	type MemberFamilyDraftHandle,
+	MemberFamilyEditor,
 	type MemberFamilyLiveHandle,
 	type PendingFamilyDependent,
 } from "@/features/admin/features/members/pages/member-family-editor";
-import type { MemberDetail } from "@/features/admin/features/members/mock-data";
-import { memberToWriteBody } from "@/features/admin/features/members/map-member-core";
-import { useUpdateMemberMutation } from "@/features/admin/features/members/feature/queries/useMembersQuery";
-import type { MemberWriteBody } from "@/lib/vendor-core/types";
 import { cn } from "@/lib/utils";
+import type { MemberWriteBody } from "@/lib/vendor-core/types";
 
 const fieldClass = "h-8 w-full bg-background text-sm";
 
@@ -100,8 +100,7 @@ export function MemberWriteForm({
 	const elig = body.eligibility ?? {};
 	const plan = body.plan_coverage ?? {};
 	const group = body.employment_group ?? {};
-	const familyVisible =
-		showFamily ?? Boolean(member?.id);
+	const familyVisible = showFamily ?? Boolean(member?.id);
 
 	async function submitWithFamily() {
 		if (requireIdentityFields) {
@@ -192,10 +191,7 @@ export function MemberWriteForm({
 					description="Required. Member is created under this vendor."
 				>
 					<RecordFormRow>
-						<RecordFormField
-							label="Vendor"
-							required={requireIdentityFields}
-						>
+						<RecordFormField label="Vendor" required={requireIdentityFields}>
 							<select
 								className="h-8 w-full rounded-md border border-input bg-background px-3 text-sm"
 								value={vendorId ?? ""}
@@ -237,10 +233,7 @@ export function MemberWriteForm({
 							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField
-						label="Person code"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Person code" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={body.person_code ?? ""}
@@ -279,16 +272,11 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField
-						label="First name"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="First name" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={body.first_name ?? ""}
-							onChange={(e) =>
-								setBody({ ...body, first_name: e.target.value })
-							}
+							onChange={(e) => setBody({ ...body, first_name: e.target.value })}
 							required={requireIdentityFields}
 							aria-required={requireIdentityFields || undefined}
 						/>
@@ -306,26 +294,18 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField
-						label="Last name"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Last name" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={body.last_name ?? ""}
-							onChange={(e) =>
-								setBody({ ...body, last_name: e.target.value })
-							}
+							onChange={(e) => setBody({ ...body, last_name: e.target.value })}
 							required={requireIdentityFields}
 							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField
-						label="Status"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Status" required={requireIdentityFields}>
 						<RecordFormChoice
 							tone="primary"
 							value={body.status || "active"}
@@ -376,9 +356,7 @@ export function MemberWriteForm({
 						<Input
 							className={fieldClass}
 							value={body.plan_type ?? ""}
-							onChange={(e) =>
-								setBody({ ...body, plan_type: e.target.value })
-							}
+							onChange={(e) => setBody({ ...body, plan_type: e.target.value })}
 						/>
 					</RecordFormField>
 					<RecordFormField label="Source system">
@@ -432,10 +410,7 @@ export function MemberWriteForm({
 							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField
-						label="Gender"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Gender" required={requireIdentityFields}>
 						<RecordFormChoice
 							value={demo.gender || "M"}
 							onChange={(v) =>
@@ -480,10 +455,7 @@ export function MemberWriteForm({
 					</RecordFormField>
 				</RecordFormRow>
 				<RecordFormRow>
-					<RecordFormField
-						label="Phone"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Phone" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={demo.phone ?? ""}
@@ -773,10 +745,7 @@ export function MemberWriteForm({
 				description="Coverage eligibility status and dates."
 			>
 				<RecordFormRow>
-					<RecordFormField
-						label="Status"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Status" required={requireIdentityFields}>
 						<RecordFormChoice
 							tone="primary"
 							value={elig.status || "active"}
@@ -882,10 +851,7 @@ export function MemberWriteForm({
 				description="Active plan assignment and coverage window."
 			>
 				<RecordFormRow>
-					<RecordFormField
-						label="Plan name"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Plan name" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={plan.plan_name ?? ""}
@@ -900,10 +866,7 @@ export function MemberWriteForm({
 							aria-required={requireIdentityFields || undefined}
 						/>
 					</RecordFormField>
-					<RecordFormField
-						label="Plan code"
-						required={requireIdentityFields}
-					>
+					<RecordFormField label="Plan code" required={requireIdentityFields}>
 						<Input
 							className={fieldClass}
 							value={plan.plan_code ?? ""}

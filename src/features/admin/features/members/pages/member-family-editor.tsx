@@ -28,8 +28,6 @@ import {
 	RecordFormRow,
 	RecordFormSection,
 } from "@/components/ui/record-form";
-import type { MemberSummary } from "@/features/admin/features/members/mock-data";
-import { memberAge } from "@/features/admin/features/members/mock-data";
 import { createMemberFamilyLink } from "@/features/admin/features/members/feature/api/membersApi";
 import {
 	useCreateMemberMutation,
@@ -43,6 +41,8 @@ import {
 	useUpdateMemberFamilyLinkMutation,
 	useUpdateMemberMutation,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import type { MemberSummary } from "@/features/admin/features/members/mock-data";
+import { memberAge } from "@/features/admin/features/members/mock-data";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 
@@ -60,8 +60,9 @@ type AddMode = "pick" | "create";
 
 function autoCardholder(subscriberCardholderId: string) {
 	const base =
-		(subscriberCardholderId || "DEP").replace(/[^A-Za-z0-9]/g, "").slice(0, 12) ||
-		"DEP";
+		(subscriberCardholderId || "DEP")
+			.replace(/[^A-Za-z0-9]/g, "")
+			.slice(0, 12) || "DEP";
 	const suffix = Date.now().toString(36).slice(-5).toUpperCase();
 	return `${base}-D${suffix}`.slice(0, 32);
 }
@@ -195,8 +196,7 @@ export function MemberFamilyDraftEditor({
 		const last = newLastName.trim();
 		if (!first || !last) return null;
 		const cardholder =
-			newCardholder.trim() ||
-			autoCardholder(subscriberCardholderId || "NEW");
+			newCardholder.trim() || autoCardholder(subscriberCardholderId || "NEW");
 		return {
 			key: `create-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
 			kind: "create",
@@ -393,9 +393,7 @@ export function MemberFamilyDraftEditor({
 														className="size-7 text-destructive"
 														title="Remove"
 														onClick={() =>
-															onChange(
-																value.filter((d) => d.key !== row.key)
-															)
+															onChange(value.filter((d) => d.key !== row.key))
 														}
 													>
 														<Trash2 className="size-3.5" />
@@ -664,8 +662,7 @@ export function MemberFamilyEditor({
 }) {
 	const enabled = Boolean(memberId) && !isMockEnabled();
 	const detailQ = useMemberDetailQuery(memberId, enabled && !vendorId);
-	const resolvedVendorId =
-		vendorId || detailQ.data?.vendorId || undefined;
+	const resolvedVendorId = vendorId || detailQ.data?.vendorId || undefined;
 	const linksQ = useMemberFamilyLinksQuery(memberId, enabled);
 	const createMember = useCreateMemberMutation();
 	const updateLink = useUpdateMemberFamilyLinkMutation(memberId);
@@ -740,7 +737,9 @@ export function MemberFamilyEditor({
 		);
 	}, [browseQ.data, memberId, linkedDependentIds]);
 
-	const activeCovered = links.filter((d) => d.coverageStatus === "active").length;
+	const activeCovered = links.filter(
+		(d) => d.coverageStatus === "active"
+	).length;
 	const childrenCount = links.filter(
 		(d) =>
 			d.relationship === "Daughter" ||
@@ -1009,7 +1008,9 @@ export function MemberFamilyEditor({
 													key={row.id}
 													className="border-b border-border/30 last:border-0"
 												>
-													<td className="px-2 py-2.5 font-medium">{row.name}</td>
+													<td className="px-2 py-2.5 font-medium">
+														{row.name}
+													</td>
 													<td className="px-2 py-2.5 font-mono text-xs">
 														{row.memberId ?? "—"}
 													</td>
@@ -1092,14 +1093,11 @@ export function MemberFamilyEditor({
 																disabled={remove.isPending}
 																onClick={() => {
 																	if (
-																		!window.confirm(
-																			"Remove this family link?"
-																		)
+																		!window.confirm("Remove this family link?")
 																	)
 																		return;
 																	remove.mutate(row.id, {
-																		onSuccess: () =>
-																			toast.success("Removed"),
+																		onSuccess: () => toast.success("Removed"),
 																		onError: (err) =>
 																			toast.error(
 																				err instanceof Error

@@ -7,8 +7,8 @@ import type {
 	TpaTpvProgressUpdateDto,
 } from "../dto/myWorkQueueDto";
 import {
-	computeMigrationProgressPercent,
 	type MigrationProgressMilestones,
+	computeMigrationProgressPercent,
 } from "../progress";
 import type {
 	HistoryEvent,
@@ -32,10 +32,7 @@ export function toHistoryEvent(
 	};
 }
 
-export function toTpaTpvModel(
-	row: ApiTpaTpvRecordDto,
-	index = 0
-): TpaTpvModel {
+export function toTpaTpvModel(row: ApiTpaTpvRecordDto, index = 0): TpaTpvModel {
 	const history = Array.isArray(row.history)
 		? row.history.map((event, i) => toHistoryEvent(event, i))
 		: [];
@@ -80,9 +77,7 @@ export function toTpaTpvModel(
 						responseReceivedAt: str(row.responseReceivedAt),
 						ipAddressesWhitelistedAt: str(row.ipAddressesWhitelistedAt),
 						credentialsProvidedAt: str(row.credentialsProvidedAt),
-						sftpConnectionConfirmedAt: str(
-							row.sftpConnectionConfirmedAt
-						),
+						sftpConnectionConfirmedAt: str(row.sftpConnectionConfirmedAt),
 					}),
 		progressUpdatedBy: str(row.progressUpdatedBy),
 		progressUpdatedAt: str(row.progressUpdatedAt),

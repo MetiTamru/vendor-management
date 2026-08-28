@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
-import { MemberDetailPage } from "@/features/admin/features/members/pages/MemberDetailPage";
 import { VendorCoreLoadingRow } from "@/components/vendor-core/VendorCoreLiveChrome";
+import { MemberDetailPage } from "@/features/admin/features/members/pages/MemberDetailPage";
 
 type PageProps = {
 	params: Promise<{ memberId: string }>;

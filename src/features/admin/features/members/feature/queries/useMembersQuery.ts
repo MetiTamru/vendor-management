@@ -23,14 +23,13 @@ import {
 	deleteMemberClaim,
 	deleteMemberException,
 	deleteMemberFamilyLink,
-	getMemberDetail,
 	getMemberAccumulatorSummary,
+	getMemberDetail,
 	getMemberFamilyLink,
 	getMemberSourceRecord,
 	hardDeleteMember,
 	listAccumulatorFiles,
 	listAccumulatorRows,
-	listPharmacyClaimRows,
 	listMemberAccumulators,
 	listMemberChangeEvents,
 	listMemberClaims,
@@ -43,6 +42,7 @@ import {
 	listMemberSummaries,
 	listMemberSummariesPage,
 	listMemberVendors,
+	listPharmacyClaimRows,
 	restoreMember,
 	seedMembers,
 	syncMemberFamilyLinks,
@@ -358,10 +358,7 @@ export function useUpdateMemberMutation() {
 		}) => updateMember(id, body),
 		onSuccess: (detail, { id }) => {
 			if (!detail) return;
-			queryClient.setQueryData(
-				featureQueryKey(domain, "detail", id),
-				detail
-			);
+			queryClient.setQueryData(featureQueryKey(domain, "detail", id), detail);
 			queryClient.setQueriesData(
 				{ queryKey: featureQueryKey(domain, "detail") },
 				(current) => {

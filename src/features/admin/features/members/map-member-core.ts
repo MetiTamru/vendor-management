@@ -311,9 +311,7 @@ export function mapClaims(
 		claimNumber: str(r.claim_number, "—"),
 		type: mapClaimType(str(r.claim_kind)),
 		provider: str(
-			r.provider_name ||
-				r.rendering_provider_name ||
-				r.billing_provider_name,
+			r.provider_name || r.rendering_provider_name || r.billing_provider_name,
 			"—"
 		),
 		billed: num(r.billed_amount),
@@ -341,9 +339,7 @@ const EMPTY_AMOUNT: AccumulatorAmountTriple = {
 	total: null,
 };
 
-function mapAmountTriple(
-	raw: unknown
-): AccumulatorAmountTriple {
+function mapAmountTriple(raw: unknown): AccumulatorAmountTriple {
 	if (!raw || typeof raw !== "object") return { ...EMPTY_AMOUNT };
 	const o = raw as MemberAccumulatorAmountDto;
 	return {
@@ -373,9 +369,7 @@ function mapAccumulatorTableRow(
 		benefitMax: mapAmountTriple(row.benefit_max),
 		planYearAmount:
 			row.plan_year_amount == null ? null : num(row.plan_year_amount),
-		planYearStart: row.plan_year_start
-			? dateStr(row.plan_year_start)
-			: null,
+		planYearStart: row.plan_year_start ? dateStr(row.plan_year_start) : null,
 		planYearEnd: row.plan_year_end ? dateStr(row.plan_year_end) : null,
 		resetDate: row.reset_date ? dateStr(row.reset_date) : null,
 		sourceAccumulatorId: row.source_accumulator_id
@@ -439,9 +433,7 @@ export function mapAccumulatorFileRowToTransaction(
 				: "—";
 	const dos = row.date_of_service ? dateStr(row.date_of_service) : null;
 	const created =
-		"created_at" in row && row.created_at
-			? dateStr(row.created_at)
-			: "—";
+		"created_at" in row && row.created_at ? dateStr(row.created_at) : "—";
 	return {
 		id: str(row.id),
 		date: dos || created,
@@ -472,14 +464,13 @@ export function mapPharmacyClaimRowToTransaction(
 			.map((p) => str(p).trim())
 			.filter(Boolean)
 			.join(" ") || "—";
-	const description = [drug || null, claimNo ? `Claim ${claimNo}` : null, name]
-		.filter(Boolean)
-		.join(" · ") || "—";
+	const description =
+		[drug || null, claimNo ? `Claim ${claimNo}` : null, name]
+			.filter(Boolean)
+			.join(" · ") || "—";
 	const dos = row.date_of_service ? dateStr(row.date_of_service) : null;
 	const created =
-		"created_at" in row && row.created_at
-			? dateStr(row.created_at)
-			: "—";
+		"created_at" in row && row.created_at ? dateStr(row.created_at) : "—";
 	return {
 		id: str(row.id),
 		date: dos || created,
@@ -499,9 +490,7 @@ export function mapPharmacyClaimRowToTransaction(
 export function mergeRecentAccumulatorTransactions(
 	...groups: AccumulatorTransaction[][]
 ): AccumulatorTransaction[] {
-	return groups
-		.flat()
-		.sort((a, b) => str(b.date).localeCompare(str(a.date)));
+	return groups.flat().sort((a, b) => str(b.date).localeCompare(str(a.date)));
 }
 
 /** Map BE `accumulator_summary` (or partial) → UI AccumulatorSummary. */
@@ -534,18 +523,14 @@ export function mapAccumulatorSummary(
 	};
 }
 
-function classifyAccumulatorLabel(
-	label: string
-): {
+function classifyAccumulatorLabel(label: string): {
 	category: "medical" | "pharmacy";
 	bucket: "deductible" | "oop" | "benefit_max";
 	typeLabel: string;
 } {
 	const lower = label.toLowerCase();
 	const category: "medical" | "pharmacy" =
-		lower.includes("pharmacy") || lower.includes("rx")
-			? "pharmacy"
-			: "medical";
+		lower.includes("pharmacy") || lower.includes("rx") ? "pharmacy" : "medical";
 	let bucket: "deductible" | "oop" | "benefit_max" = "deductible";
 	if (
 		lower.includes("oop") ||
@@ -705,7 +690,10 @@ export function buildAccumulatorSummaryForMember(
 ): AccumulatorSummary {
 	const useDemoFill = isMockEnabled();
 	const mapped = mapAccumulatorSummary(rawSummary ?? undefined);
-	if (mapped && (mapped.medicalRows.length > 0 || mapped.pharmacyRows.length > 0)) {
+	if (
+		mapped &&
+		(mapped.medicalRows.length > 0 || mapped.pharmacyRows.length > 0)
+	) {
 		if (mapped.recentTransactions.length === 0 && useDemoFill) {
 			mapped.recentTransactions = buildMockAccumulatorTransactions({
 				planId: mapped.medicalRows[0]?.planId || member.planCode || "PLAN_A",
@@ -730,10 +718,9 @@ export function buildAccumulatorSummaryForMember(
 		"—";
 	const internalMemberId = member.memberId?.trim() || "—";
 	const internalFamilyId = `FAM${internalMemberId.replace(/\D/g, "").slice(-8).padStart(8, "0") || "00000001"}`;
-	const year = (member.coverageStart || new Date().getFullYear().toString()).slice(
-		0,
-		4
-	);
+	const year = (
+		member.coverageStart || new Date().getFullYear().toString()
+	).slice(0, 4);
 	const planYearStart = `${year}-01-01`;
 	const planYearEnd = member.coverageEnd?.slice(0, 10) || `${year}-12-31`;
 	const flat = member.accumulators ?? [];

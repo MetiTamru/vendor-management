@@ -59,6 +59,10 @@ import {
 	maskSsn,
 	memberAge,
 } from "@/features/admin/features/members/feature/api/membersApi";
+import {
+	useMemberChangeEventsQuery,
+	useMemberDetailQuery,
+} from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import { buildAccumulatorSummaryForMember } from "@/features/admin/features/members/map-member-core";
 import type {
 	AccumulatorAmountTriple,
@@ -67,10 +71,6 @@ import type {
 	AccumulatorTableRow,
 	MemberDetail,
 } from "@/features/admin/features/members/mock-data";
-import {
-	useMemberChangeEventsQuery,
-	useMemberDetailQuery,
-} from "@/features/admin/features/members/feature/queries/useMembersQuery";
 import {
 	MemberAccumulatorRowActions,
 	MemberChangeEventsPanel,
@@ -368,7 +368,9 @@ function SummaryColumn({
 						key={row.field}
 						className={cn(i % 2 === 1 && "bg-muted/[0.18]")}
 					>
-						<TableCell className={overviewTd("text-[11px] text-muted-foreground")}>
+						<TableCell
+							className={overviewTd("text-[11px] text-muted-foreground")}
+						>
 							{row.field}
 						</TableCell>
 						<TableCell
@@ -594,7 +596,9 @@ function exceptionStatusBadge(status: ExceptionStatus | string) {
 	if (s === "resolved") return <SoftGreenBadge>Resolved</SoftGreenBadge>;
 	if (s === "open") return <SoftAmberBadge>Open</SoftAmberBadge>;
 	if (s === "in_progress") return <SoftAmberBadge>In Progress</SoftAmberBadge>;
-	return <span className="text-xs capitalize text-muted-foreground">{status}</span>;
+	return (
+		<span className="text-xs capitalize text-muted-foreground">{status}</span>
+	);
 }
 
 function processedStatusBadge(status: string) {
@@ -607,7 +611,9 @@ function processedStatusBadge(status: string) {
 	}
 	if (s === "warning") return <SoftAmberBadge>Warning</SoftAmberBadge>;
 	return (
-		<span className="text-xs text-muted-foreground">{status?.trim() || "—"}</span>
+		<span className="text-xs text-muted-foreground">
+			{status?.trim() || "—"}
+		</span>
 	);
 }
 
@@ -668,9 +674,10 @@ function buildFamilyRows(
 		member.statusEffectiveDate || member.coverageStart
 			? formatDate(member.statusEffectiveDate ?? member.coverageStart)
 			: "—";
-	const termed = member.statusTermDate || member.coverageEnd
-		? formatDate(member.statusTermDate ?? member.coverageEnd)
-		: "—";
+	const termed =
+		member.statusTermDate || member.coverageEnd
+			? formatDate(member.statusTermDate ?? member.coverageEnd)
+			: "—";
 
 	const deps = member.dependents ?? [];
 	const hasSelfInDeps = deps.some(
@@ -762,9 +769,7 @@ function OverviewRecentActivity({
 		if (member.lastEligibilityUpdate || member.dataAsOf) {
 			rows.push({
 				id: "elig-update",
-				date: formatDateTime(
-					member.lastEligibilityUpdate ?? member.dataAsOf
-				),
+				date: formatDateTime(member.lastEligibilityUpdate ?? member.dataAsOf),
 				event: "Eligibility Updated",
 				description: `Status set to ${member.eligibilityStatus}`,
 			});
@@ -844,7 +849,9 @@ function OverviewRecentActivity({
 									key={row.id}
 									className={cn(i % 2 === 1 && "bg-muted/[0.22]")}
 								>
-									<TableCell className={overviewTd("tabular-nums text-muted-foreground")}>
+									<TableCell
+										className={overviewTd("tabular-nums text-muted-foreground")}
+									>
 										{row.date}
 									</TableCell>
 									<TableCell className={overviewTd("font-medium")}>
@@ -909,10 +916,7 @@ function TruncateCell({
 	const text = typeof children === "string" ? children : undefined;
 	return (
 		<TableCell
-			className={cn(
-				overviewTd("max-w-0 overflow-hidden"),
-				className
-			)}
+			className={cn(overviewTd("max-w-0 overflow-hidden"), className)}
 			title={text}
 		>
 			<span className="block truncate">{children}</span>
@@ -1646,16 +1650,26 @@ function MemberDetailBody({
 												key={row.id}
 												className={cn(i % 2 === 1 && "bg-muted/[0.22]")}
 											>
-												<TableCell className={overviewTd("min-w-0 overflow-hidden font-medium break-words whitespace-normal")}>
+												<TableCell
+													className={overviewTd(
+														"min-w-0 overflow-hidden font-medium break-words whitespace-normal"
+													)}
+												>
 													{row.label}
 												</TableCell>
-												<TableCell className={overviewTd("text-right tabular-nums")}>
+												<TableCell
+													className={overviewTd("text-right tabular-nums")}
+												>
 													{formatCurrency(row.individual)}
 												</TableCell>
-												<TableCell className={overviewTd("text-right tabular-nums")}>
+												<TableCell
+													className={overviewTd("text-right tabular-nums")}
+												>
 													{formatCurrency(row.family)}
 												</TableCell>
-												<TableCell className={overviewTd("text-right tabular-nums")}>
+												<TableCell
+													className={overviewTd("text-right tabular-nums")}
+												>
 													{formatCurrency(row.remaining)}
 												</TableCell>
 											</TableRow>
@@ -1669,7 +1683,11 @@ function MemberDetailBody({
 							/>
 						</Panel>
 
-						<Panel dense bodyClassName="flex flex-col p-0" title="Latest Claims">
+						<Panel
+							dense
+							bodyClassName="flex flex-col p-0"
+							title="Latest Claims"
+						>
 							<div className="min-h-0 flex-1 overflow-hidden">
 								<Table className="w-full table-fixed">
 									<TableHeader>
@@ -1702,10 +1720,14 @@ function MemberDetailBody({
 												<TableCell className={overviewTd()}>
 													<ClaimPill status={claim.status} />
 												</TableCell>
-												<TableCell className={overviewTd("text-right tabular-nums")}>
+												<TableCell
+													className={overviewTd("text-right tabular-nums")}
+												>
 													{formatCurrency(claim.billed)}
 												</TableCell>
-												<TableCell className={overviewTd("text-right tabular-nums")}>
+												<TableCell
+													className={overviewTd("text-right tabular-nums")}
+												>
 													{formatCurrency(claim.paid)}
 												</TableCell>
 											</TableRow>
@@ -1727,11 +1749,7 @@ function MemberDetailBody({
 					</div>
 
 					{/* Bottom — Family Members (full width) */}
-					<Panel
-						dense
-						bodyClassName="flex flex-col p-0"
-						title="Family Members"
-					>
+					<Panel dense bodyClassName="flex flex-col p-0" title="Family Members">
 						<div className="min-h-0 flex-1 overflow-x-auto">
 							<Table className="w-full min-w-[56rem]">
 								<TableHeader>
@@ -1768,7 +1786,9 @@ function MemberDetailBody({
 											<TableCell className={overviewTd()}>
 												{row.relationship}
 											</TableCell>
-											<TableCell className={overviewTd("font-mono tabular-nums")}>
+											<TableCell
+												className={overviewTd("font-mono tabular-nums")}
+											>
 												{row.personCode}
 											</TableCell>
 											<TableCell className={overviewTd("tabular-nums")}>
@@ -1847,7 +1867,10 @@ function formatAmountOrDash(v: number | null | undefined) {
 	return formatCurrency(v);
 }
 
-function amountCell(triple: AccumulatorAmountTriple, field: keyof AccumulatorAmountTriple) {
+function amountCell(
+	triple: AccumulatorAmountTriple,
+	field: keyof AccumulatorAmountTriple
+) {
 	return formatAmountOrDash(triple[field]);
 }
 
@@ -1919,7 +1942,16 @@ function AccumulatorCategoryTable({
 	title: string;
 	rows: AccumulatorTableRow[];
 	memberId: string;
-	flatById: Map<string, { label: string; individual: number; family: number; remaining: number; limit: number }>;
+	flatById: Map<
+		string,
+		{
+			label: string;
+			individual: number;
+			family: number;
+			remaining: number;
+			limit: number;
+		}
+	>;
 	historyLabel: string;
 	headerExtra?: ReactNode;
 }) {
@@ -1959,25 +1991,19 @@ function AccumulatorCategoryTable({
 							<TableHead rowSpan={2} className={overviewTh("align-bottom")}>
 								Level
 							</TableHead>
-							<TableHead
-								colSpan={3}
-								className={overviewTh("text-center")}
-							>
+							<TableHead colSpan={3} className={overviewTh("text-center")}>
 								Deductible Amount
 							</TableHead>
-							<TableHead
-								colSpan={3}
-								className={overviewTh("text-center")}
-							>
+							<TableHead colSpan={3} className={overviewTh("text-center")}>
 								OOP Amount
 							</TableHead>
-							<TableHead
-								colSpan={3}
-								className={overviewTh("text-center")}
-							>
+							<TableHead colSpan={3} className={overviewTh("text-center")}>
 								Benefit Max Amount
 							</TableHead>
-							<TableHead rowSpan={2} className={overviewTh("align-bottom text-right")}>
+							<TableHead
+								rowSpan={2}
+								className={overviewTh("align-bottom text-right")}
+							>
 								Plan Year
 							</TableHead>
 							<TableHead rowSpan={2} className={overviewTh("align-bottom")}>
@@ -2055,37 +2081,59 @@ function AccumulatorCategoryTable({
 										<TableCell className={overviewTd("capitalize")}>
 											{r.level}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.deductible, "applied")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.deductible, "remaining")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.deductible, "total")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.oop, "applied")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.oop, "remaining")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.oop, "total")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.benefitMax, "applied")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.benefitMax, "remaining")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{amountCell(r.benefitMax, "total")}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{formatAmountOrDash(r.planYearAmount)}
 										</TableCell>
-										<TableCell className={overviewTd("tabular-nums whitespace-nowrap")}>
+										<TableCell
+											className={overviewTd("tabular-nums whitespace-nowrap")}
+										>
 											{range}
 										</TableCell>
 										<TableCell className={overviewTd("tabular-nums")}>
@@ -2283,13 +2331,19 @@ function AccumulatorSummaryTab({
 										<TableCell className={overviewTd()}>
 											{tx.description || "—"}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{formatCurrency(tx.amount)}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{formatCurrency(tx.individualAmount)}
 										</TableCell>
-										<TableCell className={overviewTd("text-right tabular-nums")}>
+										<TableCell
+											className={overviewTd("text-right tabular-nums")}
+										>
 											{formatCurrency(tx.familyAmount)}
 										</TableCell>
 										<TableCell className={overviewTd()}>
@@ -2388,17 +2442,13 @@ function FamilyDependentsTab({
 										<TableCell className={overviewTd()}>
 											{row.relationship}
 										</TableCell>
-										<TableCell
-											className={overviewTd("font-mono tabular-nums")}
-										>
+										<TableCell className={overviewTd("font-mono tabular-nums")}>
 											{row.personCode}
 										</TableCell>
 										<TableCell className={overviewTd("tabular-nums")}>
 											{row.dob}
 										</TableCell>
-										<TableCell className={overviewTd()}>
-											{row.gender}
-										</TableCell>
+										<TableCell className={overviewTd()}>{row.gender}</TableCell>
 										<TableCell className={overviewTd()}>
 											{row.eligibility}
 										</TableCell>
@@ -2492,17 +2542,13 @@ function FamilyDependentsTab({
 										<TableCell className={overviewTd()}>
 											{row.dependentRelationship}
 										</TableCell>
-										<TableCell
-											className={overviewTd("font-mono tabular-nums")}
-										>
+										<TableCell className={overviewTd("font-mono tabular-nums")}>
 											{row.personCode}
 										</TableCell>
 										<TableCell className={overviewTd("tabular-nums")}>
 											{row.dob}
 										</TableCell>
-										<TableCell className={overviewTd()}>
-											{row.gender}
-										</TableCell>
+										<TableCell className={overviewTd()}>{row.gender}</TableCell>
 										<TableCell className={overviewTd()}>
 											{row.studentStatus}
 										</TableCell>
@@ -2587,7 +2633,9 @@ function claimStatusBadge(status: ClaimStatus) {
 	if (status === "denied") return <SoftRedBadge>Denied</SoftRedBadge>;
 	if (status === "pending") return <SoftAmberBadge>Pending</SoftAmberBadge>;
 	if (status === "partial") return <SoftAmberBadge>Partial</SoftAmberBadge>;
-	return <span className="text-xs capitalize text-muted-foreground">{status}</span>;
+	return (
+		<span className="text-xs capitalize text-muted-foreground">{status}</span>
+	);
 }
 
 function MemberClaimsEncountersTab({
@@ -2612,10 +2660,7 @@ function MemberClaimsEncountersTab({
 			.at(-1) ||
 		null;
 
-	function renderClaimTable(
-		rows: typeof claims,
-		emptyLabel: string
-	) {
+	function renderClaimTable(rows: typeof claims, emptyLabel: string) {
 		return (
 			<>
 				<div className="overflow-x-auto">
@@ -2868,13 +2913,7 @@ function DemoSection({
 	);
 }
 
-function DemoField({
-	label,
-	value,
-}: {
-	label: string;
-	value: ReactNode;
-}) {
+function DemoField({ label, value }: { label: string; value: ReactNode }) {
 	return (
 		<div className="grid min-w-0 grid-cols-[minmax(7.5rem,9.5rem)_minmax(0,1fr)] items-baseline gap-x-2 border-b border-border/35 py-1.5 last:border-b-0 sm:grid-cols-[minmax(8.5rem,10.5rem)_minmax(0,1fr)]">
 			<span className="text-[11px] leading-snug font-semibold text-foreground/80">
@@ -2895,7 +2934,7 @@ function relationshipToSubscriber(code?: string | null): string {
 		"01": "Spouse",
 		"19": "Child",
 		"17": "Child",
-		"G8": "Other",
+		G8: "Other",
 	};
 	return known[normalized] ?? normalized;
 }
@@ -2939,10 +2978,7 @@ function TabBody({
 			Boolean(member.state?.trim()) ||
 			Boolean(member.zip?.trim());
 
-		const mailStreet = [
-			member.mailingAddressLine1,
-			member.mailingAddressLine2,
-		]
+		const mailStreet = [member.mailingAddressLine1, member.mailingAddressLine2]
 			.map((p) => (p ?? "").trim())
 			.filter(Boolean)
 			.join(", ");
@@ -3094,18 +3130,12 @@ function TabBody({
 							/>
 						</div>
 						<div>
-							<DemoField
-								label="Person Code"
-								value={dash(member.personCode)}
-							/>
+							<DemoField label="Person Code" value={dash(member.personCode)} />
 							<DemoField
 								label="Relationship to Subscriber"
 								value={relationshipToSubscriber(member.relationshipCode)}
 							/>
-							<DemoField
-								label="Member Type"
-								value={dash(member.memberType)}
-							/>
+							<DemoField label="Member Type" value={dash(member.memberType)} />
 							<DemoField label="Citizenship Status" value="—" />
 							<DemoField label="Ethnicity" value={dash(member.ethnicity)} />
 							<DemoField label="Race" value={dash(member.race)} />
@@ -3162,14 +3192,18 @@ function TabBody({
 											<TableCell className={overviewTd("font-medium")}>
 												{row.type}
 											</TableCell>
-											<TableCell className={overviewTd("max-w-[14rem] truncate")}>
+											<TableCell
+												className={overviewTd("max-w-[14rem] truncate")}
+											>
 												{row.address}
 											</TableCell>
 											<TableCell className={overviewTd()}>{row.city}</TableCell>
 											<TableCell className={overviewTd()}>
 												{row.state}
 											</TableCell>
-											<TableCell className={overviewTd("font-mono tabular-nums")}>
+											<TableCell
+												className={overviewTd("font-mono tabular-nums")}
+											>
 												{row.zip}
 											</TableCell>
 											<TableCell className={overviewTd()}>
@@ -3178,7 +3212,9 @@ function TabBody({
 											<TableCell className={overviewTd("tabular-nums")}>
 												{row.phone}
 											</TableCell>
-											<TableCell className={overviewTd("max-w-[12rem] truncate")}>
+											<TableCell
+												className={overviewTd("max-w-[12rem] truncate")}
+											>
 												{row.email}
 											</TableCell>
 											<TableCell className={overviewTd("tabular-nums")}>
@@ -3239,12 +3275,12 @@ function TabBody({
 								<TableBody>
 									{idRows.length === 0 ? (
 										<TableRow>
-										<TableCell
-											colSpan={5}
-											className="h-10 text-center text-xs text-muted-foreground"
-										>
-											No identification records for this member.
-										</TableCell>
+											<TableCell
+												colSpan={5}
+												className="h-10 text-center text-xs text-muted-foreground"
+											>
+												No identification records for this member.
+											</TableCell>
 										</TableRow>
 									) : (
 										idRows.map((row) => (
@@ -3331,8 +3367,7 @@ function TabBody({
 		const statusTerm = member.statusTermDate ?? null;
 		const eligibilityTerm =
 			member.disenrollmentDate ?? member.coverageEnd ?? null;
-		const lastUpdate =
-			member.lastEligibilityUpdate ?? member.dataAsOf ?? null;
+		const lastUpdate = member.lastEligibilityUpdate ?? member.dataAsOf ?? null;
 		const sourceSystem =
 			member.sourceSystem?.trim() ||
 			member.vendorSource?.trim() ||
@@ -3519,7 +3554,9 @@ function TabBody({
 												{ex.exceptionType}
 											</TableCell>
 											<TableCell
-												className={overviewTd("max-w-[16rem] truncate text-muted-foreground")}
+												className={overviewTd(
+													"max-w-[16rem] truncate text-muted-foreground"
+												)}
 												title={ex.description}
 											>
 												{ex.description}
@@ -3659,8 +3696,7 @@ function TabBody({
 
 	if (tab === "Coverage & Plan History") {
 		const planHistory = member.planHistory ?? [];
-		const currentPlan =
-			planHistory.find((p) => !p.endDate) ?? planHistory[0];
+		const currentPlan = planHistory.find((p) => !p.endDate) ?? planHistory[0];
 		const coverageLevel = member.coverageLevel?.trim() || "—";
 		const planCode =
 			member.planCode?.trim() ||
@@ -4002,9 +4038,7 @@ function TabBody({
 											className={cn(i % 2 === 1 && "bg-muted/[0.18]")}
 										>
 											<TableCell className={overviewTd("tabular-nums")}>
-												{r.effective !== "—"
-													? formatDate(r.effective)
-													: "—"}
+												{r.effective !== "—" ? formatDate(r.effective) : "—"}
 											</TableCell>
 											<TableCell className={overviewTd()}>{r.level}</TableCell>
 											<TableCell className={overviewTd("tabular-nums")}>
@@ -4031,18 +4065,11 @@ function TabBody({
 	}
 
 	if (tab === "Family / Dependents") {
-		return (
-			<FamilyDependentsTab
-				member={member}
-				memberId={memberId}
-			/>
-		);
+		return <FamilyDependentsTab member={member} memberId={memberId} />;
 	}
 
 	if (tab === "Claims & Encounters") {
-		return (
-			<MemberClaimsEncountersTab member={member} memberId={memberId} />
-		);
+		return <MemberClaimsEncountersTab member={member} memberId={memberId} />;
 	}
 
 	if (tab === "Accumulators") {
@@ -4054,7 +4081,10 @@ function TabBody({
 		const success = feeds.filter((v) => v.status === "success").length;
 		const warning = feeds.filter((v) => v.status === "warning").length;
 		const failed = feeds.filter((v) => v.status === "failed").length;
-		const totalRecords = feeds.reduce((s, v) => s + (v.recordsProcessed || 0), 0);
+		const totalRecords = feeds.reduce(
+			(s, v) => s + (v.recordsProcessed || 0),
+			0
+		);
 		const latest = feeds[0];
 		const primarySource =
 			member.vendorSource?.trim() ||
@@ -4207,9 +4237,7 @@ function TabBody({
 												{(v.recordsProcessed ?? 0).toLocaleString("en-US")}
 											</TableCell>
 											<TableCell className={overviewTd("tabular-nums")}>
-												{v.lastReceived
-													? formatDate(v.lastReceived)
-													: "—"}
+												{v.lastReceived ? formatDate(v.lastReceived) : "—"}
 											</TableCell>
 											<TableCell className={overviewTd()}>
 												{v.status === "success" ? (
@@ -4350,9 +4378,7 @@ function TabBody({
 							{rows.length}
 						</span>
 					}
-					headerExtra={
-						<MemberCreateExceptionButton memberId={memberId} />
-					}
+					headerExtra={<MemberCreateExceptionButton memberId={memberId} />}
 				>
 					<div className="overflow-x-auto">
 						<Table className="w-full min-w-[56rem]">
