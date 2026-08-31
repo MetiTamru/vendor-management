@@ -53,9 +53,15 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import { useVendorCoreUsersQuery } from "@/features/admin/features/users/feature/queries/useUsersQuery";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import type {
+	MigrationCaseListQuery,
+	WorkQueueImportResultDto,
+} from "@/lib/vendor-core/types";
 
+import { WorkQueueImportResultDialog } from "../components/WorkQueueImportResultDialog";
 import {
 	EdiAnalystProgressSection,
 	EscalationStatusPill,
@@ -66,17 +72,9 @@ import {
 	WorkQueueProgressOverview,
 	WorkQueueRowActions,
 } from "../components/work-queue-progress";
-import { useVendorCoreUsersQuery } from "@/features/admin/features/users/feature/queries/useUsersQuery";
-import type { MigrationCaseListQuery, WorkQueueImportResultDto } from "@/lib/vendor-core/types";
-
-import { WorkQueueImportResultDialog } from "../components/WorkQueueImportResultDialog";
-import { WorkQueueRegistrationDialog } from "../components/WorkQueueRegistrationDialog";
-import {
-	kpisToProgressSummary,
-} from "../feature/mappers/workQueueMappers";
+import { kpisToProgressSummary } from "../feature/mappers/workQueueMappers";
 import {
 	useBulkSetMigrationCaseStatusMutation,
-	useCreateMigrationCaseMutation,
 	useImportWorkQueueSpreadsheetMutation,
 	useInvalidateVendorCore,
 	useUpdateMigrationCaseMutation,
@@ -88,21 +86,21 @@ import {
 } from "../feature/queries/useWorkQueueQuery";
 import { workQueueErrorMessage } from "../feature/workQueueErrors";
 import {
+	emptyProgressSummary,
+	summarizeProgressFromRows,
+} from "../progress-data";
+import {
+	type EscalationStatus,
+	countActiveEscalations,
+	deriveEscalationStatus,
+	rowsUseStatusEstimatedProgress,
+} from "../work-queue-analyst-escalation";
+import {
 	MIGRATION_STATUS_LABEL,
 	type MigrationStatus,
 	type TpaTpvRow,
 	WORK_QUEUE_KPI,
 } from "../work-queue-types";
-import {
-	emptyProgressSummary,
-	summarizeProgressFromRows,
-} from "../progress-data";
-import {
-	countActiveEscalations,
-	deriveEscalationStatus,
-	type EscalationStatus,
-	rowsUseStatusEstimatedProgress,
-} from "../work-queue-analyst-escalation";
 
 type ActionModal = "contacts" | null;
 
@@ -237,7 +235,6 @@ function MyWorkQueueBody() {
 	const [refreshing, setRefreshing] = useState(false);
 	const [activeRow, setActiveRow] = useState<TpaTpvRow | null>(null);
 	const [modal, setModal] = useState<ActionModal>(null);
-	const [registrationOpen, setRegistrationOpen] = useState(false);
 	const [importResultOpen, setImportResultOpen] = useState(false);
 	const [importResult, setImportResult] =
 		useState<WorkQueueImportResultDto | null>(null);
@@ -301,7 +298,6 @@ function MyWorkQueueBody() {
 	const kpisRawQ = useWorkQueueKpisRawQuery(true);
 
 	const updateCase = useUpdateMigrationCaseMutation();
-	const createCase = useCreateMigrationCaseMutation();
 	const setStatus = useBulkSetMigrationCaseStatusMutation();
 	const importCsv = useImportWorkQueueSpreadsheetMutation();
 	const uploadDoc = useUploadMigrationCaseDocumentMutation();
@@ -381,7 +377,14 @@ function MyWorkQueueBody() {
 
 	useEffect(() => {
 		setPage(1);
-	}, [search, statusFilter, analystFilter, escalationFilter, waveFilter, pageSize]);
+	}, [
+		search,
+		statusFilter,
+		analystFilter,
+		escalationFilter,
+		waveFilter,
+		pageSize,
+	]);
 
 	useEffect(() => {
 		if (!activeRow) return;
@@ -397,7 +400,14 @@ function MyWorkQueueBody() {
 
 	useEffect(() => {
 		setPage(1);
-	}, [search, statusFilter, analystFilter, escalationFilter, waveFilter, pageSize]);
+	}, [
+		search,
+		statusFilter,
+		analystFilter,
+		escalationFilter,
+		waveFilter,
+		pageSize,
+	]);
 
 	const analysts = useMemo(
 		() =>
@@ -536,17 +546,6 @@ function MyWorkQueueBody() {
 		}
 	}
 
-	async function handleRegisterCase(body: Parameters<typeof createCase.mutateAsync>[0]) {
-		await createCase.mutateAsync(body);
-		toast.success(`Registered ${body.code}`);
-		invalidate();
-		await Promise.all([rowsPageQ.refetch(), summaryRowsQ.refetch(), kpisQ.refetch()]);
-	}
-
-	async function handleAddCase() {
-		setRegistrationOpen(true);
-	}
-
 	async function handleFeedFile(file: File | undefined) {
 		if (!file) return;
 		const targetId = selectedIds[0] ?? activeRow?.id ?? pageRows[0]?.id;
@@ -614,14 +613,11 @@ function MyWorkQueueBody() {
 							e.target.value = "";
 						}}
 					/>
-					<Button
-						size="sm"
-						className={toolbarBtn}
-						disabled={createCase.isPending}
-						onClick={() => void handleAddCase()}
-					>
-						<Plus className="size-3.5" />
-						Add TPA/TPV
+					<Button size="sm" className={toolbarBtn} asChild>
+						<Link href="/admin/my-work-queue/new">
+							<Plus className="size-3.5" />
+							Add TPA/TPV
+						</Link>
 					</Button>
 					<Button
 						variant="outline"
@@ -742,7 +738,9 @@ function MyWorkQueueBody() {
 						const Icon = KPI_ICON[kpi.tone];
 						const tone = KPI_VALUE_TONE[kpi.tone];
 						const active =
-							(kpi.id === "assigned" && statusFilter === "all" && escalationFilter === "all") ||
+							(kpi.id === "assigned" &&
+								statusFilter === "all" &&
+								escalationFilter === "all") ||
 							(kpi.id === "connected" && statusFilter === "ready") ||
 							(kpi.id === "migration" &&
 								statusFilter === "waiting_on_vendor") ||
@@ -774,9 +772,7 @@ function MyWorkQueueBody() {
 										tone
 									)}
 								>
-									{kpisQ.isLoading
-										? "—"
-										: kpi.count.toLocaleString()}
+									{kpisQ.isLoading ? "—" : kpi.count.toLocaleString()}
 								</p>
 							</button>
 						);
@@ -1193,13 +1189,6 @@ function MyWorkQueueBody() {
 					</div>
 				</div>
 			</ModalShell>
-
-			<WorkQueueRegistrationDialog
-				open={registrationOpen}
-				onOpenChange={setRegistrationOpen}
-				saving={createCase.isPending}
-				onSubmit={handleRegisterCase}
-			/>
 
 			<WorkQueueImportResultDialog
 				open={importResultOpen}
