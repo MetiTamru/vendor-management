@@ -55,6 +55,7 @@ type Tab =
 	| "Edit"
 	| "Overview"
 	| "Demographics"
+	| "Employment & Group"
 	| "Eligibility"
 	| "Coverage & Plan History"
 	| "Family / Dependents"
@@ -62,6 +63,7 @@ type Tab =
 	| "Accumulators"
 	| "Vendor / Source History"
 	| "Eligibility Exceptions"
+	| "Other Status"
 	| "Change Events";
 
 /**

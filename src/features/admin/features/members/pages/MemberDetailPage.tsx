@@ -97,6 +97,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
 	"Overview",
 	"Demographics",
+	"Employment & Group",
 	"Eligibility",
 	"Coverage & Plan History",
 	"Family / Dependents",
@@ -104,6 +105,7 @@ const TABS = [
 	"Accumulators",
 	"Vendor / Source History",
 	"Eligibility Exceptions",
+	"Other Status",
 	"Change Events",
 ] as const;
 
@@ -2926,6 +2928,19 @@ function DemoField({ label, value }: { label: string; value: ReactNode }) {
 	);
 }
 
+function OptionalDemoField({
+	label,
+	value,
+}: {
+	label: string;
+	value: ReactNode;
+}) {
+	if (value == null) return null;
+	if (typeof value === "string" && (value === "—" || value.trim() === ""))
+		return null;
+	return <DemoField label={label} value={value} />;
+}
+
 function relationshipToSubscriber(code?: string | null): string {
 	if (!code || code === "—") return "—";
 	const normalized = code.trim();
@@ -3034,15 +3049,6 @@ function TabBody({
 				effective: addressEffective,
 			});
 		}
-
-		const employerName = dash(
-			member.groupName ?? member.accountGroup ?? undefined
-		);
-		const employerId = dash(member.groupId ?? member.clientId ?? undefined);
-		const employmentStatus = dash(
-			member.accountStatus ?? member.employeeType ?? undefined
-		);
-		const hireDate = dash(member.memberSince ?? member.enrollmentDate);
 
 		type IdRow = {
 			type: string;
@@ -3319,39 +3325,67 @@ function TabBody({
 							</div>
 						) : null}
 					</DemoSection>
-
-					<DemoSection
-						title="Additional Information"
-						editLabel="Edit Additional Information"
-						onEdit={onEdit}
-						bodyClassName="px-3 py-0.5"
-					>
-						<DemoField label="Employment Status" value={employmentStatus} />
-						<DemoField label="Occupation" value="—" />
-						<DemoField label="Employer Name" value={employerName} />
-						<DemoField
-							label="Employer ID"
-							value={
-								employerId === "—" ? (
-									"—"
-								) : (
-									<span className="font-mono text-sm">{employerId}</span>
-								)
-							}
-						/>
-						<DemoField
-							label="Hire Date"
-							value={
-								hireDate === "—" ? (
-									"—"
-								) : (
-									<span className="tabular-nums">{formatDate(hireDate)}</span>
-								)
-							}
-						/>
-						<DemoField label="Work Location" value="—" />
-					</DemoSection>
 				</div>
+			</div>
+		);
+	}
+
+	if (tab === "Employment & Group") {
+		const groupName = dash(member.groupName ?? member.accountGroup);
+		const groupId = dash(member.groupId);
+		const clientId = dash(member.clientId);
+		const accountType = dash(member.accountType);
+		const accountStatus = dash(member.accountStatus);
+		const memberType = dash(member.memberType);
+		const employeeType = dash(member.employeeType);
+		const hireDate = member.enrollmentDate ?? member.memberSince;
+		const program = member.program;
+
+		return (
+			<div className="space-y-2.5">
+				<DemoSection
+					title="Employment & Group"
+					editLabel="Edit employment & group"
+					onEdit={onEdit}
+				>
+					<div className="grid gap-x-4 sm:grid-cols-2">
+						<div>
+							<OptionalDemoField label="Group name" value={groupName} />
+							<OptionalDemoField
+								label="Group ID"
+								value={
+									groupId === "—" ? null : (
+										<span className="font-mono text-sm">{groupId}</span>
+									)
+								}
+							/>
+							<OptionalDemoField
+								label="Client ID"
+								value={
+									clientId === "—" ? null : (
+										<span className="font-mono text-sm">{clientId}</span>
+									)
+								}
+							/>
+							<OptionalDemoField label="Account type" value={accountType} />
+							<OptionalDemoField label="Account status" value={accountStatus} />
+						</div>
+						<div>
+							<OptionalDemoField label="Member type" value={memberType} />
+							<OptionalDemoField label="Employee type" value={employeeType} />
+							<OptionalDemoField
+								label="Hire / enrollment date"
+								value={
+									hireDate ? (
+										<span className="tabular-nums">{formatDate(hireDate)}</span>
+									) : null
+								}
+							/>
+							<OptionalDemoField label="Program" value={program} />
+							<OptionalDemoField label="Line of business" value={member.lob} />
+						</div>
+					</div>
+				</DemoSection>
 			</div>
 		);
 	}
@@ -4469,6 +4503,80 @@ function TabBody({
 
 	if (tab === "Change Events") {
 		return <MemberChangeEventsPanel memberId={memberId} />;
+	}
+
+	if (tab === "Other Status") {
+		const rows = member.otherStatuses ?? [];
+		const populated = rows.filter(
+			(r) =>
+				(r.status && r.status !== "—") ||
+				(r.detail && r.detail !== "—") ||
+				r.effectiveStart ||
+				r.effectiveEnd
+		);
+		const displayRows = populated.length > 0 ? populated : rows;
+
+		return (
+			<div className="space-y-2.5">
+				<DemoSection title="Other Status" bodyClassName="p-0">
+					<div className="overflow-x-auto">
+						<Table className="w-full min-w-[40rem]">
+							<TableHeader>
+								<TableRow className="hover:bg-transparent">
+									{(
+										[
+											"Slot",
+											"Status",
+											"Detail",
+											"Effective start",
+											"Effective end",
+										] as const
+									).map((h) => (
+										<TableHead key={h} className={overviewTh()}>
+											{h}
+										</TableHead>
+									))}
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{displayRows.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={5}
+											className="h-10 text-center text-xs text-muted-foreground"
+										>
+											No other status records for this member.
+										</TableCell>
+									</TableRow>
+								) : (
+									displayRows.map((row) => (
+										<TableRow key={row.id}>
+											<TableCell className={overviewTd("font-medium")}>
+												{row.slot}
+											</TableCell>
+											<TableCell className={overviewTd()}>
+												{row.status === "—" ? "—" : row.status}
+											</TableCell>
+											<TableCell className={overviewTd()}>
+												{row.detail === "—" ? "—" : row.detail}
+											</TableCell>
+											<TableCell className={overviewTd("tabular-nums")}>
+												{row.effectiveStart
+													? formatDate(row.effectiveStart)
+													: "—"}
+											</TableCell>
+											<TableCell className={overviewTd("tabular-nums")}>
+												{row.effectiveEnd ? formatDate(row.effectiveEnd) : "—"}
+											</TableCell>
+										</TableRow>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</DemoSection>
+			</div>
+		);
 	}
 
 	return null;
