@@ -1,5 +1,9 @@
 import { apiClient } from "@/lib/api/client";
-import { buildAcceptPath, createVendorInvite } from "@/lib/auth/vendor-invites";
+import {
+	buildAcceptPath,
+	createVendorInvite,
+	saveVendorInviteFromServer,
+} from "@/lib/auth/vendor-invites";
 import {
 	isMockEnabled,
 	isNestApiEnabled,
@@ -11,6 +15,7 @@ import {
 	getStoredAccessToken,
 	isVendorCoreLive,
 } from "@/lib/vendor-core/client";
+import type { VendorCategoryDto, VendorTeamMemberDto } from "@/lib/vendor-core/types";
 
 import { vendorDtoToModel } from "./map-vendor-core";
 import { CURRENT_VENDOR_ID, vmsStore } from "./mock-store";
@@ -93,6 +98,34 @@ async function listVendorsFromVendorCore(): Promise<VendorModel[]> {
 async function getVendorFromVendorCore(id: string): Promise<VendorModel> {
 	const dto = await vendorCoreApi.getVendor(id);
 	return vendorDtoToModel(dto);
+}
+
+function mapTeamMember(row: VendorTeamMemberDto): VendorTeamMember {
+	const role = row.role as VendorTeamMember["role"];
+	const allowed: VendorTeamMember["role"][] = [
+		"vendor_admin",
+		"vendor_bidder",
+		"vendor_finance",
+		"vendor_viewer",
+	];
+	return {
+		id: row.id,
+		name: row.name,
+		email: row.email,
+		role: allowed.includes(role) ? role : "vendor_viewer",
+		isActive: row.is_active,
+	};
+}
+
+function mapCategory(row: VendorCategoryDto): VendorCategoryModel {
+	return {
+		id: row.id,
+		name: row.name,
+		code: row.code,
+		description: row.description ?? null,
+		parentId: row.parent_id,
+		vendorCount: 0,
+	};
 }
 
 export const vmsApi = {
@@ -265,20 +298,35 @@ export const vmsApi = {
 				})
 			);
 		} else if (isVendorCoreLive()) {
-			vendor = await vmsApi.createVendor({
-				legalName: data.legalName,
-				tradeName: null,
-				status: "prospect",
+			const inviteDto = await vendorCoreApi.inviteVendor({
+				legal_name: data.legalName,
+				email: data.email,
 				categories: data.categories,
-				tags: [],
-				country: "US",
-				city: "Unknown",
-				taxId: null,
-				website: null,
-				description: data.note?.trim() || null,
-				riskLevel: "medium",
-				contacts,
 			});
+			if (!inviteDto.vendor_id) {
+				throw new Error("Vendor invite did not return a vendor id.");
+			}
+			const dto = await vendorCoreApi.getVendor(inviteDto.vendor_id);
+			vendor = vendorDtoToModel(dto);
+			const persisted = saveVendorInviteFromServer({
+				token: inviteDto.token,
+				vendorId: inviteDto.vendor_id,
+				legalName: inviteDto.legal_name,
+				email: inviteDto.email,
+				categories: inviteDto.categories,
+				expiresAt: inviteDto.expires_at,
+				note: data.note,
+				createdAt: inviteDto.created_at,
+			});
+			return {
+				vendor,
+				invite: {
+					token: persisted.token,
+					expiresAt: persisted.expiresAt,
+					acceptPath: buildAcceptPath(persisted.token),
+					emailDelivery: "link_only",
+				},
+			};
 		} else if (isNestApiEnabled()) {
 			vendor = await apiClient<VendorModel>(vmsPaths.invite, {
 				method: "POST",
@@ -307,6 +355,11 @@ export const vmsApi = {
 		};
 	},
 	async listCategories() {
+		if (isMockEnabled()) return mockDelay(vmsStore.listCategories());
+		if (isVendorCoreLive()) {
+			const page = await vendorCoreApi.listVendorCategories();
+			return (page.results ?? []).map(mapCategory);
+		}
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listCategories()),
 			() =>
@@ -620,6 +673,11 @@ export const vmsApi = {
 		);
 	},
 	async listTeam() {
+		if (isMockEnabled()) return mockDelay(vmsStore.listTeam());
+		if (isVendorCoreLive()) {
+			const rows = await vendorCoreApi.listVendorTeam();
+			return rows.map(mapTeamMember);
+		}
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.listTeam()),
 			() =>
@@ -629,6 +687,11 @@ export const vmsApi = {
 		);
 	},
 	async getCurrentVendor() {
+		if (isMockEnabled()) return mockDelay(vmsStore.getVendor(CURRENT_VENDOR_ID));
+		if (isVendorCoreLive()) {
+			const dto = await vendorCoreApi.getVendorMe();
+			return vendorDtoToModel(dto);
+		}
 		return withMockOrRemote(
 			() => mockDelay(vmsStore.getVendor(CURRENT_VENDOR_ID)),
 			() => apiClient<VendorModel>(vmsPaths.me)

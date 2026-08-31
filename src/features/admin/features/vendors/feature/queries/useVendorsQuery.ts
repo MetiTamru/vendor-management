@@ -2,17 +2,40 @@
 
 import {
 	useInvalidateVendorCore,
+	useVendorCoreFeatureMutation,
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
 
 import {
+	accountRowLobToApi,
+} from "../mappers/accountMappers";
+import {
+	createIntakeJob,
+	createVendorAccount,
+	createVendorNote,
+	deleteVendorAccount,
+	deleteVendorNote,
 	getVendor,
+	hardDeleteVendorAccount,
+	listInboundFileEvents,
 	listVendorAccounts,
+	listVendorAccountOpsSummaries,
 	listVendorConnections,
 	listVendorInboundFiles,
 	listVendorJobs,
+	listVendorNotes,
 	listVendors,
+	reprocessInboundFile,
+	restoreVendorAccount,
+	runIntakeJob,
+	testVendorConnection,
+	updateIntakeJob,
+	updateVendorAccount,
+	updateVendorConnection,
+	updateVendorNote,
 } from "../api/vendorsApi";
+import type { AccountUpdateInput } from "@/lib/vendor-core/types";
+import type { VendorAccountRow } from "../../vendor-types";
 
 const domain = "vendors";
 
@@ -50,12 +73,12 @@ export function useVendorJobsQuery(vendorId?: string) {
 	);
 }
 
-export function useVendorAccountsQuery(vendorId?: string) {
+export function useVendorAccountsQuery(vendorId?: string, enabled = true) {
 	return useVendorCoreFeatureQuery(
 		domain,
 		"accounts",
 		() => listVendorAccounts(vendorId),
-		true,
+		enabled,
 		[vendorId ?? "all"]
 	);
 }
@@ -70,6 +93,26 @@ export function useVendorInboundFilesQuery(params?: {
 		() => listVendorInboundFiles(params),
 		true,
 		[params ?? {}]
+	);
+}
+
+export function useVendorAccountOpsQuery(vendorId?: string, enabled = true) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"account-ops",
+		() => listVendorAccountOpsSummaries(String(vendorId)),
+		Boolean(vendorId) && enabled,
+		[vendorId ?? ""]
+	);
+}
+
+export function useVendorNotesQuery(vendorId?: string, enabled = true) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"notes",
+		() => listVendorNotes(String(vendorId)),
+		Boolean(vendorId) && enabled,
+		[vendorId ?? ""]
 	);
 }
 
@@ -93,4 +136,144 @@ export const useVendorCoreInboundFiles = useVendorInboundFilesQuery;
 
 export const useVendorsDetailQuery = useVendorDetailQuery;
 
-export { useInvalidateVendorCore };
+export function useUpdateVendorAccountMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof updateVendorAccount>>,
+		{
+			id: string;
+			patch: Pick<
+				VendorAccountRow,
+				"name" | "lineOfBusiness" | "status" | "active"
+			>;
+		}
+	>(domain, {
+		mutationFn: async ({ id, patch }) => {
+			const body: AccountUpdateInput = {
+				name: patch.name,
+				line_of_business: accountRowLobToApi(patch.lineOfBusiness),
+				active: patch.active,
+			};
+			return updateVendorAccount(id, body);
+		},
+	});
+}
+
+export function useCreateVendorAccountMutation(vendorId: string) {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof createVendorAccount>>,
+		{
+			account_code: string;
+			name: string;
+			line_of_business: string;
+			active?: boolean;
+		}
+	>(domain, {
+		mutationFn: (body) =>
+			createVendorAccount({
+				vendor_id: vendorId,
+				...body,
+			}),
+	});
+}
+
+export function useDeleteVendorAccountMutation() {
+	return useVendorCoreFeatureMutation<void, string>(domain, {
+		mutationFn: (id) => deleteVendorAccount(id),
+	});
+}
+
+export function useRestoreVendorAccountMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof restoreVendorAccount>>,
+		string
+	>(domain, {
+		mutationFn: (id) => restoreVendorAccount(id),
+	});
+}
+
+export function useHardDeleteVendorAccountMutation() {
+	return useVendorCoreFeatureMutation<void, string>(domain, {
+		mutationFn: (id) => hardDeleteVendorAccount(id),
+	});
+}
+
+export function useRunIntakeJobMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof runIntakeJob>>,
+		string
+	>(domain, {
+		mutationFn: (id) => runIntakeJob(id),
+	});
+}
+
+export function useUpdateIntakeJobMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof updateIntakeJob>>,
+		{ id: string; body: Record<string, unknown> }
+	>(domain, {
+		mutationFn: ({ id, body }) => updateIntakeJob(id, body),
+	});
+}
+
+export function useCreateIntakeJobMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof createIntakeJob>>,
+		Record<string, unknown>
+	>(domain, {
+		mutationFn: (body) => createIntakeJob(body),
+	});
+}
+
+export function useReprocessInboundFileMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof reprocessInboundFile>>,
+		string
+	>(domain, {
+		mutationFn: (id) => reprocessInboundFile(id),
+	});
+}
+
+export function useTestConnectionMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof testVendorConnection>>,
+		string
+	>(domain, {
+		mutationFn: (id) => testVendorConnection(id),
+	});
+}
+
+export function useUpdateConnectionMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof updateVendorConnection>>,
+		{ id: string; body: Record<string, unknown> }
+	>(domain, {
+		mutationFn: ({ id, body }) => updateVendorConnection(id, body),
+	});
+}
+
+export function useCreateVendorNoteMutation(vendorId: string) {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof createVendorNote>>,
+		{ body: string; is_pinned?: boolean }
+	>(domain, {
+		mutationFn: ({ body, is_pinned }) =>
+			createVendorNote({ vendor_id: vendorId, body, is_pinned }),
+	});
+}
+
+export function useUpdateVendorNoteMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof updateVendorNote>>,
+		{ id: string; body: { body?: string; is_pinned?: boolean } }
+	>(domain, {
+		mutationFn: ({ id, body }) => updateVendorNote(id, body),
+	});
+}
+
+export function useDeleteVendorNoteMutation() {
+	return useVendorCoreFeatureMutation<void, string>(domain, {
+		mutationFn: (id) => deleteVendorNote(id),
+	});
+}
+
+export { useInvalidateVendorCore, listInboundFileEvents };

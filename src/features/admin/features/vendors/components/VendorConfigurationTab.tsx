@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
 	Bell,
@@ -64,9 +64,8 @@ import {
 import {
 	type VendorConfigJob,
 	type VendorIntegrationProfile,
-	getVendorConfigJobs,
-	getVendorSftpConnection,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
+	type VendorSftpConnection,
+} from "@/features/admin/features/vendors/vendor-types";
 import { cn } from "@/lib/utils";
 
 const JOB_SUBTABS = [
@@ -99,6 +98,14 @@ type VendorConfigurationTabProps = {
 	vendorId: string;
 	vendorName: string;
 	integration: VendorIntegrationProfile;
+	configJobs: VendorConfigJob[];
+	connection: VendorSftpConnection;
+	connectionId?: string | null;
+	onCreateJob?: (draft: JobDraft) => Promise<void>;
+	onUpdateJob?: (jobId: string, draft: JobDraft) => Promise<void>;
+	onDisableJob?: (jobId: string) => Promise<void>;
+	onTestConnection?: () => Promise<void>;
+	onUpdateConnectionHost?: (host: string) => Promise<void>;
 };
 
 function emptyDraft(vendorName: string): JobDraft {
@@ -125,12 +132,18 @@ export function VendorConfigurationTab({
 	vendorId,
 	vendorName,
 	integration,
+	configJobs,
+	connection,
+	connectionId,
+	onCreateJob,
+	onUpdateJob,
+	onDisableJob,
+	onTestConnection,
+	onUpdateConnectionHost,
 }: VendorConfigurationTabProps) {
 	const [activeStep, setActiveStep] = useState(1);
 	const [jobSubtab, setJobSubtab] = useState<JobSubtab>("Jobs");
-	const [jobs, setJobs] = useState(() =>
-		getVendorConfigJobs(vendorId, vendorName)
-	);
+	const [jobs, setJobs] = useState(configJobs);
 	const [jobDialog, setJobDialog] = useState<{
 		mode: JobDialogMode;
 		jobId?: string;
@@ -139,11 +152,12 @@ export function VendorConfigurationTab({
 	const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
 	const [connectionDraftOpen, setConnectionDraftOpen] = useState(false);
 	const [connectionHost, setConnectionHost] = useState("");
+	const [jobSaving, setJobSaving] = useState(false);
+	const jobSavingRef = useRef(false);
 
-	const connection = useMemo(
-		() => getVendorSftpConnection(vendorId, vendorName),
-		[vendorId, vendorName]
-	);
+	useEffect(() => {
+		setJobs(configJobs);
+	}, [configJobs]);
 
 	const connected = connection.status === "Connected";
 	const alertsEnabled = Math.max(integration.alertsCount, 3);
@@ -234,52 +248,83 @@ export function VendorConfigurationTab({
 	}
 
 	function saveJobDialog() {
-		if (!jobDialog || !draft) return;
+		if (!jobDialog || !draft || jobSavingRef.current) return;
 		const name = draft.name.trim();
 		if (!name) {
 			toast.error("Job name is required.");
 			return;
 		}
 
-		if (jobDialog.mode === "create") {
-			const created: VendorConfigJob = {
-				id: `${vendorId}-job-${Date.now()}`,
-				name,
-				fileType: draft.fileType,
-				direction: draft.direction,
-				frequency: draft.frequency,
-				status: draft.status,
-				lastRun: "—",
-				nextRun:
-					draft.frequency === "Weekly" ? "Mon, 6:00 AM" : "Tomorrow, 6:00 AM",
-				lastFileReceived: "—",
-			};
-			setJobs((prev) => [created, ...prev]);
-			toast.success(`Created job “${created.name}”.`);
+		const mode = jobDialog.mode;
+		const jobId = jobDialog.jobId;
+		const draftSnapshot = { ...draft };
+
+		jobSavingRef.current = true;
+		setJobSaving(true);
+
+		if (mode === "create") {
 			closeJobDialog();
-			return;
 		}
 
-		if (jobDialog.mode === "edit" && jobDialog.jobId) {
-			setJobs((prev) =>
-				prev.map((job) =>
-					job.id === jobDialog.jobId
-						? {
-								...job,
-								name,
-								fileType: draft.fileType,
-								direction: draft.direction,
-								frequency: draft.frequency,
-								status: draft.status,
-								nextRun:
-									draft.frequency === "Weekly" ? "Mon, 6:00 AM" : job.nextRun,
-							}
-						: job
-				)
-			);
-			toast.success(`Updated job “${name}”.`);
-			closeJobDialog();
-		}
+		const persist = async () => {
+			if (mode === "create") {
+				if (onCreateJob) {
+					await onCreateJob(draftSnapshot);
+				} else {
+					const created: VendorConfigJob = {
+						id: `${vendorId}-job-${Date.now()}`,
+						name,
+						fileType: draftSnapshot.fileType,
+						direction: draftSnapshot.direction,
+						frequency: draftSnapshot.frequency,
+						status: draftSnapshot.status,
+						lastRun: "—",
+						nextRun:
+							draftSnapshot.frequency === "Weekly"
+								? "Mon, 6:00 AM"
+								: "Tomorrow, 6:00 AM",
+						lastFileReceived: "—",
+					};
+					setJobs((prev) => [created, ...prev]);
+				}
+				toast.success(`Created job “${name}”.`);
+				return;
+			}
+
+			if (mode === "edit" && jobId) {
+				if (onUpdateJob) {
+					await onUpdateJob(jobId, draftSnapshot);
+				} else {
+					setJobs((prev) =>
+						prev.map((job) =>
+							job.id === jobId
+								? {
+										...job,
+										name,
+										fileType: draftSnapshot.fileType,
+										direction: draftSnapshot.direction,
+										frequency: draftSnapshot.frequency,
+										status: draftSnapshot.status,
+										nextRun:
+											draftSnapshot.frequency === "Weekly"
+												? "Mon, 6:00 AM"
+												: job.nextRun,
+									}
+								: job
+						)
+					);
+				}
+				toast.success(`Updated job “${name}”.`);
+				closeJobDialog();
+			}
+		};
+
+		void persist()
+			.catch(() => toast.error("Could not save job."))
+			.finally(() => {
+				jobSavingRef.current = false;
+				setJobSaving(false);
+			});
 	}
 
 	function duplicateJob(job: VendorConfigJob) {
@@ -312,16 +357,34 @@ export function VendorConfigurationTab({
 	function confirmDeleteJob() {
 		if (!deleteJobId) return;
 		const removed = jobs.find((job) => job.id === deleteJobId);
-		setJobs((prev) => prev.filter((job) => job.id !== deleteJobId));
-		setDeleteJobId(null);
-		toast.success(removed ? `Deleted “${removed.name}”.` : "Job deleted.");
+		const finish = () => {
+			setJobs((prev) => prev.filter((job) => job.id !== deleteJobId));
+			setDeleteJobId(null);
+			toast.success(removed ? `Disabled “${removed.name}”.` : "Job disabled.");
+		};
+		if (onDisableJob) {
+			void onDisableJob(deleteJobId)
+				.then(finish)
+				.catch(() => toast.error("Could not disable job."));
+			return;
+		}
+		finish();
 	}
 
 	function saveConnectionHost() {
 		const next = connectionHost.trim() || connection.host;
-		setConnectionHost(next);
-		setConnectionDraftOpen(false);
-		toast.success(`SFTP host updated to ${next}.`);
+		const finish = () => {
+			setConnectionHost(next);
+			setConnectionDraftOpen(false);
+			toast.success(`SFTP host updated to ${next}.`);
+		};
+		if (onUpdateConnectionHost) {
+			void onUpdateConnectionHost(next)
+				.then(finish)
+				.catch(() => toast.error("Could not update connection host."));
+			return;
+		}
+		finish();
 	}
 
 	return (
@@ -418,6 +481,21 @@ export function VendorConfigurationTab({
 								variant="outline"
 								size="sm"
 								className="h-8 text-xs"
+								disabled={!connectionId || !onTestConnection}
+								onClick={() => {
+									if (!onTestConnection) return;
+									void onTestConnection().catch(() =>
+										toast.error("Connection test failed.")
+									);
+								}}
+							>
+								Test Connection
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="h-8 text-xs"
 								onClick={() => {
 									setConnectionHost(connectionHost || connection.host);
 									setConnectionDraftOpen(true);
@@ -496,6 +574,7 @@ export function VendorConfigurationTab({
 							type="button"
 							size="sm"
 							className="h-8 text-xs"
+							disabled={jobSaving}
 							onClick={openCreateJob}
 						>
 							<Plus className="mr-1.5 size-3.5" />
@@ -976,7 +1055,7 @@ export function VendorConfigurationTab({
 			<Dialog
 				open={Boolean(jobDialog && draft)}
 				onOpenChange={(open) => {
-					if (!open) closeJobDialog();
+					if (!open && !jobSaving) closeJobDialog();
 				}}
 			>
 				<DialogContent className="sm:max-w-lg">
@@ -1139,12 +1218,27 @@ export function VendorConfigurationTab({
 						</div>
 					) : null}
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={closeJobDialog}>
+						<Button
+							type="button"
+							variant="outline"
+							disabled={jobSaving}
+							onClick={closeJobDialog}
+						>
 							{jobDialog?.mode === "view" ? "Close" : "Cancel"}
 						</Button>
 						{jobDialog?.mode !== "view" ? (
-							<Button type="button" onClick={saveJobDialog}>
-								{jobDialog?.mode === "create" ? "Create job" : "Save changes"}
+							<Button
+								type="button"
+								disabled={jobSaving}
+								onClick={saveJobDialog}
+							>
+								{jobSaving
+									? jobDialog?.mode === "create"
+										? "Creating…"
+										: "Saving…"
+									: jobDialog?.mode === "create"
+										? "Create job"
+										: "Save changes"}
 							</Button>
 						) : (
 							<Button
@@ -1175,7 +1269,7 @@ export function VendorConfigurationTab({
 							<span className="font-medium text-foreground">
 								{deleteTarget?.name ?? "this job"}
 							</span>{" "}
-							from the mock configuration. You can recreate it anytime.
+							from this vendor configuration. You can recreate it anytime.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -1193,7 +1287,7 @@ export function VendorConfigurationTab({
 					<DialogHeader>
 						<DialogTitle>Edit SFTP connection</DialogTitle>
 						<DialogDescription>
-							Update the mock host used for this vendor connection.
+							Update the SFTP host used for this vendor connection.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-1.5 py-1">

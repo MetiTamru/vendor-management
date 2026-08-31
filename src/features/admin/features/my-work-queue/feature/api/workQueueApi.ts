@@ -1,15 +1,17 @@
-import { isMockEnabled } from "@/lib/mock-mode";
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
 	MigrationCaseCreateInput,
 	MigrationCaseListQuery,
+	MigrationCaseProgressUpdateInput,
 	MigrationCaseUpdateInput,
 	MigrationStatusDto,
 	WorkQueueSeedInput,
 } from "@/lib/vendor-core/types";
 
-import { TPA_TPV_ROWS, type TpaTpvRow, WORK_QUEUE_KPI } from "../../mock-data";
+import type { ConnectionProgress } from "../../progress-data";
+import type { TpaTpvRow } from "../../work-queue-types";
 import {
+	connectionProgressToApiInput,
 	eventDtoToHistory,
 	kpisToCards,
 	migrationCaseToRow,
@@ -18,25 +20,11 @@ import {
 export async function listWorkQueueRows(
 	params?: MigrationCaseListQuery
 ): Promise<TpaTpvRow[]> {
-	if (isMockEnabled()) return TPA_TPV_ROWS;
 	const page = await vendorCoreApi.listMigrationCases(params);
 	return (page.results ?? []).map(migrationCaseToRow);
 }
 
 export async function listWorkQueueRowsPage(params?: MigrationCaseListQuery) {
-	if (isMockEnabled()) {
-		const all = TPA_TPV_ROWS;
-		const limit = params?.limit ?? 20;
-		const offset = params?.offset ?? 0;
-		return {
-			count: all.length,
-			results: all.slice(offset, offset + limit),
-			limit,
-			offset,
-			next: null as string | null,
-			previous: null as string | null,
-		};
-	}
 	const page = await vendorCoreApi.listMigrationCasesPage(params);
 	return {
 		...page,
@@ -45,7 +33,6 @@ export async function listWorkQueueRowsPage(params?: MigrationCaseListQuery) {
 }
 
 export async function getWorkQueueKpiCards() {
-	if (isMockEnabled()) return WORK_QUEUE_KPI;
 	const kpis = await vendorCoreApi.getWorkQueueKpis();
 	return kpisToCards(kpis);
 }
@@ -53,17 +40,11 @@ export async function getWorkQueueKpiCards() {
 export async function getMigrationCaseDetail(
 	id: string
 ): Promise<TpaTpvRow | null> {
-	if (isMockEnabled()) {
-		return TPA_TPV_ROWS.find((r) => r.id === id) ?? null;
-	}
 	const dto = await vendorCoreApi.getMigrationCase(id);
 	return migrationCaseToRow(dto);
 }
 
 export async function listMigrationCaseHistory(id: string) {
-	if (isMockEnabled()) {
-		return TPA_TPV_ROWS.find((r) => r.id === id)?.history ?? [];
-	}
 	const page = await vendorCoreApi.listMigrationCaseEvents(id, {
 		limit: 50,
 		offset: 0,
@@ -80,6 +61,28 @@ export async function updateMigrationCase(
 	body: MigrationCaseUpdateInput
 ) {
 	return vendorCoreApi.updateMigrationCase(id, body).then(migrationCaseToRow);
+}
+
+export async function assignMigrationCase(
+	id: string,
+	assigned_to_id: string | null
+) {
+	return vendorCoreApi
+		.assignMigrationCase(id, { assigned_to_id })
+		.then(migrationCaseToRow);
+}
+
+export async function updateMigrationCaseProgress(
+	id: string,
+	track: "sftp" | "edi",
+	progress: ConnectionProgress
+) {
+	const body: MigrationCaseProgressUpdateInput =
+		connectionProgressToApiInput(progress);
+	if (track === "sftp") {
+		return vendorCoreApi.updateMigrationCaseSftpProgress(id, body);
+	}
+	return vendorCoreApi.updateMigrationCaseEdiProgress(id, body);
 }
 
 export async function setMigrationCaseStatus(
@@ -122,4 +125,8 @@ export async function seedWorkQueue(body?: WorkQueueSeedInput) {
 
 export async function uploadMigrationCaseDocument(id: string, file: File) {
 	return vendorCoreApi.uploadMigrationCaseDocument(id, file);
+}
+
+export async function getWorkQueueKpisRaw() {
+	return vendorCoreApi.getWorkQueueKpis();
 }

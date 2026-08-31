@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
 	Archive,
@@ -43,6 +43,17 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+import {
+	useCreateVendorNoteMutation,
+	useDeleteVendorNoteMutation,
+	useUpdateVendorNoteMutation,
+	useVendorNotesQuery,
+} from "../feature/queries/useVendorsQuery";
+import {
+	type VendorNoteUi,
+	vendorNoteDtoToUi,
+} from "../feature/mappers/noteMappers";
+
 type NoteCategory =
 	| "Configuration"
 	| "Operations"
@@ -52,26 +63,11 @@ type NoteCategory =
 type NotePriority = "High" | "Medium" | "Low";
 type NoteStatus = "Open" | "Closed" | "Archived";
 
-type VendorNote = {
-	id: string;
-	title: string;
-	category: NoteCategory;
-	priority: NotePriority;
-	status: NoteStatus;
-	createdBy: string;
-	createdAt: string;
-	updatedAt: string;
-	updatedBy: string;
-	body: string;
-	starred: boolean;
-	actionItem: boolean;
-	attachments: { id: string; name: string; size: string }[];
-	activity: { id: string; user: string; action: string; at: string }[];
-};
+type VendorNote = VendorNoteUi;
 
 type VendorNotesTabProps = {
+	vendorId: string;
 	vendorName: string;
-	integrationNotes?: string;
 };
 
 function categoryTone(category: NoteCategory) {
@@ -307,15 +303,23 @@ function buildNotes(
 }
 
 export function VendorNotesTab({
+	vendorId,
 	vendorName,
-	integrationNotes,
 }: VendorNotesTabProps) {
-	const [notes, setNotes] = useState(() =>
-		buildNotes(vendorName, integrationNotes)
+	const notesQuery = useVendorNotesQuery(vendorId);
+	const createNoteMutation = useCreateVendorNoteMutation(vendorId);
+	const updateNoteMutation = useUpdateVendorNoteMutation();
+	const deleteNoteMutation = useDeleteVendorNoteMutation();
+	const notes = useMemo(
+		() => (notesQuery.data ?? []).map(vendorNoteDtoToUi),
+		[notesQuery.data]
 	);
-	const [selectedId, setSelectedId] = useState<string | null>(
-		() => notes[0]?.id ?? null
-	);
+	const [selectedId, setSelectedId] = useState<string | null>(null);
+
+	useEffect(() => {
+		const firstId = notesQuery.data?.[0]?.id;
+		if (!selectedId && firstId) setSelectedId(firstId);
+	}, [notesQuery.data, selectedId]);
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("all");
 	const [priority, setPriority] = useState("all");
@@ -375,31 +379,22 @@ export function VendorNotesTab({
 	}
 
 	function toggleStar(noteId: string) {
-		setNotes((prev) =>
-			prev.map((note) =>
-				note.id === noteId ? { ...note, starred: !note.starred } : note
-			)
-		);
+		const note = notes.find((row) => row.id === noteId);
+		if (!note) return;
+		void updateNoteMutation
+			.mutateAsync({ id: noteId, body: { is_pinned: !note.starred } })
+			.catch(() => toast.error("Could not update note."));
 	}
 
 	function archiveNote(noteId: string) {
-		setNotes((prev) =>
-			prev.map((note) =>
-				note.id === noteId ? { ...note, status: "Archived" } : note
-			)
-		);
-		toast.success("Note archived.");
+		void deleteNoteMutation
+			.mutateAsync(noteId)
+			.then(() => toast.success("Note archived."))
+			.catch(() => toast.error("Could not archive note."));
 	}
 
 	function closeNote(noteId: string) {
-		setNotes((prev) =>
-			prev.map((note) =>
-				note.id === noteId
-					? { ...note, status: "Closed", actionItem: false }
-					: note
-			)
-		);
-		toast.success("Note closed.");
+		toast.message("Close status is not stored on the API yet.");
 	}
 
 	return (

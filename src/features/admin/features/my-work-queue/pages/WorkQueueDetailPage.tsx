@@ -33,8 +33,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link } from "@/i18n/navigation";
-import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
+
+import { useVendorCoreUsersQuery } from "@/features/admin/features/users/feature/queries/useUsersQuery";
 
 import { WorkQueueProgressEditor } from "../components/work-queue-progress";
 import {
@@ -44,20 +45,21 @@ import {
 	vendorTypeToApi,
 } from "../feature/mappers/workQueueMappers";
 import {
+	useAssignMigrationCaseMutation,
 	useInvalidateVendorCore,
 	useMigrationCaseDetailQuery,
 	useMigrationCaseHistoryQuery,
 	useSetMigrationCaseStatusMutation,
 	useUpdateMigrationCaseMutation,
+	useUpdateMigrationCaseProgressMutation,
 } from "../feature/queries/useWorkQueueQuery";
 import { workQueueErrorMessage } from "../feature/workQueueErrors";
 import {
 	MIGRATION_STATUS_LABEL,
 	type MigrationStatus,
-	TPA_TPV_ROWS,
 	type TpaTpvRow,
 	WHITELIST_STATUS_LABEL,
-} from "../mock-data";
+} from "../work-queue-types";
 import type { ConnectionProgress, ProgressTrack } from "../progress-data";
 
 type DetailTab =
@@ -74,25 +76,6 @@ const FLAT_CARD_CLASS =
 
 const fieldClass =
 	"h-9 rounded-sm border-border bg-background text-sm shadow-none hover:border-foreground/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
-
-function demoProgressPreset(caseId: string) {
-	const mockMatch = TPA_TPV_ROWS.find((r) => r.id === caseId);
-	if (mockMatch) return mockMatch;
-	const index =
-		caseId.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
-		TPA_TPV_ROWS.length;
-	return TPA_TPV_ROWS[index];
-}
-
-function applyDemoProgress(row: TpaTpvRow, caseId: string): TpaTpvRow {
-	const preset = demoProgressPreset(caseId);
-	if (!preset) return row;
-	return {
-		...row,
-		sftpProgress: preset.sftpProgress,
-		ediProgress: preset.ediProgress,
-	};
-}
 
 function tabFromQuery(value: string | null): DetailTab {
 	if (
@@ -349,36 +332,27 @@ function ContactBlock({
 }
 
 export function WorkQueueDetailPage({ caseId }: { caseId: string }) {
-	const body = <WorkQueueDetailBody caseId={caseId} />;
-	if (!isMockEnabled()) {
-		return <VendorCoreGate title="Migration case">{body}</VendorCoreGate>;
-	}
-	return body;
+	return (
+		<VendorCoreGate title="Migration case">
+			<WorkQueueDetailBody caseId={caseId} />
+		</VendorCoreGate>
+	);
 }
 
 function WorkQueueDetailBody({ caseId }: { caseId: string }) {
-	const useLive = !isMockEnabled();
 	const searchParams = useSearchParams();
 	const invalidate = useInvalidateVendorCore();
 	const detailQ = useMigrationCaseDetailQuery(caseId, true);
-	const historyQ = useMigrationCaseHistoryQuery(caseId, useLive);
+	const historyQ = useMigrationCaseHistoryQuery(caseId, true);
+	const usersQ = useVendorCoreUsersQuery();
 	const updateCase = useUpdateMigrationCaseMutation();
+	const assignCase = useAssignMigrationCaseMutation();
+	const updateProgress = useUpdateMigrationCaseProgressMutation();
 	const setStatus = useSetMigrationCaseStatusMutation();
 
-	const mockRow = useMemo(
-		() => TPA_TPV_ROWS.find((r) => r.id === caseId) ?? null,
-		[caseId]
-	);
+	const row: TpaTpvRow | null = detailQ.data ?? null;
 
-	const rawRow: TpaTpvRow | null = useLive ? (detailQ.data ?? null) : mockRow;
-
-	const row = useMemo(() => {
-		if (!rawRow) return null;
-		if (!useLive) return rawRow;
-		return applyDemoProgress(rawRow, caseId);
-	}, [rawRow, useLive, caseId]);
-
-	const loading = useLive && detailQ.isLoading;
+	const loading = detailQ.isLoading;
 
 	const [tab, setTab] = useState<DetailTab>(() =>
 		tabFromQuery(searchParams.get("tab"))
@@ -424,7 +398,7 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 		waitingOnVendorDate: "",
 		currentStage: "data_exchange",
 		nextStep: "",
-		assignedAnalyst: "",
+		assignedToId: "",
 	});
 
 	useEffect(() => {
@@ -451,7 +425,7 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 			waitingOnVendorDate: row.waitingOnVendorDate,
 			currentStage: stageToApi(row.currentStage),
 			nextStep: row.nextStep,
-			assignedAnalyst: row.assignedAnalyst,
+			assignedToId: row.assignedToId ?? "",
 		});
 	}, [row]);
 
@@ -461,32 +435,36 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 	}
 
 	async function saveProgress(
-		_rowId: string,
+		rowId: string,
 		track: ProgressTrack,
 		progress: ConnectionProgress
 	) {
-		if (!useLive) {
-			setProgressOverrides((prev) => ({ ...prev, [track]: progress }));
+		setSaving(true);
+		try {
+			await updateProgress.mutateAsync({ id: rowId, track, progress });
+			await invalidate();
+			await detailQ.refetch();
+			setProgressOverrides((prev) => {
+				const next = { ...prev };
+				delete next[track];
+				return next;
+			});
 			toast.success(
-				`${track === "sftp" ? "SFTP" : "EDI"} progress saved (mock)`
+				`${track === "sftp" ? "SFTP" : "EDI"} progress saved`
 			);
-			return;
+		} catch (err) {
+			toast.error(workQueueErrorMessage(err, "Failed to save progress"));
+		} finally {
+			setSaving(false);
 		}
-		toast.message(
-			"Progress update API not available yet — see WORK_QUEUE_API_GAP_ANALYSIS.md"
-		);
 	}
 
-	const historyEvents = useLive ? (historyQ.data ?? []) : (row?.history ?? []);
+	const historyEvents = historyQ.data ?? [];
 
 	async function saveInfo() {
 		if (!row) return;
 		setSaving(true);
 		try {
-			if (!useLive) {
-				toast.success("TPA/TPV information saved");
-				return;
-			}
 			await updateCase.mutateAsync({
 				id: row.id,
 				body: {
@@ -511,10 +489,6 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 		if (!row) return;
 		setSaving(true);
 		try {
-			if (!useLive) {
-				toast.success("Contacts saved");
-				return;
-			}
 			await updateCase.mutateAsync({
 				id: row.id,
 				body: {
@@ -539,10 +513,6 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 		if (!row) return;
 		setSaving(true);
 		try {
-			if (!useLive) {
-				toast.success("Migration details saved");
-				return;
-			}
 			await updateCase.mutateAsync({
 				id: row.id,
 				body: {
@@ -558,7 +528,16 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 					migration_status: migrationForm.status,
 				});
 			}
+			const nextAssignedId = migrationForm.assignedToId || null;
+			const currentAssignedId = row.assignedToId ?? null;
+			if (nextAssignedId !== currentAssignedId) {
+				await assignCase.mutateAsync({
+					id: row.id,
+					assigned_to_id: nextAssignedId,
+				});
+			}
 			await invalidate();
+			await detailQ.refetch();
 			toast.success("Migration details saved");
 		} catch (err) {
 			toast.error(workQueueErrorMessage(err, "Failed to save migration"));
@@ -768,6 +747,20 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 										icon={Calendar}
 										value={row.migrationStartDate || "—"}
 									/>
+									{row.sourceSystem ? (
+										<StatTile
+											label="Data source"
+											icon={Link2}
+											value={row.sourceSystem}
+										/>
+									) : null}
+									{row.lastSyncedAt ? (
+										<StatTile
+											label="Last synchronized"
+											icon={Clock3}
+											value={row.lastSyncedAt}
+										/>
+									) : null}
 								</div>
 							</SectionCard>
 
@@ -1197,16 +1190,33 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 							</div>
 							<div>
 								<FieldLabel>Assigned Analyst</FieldLabel>
-								<Input
-									value={migrationForm.assignedAnalyst}
-									onChange={(e) =>
+								<Select
+									value={migrationForm.assignedToId || "__none__"}
+									onValueChange={(value) =>
 										setMigrationForm((f) => ({
 											...f,
-											assignedAnalyst: e.target.value,
+											assignedToId: value === "__none__" ? "" : value,
 										}))
 									}
-									className={fieldClass}
-								/>
+								>
+									<SelectTrigger className={fieldClass}>
+										<SelectValue placeholder="Unassigned" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="__none__">Unassigned</SelectItem>
+										{(usersQ.data ?? []).map((user) => (
+											<SelectItem key={user.id} value={user.id}>
+												{user.full_name?.trim() ||
+													[user.first_name, user.last_name]
+														.filter(Boolean)
+														.join(" ")
+														.trim() ||
+													user.username ||
+													user.email}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 							<div className="sm:col-span-2">
 								<FieldLabel>Next Step / Action</FieldLabel>
@@ -1231,7 +1241,7 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 						title="Activity history"
 						description="Full timeline of migration updates and status changes"
 					>
-						{useLive && historyQ.isLoading ? (
+						{historyQ.isLoading ? (
 							<p className="text-xs text-muted-foreground">Loading history…</p>
 						) : historyEvents.length === 0 ? (
 							<div className="rounded-sm border border-dashed border-border/60 bg-muted/10 px-4 py-8 text-center">

@@ -36,7 +36,17 @@ export type VendorDto = {
 	tier?: string;
 	country?: string;
 	city?: string;
+	description?: string | null;
+	website?: string | null;
+	tax_id?: string | null;
+	risk_level?: string;
+	risk_score?: number | string | null;
+	tags?: string[];
+	standard_payment_terms_days?: number;
+	default_currency?: string;
 	metadata?: Record<string, unknown> | null;
+	primary_contact?: VendorContactDto | null;
+	categories?: VendorCategoryCompactDto[];
 	created_at?: string;
 	updated_at?: string;
 	/** Normalized aliases for UI */
@@ -53,9 +63,198 @@ export type AccountDto = {
 	line_of_business?: string;
 	active?: boolean;
 	status?: string;
+	payer_id?: string | null;
+	health_score?: number;
+	timezone?: string;
+	eligibility_feed_status?: string;
+	medical_feed_status?: string;
+	pharmacy_feed_status?: string;
+	accumulator_feed_status?: string;
+	metadata?: Record<string, unknown> | null;
 	created_at?: string;
+	updated_at?: string;
 	code: string;
 	vendor_id: string;
+};
+
+export type AccountCreateInput = {
+	vendor_id: string;
+	account_code: string;
+	name: string;
+	line_of_business: string;
+	active?: boolean;
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+export type AccountUpdateInput = {
+	vendor_id?: string;
+	account_code?: string;
+	name?: string;
+	line_of_business?: string;
+	active?: boolean;
+	metadata?: Record<string, unknown>;
+	is_visible?: boolean;
+};
+
+export type VendorInviteCreateInput = {
+	legal_name: string;
+	email: string;
+	categories?: string[];
+	country?: string;
+	city?: string;
+	vendor_code?: string;
+	expires_in_days?: number;
+};
+
+export type VendorInviteDto = {
+	id: string;
+	token: string;
+	legal_name: string;
+	email: string;
+	categories: string[];
+	status: string;
+	vendor_id: string | null;
+	expires_at: string;
+	created_at: string;
+};
+
+export type VendorTeamMemberDto = {
+	id: string;
+	vendor_id: string;
+	user_id: string | null;
+	name: string;
+	email: string;
+	role: string;
+	is_active: boolean;
+};
+
+export type VendorCategoryDto = {
+	id: string;
+	name: string;
+	code: string;
+	description?: string | null;
+	parent_id: string | null;
+	is_active: boolean;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type VendorCategoryListQuery = {
+	is_active?: boolean;
+	limit?: number;
+	offset?: number;
+};
+
+export type ContractDto = {
+	id: string;
+	vendor_id: string;
+	vendor_name?: string | null;
+	contract_number: string;
+	title: string;
+	contract_type: string;
+	parent_contract_id?: string | null;
+	status: string;
+	effective_date: string;
+	expiration_date?: string | null;
+	renewal_type?: string;
+	total_contract_value?: number | string | null;
+	currency?: string;
+	payment_terms_days?: number;
+	owner_id?: string | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type ContractListQuery = {
+	vendor_id?: string;
+	status?: string;
+	limit?: number;
+	offset?: number;
+};
+
+export type ContractCreateInput = {
+	vendor_id: string;
+	contract_number: string;
+	title: string;
+	contract_type: string;
+	effective_date: string;
+	expiration_date?: string | null;
+	status?: string;
+	parent_contract_id?: string | null;
+	renewal_type?: string;
+	total_contract_value?: number | string | null;
+	currency?: string;
+	payment_terms_days?: number;
+	owner_id?: string | null;
+};
+
+export type ContractUpdateInput = Partial<ContractCreateInput>;
+
+export type VendorContactDto = {
+	id: string;
+	vendor_id: string;
+	name: string;
+	email: string;
+	phone?: string | null;
+	role: string;
+	title?: string | null;
+	is_primary: boolean;
+	receives_notifications?: boolean;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type VendorContactCreateInput = {
+	vendor_id: string;
+	name: string;
+	email: string;
+	phone?: string;
+	role?: string;
+	title?: string;
+	is_primary?: boolean;
+	receives_notifications?: boolean;
+};
+
+export type VendorContactUpdateInput = Partial<VendorContactCreateInput>;
+
+export type VendorNoteDto = {
+	id: string;
+	vendor_id: string;
+	body: string;
+	is_pinned: boolean;
+	author?: { id: string; email?: string; name?: string } | null;
+	created_at?: string;
+	updated_at?: string;
+};
+
+export type VendorNoteCreateInput = {
+	vendor_id: string;
+	body: string;
+	is_pinned?: boolean;
+};
+
+export type VendorNoteUpdateInput = {
+	body?: string;
+	is_pinned?: boolean;
+};
+
+export type AccountOpsSummaryDto = {
+	account_id: string;
+	last_inbound_at?: string | null;
+	last_file_type?: string | null;
+	open_issue_count: number;
+	eligibility_status: string;
+	medical_status: string;
+	pharmacy_status: string;
+	accumulator_status: string;
+	health_score: number;
+};
+
+export type VendorCategoryCompactDto = {
+	id: string;
+	code: string;
+	name: string;
 };
 
 export type CredentialDto = {
@@ -1133,6 +1332,24 @@ export type MigrationCaseDocumentDto = {
 	web_url?: string;
 };
 
+export type MigrationCaseProgressMilestoneDto = {
+	key: string;
+	label: string;
+	weight_percent: number;
+	completed_at?: string | null;
+};
+
+export type MigrationCaseProgressDto = {
+	percent: number;
+	current_milestone_key?: string;
+	current_milestone_label?: string;
+	last_updated_at?: string | null;
+	milestones: MigrationCaseProgressMilestoneDto[];
+	notes?: string;
+	updated_by?: MigrationCaseUserCompactDto | null;
+	updated_at?: string | null;
+};
+
 export type MigrationCaseDto = {
 	id: string;
 	reference_id?: string;
@@ -1157,6 +1374,9 @@ export type MigrationCaseDto = {
 	secondary_phone?: string;
 	assigned_to?: MigrationCaseUserCompactDto | null;
 	vendor?: MigrationCaseVendorCompactDto | null;
+	escalation_status?: string;
+	sftp_progress?: MigrationCaseProgressDto;
+	edi_progress?: MigrationCaseProgressDto;
 	events?: MigrationCaseEventDto[];
 	documents?: MigrationCaseDocumentDto[];
 	metadata?: Record<string, unknown>;
@@ -1181,6 +1401,7 @@ export type MigrationCaseListQuery = {
 	current_stage?: string;
 	assigned_to_id?: string;
 	vendor_id?: string;
+	escalation_status?: string;
 	search?: string;
 	order_by?: string;
 	limit?: number;
@@ -1219,6 +1440,21 @@ export type MigrationCaseUpdateInput = Partial<
 	vendor_type?: MigrationVendorType | string;
 };
 
+export type MigrationCaseProgressUpdateInput = {
+	milestones: Array<{ key: string; completed_at?: string | null }>;
+	notes?: string;
+};
+
+export type MigrationCaseEscalationInput = {
+	escalation_status: string;
+};
+
+export type WorkQueueCompletionSummaryDto = {
+	percent: number;
+	complete_count: number;
+	total_count: number;
+};
+
 export type WorkQueueKpisDto = {
 	assigned: number;
 	connected: number;
@@ -1226,6 +1462,9 @@ export type WorkQueueKpisDto = {
 	testing: number;
 	exceptions: number;
 	not_started: number;
+	escalations?: number;
+	sftp_completion?: WorkQueueCompletionSummaryDto;
+	edi_completion?: WorkQueueCompletionSummaryDto;
 };
 
 export type WorkQueueImportResultDto = {
@@ -1374,9 +1613,18 @@ export type AuditRecordDto = {
 	action: string;
 	resource_type?: string;
 	resource_id?: string;
-	actor?: string;
+	actor?: string | { id?: string; email?: string; name?: string };
 	summary?: string;
+	details?: Record<string, unknown> | null;
 	created_at?: string;
+};
+
+export type AuditListQuery = {
+	resource_type?: string;
+	resource_id?: string;
+	action?: string;
+	limit?: number;
+	offset?: number;
 };
 
 export type CoreUserDto = {
@@ -2166,6 +2414,9 @@ export function normalizeMigrationCase(
 		secondary_email: pickString(raw, "secondary_email") || "",
 		secondary_phone: pickString(raw, "secondary_phone") || "",
 		assigned_to: normalizeMigrationUser(raw.assigned_to),
+		escalation_status: pickString(raw, "escalation_status") || "none",
+		sftp_progress: normalizeMigrationProgress(raw.sftp_progress),
+		edi_progress: normalizeMigrationProgress(raw.edi_progress),
 		vendor: vendorObj
 			? {
 					id: String(vendorObj.id ?? ""),
@@ -2200,9 +2451,51 @@ export function normalizeMigrationCase(
 	};
 }
 
+function normalizeMigrationProgress(
+	raw: unknown
+): MigrationCaseProgressDto | undefined {
+	if (!raw || typeof raw !== "object") return undefined;
+	const obj = raw as Record<string, unknown>;
+	const milestonesRaw = Array.isArray(obj.milestones) ? obj.milestones : [];
+	return {
+		percent: Number(obj.percent ?? 0) || 0,
+		current_milestone_key: pickString(obj, "current_milestone_key") || "",
+		current_milestone_label:
+			pickString(obj, "current_milestone_label") || "Not Started",
+		last_updated_at: pickString(obj, "last_updated_at") || null,
+		milestones: milestonesRaw
+			.filter(
+				(m): m is Record<string, unknown> => !!m && typeof m === "object"
+			)
+			.map((m) => ({
+				key: pickString(m, "key") || "",
+				label: pickString(m, "label") || "",
+				weight_percent: Number(m.weight_percent ?? 0) || 0,
+				completed_at: pickString(m, "completed_at") || null,
+			})),
+		notes: pickString(obj, "notes") || "",
+		updated_by: normalizeMigrationUser(obj.updated_by),
+		updated_at: pickString(obj, "updated_at") || null,
+	};
+}
+
 export function normalizeWorkQueueKpis(
 	raw: Record<string, unknown>
 ): WorkQueueKpisDto {
+	const sftpRaw = raw.sftp_completion;
+	const ediRaw = raw.edi_completion;
+	const normalizeSummary = (
+		value: unknown
+	): WorkQueueCompletionSummaryDto | undefined => {
+		if (!value || typeof value !== "object") return undefined;
+		const obj = value as Record<string, unknown>;
+		return {
+			percent: Number(obj.percent ?? 0) || 0,
+			complete_count: Number(obj.complete_count ?? 0) || 0,
+			total_count: Number(obj.total_count ?? 0) || 0,
+		};
+	};
+
 	return {
 		assigned: Number(raw.assigned ?? 0) || 0,
 		connected: Number(raw.connected ?? 0) || 0,
@@ -2210,5 +2503,8 @@ export function normalizeWorkQueueKpis(
 		testing: Number(raw.testing ?? 0) || 0,
 		exceptions: Number(raw.exceptions ?? 0) || 0,
 		not_started: Number(raw.not_started ?? 0) || 0,
+		escalations: Number(raw.escalations ?? 0) || 0,
+		sftp_completion: normalizeSummary(sftpRaw),
+		edi_completion: normalizeSummary(ediRaw),
 	};
 }

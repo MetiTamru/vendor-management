@@ -2,7 +2,7 @@ import type {
 	VendorDirectoryRow,
 	VendorListHealth,
 	VendorListStatus,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
+} from "@/features/admin/features/vendors/vendor-types";
 import type {
 	AccountDto,
 	ConnectionDto,

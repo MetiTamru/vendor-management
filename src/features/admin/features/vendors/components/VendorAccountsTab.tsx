@@ -62,9 +62,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	accountRowLobToApi,
+} from "@/features/admin/features/vendors/feature/mappers/accountMappers";
+import {
 	type AccountFileStatus,
 	type VendorAccountRow,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
+} from "@/features/admin/features/vendors/vendor-types";
 import { cn } from "@/lib/utils";
 
 function AccountStatusPill({ status }: { status: VendorAccountRow["status"] }) {
@@ -154,10 +157,6 @@ function HealthScoreRing({ score }: { score: number }) {
 	);
 }
 
-type VendorAccountsTabProps = {
-	accounts: VendorAccountRow[];
-};
-
 type AccountDraft = {
 	name: string;
 	lineOfBusiness: VendorAccountRow["lineOfBusiness"];
@@ -166,7 +165,30 @@ type AccountDraft = {
 	timezone: string;
 };
 
-export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
+type VendorAccountsTabProps = {
+	accounts: VendorAccountRow[];
+	onUpdateAccount: (
+		id: string,
+		patch: Pick<
+			VendorAccountRow,
+			"name" | "lineOfBusiness" | "status" | "active"
+		>
+	) => Promise<void>;
+	onCreateAccount?: (input: {
+		account_code: string;
+		name: string;
+		line_of_business: string;
+		active?: boolean;
+	}) => Promise<void>;
+	onDeleteAccount?: (id: string) => Promise<void>;
+};
+
+export function VendorAccountsTab({
+	accounts,
+	onUpdateAccount,
+	onCreateAccount,
+	onDeleteAccount,
+}: VendorAccountsTabProps) {
 	const [rows, setRows] = useState<VendorAccountRow[]>(accounts);
 	const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
 		null
@@ -180,6 +202,13 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 	>("activity");
 	const [editAccountId, setEditAccountId] = useState<string | null>(null);
 	const [draft, setDraft] = useState<AccountDraft | null>(null);
+	const [saving, setSaving] = useState(false);
+	const [createOpen, setCreateOpen] = useState(false);
+	const [createDraft, setCreateDraft] = useState({
+		account_code: "",
+		name: "",
+		line_of_business: "commercial",
+	});
 
 	useEffect(() => {
 		setRows(accounts);
@@ -294,46 +323,55 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 
 	function saveEdit() {
 		if (!editAccountId || !draft) return;
-		setRows((prev) =>
-			prev.map((account) =>
-				account.id === editAccountId
-					? {
-							...account,
-							name: draft.name.trim() || account.name,
-							lineOfBusiness: draft.lineOfBusiness,
-							status: draft.status,
-							active: draft.status !== "inactive",
-							payerId: draft.payerId.trim() || account.payerId,
-							timezone: draft.timezone.trim() || account.timezone,
-						}
-					: account
-			)
-		);
-		toast.success("Account updated.");
-		setEditAccountId(null);
-		setDraft(null);
+		const current = rows.find((r) => r.id === editAccountId);
+		const patch = {
+			name: draft.name.trim() || current?.name || "",
+			lineOfBusiness: draft.lineOfBusiness,
+			status: draft.status,
+			active: draft.status !== "inactive",
+		};
+		const finish = () => {
+			toast.success("Account updated.");
+			setEditAccountId(null);
+			setDraft(null);
+		};
+		setSaving(true);
+		void onUpdateAccount(editAccountId, patch)
+			.then(finish)
+			.catch((err: unknown) => {
+				const message =
+					err instanceof Error ? err.message : "Failed to update account.";
+				toast.error(message);
+			})
+			.finally(() => setSaving(false));
 	}
 
 	function toggleAccountActive(account: VendorAccountRow) {
 		const nextActive = !account.active;
-		setRows((prev) =>
-			prev.map((row) =>
-				row.id === account.id
-					? {
-							...row,
-							active: nextActive,
-							status: nextActive
-								? row.status === "inactive"
-									? "healthy"
-									: row.status
-								: "inactive",
-						}
-					: row
-			)
-		);
-		toast.success(
-			nextActive ? `${account.name} activated.` : `${account.name} deactivated.`
-		);
+		const nextStatus: VendorAccountRow["status"] = nextActive
+			? account.status === "inactive"
+				? "healthy"
+				: account.status
+			: "inactive";
+		const finish = () => {
+			toast.success(
+				nextActive ? `${account.name} activated.` : `${account.name} deactivated.`
+			);
+		};
+		setSaving(true);
+		void onUpdateAccount(account.id, {
+			name: account.name,
+			lineOfBusiness: account.lineOfBusiness,
+			status: nextStatus,
+			active: nextActive,
+		})
+			.then(finish)
+			.catch((err: unknown) => {
+				const message =
+					err instanceof Error ? err.message : "Failed to update account.";
+				toast.error(message);
+			})
+			.finally(() => setSaving(false));
 	}
 
 	return (
@@ -416,6 +454,16 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2">
+				{onCreateAccount ? (
+					<Button
+						type="button"
+						size="sm"
+						className="h-9"
+						onClick={() => setCreateOpen(true)}
+					>
+						Add account
+					</Button>
+				) : null}
 				<div className="relative min-w-[200px] flex-1">
 					<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
 					<Input
@@ -642,6 +690,25 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 															>
 																Edit account
 															</DropdownMenuItem>
+															{onDeleteAccount ? (
+																<>
+																	<DropdownMenuSeparator />
+																	<DropdownMenuItem
+																		className="text-red-600"
+																		onSelect={() => {
+																			void onDeleteAccount(account.id)
+																				.then(() =>
+																					toast.success("Account deleted.")
+																				)
+																				.catch(() =>
+																					toast.error("Could not delete account.")
+																				);
+																		}}
+																	>
+																		Delete account
+																	</DropdownMenuItem>
+																</>
+															) : null}
 															<DropdownMenuSeparator />
 															<DropdownMenuItem
 																onSelect={() => toggleAccountActive(account)}
@@ -971,7 +1038,7 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 					<DialogHeader>
 						<DialogTitle>Edit account</DialogTitle>
 						<DialogDescription>
-							Update mock account settings for{" "}
+							Update account settings for{" "}
 							{editingAccount?.accountId ?? "this account"}.
 						</DialogDescription>
 					</DialogHeader>
@@ -1092,6 +1159,112 @@ export function VendorAccountsTab({ accounts }: VendorAccountsTabProps) {
 						</Button>
 						<Button type="button" onClick={saveEdit}>
 							Save changes
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={createOpen} onOpenChange={setCreateOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Add account</DialogTitle>
+						<DialogDescription>
+							Create a new account under this vendor.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-3 py-1">
+						<div className="space-y-1.5">
+							<Label htmlFor="create-account-code">Account code</Label>
+							<Input
+								id="create-account-code"
+								value={createDraft.account_code}
+								onChange={(e) =>
+									setCreateDraft((prev) => ({
+										...prev,
+										account_code: e.target.value,
+									}))
+								}
+							/>
+						</div>
+						<div className="space-y-1.5">
+							<Label htmlFor="create-account-name">Account name</Label>
+							<Input
+								id="create-account-name"
+								value={createDraft.name}
+								onChange={(e) =>
+									setCreateDraft((prev) => ({ ...prev, name: e.target.value }))
+								}
+							/>
+						</div>
+						<div className="space-y-1.5">
+							<Label>Line of business</Label>
+							<Select
+								value={createDraft.line_of_business}
+								onValueChange={(value) =>
+									setCreateDraft((prev) => ({
+										...prev,
+										line_of_business: value,
+									}))
+								}
+							>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{[
+										["commercial", "Commercial"],
+										["medicare", "Medicare"],
+										["medicaid", "Medicaid"],
+										["marketplace", "Marketplace"],
+									].map(([value, label]) => (
+										<SelectItem key={value} value={String(value)}>
+											{label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setCreateOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							disabled={!onCreateAccount || saving}
+							onClick={() => {
+								if (!onCreateAccount) return;
+								const account_code = createDraft.account_code.trim();
+								const name = createDraft.name.trim();
+								if (!account_code || !name) {
+									toast.error("Account code and name are required.");
+									return;
+								}
+								setSaving(true);
+								void onCreateAccount({
+									account_code,
+									name,
+									line_of_business: createDraft.line_of_business,
+									active: true,
+								})
+									.then(() => {
+										toast.success("Account created.");
+										setCreateOpen(false);
+										setCreateDraft({
+											account_code: "",
+											name: "",
+											line_of_business: "commercial",
+										});
+									})
+									.catch(() => toast.error("Could not create account."))
+									.finally(() => setSaving(false));
+							}}
+						>
+							Create account
 						</Button>
 					</DialogFooter>
 				</DialogContent>

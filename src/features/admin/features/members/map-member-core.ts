@@ -889,21 +889,76 @@ export function mapOtherStatuses(
 	}));
 }
 
-export function mapChangeEvents(rows: Record<string, unknown>[] | undefined): {
+export type MemberChangeEventRow = {
 	id: string;
+	changeDate: string;
+	changeType: "Update" | "Add" | "Remove";
 	category: string;
 	fieldName: string;
+	fieldReason?: string;
 	oldValue: string;
 	newValue: string;
-	createdAt: string;
-}[] {
+	reason: string;
+	changedBy: string;
+	source: string;
+	effectiveDate: string;
+	createdAt?: string;
+};
+
+function formatChangeDate(value: unknown): string {
+	if (!value) return "—";
+	const raw = String(value);
+	const d = new Date(raw);
+	if (Number.isNaN(d.getTime())) return raw;
+	return d.toLocaleString("en-US", {
+		month: "2-digit",
+		day: "2-digit",
+		year: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+	});
+}
+
+function formatEffectiveDate(value: unknown): string {
+	if (!value) return "—";
+	const raw = String(value);
+	if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+		const [y, m, day] = raw.slice(0, 10).split("-");
+		return `${m}/${day}/${y}`;
+	}
+	const d = new Date(raw);
+	if (Number.isNaN(d.getTime())) return raw;
+	return d.toLocaleDateString("en-US", {
+		month: "2-digit",
+		day: "2-digit",
+		year: "numeric",
+	});
+}
+
+function asChangeType(value: unknown): MemberChangeEventRow["changeType"] {
+	const v = str(value).toLowerCase();
+	if (v === "add" || v === "create") return "Add";
+	if (v === "remove" || v === "delete") return "Remove";
+	return "Update";
+}
+
+export function mapChangeEvents(
+	rows: Record<string, unknown>[] | undefined
+): MemberChangeEventRow[] {
 	return (rows ?? []).map((r) => ({
 		id: str(r.id),
-		category: str(r.category, "—"),
+		changeDate: formatChangeDate(r.change_date ?? r.created_at),
+		changeType: asChangeType(r.change_type ?? r.action),
+		category: str(r.category, "Other"),
 		fieldName: str(r.field_name, "—"),
+		fieldReason: r.field_reason ? str(r.field_reason) : undefined,
 		oldValue: str(r.old_value, "—"),
 		newValue: str(r.new_value, "—"),
-		createdAt: r.created_at ? String(r.created_at) : "—",
+		reason: str(r.reason, "—"),
+		changedBy: str(r.changed_by ?? r.actor, "—"),
+		source: str(r.source ?? r.source_system, "—"),
+		effectiveDate: formatEffectiveDate(r.effective_date),
+		createdAt: r.created_at ? String(r.created_at) : undefined,
 	}));
 }
 

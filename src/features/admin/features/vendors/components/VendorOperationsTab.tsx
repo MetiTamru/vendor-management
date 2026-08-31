@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import {
 	AlertTriangle,
@@ -43,14 +43,12 @@ import {
 } from "@/components/ui/table";
 import type { FileRun } from "@/features/admin/features/file-management/mock-data";
 import {
-	VENDOR_ALERTS,
 	type VendorAlert,
 	type VendorConfigJob,
 	type VendorIntegrationProfile,
-	getVendorConfigJobs,
 	runBucket,
 	summarizeRuns,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
+} from "@/features/admin/features/vendors/vendor-types";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +66,12 @@ type VendorOperationsTabProps = {
 	vendorName: string;
 	integration: VendorIntegrationProfile;
 	runs: FileRun[];
+	configJobs: VendorConfigJob[];
+	alerts: VendorAlert[];
+	onRefresh?: () => Promise<void>;
+	onToggleJob?: (jobId: string, active: boolean) => Promise<void>;
+	onRunJob?: (jobId: string) => Promise<void>;
+	onReprocessRun?: (runId: string) => Promise<void>;
 };
 
 function ActivityStatus({ status }: { status: string }) {
@@ -176,21 +180,32 @@ export function VendorOperationsTab({
 	vendorName,
 	integration,
 	runs,
+	configJobs,
+	alerts: alertsProp,
+	onRefresh,
+	onToggleJob,
+	onRunJob,
+	onReprocessRun,
 }: VendorOperationsTabProps) {
 	const [opsTab, setOpsTab] = useState<OpsTab>("history");
 	const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [fileTypeFilter, setFileTypeFilter] = useState("all");
-	const [jobs, setJobs] = useState<VendorConfigJob[]>(() =>
-		getVendorConfigJobs(vendorId, vendorName)
-	);
-	const [alerts, setAlerts] = useState<VendorAlert[]>(() => {
-		const existing = VENDOR_ALERTS.filter((a) => a.vendorId === vendorId);
-		return existing.length
-			? existing
-			: buildFallbackAlerts(vendorId, vendorName, runs);
-	});
+	const [jobs, setJobs] = useState<VendorConfigJob[]>(configJobs);
+	const [alerts, setAlerts] = useState<VendorAlert[]>(alertsProp);
+
+	useEffect(() => {
+		setJobs(configJobs);
+	}, [configJobs]);
+
+	useEffect(() => {
+		setAlerts(
+			alertsProp.length
+				? alertsProp
+				: buildFallbackAlerts(vendorId, vendorName, runs)
+		);
+	}, [alertsProp, vendorId, vendorName, runs]);
 
 	const summary = useMemo(() => summarizeRuns(runs), [runs]);
 	const activeJobs = jobs.filter((job) => job.status === "Active").length;
@@ -247,6 +262,13 @@ export function VendorOperationsTab({
 
 	function toggleJob(job: VendorConfigJob) {
 		const next = job.status === "Active" ? "Paused" : "Active";
+		const active = next === "Active";
+		if (onToggleJob) {
+			void onToggleJob(job.id, active).catch(() => {
+				toast.error("Could not update job status.");
+			});
+			return;
+		}
 		setJobs((prev) =>
 			prev.map((row) => (row.id === job.id ? { ...row, status: next } : row))
 		);
@@ -437,7 +459,15 @@ export function VendorOperationsTab({
 							variant="outline"
 							size="sm"
 							className="h-9"
-							onClick={() => toast.success("Operations data refreshed.")}
+							onClick={() => {
+								if (onRefresh) {
+									void onRefresh().catch(() =>
+										toast.error("Could not refresh operations data.")
+									);
+									return;
+								}
+								toast.success("Operations data refreshed.");
+							}}
 						>
 							<RefreshCw className="mr-1.5 size-3.5" />
 							Refresh
@@ -558,13 +588,15 @@ export function VendorOperationsTab({
 																			Processing logs
 																		</Link>
 																	</DropdownMenuItem>
-																	{run.issues?.[0] ? (
-																		<DropdownMenuItem asChild>
-																			<Link
-																				href={`/admin/file-monitoring/${run.id}/investigate/${run.issues[0].id}`}
-																			>
-																				Investigate
-																			</Link>
+																	{runBucket(run.status) === "failed" && onReprocessRun ? (
+																		<DropdownMenuItem
+																			onSelect={() => {
+																				void onReprocessRun(run.id).catch(() =>
+																					toast.error("Could not reprocess file.")
+																				);
+																			}}
+																		>
+																			Reprocess file
 																		</DropdownMenuItem>
 																	) : null}
 																</DropdownMenuContent>
@@ -718,9 +750,15 @@ export function VendorOperationsTab({
 														</DropdownMenuItem>
 														<DropdownMenuSeparator />
 														<DropdownMenuItem
-															onSelect={() =>
-																toast.success(`Triggered “${job.name}”.`)
-															}
+															onSelect={() => {
+																if (onRunJob) {
+																	void onRunJob(job.id).catch(() =>
+																		toast.error("Could not trigger job run.")
+																	);
+																	return;
+																}
+																toast.success(`Triggered “${job.name}”.`);
+															}}
 														>
 															Run now
 														</DropdownMenuItem>

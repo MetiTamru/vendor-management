@@ -93,6 +93,11 @@ export function createVendorInvite(
 		createdAt: now.toISOString(),
 	};
 
+	return persistVendorInvite(invite);
+}
+
+/** Persist an invite record (server-issued or client-generated). */
+export function persistVendorInvite(invite: VendorInviteRecord): VendorInviteRecord {
 	const others = readAll().filter(
 		(item) =>
 			!(
@@ -103,6 +108,30 @@ export function createVendorInvite(
 	);
 	writeAll([invite, ...others]);
 	return invite;
+}
+
+export function saveVendorInviteFromServer(input: {
+	token: string;
+	vendorId: string;
+	legalName: string;
+	email: string;
+	categories: string[];
+	expiresAt: string;
+	note?: string;
+	createdAt?: string;
+}): VendorInviteRecord {
+	const now = input.createdAt ?? new Date().toISOString();
+	return persistVendorInvite({
+		token: input.token,
+		vendorId: input.vendorId,
+		legalName: input.legalName.trim(),
+		email: input.email.trim().toLowerCase(),
+		categories: input.categories,
+		note: input.note?.trim() || undefined,
+		expiresAt: input.expiresAt,
+		status: "pending",
+		createdAt: now,
+	});
 }
 
 export function getInviteByToken(token: string | null | undefined) {

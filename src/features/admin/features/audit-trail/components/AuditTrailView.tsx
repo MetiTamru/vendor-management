@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
 	ArrowDownUp,
@@ -46,6 +46,10 @@ import {
 	buildAuditActivities,
 	summarizeAuditActivities,
 } from "@/features/admin/features/audit-trail/mock-data";
+import { listAuditRecords } from "@/features/admin/features/audit-trail/feature/api/auditTrailApi";
+import {
+	auditRecordToActivity,
+} from "@/features/admin/features/audit-trail/feature/mappers/auditMappers";
 import { cn } from "@/lib/utils";
 
 function ActionBadge({ action }: { action: AuditActionType }) {
@@ -103,16 +107,40 @@ export function AuditTrailView({
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
+	const [liveRows, setLiveRows] = useState<AuditActivity[] | null>(null);
+	const [loading, setLoading] = useState(false);
 
-	const allRows = useMemo(
-		() =>
-			buildAuditActivities({
-				vendorId,
-				vendorName,
-				count: vendorId ? 48 : 128,
-			}),
-		[vendorId, vendorName]
-	);
+	useEffect(() => {
+		if (!vendorId) {
+			setLiveRows(null);
+			return;
+		}
+		let cancelled = false;
+		setLoading(true);
+		listAuditRecords({ resource_id: vendorId, limit: 100 })
+			.then((records) => {
+				if (cancelled) return;
+				setLiveRows(records.map(auditRecordToActivity));
+			})
+			.catch(() => {
+				if (!cancelled) setLiveRows([]);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [vendorId]);
+
+	const allRows = useMemo(() => {
+		if (vendorId) return liveRows ?? [];
+		return buildAuditActivities({
+			vendorId,
+			vendorName,
+			count: 128,
+		});
+	}, [liveRows, vendorId, vendorName]);
 
 	const users = useMemo(
 		() => Array.from(new Set(allRows.map((row) => row.user))).sort(),

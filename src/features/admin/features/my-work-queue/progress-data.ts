@@ -59,41 +59,14 @@ export type ProgressSummary = {
 	totalCount: number;
 };
 
-export const WORK_QUEUE_PROGRESS_SUMMARY: {
-	sftp: ProgressSummary;
-	edi: ProgressSummary;
-} = {
-	sftp: { percent: 68, completeCount: 8, totalCount: 12 },
-	edi: { percent: 44, completeCount: 5, totalCount: 12 },
-};
-
-/** Demo summary until API exposes aggregate SFTP/EDI completion. */
-export function dummyProgressSummary(totalCount?: number): {
+/** Zeroed summary when no cases match filters or API has no aggregate KPIs yet. */
+export function emptyProgressSummary(): {
 	sftp: ProgressSummary;
 	edi: ProgressSummary;
 } {
-	const total = totalCount ?? WORK_QUEUE_PROGRESS_SUMMARY.sftp.totalCount;
-	if (total === WORK_QUEUE_PROGRESS_SUMMARY.sftp.totalCount) {
-		return WORK_QUEUE_PROGRESS_SUMMARY;
-	}
-	const scale = total / WORK_QUEUE_PROGRESS_SUMMARY.sftp.totalCount;
 	return {
-		sftp: {
-			percent: WORK_QUEUE_PROGRESS_SUMMARY.sftp.percent,
-			completeCount: Math.max(
-				1,
-				Math.round(WORK_QUEUE_PROGRESS_SUMMARY.sftp.completeCount * scale)
-			),
-			totalCount: total,
-		},
-		edi: {
-			percent: WORK_QUEUE_PROGRESS_SUMMARY.edi.percent,
-			completeCount: Math.max(
-				1,
-				Math.round(WORK_QUEUE_PROGRESS_SUMMARY.edi.completeCount * scale)
-			),
-			totalCount: total,
-		},
+		sftp: { percent: 0, completeCount: 0, totalCount: 0 },
+		edi: { percent: 0, completeCount: 0, totalCount: 0 },
 	};
 }
 

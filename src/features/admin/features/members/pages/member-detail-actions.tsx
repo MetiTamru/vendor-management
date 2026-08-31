@@ -32,7 +32,6 @@ import {
 	useHardDeleteMemberMutation,
 	useMemberAccumulatorSummaryQuery,
 	useMemberAccumulatorsQuery,
-	useMemberChangeEventsQuery,
 	useMemberClaimsQuery,
 	useMemberEligibilityHistoryQuery,
 	useMemberExceptionsQuery,
@@ -1030,40 +1029,7 @@ export function MemberClaimRowActions({
 	);
 }
 
-export function MemberChangeEventsPanel({ memberId }: { memberId: string }) {
-	const query = useMemberChangeEventsQuery(memberId, !isMockEnabled());
-	const rows = query.data ?? [];
-
-	return (
-		<section className="rounded-xl border border-border/40 bg-card p-4 shadow-sm">
-			<h3 className="text-sm font-semibold">Change events</h3>
-			{query.isLoading ? (
-				<p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-			) : rows.length === 0 ? (
-				<p className="mt-2 text-sm text-muted-foreground">No change events.</p>
-			) : (
-				<ul className="mt-3 space-y-2">
-					{rows.map((row) => (
-						<li
-							key={row.id}
-							className="rounded-md border border-border/30 px-3 py-2 text-sm"
-						>
-							<p className="font-medium">
-								{row.category}: {row.fieldName}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								{row.oldValue} → {row.newValue}
-							</p>
-							<p className="text-[11px] text-muted-foreground">
-								{row.createdAt}
-							</p>
-						</li>
-					))}
-				</ul>
-			)}
-		</section>
-	);
-}
+export { MemberChangeEventsPanel } from "@/features/admin/features/members/components/MemberChangeEventsPanel";
 
 export function MemberSourceRecordViewer({
 	memberId,

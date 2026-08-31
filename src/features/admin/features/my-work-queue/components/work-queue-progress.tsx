@@ -32,14 +32,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import type { TpaTpvRow } from "../mock-data";
+import type { TpaTpvRow } from "../work-queue-types";
 import {
 	type ConnectionProgress,
 	type GuideTrack,
 	type MilestoneState,
 	type ProgressTrack,
 	WORK_QUEUE_GUIDE_TRACKS,
-	WORK_QUEUE_PROGRESS_SUMMARY,
+	emptyProgressSummary,
 	progressFromMilestones,
 } from "../progress-data";
 
@@ -259,13 +259,13 @@ function ProgressBar({
 }
 
 export function WorkQueueProgressOverview({
-	summary = WORK_QUEUE_PROGRESS_SUMMARY,
+	summary = emptyProgressSummary(),
 	tracks = WORK_QUEUE_GUIDE_TRACKS,
 	waveFilter = "all",
 	waves = [],
 	onWaveFilterChange,
 }: {
-	summary?: typeof WORK_QUEUE_PROGRESS_SUMMARY;
+	summary?: ReturnType<typeof emptyProgressSummary>;
 	tracks?: GuideTrack[];
 	waveFilter?: string;
 	waves?: string[];

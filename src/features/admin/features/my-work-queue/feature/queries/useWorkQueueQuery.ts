@@ -5,7 +5,6 @@ import {
 	useVendorCoreFeatureMutation,
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
-import { isMockEnabled } from "@/lib/mock-mode";
 import type {
 	MigrationCaseCreateInput,
 	MigrationCaseListQuery,
@@ -14,25 +13,29 @@ import type {
 	WorkQueueSeedInput,
 } from "@/lib/vendor-core/types";
 
+import type { ConnectionProgress } from "../../progress-data";
 import {
+	assignMigrationCase,
 	bulkSetMigrationCaseStatus,
 	createMigrationCase,
 	getMigrationCaseDetail,
 	getWorkQueueKpiCards,
+	getWorkQueueKpisRaw,
 	importWorkQueueSpreadsheet,
 	listMigrationCaseHistory,
 	listWorkQueueRows,
+	listWorkQueueRowsPage,
 	markMigrationCaseReady,
 	markMigrationCaseTesting,
 	markMigrationCaseWaitingOnVendor,
 	seedWorkQueue,
 	setMigrationCaseStatus,
 	updateMigrationCase,
+	updateMigrationCaseProgress,
 	uploadMigrationCaseDocument,
 } from "../api/workQueueApi";
 
 const domain = "work-queue";
-const liveOnly = !isMockEnabled();
 
 export function useWorkQueueRowsQuery(
 	params?: MigrationCaseListQuery,
@@ -47,11 +50,33 @@ export function useWorkQueueRowsQuery(
 	);
 }
 
+export function useWorkQueueRowsPageQuery(
+	params?: MigrationCaseListQuery,
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"rows-page",
+		() => listWorkQueueRowsPage(params),
+		enabled,
+		[params]
+	);
+}
+
 export function useWorkQueueKpisQuery(enabled = true) {
 	return useVendorCoreFeatureQuery(
 		domain,
 		"kpis",
 		getWorkQueueKpiCards,
+		enabled
+	);
+}
+
+export function useWorkQueueKpisRawQuery(enabled = true) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"kpis-raw",
+		() => getWorkQueueKpisRaw(),
 		enabled
 	);
 }
@@ -71,7 +96,7 @@ export function useMigrationCaseHistoryQuery(id: string, enabled = true) {
 		domain,
 		"events",
 		() => listMigrationCaseHistory(id),
-		enabled && Boolean(id) && liveOnly,
+		enabled && Boolean(id),
 		[id]
 	);
 }
@@ -91,6 +116,26 @@ export function useUpdateMigrationCaseMutation() {
 		{ id: string; body: MigrationCaseUpdateInput }
 	>(domain, {
 		mutationFn: ({ id, body }) => updateMigrationCase(id, body),
+	});
+}
+
+export function useAssignMigrationCaseMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof assignMigrationCase>>,
+		{ id: string; assigned_to_id: string | null }
+	>(domain, {
+		mutationFn: ({ id, assigned_to_id }) =>
+			assignMigrationCase(id, assigned_to_id),
+	});
+}
+
+export function useUpdateMigrationCaseProgressMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof updateMigrationCaseProgress>>,
+		{ id: string; track: "sftp" | "edi"; progress: ConnectionProgress }
+	>(domain, {
+		mutationFn: ({ id, track, progress }) =>
+			updateMigrationCaseProgress(id, track, progress),
 	});
 }
 

@@ -18,11 +18,11 @@ import { toContractsModel } from "../mappers/contractsMappers";
 
 const domain = "contracts";
 
-export function useContractsQuery() {
+export function useContractsQuery(vendorId?: string) {
 	return useQuery({
-		queryKey: featureQueryKey(domain, "list"),
+		queryKey: featureQueryKey(domain, "list", vendorId ?? "all"),
 		queryFn: async () => {
-			const items = (await listContracts()).map(toContractsModel);
+			const items = (await listContracts(vendorId)).map(toContractsModel);
 			return { items, total: items.length };
 		},
 	});
@@ -60,7 +60,7 @@ export function useUpdateContractsMutation() {
 }
 
 export function useContractsList(vendorId?: string) {
-	const query = useContractsQuery();
+	const query = useContractsQuery(vendorId);
 	const items = query.data?.items ?? [];
 	const contracts = vendorId
 		? items.filter((contract) => contract.vendorId === vendorId)

@@ -56,6 +56,7 @@ import {
 	getMember,
 	getMemberSummaries,
 } from "../../mock-data";
+import { buildMockMemberChangeEvents } from "../../member-change-events-mock";
 import type {
 	MemberAccumulatorCreateBody,
 	MemberAccumulatorUpdateBody,
@@ -480,9 +481,11 @@ export async function listMemberClaims(
 }
 
 export async function listMemberChangeEvents(memberId: string) {
-	if (isMockEnabled()) return [];
+	if (isMockEnabled()) return buildMockMemberChangeEvents(memberId);
 	const page = await vendorCoreApi.listMemberChangeEvents(memberId);
-	return mapChangeEvents(page.results as Record<string, unknown>[]);
+	const mapped = mapChangeEvents(page.results as Record<string, unknown>[]);
+	if (mapped.length > 0) return mapped;
+	return buildMockMemberChangeEvents(memberId);
 }
 
 export async function listMemberSourceRecords(memberId: string) {

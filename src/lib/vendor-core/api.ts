@@ -74,6 +74,25 @@ import type {
 	ProviderSummaryDto,
 	ProviderUpdateInput,
 	ProviderVendorSourceDto,
+	AccountCreateInput,
+	AccountOpsSummaryDto,
+	AccountUpdateInput,
+	AuditListQuery,
+	ContractCreateInput,
+	ContractDto,
+	ContractListQuery,
+	ContractUpdateInput,
+	VendorCategoryDto,
+	VendorCategoryListQuery,
+	VendorContactCreateInput,
+	VendorContactDto,
+	VendorContactUpdateInput,
+	VendorInviteCreateInput,
+	VendorInviteDto,
+	VendorNoteCreateInput,
+	VendorNoteDto,
+	VendorNoteUpdateInput,
+	VendorTeamMemberDto,
 	RoleCreateInput,
 	RoleDto,
 	RoleListQuery,
@@ -114,14 +133,39 @@ import {
 export const vendorCoreEndpoints = {
 	vendorsList: "/api/v1/vendors/list/",
 	vendorsCreate: "/api/v1/vendors/create/",
+	vendorsInvite: "/api/v1/vendors/invite/",
+	vendorsMe: "/api/v1/vendors/me/",
+	vendorsTeam: "/api/v1/vendors/team/",
 	vendor: (id: string) => `/api/v1/vendors/${id}/`,
 	accountsList: "/api/v1/accounts/list/",
 	accountsCreate: "/api/v1/accounts/create/",
+	account: (id: string) => `/api/v1/accounts/${id}/`,
+	accountUpdate: (id: string) => `/api/v1/accounts/${id}/update/`,
+	accountDelete: (id: string) => `/api/v1/accounts/${id}/delete/`,
+	accountRestore: (id: string) => `/api/v1/accounts/${id}/restore/`,
+	accountHardDelete: (id: string) => `/api/v1/accounts/${id}/hard-delete/`,
+	accountOpsSummaryList: "/api/v1/accounts/ops-summary/list/",
+	categoriesList: "/api/v1/categories/list/",
+	contractsList: "/api/v1/contracts/list/",
+	contractsCreate: "/api/v1/contracts/create/",
+	contract: (id: string) => `/api/v1/contracts/${id}/`,
+	contractUpdate: (id: string) => `/api/v1/contracts/${id}/update/`,
+	vendorContactsList: "/api/v1/vendor-contacts/list/",
+	vendorContactsCreate: "/api/v1/vendor-contacts/create/",
+	vendorContact: (id: string) => `/api/v1/vendor-contacts/${id}/`,
+	vendorContactUpdate: (id: string) => `/api/v1/vendor-contacts/${id}/update/`,
+	vendorContactDelete: (id: string) => `/api/v1/vendor-contacts/${id}/delete/`,
+	vendorNotesList: "/api/v1/vendor-notes/list/",
+	vendorNotesCreate: "/api/v1/vendor-notes/create/",
+	vendorNote: (id: string) => `/api/v1/vendor-notes/${id}/`,
+	vendorNoteUpdate: (id: string) => `/api/v1/vendor-notes/${id}/update/`,
+	vendorNoteDelete: (id: string) => `/api/v1/vendor-notes/${id}/delete/`,
 	credentialsList: "/api/v1/credentials/list/",
 	credentialsCreate: "/api/v1/credentials/create/",
 	connectionsList: "/api/v1/connections/list/",
 	connectionsCreate: "/api/v1/connections/create/",
 	connection: (id: string) => `/api/v1/connections/${id}/`,
+	connectionUpdate: (id: string) => `/api/v1/connections/${id}/update/`,
 	connectionTest: (id: string) => `/api/v1/connections/${id}/test/`,
 	intakeJobs: "/api/v1/intake-jobs/",
 	intakeJob: (id: string) => `/api/v1/intake-jobs/${id}/`,
@@ -268,6 +312,12 @@ export const vendorCoreEndpoints = {
 	migrationCaseHardDelete: (id: string) =>
 		`/api/v1/migration-cases/${id}/hard-delete/`,
 	migrationCaseAssign: (id: string) => `/api/v1/migration-cases/${id}/assign/`,
+	migrationCaseSftpProgressUpdate: (id: string) =>
+		`/api/v1/migration-cases/${id}/sftp-progress/update/`,
+	migrationCaseEdiProgressUpdate: (id: string) =>
+		`/api/v1/migration-cases/${id}/edi-progress/update/`,
+	migrationCaseEscalation: (id: string) =>
+		`/api/v1/migration-cases/${id}/escalation/`,
 	migrationCaseStatus: (id: string) => `/api/v1/migration-cases/${id}/status/`,
 	migrationCaseWhitelist: (id: string) =>
 		`/api/v1/migration-cases/${id}/whitelist/`,
@@ -415,18 +465,39 @@ export const vendorCoreApi = {
 			body: JSON.stringify(body),
 		}).then((v) => normalizeVendor(v as unknown as Record<string, unknown>)),
 
-	createAccount: (body: {
-		vendor: string;
-		account_code: string;
-		name?: string;
-		line_of_business?: string;
-		active?: boolean;
-		metadata?: Record<string, unknown>;
-	}) =>
+	createAccount: (body: AccountCreateInput) =>
 		vendorCoreFetch<AccountDto>(vendorCoreEndpoints.accountsCreate, {
 			method: "POST",
 			body: JSON.stringify(body),
 		}).then((a) => normalizeAccount(a as unknown as Record<string, unknown>)),
+
+	getAccount: async (id: string) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.account(id)
+		);
+		return normalizeAccount(raw);
+	},
+
+	updateAccount: (id: string, body: AccountUpdateInput) =>
+		vendorCoreFetch<AccountDto>(vendorCoreEndpoints.accountUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}).then((a) => normalizeAccount(a as unknown as Record<string, unknown>)),
+
+	deleteAccount: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.accountDelete(id), {
+			method: "DELETE",
+		}),
+
+	restoreAccount: (id: string) =>
+		vendorCoreFetch<AccountDto>(vendorCoreEndpoints.accountRestore(id), {
+			method: "POST",
+		}).then((a) => normalizeAccount(a as unknown as Record<string, unknown>)),
+
+	hardDeleteAccount: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.accountHardDelete(id), {
+			method: "DELETE",
+		}),
 
 	createCredential: (body: {
 		name: string;
@@ -581,6 +652,12 @@ export const vendorCoreApi = {
 			vendorCoreEndpoints.connectionTest(id),
 			{ method: "POST" }
 		),
+
+	updateConnection: (id: string, body: Record<string, unknown>) =>
+		vendorCoreFetch<ConnectionDto>(vendorCoreEndpoints.connectionUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}).then((c) => normalizeConnection(c as unknown as Record<string, unknown>)),
 
 	listIntakeJobs: async (params?: { status?: string; vendor_id?: string }) => {
 		// Intake jobs clamp page size (~50); page through until exhausted.
@@ -1586,11 +1663,92 @@ export const vendorCoreApi = {
 			{ params: pageParams() }
 		),
 
-	listAudit: (params?: { resource_type?: string; action?: string }) =>
+	listAudit: (params?: AuditListQuery) =>
 		vendorCoreFetch<PaginatedResult<AuditRecordDto>>(
 			vendorCoreEndpoints.auditList,
 			{ params: pageParams(params) }
 		),
+
+	listContracts: async (params?: ContractListQuery) => {
+		const page = await vendorCoreFetch<PaginatedResult<ContractDto>>(
+			vendorCoreEndpoints.contractsList,
+			{ params: pageParams(params) }
+		);
+		return mapPage(page, (row) => row as ContractDto);
+	},
+
+	getContract: (id: string) =>
+		vendorCoreFetch<ContractDto>(vendorCoreEndpoints.contract(id)),
+
+	createContract: (body: ContractCreateInput) =>
+		vendorCoreFetch<ContractDto>(vendorCoreEndpoints.contractsCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateContract: (id: string, body: ContractUpdateInput) =>
+		vendorCoreFetch<ContractDto>(vendorCoreEndpoints.contractUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	listVendorContacts: async (params?: { vendor_id?: string }) => {
+		const page = await vendorCoreFetch<PaginatedResult<VendorContactDto>>(
+			vendorCoreEndpoints.vendorContactsList,
+			{ params: pageParams(params) }
+		);
+		return mapPage(page, (row) => row as VendorContactDto);
+	},
+
+	createVendorContact: (body: VendorContactCreateInput) =>
+		vendorCoreFetch<VendorContactDto>(vendorCoreEndpoints.vendorContactsCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateVendorContact: (id: string, body: VendorContactUpdateInput) =>
+		vendorCoreFetch<VendorContactDto>(vendorCoreEndpoints.vendorContactUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	deleteVendorContact: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.vendorContactDelete(id), {
+			method: "DELETE",
+		}),
+
+	listVendorNotes: async (params?: { vendor_id?: string }) => {
+		const page = await vendorCoreFetch<PaginatedResult<VendorNoteDto>>(
+			vendorCoreEndpoints.vendorNotesList,
+			{ params: pageParams(params) }
+		);
+		return mapPage(page, (row) => row as VendorNoteDto);
+	},
+
+	createVendorNote: (body: VendorNoteCreateInput) =>
+		vendorCoreFetch<VendorNoteDto>(vendorCoreEndpoints.vendorNotesCreate, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	updateVendorNote: (id: string, body: VendorNoteUpdateInput) =>
+		vendorCoreFetch<VendorNoteDto>(vendorCoreEndpoints.vendorNoteUpdate(id), {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+
+	deleteVendorNote: (id: string) =>
+		vendorCoreFetch<void>(vendorCoreEndpoints.vendorNoteDelete(id), {
+			method: "DELETE",
+		}),
+
+	listAccountOpsSummaries: async (vendorId: string) => {
+		const page = await vendorCoreFetch<PaginatedResult<AccountOpsSummaryDto>>(
+			vendorCoreEndpoints.accountOpsSummaryList,
+			{ params: pageParams({ vendor_id: vendorId }) }
+		);
+		return page.results ?? [];
+	},
 
 	updateVendor: (id: string, body: Record<string, unknown>) =>
 		vendorCoreFetch<VendorDto>(vendorCoreEndpoints.vendorUpdate(id), {
@@ -1612,6 +1770,37 @@ export const vendorCoreApi = {
 		vendorCoreFetch<VendorDto>(vendorCoreEndpoints.vendorRestore(id), {
 			method: "POST",
 		}).then((v) => normalizeVendor(v as unknown as Record<string, unknown>)),
+
+	inviteVendor: (body: VendorInviteCreateInput) =>
+		vendorCoreFetch<VendorInviteDto>(vendorCoreEndpoints.vendorsInvite, {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+
+	getVendorMe: async () => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.vendorsMe
+		);
+		return normalizeVendor(raw);
+	},
+
+	listVendorTeam: () =>
+		vendorCoreFetch<VendorTeamMemberDto[]>(vendorCoreEndpoints.vendorsTeam),
+
+	listVendorCategories: async (params?: VendorCategoryListQuery) => {
+		const query: Record<string, string | number | undefined> = {
+			limit: params?.limit,
+			offset: params?.offset,
+		};
+		if (params?.is_active != null) {
+			query.is_active = params.is_active ? "true" : "false";
+		}
+		const page = await vendorCoreFetch<PaginatedResult<VendorCategoryDto>>(
+			vendorCoreEndpoints.categoriesList,
+			{ params: pageParams(query) }
+		);
+		return mapPage(page, (row) => row as VendorCategoryDto);
+	},
 
 	listUsers: async (params?: { search?: string }) => {
 		const results = await listAllPages(async ({ limit, offset }) =>
@@ -2011,6 +2200,39 @@ export const vendorCoreApi = {
 	) => {
 		const raw = await vendorCoreFetch<Record<string, unknown>>(
 			vendorCoreEndpoints.migrationCaseAssign(id),
+			{ method: "POST", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	updateMigrationCaseSftpProgress: async (
+		id: string,
+		body: import("./types").MigrationCaseProgressUpdateInput
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseSftpProgressUpdate(id),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	updateMigrationCaseEdiProgress: async (
+		id: string,
+		body: import("./types").MigrationCaseProgressUpdateInput
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseEdiProgressUpdate(id),
+			{ method: "PATCH", body: JSON.stringify(body) }
+		);
+		return normalizeMigrationCase(raw);
+	},
+
+	setMigrationCaseEscalation: async (
+		id: string,
+		body: import("./types").MigrationCaseEscalationInput
+	) => {
+		const raw = await vendorCoreFetch<Record<string, unknown>>(
+			vendorCoreEndpoints.migrationCaseEscalation(id),
 			{ method: "POST", body: JSON.stringify(body) }
 		);
 		return normalizeMigrationCase(raw);

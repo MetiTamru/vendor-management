@@ -1,6 +1,7 @@
 import type {
 	MigrationCaseDto,
 	MigrationCaseEventDto,
+	MigrationCaseProgressDto,
 	WorkQueueKpisDto,
 } from "@/lib/vendor-core/types";
 
@@ -11,8 +12,18 @@ import {
 	type VendorType,
 	WORK_QUEUE_KPI,
 	type WhitelistStatus,
-} from "../../mock-data";
-import { EMPTY_EDI_PROGRESS, EMPTY_SFTP_PROGRESS } from "../../progress-data";
+} from "../../work-queue-types";
+import {
+	type EscalationStatus,
+	deriveEscalationStatus,
+} from "../../work-queue-analyst-escalation";
+import {
+	EMPTY_EDI_PROGRESS,
+	EMPTY_SFTP_PROGRESS,
+	type ConnectionProgress,
+	type ProgressTrack,
+	progressFromMilestones,
+} from "../../progress-data";
 
 const STAGE_LABEL: Record<string, string> = {
 	not_started: "Not Started",
@@ -115,6 +126,49 @@ function analystName(assigned: MigrationCaseDto["assigned_to"]): string {
 	);
 }
 
+function progressUserName(
+	user: MigrationCaseProgressDto["updated_by"]
+): string {
+	if (!user) return "";
+	return (
+		user.full_name?.trim() ||
+		[user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
+		user.username ||
+		user.email ||
+		""
+	);
+}
+
+function progressDtoToConnection(
+	dto: MigrationCaseProgressDto | undefined,
+	fallback: ConnectionProgress
+): ConnectionProgress {
+	if (!dto?.milestones?.length) return fallback;
+
+	const milestones = dto.milestones.map((m) => ({
+		key: m.key,
+		label: m.label,
+		weightPercent: m.weight_percent,
+		completedAt: m.completed_at ? formatDisplayDate(m.completed_at) : null,
+	}));
+
+	return progressFromMilestones(milestones, {
+		updatedBy: progressUserName(dto.updated_by),
+		updatedAt: formatDisplayDateTime(dto.updated_at ?? dto.last_updated_at),
+		notes: dto.notes ?? "",
+	});
+}
+
+export function connectionProgressToApiInput(progress: ConnectionProgress) {
+	return {
+		milestones: progress.milestones.map((m) => ({
+			key: m.key,
+			completed_at: m.completedAt ? dateToApi(m.completedAt) : null,
+		})),
+		notes: progress.notes ?? "",
+	};
+}
+
 function asMigrationStatus(value: string): MigrationStatus {
 	const allowed: MigrationStatus[] = [
 		"waiting_on_vendor",
@@ -135,6 +189,42 @@ function asWhitelistStatus(value: string): WhitelistStatus {
 	return "not_started";
 }
 
+function asEscalationStatus(value: string | undefined): EscalationStatus {
+	const allowed: EscalationStatus[] = [
+		"none",
+		"escalation_required",
+		"attention",
+		"escalated",
+		"resolved",
+	];
+	return allowed.includes(value as EscalationStatus)
+		? (value as EscalationStatus)
+		: "none";
+}
+
+function integrationFieldsFromMetadata(
+	metadata: MigrationCaseDto["metadata"]
+): Pick<TpaTpvRow, "sourceSystem" | "lastSyncedAt"> {
+	if (!metadata || typeof metadata !== "object") return {};
+	const meta = metadata as Record<string, unknown>;
+	const sourceSystem =
+		typeof meta.source_system === "string"
+			? meta.source_system
+			: typeof meta.sourceSystem === "string"
+				? meta.sourceSystem
+				: undefined;
+	const rawSync =
+		meta.last_synced_at ??
+		meta.lastSyncedAt ??
+		meta.last_sync ??
+		meta.lastSyncAt;
+	const lastSyncedAt =
+		typeof rawSync === "string" && rawSync.trim()
+			? formatDisplayDateTime(rawSync)
+			: undefined;
+	return { sourceSystem, lastSyncedAt };
+}
+
 export function eventDtoToHistory(event: MigrationCaseEventDto): HistoryEvent {
 	const tone = HISTORY_TONES.has(event.tone)
 		? (event.tone as HistoryEvent["tone"])
@@ -148,7 +238,7 @@ export function eventDtoToHistory(event: MigrationCaseEventDto): HistoryEvent {
 }
 
 export function migrationCaseToRow(dto: MigrationCaseDto): TpaTpvRow {
-	return {
+	const row: TpaTpvRow = {
 		id: dto.id,
 		wave: dto.wave ?? 1,
 		name: dto.name,
@@ -160,6 +250,7 @@ export function migrationCaseToRow(dto: MigrationCaseDto): TpaTpvRow {
 		lastCommunication: formatDisplayDate(dto.last_communication_at),
 		status: asMigrationStatus(String(dto.migration_status)),
 		assignedAnalyst: analystName(dto.assigned_to),
+		assignedToId: dto.assigned_to?.id ?? null,
 		lastUpdated: formatDisplayDateTime(dto.updated_at),
 		notes: dto.notes ?? "",
 		primaryContact: dto.primary_contact ?? "",
@@ -173,8 +264,19 @@ export function migrationCaseToRow(dto: MigrationCaseDto): TpaTpvRow {
 		currentStage: stageToLabel(String(dto.current_stage ?? "not_started")),
 		nextStep: dto.next_step ?? "",
 		history: (dto.events ?? []).map(eventDtoToHistory),
-		sftpProgress: EMPTY_SFTP_PROGRESS,
-		ediProgress: EMPTY_EDI_PROGRESS,
+		sftpProgress: progressDtoToConnection(
+			dto.sftp_progress,
+			EMPTY_SFTP_PROGRESS
+		),
+		ediProgress: progressDtoToConnection(dto.edi_progress, EMPTY_EDI_PROGRESS),
+		escalationStatus: asEscalationStatus(dto.escalation_status),
+		...integrationFieldsFromMetadata(dto.metadata),
+	};
+	const apiEscalation = row.escalationStatus;
+	return {
+		...row,
+		escalationStatus:
+			apiEscalation !== "none" ? apiEscalation : deriveEscalationStatus(row),
 	};
 }
 
@@ -185,6 +287,7 @@ export function kpisToCards(kpis: WorkQueueKpisDto) {
 		migration: kpis.in_migration,
 		testing: kpis.testing,
 		exceptions: kpis.exceptions,
+		escalations: kpis.escalations ?? 0,
 		not_started: kpis.not_started,
 	};
 	return WORK_QUEUE_KPI.map((card) => ({
@@ -192,3 +295,22 @@ export function kpisToCards(kpis: WorkQueueKpisDto) {
 		count: counts[card.id] ?? 0,
 	}));
 }
+
+export function kpisToProgressSummary(kpis: WorkQueueKpisDto) {
+	const sftp = kpis.sftp_completion;
+	const edi = kpis.edi_completion;
+	return {
+		sftp: {
+			percent: sftp?.percent ?? 0,
+			completeCount: sftp?.complete_count ?? 0,
+			totalCount: sftp?.total_count ?? 0,
+		},
+		edi: {
+			percent: edi?.percent ?? 0,
+			completeCount: edi?.complete_count ?? 0,
+			totalCount: edi?.total_count ?? 0,
+		},
+	};
+}
+
+export type { ProgressTrack };

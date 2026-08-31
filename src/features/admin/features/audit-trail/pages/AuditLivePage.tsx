@@ -84,7 +84,11 @@ function AuditLiveBody() {
 									<TableCell>
 										<StatusBadge status={a.action} />
 									</TableCell>
-									<TableCell>{a.actor ?? "—"}</TableCell>
+									<TableCell>
+										{typeof a.actor === "string"
+											? a.actor
+											: (a.actor?.name ?? a.actor?.email ?? "—")}
+									</TableCell>
 									<TableCell className="text-xs">
 										{a.resource_type ?? "—"}
 										{a.resource_id ? (

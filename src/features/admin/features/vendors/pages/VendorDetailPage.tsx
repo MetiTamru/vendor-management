@@ -67,6 +67,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
+import type { FileRun } from "@/features/admin/features/file-management/mock-data";
 import { AuditTrailView } from "@/features/admin/features/audit-trail/components/AuditTrailView";
 import { useContractsList } from "@/features/admin/features/contracts/feature/queries/useContractsQuery";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
@@ -81,11 +82,48 @@ import {
 	buildAcceptUrl,
 	getPendingInviteByVendorId,
 } from "@/lib/auth/vendor-invites";
-import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 import { VendorAccountsTab } from "../components/VendorAccountsTab";
+import {
+	useCreateIntakeJobMutation,
+	useCreateVendorAccountMutation,
+	useCreateVendorNoteMutation,
+	useDeleteVendorAccountMutation,
+	useInvalidateVendorCore,
+	useReprocessInboundFileMutation,
+	useRunIntakeJobMutation,
+	useTestConnectionMutation,
+	useUpdateConnectionMutation,
+	useUpdateIntakeJobMutation,
+	useUpdateVendorAccountMutation,
+	useVendorAccountOpsQuery,
+	useVendorAccountsQuery,
+	useVendorConnectionsQuery,
+	useVendorInboundFilesQuery,
+	useVendorJobsQuery,
+	listInboundFileEvents,
+} from "../feature/queries/useVendorsQuery";
+import {
+	accountDtoToRow,
+	mergeAccountOpsSummary,
+} from "../feature/mappers/accountMappers";
+import {
+	buildVendorAlerts,
+	buildTrendFromRuns,
+	buildVendorIntegrationProfile,
+	connectionToSftp,
+	inboundFilesToRuns,
+	intakeJobsToConfigJobs,
+} from "../live-vendor-detail";
+import type {
+	ConnectionDto,
+	InboundFileDto,
+	IntakeJobDto,
+} from "@/lib/vendor-core/types";
+
+import { runBucket } from "../vendor-types";
 import {
 	VendorActionsMenu,
 	vendorModelToActionsTarget,
@@ -94,13 +132,6 @@ import { VendorConfigurationTab } from "../components/VendorConfigurationTab";
 import { VendorContractsTab } from "../components/VendorContractsTab";
 import { VendorNotesTab } from "../components/VendorNotesTab";
 import { VendorOperationsTab } from "../components/VendorOperationsTab";
-import {
-	VENDOR_TREND_BY_ID,
-	getVendorAccounts,
-	getVendorIntegration,
-	runBucket,
-	runsForVendor,
-} from "../vendor-integration-mock";
 
 const TABS = [
 	"Overview",
@@ -111,6 +142,10 @@ const TABS = [
 	"Audit Trail",
 	"Notes",
 ] as const;
+
+const EMPTY_CONNECTIONS: ConnectionDto[] = [];
+const EMPTY_JOBS: IntakeJobDto[] = [];
+const EMPTY_INBOUND_FILES: InboundFileDto[] = [];
 
 type Tab = (typeof TABS)[number];
 
@@ -280,15 +315,11 @@ function MetaItem({
 }
 
 export function VendorDetailPage() {
-	// Keep original detail UI; live data comes from useVendor → vendor-core.
-	if (!isMockEnabled()) {
-		return (
-			<VendorCoreGate title="Vendor">
-				<VendorDetailView />
-			</VendorCoreGate>
-		);
-	}
-	return <VendorDetailView />;
+	return (
+		<VendorCoreGate title="Vendor">
+			<VendorDetailView />
+		</VendorCoreGate>
+	);
 }
 
 function VendorDetailView() {
@@ -300,6 +331,23 @@ function VendorDetailView() {
 	const vendorId = params.vendorId ?? params.id;
 	const locale = params.locale ?? "en";
 	const { vendor, isLoading, error } = useVendor(vendorId);
+	const connectionsQuery = useVendorConnectionsQuery(vendorId);
+	const jobsQuery = useVendorJobsQuery(vendorId);
+	const inboundFilesQuery = useVendorInboundFilesQuery(
+		vendorId ? { vendor_id: vendorId } : undefined
+	);
+	const accountsQuery = useVendorAccountsQuery(vendorId, Boolean(vendorId));
+	const accountOpsQuery = useVendorAccountOpsQuery(vendorId, Boolean(vendorId));
+	const updateAccountMutation = useUpdateVendorAccountMutation();
+	const createAccountMutation = useCreateVendorAccountMutation(String(vendorId));
+	const deleteAccountMutation = useDeleteVendorAccountMutation();
+	const runJobMutation = useRunIntakeJobMutation();
+	const updateJobMutation = useUpdateIntakeJobMutation();
+	const createJobMutation = useCreateIntakeJobMutation();
+	const reprocessMutation = useReprocessInboundFileMutation();
+	const testConnectionMutation = useTestConnectionMutation();
+	const updateConnectionMutation = useUpdateConnectionMutation();
+	const invalidateVendorCore = useInvalidateVendorCore();
 	const { contracts } = useContractsList(vendorId);
 	const updateVendor = useUpdateVendorMutation();
 	const [editOpen, setEditOpen] = useState(false);
@@ -323,26 +371,106 @@ function VendorDetailView() {
 		setPendingInvite(getPendingInviteByVendorId(vendor.id));
 	}, [vendor, inviteTick]);
 
-	const accounts = useMemo(
-		() => (vendor ? getVendorAccounts(vendor.id) : []),
-		[vendor]
-	);
+	const displayName = vendor?.tradeName ?? vendor?.legalName ?? "Vendor";
+	const primary =
+		vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
+
+	const connections = connectionsQuery.data ?? EMPTY_CONNECTIONS;
+	const jobs = jobsQuery.data ?? EMPTY_JOBS;
+	const inboundFiles = inboundFilesQuery.data ?? EMPTY_INBOUND_FILES;
+
+	const accounts = useMemo(() => {
+		const opsByAccount = new Map(
+			(accountOpsQuery.data ?? []).map((row) => [row.account_id, row])
+		);
+		return (accountsQuery.data ?? []).map((dto) =>
+			mergeAccountOpsSummary(accountDtoToRow(dto), opsByAccount.get(dto.id))
+		);
+	}, [accountsQuery.data, accountOpsQuery.data]);
 
 	const integration = useMemo(() => {
 		if (!vendor) return null;
-		const base = getVendorIntegration(vendor.id);
-		return {
-			...base,
-			vendorType: vendor.categories[0] ?? base.vendorType,
-			accountsCount: Math.max(base.accountsCount, accounts.length),
-		};
-	}, [vendor, accounts]);
+		return buildVendorIntegrationProfile(
+			vendor,
+			connections,
+			jobs,
+			accounts.length
+		);
+	}, [vendor, connections, jobs, accounts.length]);
+
+	const configJobs = useMemo(() => intakeJobsToConfigJobs(jobs), [jobs]);
+
+	const sftpConnection = useMemo(() => {
+		if (!vendor || !integration) return null;
+		return connectionToSftp(connections[0], displayName, integration.health);
+	}, [vendor, integration, connections, displayName]);
 
 	const programFilter = useAdminModuleStore((s) => s.fileType);
-	const runs = useMemo(
-		() => (vendor ? runsForVendor(vendor.id, programFilter) : []),
-		[vendor, programFilter]
-	);
+	const [runLogs, setRunLogs] = useState<
+		Record<string, Awaited<ReturnType<typeof listInboundFileEvents>>>
+	>({});
+
+	useEffect(() => {
+		const files = inboundFilesQuery.data;
+		if (!files?.length) {
+			setRunLogs({});
+			return;
+		}
+		let cancelled = false;
+		const top = files.slice(0, 8);
+		Promise.all(
+			top.map((file) =>
+				listInboundFileEvents(file.id).then((events) => [file.id, events] as const)
+			)
+		)
+			.then((entries) => {
+				if (!cancelled) setRunLogs(Object.fromEntries(entries));
+			})
+			.catch(() => {
+				if (!cancelled) setRunLogs({});
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [inboundFilesQuery.data]);
+
+	const runs = useMemo((): FileRun[] => {
+		if (!vendor) return [];
+		const all = inboundFilesToRuns(inboundFiles, vendor.id, displayName).map(
+			(run) => ({
+				...run,
+				logs: (runLogs[run.id] ?? []).map((event, index) => {
+					const rawLevel = (event.level ?? "info").toLowerCase();
+					let level: "error" | "info" | "warn" | "debug" = "info";
+					if (rawLevel === "error") level = "error";
+					else if (rawLevel === "warn" || rawLevel === "warning") level = "warn";
+					else if (rawLevel === "debug") level = "debug";
+					return {
+						id: `${run.id}-log-${index}`,
+						at: event.occurred_at ?? event.created_at ?? "—",
+						level,
+						message: event.message,
+						component: event.source ?? event.stage ?? "pipeline",
+					};
+				}),
+			})
+		);
+		if (programFilter) {
+			return all.filter((run) => run.program === programFilter);
+		}
+		return all;
+	}, [vendor, inboundFiles, displayName, programFilter, runLogs]);
+
+	const alerts = useMemo(() => {
+		if (!vendor) return [];
+		return buildVendorAlerts(
+			vendor.id,
+			displayName,
+			connections,
+			inboundFiles,
+			runs
+		);
+	}, [vendor, displayName, connections, inboundFiles, runs]);
 
 	const fileTypePie = useMemo(() => {
 		if (runs.length === 0) return [];
@@ -362,13 +490,7 @@ function VendorDetailView() {
 
 	const totalFiles30 = fileTypePie.reduce((sum, item) => sum + item.value, 0);
 
-	const trend = vendor
-		? (VENDOR_TREND_BY_ID[vendor.id] ?? VENDOR_TREND_BY_ID["vnd-1"] ?? [])
-		: [];
-
-	const primary =
-		vendor?.contacts.find((c) => c.isPrimary) ?? vendor?.contacts[0];
-	const displayName = vendor?.tradeName ?? vendor?.legalName ?? "Vendor";
+	const trend = useMemo(() => buildTrendFromRuns(runs), [runs]);
 
 	const inviteHref = useMemo(() => {
 		if (!vendor) return "/admin/vendors/invite";
@@ -1130,32 +1252,130 @@ function VendorDetailView() {
 				</div>
 			)}
 
-			{tab === "Accounts" && <VendorAccountsTab accounts={accounts} />}
+			{tab === "Accounts" && (
+				<VendorAccountsTab
+					accounts={accounts}
+					onUpdateAccount={async (id, patch) => {
+						await updateAccountMutation.mutateAsync({ id, patch });
+					}}
+					onCreateAccount={async (input) => {
+						await createAccountMutation.mutateAsync(input);
+					}}
+					onDeleteAccount={async (id) => {
+						await deleteAccountMutation.mutateAsync(id);
+					}}
+				/>
+			)}
 
-			{tab === "Operations" && (
+			{tab === "Operations" && integration && (
 				<VendorOperationsTab
 					vendorId={vendor.id}
 					vendorName={displayName}
 					integration={integration}
 					runs={runs}
+					configJobs={configJobs}
+					alerts={alerts}
+					onRefresh={async () => {
+						invalidateVendorCore();
+						toast.success("Operations data refreshed.");
+					}}
+					onToggleJob={async (jobId, active) => {
+						await updateJobMutation.mutateAsync({
+							id: jobId,
+							body: { status: active ? "active" : "paused" },
+						});
+						toast.success(active ? "Job resumed." : "Job paused.");
+					}}
+					onRunJob={async (jobId) => {
+						await runJobMutation.mutateAsync(jobId);
+						toast.success("Job run triggered.");
+					}}
+					onReprocessRun={async (runId) => {
+						await reprocessMutation.mutateAsync(runId);
+						toast.success("File reprocess queued.");
+					}}
 				/>
 			)}
 
-			{tab === "Configuration" && (
+			{tab === "Configuration" && integration && sftpConnection && (
 				<VendorConfigurationTab
 					vendorId={vendor.id}
 					vendorName={displayName}
 					integration={integration}
+					configJobs={configJobs}
+					connection={sftpConnection}
+					connectionId={connections[0]?.id ?? null}
+					onCreateJob={async (draft) => {
+						if (!connections[0]?.id) {
+							throw new Error("Create a connection before adding jobs.");
+						}
+						await createJobMutation.mutateAsync({
+							name: draft.name,
+							vendor: vendor.id,
+							connection: connections[0].id,
+							file_type: draft.fileType.includes("837")
+								? "837"
+								: draft.fileType.includes("835")
+									? "835"
+									: draft.fileType.toLowerCase().includes("accum")
+										? "accumulator"
+										: "834",
+							direction:
+								draft.direction === "Outgoing" ? "outbound" : "inbound",
+							schedule_cron:
+								draft.frequency === "Hourly"
+									? "0 * * * *"
+									: draft.frequency === "Weekly"
+										? "0 6 * * 1"
+										: "0 6 * * *",
+							schedule_timezone: "UTC",
+							status: draft.status === "Active" ? "active" : "paused",
+						});
+					}}
+					onUpdateJob={async (jobId, draft) => {
+						await updateJobMutation.mutateAsync({
+							id: jobId,
+							body: {
+								name: draft.name,
+								status: draft.status === "Active" ? "active" : "paused",
+								schedule_cron:
+									draft.frequency === "Hourly"
+										? "0 * * * *"
+										: draft.frequency === "Weekly"
+											? "0 6 * * 1"
+											: "0 6 * * *",
+							},
+						});
+					}}
+					onDisableJob={async (jobId) => {
+						await updateJobMutation.mutateAsync({
+							id: jobId,
+							body: { status: "disabled" },
+						});
+					}}
+					onTestConnection={async () => {
+						if (!connections[0]?.id) return;
+						await testConnectionMutation.mutateAsync(connections[0].id);
+						toast.success("Connection test completed.");
+					}}
+					onUpdateConnectionHost={async (host) => {
+						if (!connections[0]?.id) return;
+						const config = {
+							...(connections[0].config ?? {}),
+							host,
+						};
+						await updateConnectionMutation.mutateAsync({
+							id: connections[0].id,
+							body: { config },
+						});
+					}}
 				/>
 			)}
 
 			{tab === "Contracts" && <VendorContractsTab vendorId={vendor.id} />}
 
 			{tab === "Notes" && (
-				<VendorNotesTab
-					vendorName={displayName}
-					integrationNotes={integration.notes}
-				/>
+				<VendorNotesTab vendorId={vendor.id} vendorName={displayName} />
 			)}
 
 			{tab === "Audit Trail" && (

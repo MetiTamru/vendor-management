@@ -54,14 +54,26 @@ import {
 } from "@/components/ui/table";
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
 import { Link } from "@/i18n/navigation";
-import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 
+import {
+	EdiAnalystProgressSection,
+	EscalationStatusPill,
+	EscalationSummarySection,
+} from "../components/work-queue-analyst-escalation";
 import {
 	ProgressTrackCell,
 	WorkQueueProgressOverview,
 	WorkQueueRowActions,
 } from "../components/work-queue-progress";
+import { useVendorCoreUsersQuery } from "@/features/admin/features/users/feature/queries/useUsersQuery";
+import type { MigrationCaseListQuery, WorkQueueImportResultDto } from "@/lib/vendor-core/types";
+
+import { WorkQueueImportResultDialog } from "../components/WorkQueueImportResultDialog";
+import { WorkQueueRegistrationDialog } from "../components/WorkQueueRegistrationDialog";
+import {
+	kpisToProgressSummary,
+} from "../feature/mappers/workQueueMappers";
 import {
 	useBulkSetMigrationCaseStatusMutation,
 	useCreateMigrationCaseMutation,
@@ -70,20 +82,27 @@ import {
 	useUpdateMigrationCaseMutation,
 	useUploadMigrationCaseDocumentMutation,
 	useWorkQueueKpisQuery,
+	useWorkQueueKpisRawQuery,
+	useWorkQueueRowsPageQuery,
 	useWorkQueueRowsQuery,
 } from "../feature/queries/useWorkQueueQuery";
 import { workQueueErrorMessage } from "../feature/workQueueErrors";
 import {
 	MIGRATION_STATUS_LABEL,
 	type MigrationStatus,
-	TPA_TPV_ROWS,
 	type TpaTpvRow,
 	WORK_QUEUE_KPI,
-} from "../mock-data";
+} from "../work-queue-types";
 import {
-	dummyProgressSummary,
+	emptyProgressSummary,
 	summarizeProgressFromRows,
 } from "../progress-data";
+import {
+	countActiveEscalations,
+	deriveEscalationStatus,
+	type EscalationStatus,
+	rowsUseStatusEstimatedProgress,
+} from "../work-queue-analyst-escalation";
 
 type ActionModal = "contacts" | null;
 
@@ -193,17 +212,14 @@ function ModalShell({
 }
 
 export function MyWorkQueuePage() {
-	if (!isMockEnabled()) {
-		return (
-			<VendorCoreGate title="My Work Queue">
-				<MyWorkQueueBody useLive />
-			</VendorCoreGate>
-		);
-	}
-	return <MyWorkQueueBody useLive={false} />;
+	return (
+		<VendorCoreGate title="My Work Queue">
+			<MyWorkQueueBody />
+		</VendorCoreGate>
+	);
 }
 
-function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
+function MyWorkQueueBody() {
 	const invalidate = useInvalidateVendorCore();
 	const importInputRef = useRef<HTMLInputElement>(null);
 	const feedInputRef = useRef<HTMLInputElement>(null);
@@ -211,6 +227,9 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [analystFilter, setAnalystFilter] = useState("all");
+	const [escalationFilter, setEscalationFilter] = useState<
+		EscalationStatus | "all"
+	>("all");
 	const [waveFilter, setWaveFilter] = useState("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(20);
@@ -218,6 +237,11 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 	const [refreshing, setRefreshing] = useState(false);
 	const [activeRow, setActiveRow] = useState<TpaTpvRow | null>(null);
 	const [modal, setModal] = useState<ActionModal>(null);
+	const [registrationOpen, setRegistrationOpen] = useState(false);
+	const [importResultOpen, setImportResultOpen] = useState(false);
+	const [importResult, setImportResult] =
+		useState<WorkQueueImportResultDto | null>(null);
+	const [importFilename, setImportFilename] = useState<string | undefined>();
 	const [saving, setSaving] = useState(false);
 
 	const [contactsForm, setContactsForm] = useState({
@@ -228,8 +252,53 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		secondaryEmail: "",
 		secondaryPhone: "",
 	});
-	const rowsQ = useWorkQueueRowsQuery(undefined, true);
+	const usersQ = useVendorCoreUsersQuery();
+
+	const analystIdByName = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const user of usersQ.data ?? []) {
+			const label =
+				user.full_name?.trim() ||
+				[user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
+				user.username?.trim() ||
+				user.email?.trim();
+			if (label) map.set(label, user.id);
+		}
+		return map;
+	}, [usersQ.data]);
+
+	const listParams = useMemo((): MigrationCaseListQuery => {
+		return {
+			limit: pageSize,
+			offset: (page - 1) * pageSize,
+			search: search.trim() || undefined,
+			migration_status: statusFilter !== "all" ? statusFilter : undefined,
+			// escalation_status: applied client-side until backend filter ships
+			assigned_to_id:
+				analystFilter !== "all"
+					? analystIdByName.get(analystFilter)
+					: undefined,
+			wave: waveFilter !== "all" ? Number(waveFilter) : undefined,
+		};
+	}, [
+		pageSize,
+		page,
+		search,
+		statusFilter,
+		analystFilter,
+		analystIdByName,
+		waveFilter,
+	]);
+
+	const summaryParams = useMemo(
+		(): MigrationCaseListQuery => ({ limit: 100, offset: 0 }),
+		[]
+	);
+
+	const rowsPageQ = useWorkQueueRowsPageQuery(listParams);
+	const summaryRowsQ = useWorkQueueRowsQuery(summaryParams);
 	const kpisQ = useWorkQueueKpisQuery(true);
+	const kpisRawQ = useWorkQueueKpisRawQuery(true);
 
 	const updateCase = useUpdateMigrationCaseMutation();
 	const createCase = useCreateMigrationCaseMutation();
@@ -237,27 +306,47 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 	const importCsv = useImportWorkQueueSpreadsheetMutation();
 	const uploadDoc = useUploadMigrationCaseDocumentMutation();
 
-	const allRows = useLive
-		? (rowsQ.data ?? [])
-		: isMockEnabled()
-			? TPA_TPV_ROWS
-			: [];
+	const allRows = summaryRowsQ.data ?? [];
 
 	const rowsWithProgress = useMemo(() => {
-		if (!useLive) return allRows;
-		return allRows.map((row, index) => {
-			const preset = TPA_TPV_ROWS[index % TPA_TPV_ROWS.length];
-			if (!preset) return row;
-			return {
-				...row,
-				sftpProgress: preset.sftpProgress,
-				ediProgress: preset.ediProgress,
-			};
-		});
-	}, [allRows, useLive]);
+		return allRows.map((row) => ({
+			...row,
+			escalationStatus: deriveEscalationStatus(row),
+		}));
+	}, [allRows]);
 
-	const kpiCards = useLive ? (kpisQ.data ?? WORK_QUEUE_KPI) : WORK_QUEUE_KPI;
-	const loading = useLive && (rowsQ.isLoading || kpisQ.isLoading);
+	const tableRows = rowsPageQ.data?.results ?? [];
+
+	const filtered = useMemo(() => {
+		if (escalationFilter === "all") return tableRows;
+		return tableRows.filter(
+			(row) => deriveEscalationStatus(row) === escalationFilter
+		);
+	}, [tableRows, escalationFilter]);
+
+	const totalCount = rowsPageQ.data?.count ?? 0;
+	const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+	const safePage = Math.min(page, pageCount);
+	const pageRows = filtered;
+	const rangeStart = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
+	const rangeEnd = Math.min(safePage * pageSize, totalCount);
+
+	const kpiCards = useMemo(() => {
+		const base = kpisQ.data ?? WORK_QUEUE_KPI;
+		return base.map((card) =>
+			card.id === "escalations"
+				? {
+						...card,
+						count: countActiveEscalations(rowsWithProgress),
+					}
+				: card
+		);
+	}, [kpisQ.data, rowsWithProgress]);
+	const loading =
+		rowsPageQ.isLoading ||
+		summaryRowsQ.isLoading ||
+		kpisQ.isLoading ||
+		kpisRawQ.isLoading;
 
 	const waves = useMemo(
 		() =>
@@ -273,11 +362,26 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 	}, [rowsWithProgress, waveFilter]);
 
 	const progressSummary = useMemo(() => {
+		if (waveFilter === "all" && kpisRawQ.data) {
+			const fromApi = kpisToProgressSummary(kpisRawQ.data);
+			if (fromApi.sftp.totalCount > 0 || fromApi.edi.totalCount > 0) {
+				return fromApi;
+			}
+		}
 		if (progressRows.length === 0) {
-			return dummyProgressSummary();
+			return emptyProgressSummary();
 		}
 		return summarizeProgressFromRows(progressRows);
-	}, [progressRows]);
+	}, [waveFilter, kpisRawQ.data, progressRows]);
+
+	const statusEstimatedProgress = useMemo(
+		() => rowsUseStatusEstimatedProgress(progressRows),
+		[progressRows]
+	);
+
+	useEffect(() => {
+		setPage(1);
+	}, [search, statusFilter, analystFilter, escalationFilter, waveFilter, pageSize]);
 
 	useEffect(() => {
 		if (!activeRow) return;
@@ -291,6 +395,10 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		});
 	}, [activeRow]);
 
+	useEffect(() => {
+		setPage(1);
+	}, [search, statusFilter, analystFilter, escalationFilter, waveFilter, pageSize]);
+
 	const analysts = useMemo(
 		() =>
 			Array.from(
@@ -299,32 +407,6 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		[rowsWithProgress]
 	);
 
-	const filtered = useMemo(() => {
-		const q = search.trim().toLowerCase();
-		return rowsWithProgress.filter((row) => {
-			if (statusFilter !== "all" && row.status !== statusFilter) return false;
-			if (analystFilter !== "all" && row.assignedAnalyst !== analystFilter)
-				return false;
-			if (!q) return true;
-			return (
-				row.name.toLowerCase().includes(q) ||
-				row.serverType.toLowerCase().includes(q) ||
-				row.contactEmail.toLowerCase().includes(q) ||
-				row.assignedAnalyst.toLowerCase().includes(q) ||
-				row.code.toLowerCase().includes(q)
-			);
-		});
-	}, [rowsWithProgress, search, statusFilter, analystFilter]);
-
-	const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-	const safePage = Math.min(page, pageCount);
-	const pageRows = filtered.slice(
-		(safePage - 1) * pageSize,
-		safePage * pageSize
-	);
-	const rangeStart = filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
-	const rangeEnd = Math.min(safePage * pageSize, filtered.length);
-
 	function applyKpiFilter(id: string) {
 		setPage(1);
 		if (id === "assigned") setStatusFilter("all");
@@ -332,13 +414,17 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		else if (id === "migration") setStatusFilter("waiting_on_vendor");
 		else if (id === "testing") setStatusFilter("testing");
 		else if (id === "exceptions") setStatusFilter("exception");
-		else if (id === "not_started") setStatusFilter("not_started");
+		else if (id === "escalations") {
+			setStatusFilter("all");
+			setEscalationFilter("escalation_required");
+		} else if (id === "not_started") setStatusFilter("not_started");
 	}
 
 	function clearFilters() {
 		setSearch("");
 		setStatusFilter("all");
 		setAnalystFilter("all");
+		setEscalationFilter("all");
 		setWaveFilter("all");
 		setPage(1);
 	}
@@ -347,13 +433,19 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		Boolean(search.trim()) ||
 		statusFilter !== "all" ||
 		analystFilter !== "all" ||
+		escalationFilter !== "all" ||
 		waveFilter !== "all";
 
 	async function handleRefresh() {
 		setRefreshing(true);
 		try {
 			invalidate();
-			await Promise.all([rowsQ.refetch(), kpisQ.refetch()]);
+			await Promise.all([
+				rowsPageQ.refetch(),
+				summaryRowsQ.refetch(),
+				kpisQ.refetch(),
+				kpisRawQ.refetch(),
+			]);
 		} finally {
 			setRefreshing(false);
 		}
@@ -371,11 +463,6 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 
 	async function saveContacts() {
 		if (!activeRow) return;
-		if (!useLive) {
-			toast.success(`Contacts Information saved for ${activeRow.name}`);
-			closeModal();
-			return;
-		}
 		setSaving(true);
 		try {
 			await updateCase.mutateAsync({
@@ -404,12 +491,6 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 			toast.message("No rows to update");
 			return;
 		}
-		if (!useLive) {
-			toast.success(
-				`Marked ${ids.length} as ${MIGRATION_STATUS_LABEL[migration_status]}`
-			);
-			return;
-		}
 		try {
 			const result = await setStatus.mutateAsync({ ids, migration_status });
 			const ok = result.succeeded?.length ?? 0;
@@ -435,39 +516,35 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 
 	async function handleImportFile(file: File | undefined) {
 		if (!file) return;
-		if (!useLive) {
-			toast.message(`Import ${file.name} (mock)`);
-			return;
-		}
 		try {
 			const result = await importCsv.mutateAsync(file);
-			toast.success(
-				`Import done — created ${result.created_count}, updated ${result.updated_count}, errors ${result.error_count}`
-			);
+			setImportResult(result);
+			setImportFilename(file.name);
+			setImportResultOpen(true);
+			if (result.error_count > 0) {
+				toast.warning(
+					`Import finished with ${result.error_count} error(s) — see details`
+				);
+			} else {
+				toast.success(
+					`Import done — created ${result.created_count}, updated ${result.updated_count}`
+				);
+			}
 			invalidate();
 		} catch (err) {
 			toast.error(workQueueErrorMessage(err, "Import failed"));
 		}
 	}
 
+	async function handleRegisterCase(body: Parameters<typeof createCase.mutateAsync>[0]) {
+		await createCase.mutateAsync(body);
+		toast.success(`Registered ${body.code}`);
+		invalidate();
+		await Promise.all([rowsPageQ.refetch(), summaryRowsQ.refetch(), kpisQ.refetch()]);
+	}
+
 	async function handleAddCase() {
-		if (!useLive) {
-			toast.message("Add TPA/TPV…");
-			return;
-		}
-		const code = `TPA-${Date.now().toString().slice(-6)}`;
-		try {
-			await createCase.mutateAsync({
-				name: "New TPA/TPV",
-				code,
-				vendor_type: "tpa",
-				wave: 1,
-				server_type: "New SFTP",
-			});
-			toast.success(`Created ${code}`);
-		} catch (err) {
-			toast.error(workQueueErrorMessage(err, "Create failed"));
-		}
+		setRegistrationOpen(true);
 	}
 
 	async function handleFeedFile(file: File | undefined) {
@@ -475,10 +552,6 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 		const targetId = selectedIds[0] ?? activeRow?.id ?? pageRows[0]?.id;
 		if (!targetId) {
 			toast.message("Select a row (or open one) before uploading a feed");
-			return;
-		}
-		if (!useLive) {
-			toast.message(`Add feed ${file.name} (mock)`);
 			return;
 		}
 		try {
@@ -517,8 +590,8 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 						My Work Queue
 					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						TPA/TPV migration tracking · {filtered.length.toLocaleString()}{" "}
-						{filtered.length === 1 ? "case" : "cases"}
+						TPA/TPV migration tracking · {totalCount.toLocaleString()}{" "}
+						{totalCount === 1 ? "case" : "cases"}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-1.5">
@@ -638,13 +711,13 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 				</div>
 			</div>
 
-			{useLive && rowsQ.error ? (
+			{rowsPageQ.error ? (
 				<div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-					{rowsQ.error.message}
+					{rowsPageQ.error.message}
 				</div>
 			) : null}
 
-			{useLive && !rowsQ.isLoading && allRows.length === 0 ? (
+			{!rowsPageQ.isLoading && allRows.length === 0 ? (
 				<div className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
 					No migration cases yet. Use{" "}
 					<span className="font-medium text-foreground">Import</span> or{" "}
@@ -664,17 +737,20 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 			/>
 
 			<section className="overflow-hidden rounded-sm bg-card shadow-[0_1px_3px_rgba(15,23,42,0.07),0_4px_12px_rgba(15,23,42,0.04)]">
-				<div className="grid grid-cols-2 divide-y divide-border sm:grid-cols-3 sm:divide-x xl:grid-cols-6 xl:divide-y-0">
+				<div className="grid grid-cols-2 divide-y divide-border sm:grid-cols-3 sm:divide-x xl:grid-cols-7 xl:divide-y-0">
 					{kpiCards.map((kpi) => {
 						const Icon = KPI_ICON[kpi.tone];
 						const tone = KPI_VALUE_TONE[kpi.tone];
 						const active =
-							(kpi.id === "assigned" && statusFilter === "all") ||
+							(kpi.id === "assigned" && statusFilter === "all" && escalationFilter === "all") ||
 							(kpi.id === "connected" && statusFilter === "ready") ||
 							(kpi.id === "migration" &&
 								statusFilter === "waiting_on_vendor") ||
 							(kpi.id === "testing" && statusFilter === "testing") ||
 							(kpi.id === "exceptions" && statusFilter === "exception") ||
+							(kpi.id === "escalations" &&
+								escalationFilter !== "all" &&
+								statusFilter === "all") ||
 							(kpi.id === "not_started" && statusFilter === "not_started");
 						return (
 							<button
@@ -698,7 +774,7 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 										tone
 									)}
 								>
-									{useLive && kpisQ.isLoading
+									{kpisQ.isLoading
 										? "—"
 										: kpi.count.toLocaleString()}
 								</p>
@@ -707,6 +783,27 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 					})}
 				</div>
 			</section>
+
+			<div className="grid gap-4 xl:grid-cols-2">
+				<EdiAnalystProgressSection
+					rows={progressRows}
+					activeAnalyst={analystFilter}
+					statusEstimated={statusEstimatedProgress}
+					onAnalystSelect={(analyst) => {
+						setAnalystFilter(analyst);
+						setPage(1);
+					}}
+				/>
+				<EscalationSummarySection
+					rows={progressRows}
+					activeFilter={escalationFilter}
+					onFilterChange={(status) => {
+						setEscalationFilter(status);
+						if (status !== "all") setStatusFilter("all");
+						setPage(1);
+					}}
+				/>
+			</div>
 
 			<section className="overflow-hidden rounded-sm bg-card shadow-[0_1px_3px_rgba(15,23,42,0.07),0_4px_12px_rgba(15,23,42,0.04)]">
 				<div className="flex flex-wrap items-center gap-2 border-b border-border/50 px-3 py-2.5">
@@ -762,6 +859,26 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 							))}
 						</SelectContent>
 					</Select>
+					<Select
+						value={escalationFilter}
+						onValueChange={(v) => {
+							setEscalationFilter(v as EscalationStatus | "all");
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className={cn(compactFieldClass, "w-[160px]")}>
+							<SelectValue placeholder="Escalation status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All escalation status</SelectItem>
+							<SelectItem value="escalation_required">
+								Escalation Required
+							</SelectItem>
+							<SelectItem value="attention">Attention</SelectItem>
+							<SelectItem value="escalated">Escalated</SelectItem>
+							<SelectItem value="resolved">Resolved</SelectItem>
+						</SelectContent>
+					</Select>
 					{hasFilters ? (
 						<Button
 							type="button"
@@ -793,9 +910,10 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 									EDI Progress
 								</TableHead>
 								<TableHead className={cn(th, "w-[9%]")}>Status</TableHead>
-								<TableHead className={cn(th, "w-[10%]")}>Analyst</TableHead>
-								<TableHead className={cn(th, "w-[9%]")}>Updated</TableHead>
-								<TableHead className={cn(th, "w-[7%] text-right")}>
+								<TableHead className={cn(th, "w-[8%]")}>Analyst</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Escalation</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Updated</TableHead>
+								<TableHead className={cn(th, "w-[6%] text-right")}>
 									Actions
 								</TableHead>
 							</TableRow>
@@ -804,7 +922,7 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 							{pageRows.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={11}
+										colSpan={12}
 										className="h-20 text-center text-sm text-muted-foreground"
 									>
 										No TPA/TPV records match your filters.
@@ -874,6 +992,11 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 										>
 											{row.assignedAnalyst}
 										</TableCell>
+										<TableCell className={td}>
+											<EscalationStatusPill
+												status={deriveEscalationStatus(row)}
+											/>
+										</TableCell>
 										<TableCell
 											className={cn(
 												td,
@@ -902,7 +1025,7 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 						<span className="font-medium text-foreground">{rangeStart}</span> to{" "}
 						<span className="font-medium text-foreground">{rangeEnd}</span> of{" "}
 						<span className="font-medium text-foreground">
-							{filtered.length.toLocaleString()}
+							{totalCount.toLocaleString()}
 						</span>{" "}
 						entries
 						{selectedIds.length > 0 ? (
@@ -1070,6 +1193,20 @@ function MyWorkQueueBody({ useLive }: { useLive: boolean }) {
 					</div>
 				</div>
 			</ModalShell>
+
+			<WorkQueueRegistrationDialog
+				open={registrationOpen}
+				onOpenChange={setRegistrationOpen}
+				saving={createCase.isPending}
+				onSubmit={handleRegisterCase}
+			/>
+
+			<WorkQueueImportResultDialog
+				open={importResultOpen}
+				onOpenChange={setImportResultOpen}
+				result={importResult}
+				filename={importFilename}
+			/>
 		</div>
 	);
 }

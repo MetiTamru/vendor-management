@@ -65,16 +65,14 @@ import {
 } from "@/features/admin/features/vendors/feature/queries/useVendorsQuery";
 import { liveVendorsToDirectoryRows } from "@/features/admin/features/vendors/live-directory";
 import {
-	VENDOR_DIRECTORY,
 	type VendorDirectoryRow,
 	type VendorListHealth,
 	type VendorListStatus,
 	summarizeVendorDirectory,
-} from "@/features/admin/features/vendors/vendor-integration-mock";
+} from "@/features/admin/features/vendors/vendor-types";
 import { StatusBadge } from "@/features/shared/vms/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { downloadCsv, stampFilename } from "@/lib/export/csv";
-import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
 
 function StatusPill({ status }: { status: VendorListStatus }) {
@@ -118,19 +116,15 @@ type SortKey =
 	| "createdAt";
 
 export function VendorsPage() {
-	if (!isMockEnabled()) {
-		return (
-			<VendorCoreGate title="Vendors">
-				<VendorsDirectoryPage />
-			</VendorCoreGate>
-		);
-	}
-	return <VendorsDirectoryPage />;
+	return (
+		<VendorCoreGate title="Vendors">
+			<VendorsDirectoryPage />
+		</VendorCoreGate>
+	);
 }
 
 function VendorsDirectoryPage() {
 	const router = useRouter();
-	const useLive = !isMockEnabled();
 	const invalidate = useInvalidateVendorCore();
 	const vendorsQ = useVendorCoreVendors();
 	const connectionsQ = useVendorCoreConnections();
@@ -138,37 +132,35 @@ function VendorsDirectoryPage() {
 	const accountsQ = useVendorCoreAccounts();
 	const filesQ = useVendorCoreInboundFiles();
 
-	const directory = useMemo(() => {
-		if (!useLive) return VENDOR_DIRECTORY;
-		return liveVendorsToDirectoryRows(
-			vendorsQ.data ?? [],
-			connectionsQ.data ?? [],
-			jobsQ.data ?? [],
-			accountsQ.data ?? [],
-			filesQ.data ?? []
-		);
-	}, [
-		useLive,
-		vendorsQ.data,
-		connectionsQ.data,
-		jobsQ.data,
-		accountsQ.data,
-		filesQ.data,
-	]);
+	const directory = useMemo(
+		() =>
+			liveVendorsToDirectoryRows(
+				vendorsQ.data ?? [],
+				connectionsQ.data ?? [],
+				jobsQ.data ?? [],
+				accountsQ.data ?? [],
+				filesQ.data ?? []
+			),
+		[
+			vendorsQ.data,
+			connectionsQ.data,
+			jobsQ.data,
+			accountsQ.data,
+			filesQ.data,
+		]
+	);
 
 	const loading =
-		useLive &&
-		(vendorsQ.isLoading ||
-			connectionsQ.isLoading ||
-			jobsQ.isLoading ||
-			accountsQ.isLoading);
+		vendorsQ.isLoading ||
+		connectionsQ.isLoading ||
+		jobsQ.isLoading ||
+		accountsQ.isLoading;
 
-	const liveError = useLive
-		? vendorsQ.error?.message ||
-			connectionsQ.error?.message ||
-			jobsQ.error?.message ||
-			accountsQ.error?.message
-		: null;
+	const liveError =
+		vendorsQ.error?.message ||
+		connectionsQ.error?.message ||
+		jobsQ.error?.message ||
+		accountsQ.error?.message;
 
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
@@ -177,12 +169,8 @@ function VendorsDirectoryPage() {
 	const [activity, setActivity] = useState("all");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-	const [sortKey, setSortKey] = useState<SortKey>(
-		useLive ? "createdAt" : "name"
-	);
-	const [sortDir, setSortDir] = useState<"asc" | "desc">(
-		useLive ? "desc" : "asc"
-	);
+	const [sortKey, setSortKey] = useState<SortKey>("createdAt");
+	const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
 	const vendorTypes = useMemo(
@@ -502,17 +490,15 @@ function VendorsDirectoryPage() {
 					</SelectContent>
 				</Select>
 				<div className="ml-auto flex gap-2">
-					{useLive ? (
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-9"
-							onClick={() => void invalidate()}
-						>
-							<RefreshCw className="mr-1.5 size-3.5" />
-							Refresh
-						</Button>
-					) : null}
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9"
+						onClick={() => void invalidate()}
+					>
+						<RefreshCw className="mr-1.5 size-3.5" />
+						Refresh
+					</Button>
 					<Button
 						variant="outline"
 						size="sm"
