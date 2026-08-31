@@ -931,6 +931,22 @@ export type MemberListQuery = {
 	offset?: number;
 };
 
+/** GET /api/v1/members/stats/ — directory dashboard KPI counts. */
+export type MemberDashboardStatsQuery = Omit<
+	MemberListQuery,
+	"limit" | "offset" | "order_by"
+>;
+
+export type MemberDashboardStatsDto = {
+	total: number;
+	active: number;
+	pending: number;
+	termed: number;
+	inactive: number;
+	program?: string;
+	vendor_id?: string | null;
+};
+
 export type InboundFileDto = {
 	id: string;
 	original_filename: string;
@@ -2464,9 +2480,7 @@ function normalizeMigrationProgress(
 			pickString(obj, "current_milestone_label") || "Not Started",
 		last_updated_at: pickString(obj, "last_updated_at") || null,
 		milestones: milestonesRaw
-			.filter(
-				(m): m is Record<string, unknown> => !!m && typeof m === "object"
-			)
+			.filter((m): m is Record<string, unknown> => !!m && typeof m === "object")
 			.map((m) => ({
 				key: pickString(m, "key") || "",
 				label: pickString(m, "label") || "",

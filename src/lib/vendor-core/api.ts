@@ -1,6 +1,9 @@
 import { vendorCoreFetch, vendorCoreFetchBlob } from "@/lib/vendor-core/client";
 import type {
+	AccountCreateInput,
 	AccountDto,
+	AccountOpsSummaryDto,
+	AccountUpdateInput,
 	AccumulatorFileDto,
 	AccumulatorFileListQuery,
 	AccumulatorRowCreateInput,
@@ -12,9 +15,14 @@ import type {
 	AppSettingDto,
 	AppSettingListQuery,
 	AppSettingUpdateInput,
+	AuditListQuery,
 	AuditRecordDto,
 	ClaimLineDto,
 	ConnectionDto,
+	ContractCreateInput,
+	ContractDto,
+	ContractListQuery,
+	ContractUpdateInput,
 	CoreUserDto,
 	CredentialDto,
 	EligibilityFileDto,
@@ -25,11 +33,12 @@ import type {
 	IdentityGroupUpdateInput,
 	InboundFileDto,
 	IntakeJobDto,
-	IntakeJobRunDto,
 	LoginEventDto,
 	MemberAccumulatorSummaryDto,
 	MemberCoverageDto,
 	MemberCreateBody,
+	MemberDashboardStatsDto,
+	MemberDashboardStatsQuery,
 	MemberDetailDto,
 	MemberListDto,
 	MemberListQuery,
@@ -51,7 +60,6 @@ import type {
 	PharmacyClaimRowListDto,
 	PharmacyClaimRowListQuery,
 	PharmacyClaimRowUpdateInput,
-	ProcessingEventDto,
 	ProviderCreateInput,
 	ProviderCredentialDto,
 	ProviderDashboardStatsDto,
@@ -74,35 +82,26 @@ import type {
 	ProviderSummaryDto,
 	ProviderUpdateInput,
 	ProviderVendorSourceDto,
-	AccountCreateInput,
-	AccountOpsSummaryDto,
-	AccountUpdateInput,
-	AuditListQuery,
-	ContractCreateInput,
-	ContractDto,
-	ContractListQuery,
-	ContractUpdateInput,
-	VendorCategoryDto,
-	VendorCategoryListQuery,
-	VendorContactCreateInput,
-	VendorContactDto,
-	VendorContactUpdateInput,
-	VendorInviteCreateInput,
-	VendorInviteDto,
-	VendorNoteCreateInput,
-	VendorNoteDto,
-	VendorNoteUpdateInput,
-	VendorTeamMemberDto,
 	RoleCreateInput,
 	RoleDto,
 	RoleListQuery,
 	RoleUpdateInput,
 	RoutingRuleDto,
 	ValidationResultDto,
+	VendorCategoryDto,
+	VendorCategoryListQuery,
+	VendorContactCreateInput,
+	VendorContactDto,
+	VendorContactUpdateInput,
 	VendorDto,
+	VendorInviteCreateInput,
+	VendorInviteDto,
+	VendorNoteCreateInput,
+	VendorNoteDto,
+	VendorNoteUpdateInput,
+	VendorTeamMemberDto,
 	WhitelistStatusDto,
 	WorkQueueImportResultDto,
-	WorkQueueKpisDto,
 	WorkQueueSeedInput,
 	WorkQueueSeedResultDto,
 } from "@/lib/vendor-core/types";
@@ -175,6 +174,7 @@ export const vendorCoreEndpoints = {
 	memberCoveragesCreate: "/api/v1/member-coverages/create/",
 	memberCoveragesSeed: "/api/v1/member-coverages/seed/",
 	membersList: "/api/v1/members/list/",
+	membersStats: "/api/v1/members/stats/",
 	membersListExportCsv: "/api/v1/members/list/export/csv/",
 	membersCreate: "/api/v1/members/create/",
 	membersSeed: "/api/v1/members/seed/",
@@ -657,7 +657,9 @@ export const vendorCoreApi = {
 		vendorCoreFetch<ConnectionDto>(vendorCoreEndpoints.connectionUpdate(id), {
 			method: "PATCH",
 			body: JSON.stringify(body),
-		}).then((c) => normalizeConnection(c as unknown as Record<string, unknown>)),
+		}).then((c) =>
+			normalizeConnection(c as unknown as Record<string, unknown>)
+		),
 
 	listIntakeJobs: async (params?: { status?: string; vendor_id?: string }) => {
 		// Intake jobs clamp page size (~50); page through until exhausted.
@@ -735,6 +737,42 @@ export const vendorCoreApi = {
 			previous: null,
 			results,
 		} satisfies PaginatedResult<MemberCoverageDto>;
+	},
+
+	getMemberDashboardStats: async (params?: MemberDashboardStatsQuery) => {
+		const raw = await vendorCoreFetch<MemberDashboardStatsDto>(
+			vendorCoreEndpoints.membersStats,
+			{
+				params: pageParams({
+					search: params?.search || undefined,
+					vendor_id: params?.vendor_id || undefined,
+					status: params?.status || undefined,
+					cardholder_id: params?.cardholder_id || undefined,
+					group_id: params?.group_id || undefined,
+					account_group: params?.account_group || undefined,
+					alternate_id: params?.alternate_id || undefined,
+					first_name: params?.first_name || undefined,
+					last_name: params?.last_name || undefined,
+					date_of_birth: params?.date_of_birth || undefined,
+					gender: params?.gender || undefined,
+					plan_name: params?.plan_name || undefined,
+					eligibility_status: params?.eligibility_status || undefined,
+					program: params?.program || undefined,
+					lob: params?.lob || undefined,
+					coverage_effective_from: params?.coverage_effective_from || undefined,
+					coverage_effective_to: params?.coverage_effective_to || undefined,
+				}),
+			}
+		);
+		return {
+			total: Number(raw.total ?? 0),
+			active: Number(raw.active ?? 0),
+			pending: Number(raw.pending ?? 0),
+			termed: Number(raw.termed ?? 0),
+			inactive: Number(raw.inactive ?? 0),
+			program: raw.program ?? "",
+			vendor_id: raw.vendor_id ?? null,
+		} satisfies MemberDashboardStatsDto;
 	},
 
 	/** Single page — use for directory pagination. */
@@ -1701,16 +1739,22 @@ export const vendorCoreApi = {
 	},
 
 	createVendorContact: (body: VendorContactCreateInput) =>
-		vendorCoreFetch<VendorContactDto>(vendorCoreEndpoints.vendorContactsCreate, {
-			method: "POST",
-			body: JSON.stringify(body),
-		}),
+		vendorCoreFetch<VendorContactDto>(
+			vendorCoreEndpoints.vendorContactsCreate,
+			{
+				method: "POST",
+				body: JSON.stringify(body),
+			}
+		),
 
 	updateVendorContact: (id: string, body: VendorContactUpdateInput) =>
-		vendorCoreFetch<VendorContactDto>(vendorCoreEndpoints.vendorContactUpdate(id), {
-			method: "PATCH",
-			body: JSON.stringify(body),
-		}),
+		vendorCoreFetch<VendorContactDto>(
+			vendorCoreEndpoints.vendorContactUpdate(id),
+			{
+				method: "PATCH",
+				body: JSON.stringify(body),
+			}
+		),
 
 	deleteVendorContact: (id: string) =>
 		vendorCoreFetch<void>(vendorCoreEndpoints.vendorContactDelete(id), {
