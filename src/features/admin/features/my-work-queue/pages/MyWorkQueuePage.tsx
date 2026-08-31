@@ -91,8 +91,6 @@ import {
 } from "../progress-data";
 import {
 	type EscalationStatus,
-	countActiveEscalations,
-	deriveEscalationStatus,
 	rowsUseStatusEstimatedProgress,
 } from "../work-queue-analyst-escalation";
 import {
@@ -270,7 +268,8 @@ function MyWorkQueueBody() {
 			offset: (page - 1) * pageSize,
 			search: search.trim() || undefined,
 			migration_status: statusFilter !== "all" ? statusFilter : undefined,
-			// escalation_status: applied client-side until backend filter ships
+			escalation_status:
+				escalationFilter !== "all" ? escalationFilter : undefined,
 			assigned_to_id:
 				analystFilter !== "all"
 					? analystIdByName.get(analystFilter)
@@ -282,6 +281,7 @@ function MyWorkQueueBody() {
 		page,
 		search,
 		statusFilter,
+		escalationFilter,
 		analystFilter,
 		analystIdByName,
 		waveFilter,
@@ -304,40 +304,16 @@ function MyWorkQueueBody() {
 
 	const allRows = summaryRowsQ.data ?? [];
 
-	const rowsWithProgress = useMemo(() => {
-		return allRows.map((row) => ({
-			...row,
-			escalationStatus: deriveEscalationStatus(row),
-		}));
-	}, [allRows]);
-
-	const tableRows = rowsPageQ.data?.results ?? [];
-
-	const filtered = useMemo(() => {
-		if (escalationFilter === "all") return tableRows;
-		return tableRows.filter(
-			(row) => deriveEscalationStatus(row) === escalationFilter
-		);
-	}, [tableRows, escalationFilter]);
+	const rowsWithProgress = allRows;
 
 	const totalCount = rowsPageQ.data?.count ?? 0;
 	const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
 	const safePage = Math.min(page, pageCount);
-	const pageRows = filtered;
+	const pageRows = rowsPageQ.data?.results ?? [];
 	const rangeStart = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
 	const rangeEnd = Math.min(safePage * pageSize, totalCount);
 
-	const kpiCards = useMemo(() => {
-		const base = kpisQ.data ?? WORK_QUEUE_KPI;
-		return base.map((card) =>
-			card.id === "escalations"
-				? {
-						...card,
-						count: countActiveEscalations(rowsWithProgress),
-					}
-				: card
-		);
-	}, [kpisQ.data, rowsWithProgress]);
+	const kpiCards = kpisQ.data ?? WORK_QUEUE_KPI;
 	const loading =
 		rowsPageQ.isLoading ||
 		summaryRowsQ.isLoading ||
@@ -359,16 +335,34 @@ function MyWorkQueueBody() {
 
 	const progressSummary = useMemo(() => {
 		if (waveFilter === "all" && kpisRawQ.data) {
-			const fromApi = kpisToProgressSummary(kpisRawQ.data);
-			if (fromApi.sftp.totalCount > 0 || fromApi.edi.totalCount > 0) {
-				return fromApi;
-			}
+			return kpisToProgressSummary(kpisRawQ.data);
 		}
 		if (progressRows.length === 0) {
 			return emptyProgressSummary();
 		}
 		return summarizeProgressFromRows(progressRows);
 	}, [waveFilter, kpisRawQ.data, progressRows]);
+
+	const hasFilters =
+		Boolean(search.trim()) ||
+		statusFilter !== "all" ||
+		analystFilter !== "all" ||
+		escalationFilter !== "all" ||
+		waveFilter !== "all";
+
+	const listLoadError = rowsPageQ.error ?? summaryRowsQ.error;
+	const waveSummaryUnavailable =
+		waveFilter !== "all" && Boolean(summaryRowsQ.error);
+
+	const tableEmptyMessage = useMemo(() => {
+		if (listLoadError) {
+			return "Could not load cases. Try refreshing the page.";
+		}
+		if (hasFilters) {
+			return "No TPA/TPV records match your filters.";
+		}
+		return "No TPA/TPV records yet.";
+	}, [listLoadError, hasFilters]);
 
 	const statusEstimatedProgress = useMemo(
 		() => rowsUseStatusEstimatedProgress(progressRows),
@@ -397,17 +391,6 @@ function MyWorkQueueBody() {
 			secondaryPhone: activeRow.secondaryPhone,
 		});
 	}, [activeRow]);
-
-	useEffect(() => {
-		setPage(1);
-	}, [
-		search,
-		statusFilter,
-		analystFilter,
-		escalationFilter,
-		waveFilter,
-		pageSize,
-	]);
 
 	const analysts = useMemo(
 		() =>
@@ -438,13 +421,6 @@ function MyWorkQueueBody() {
 		setWaveFilter("all");
 		setPage(1);
 	}
-
-	const hasFilters =
-		Boolean(search.trim()) ||
-		statusFilter !== "all" ||
-		analystFilter !== "all" ||
-		escalationFilter !== "all" ||
-		waveFilter !== "all";
 
 	async function handleRefresh() {
 		setRefreshing(true);
@@ -707,13 +683,20 @@ function MyWorkQueueBody() {
 				</div>
 			</div>
 
-			{rowsPageQ.error ? (
+			{listLoadError ? (
 				<div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-					{rowsPageQ.error.message}
+					<p>{listLoadError.message}</p>
+					<p className="mt-1 text-xs font-normal text-destructive/90">
+						Could not load cases. KPI counts may still reflect backend data.
+					</p>
 				</div>
 			) : null}
 
-			{!rowsPageQ.isLoading && allRows.length === 0 ? (
+			{!listLoadError &&
+			!rowsPageQ.isLoading &&
+			!summaryRowsQ.isLoading &&
+			totalCount === 0 &&
+			!hasFilters ? (
 				<div className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
 					No migration cases yet. Use{" "}
 					<span className="font-medium text-foreground">Import</span> or{" "}
@@ -726,6 +709,7 @@ function MyWorkQueueBody() {
 				summary={progressSummary}
 				waveFilter={waveFilter}
 				waves={waves}
+				waveSummaryUnavailable={waveSummaryUnavailable}
 				onWaveFilterChange={(value) => {
 					setWaveFilter(value);
 					setPage(1);
@@ -921,7 +905,7 @@ function MyWorkQueueBody() {
 										colSpan={12}
 										className="h-20 text-center text-sm text-muted-foreground"
 									>
-										No TPA/TPV records match your filters.
+										{tableEmptyMessage}
 									</TableCell>
 								</TableRow>
 							) : (
@@ -990,7 +974,7 @@ function MyWorkQueueBody() {
 										</TableCell>
 										<TableCell className={td}>
 											<EscalationStatusPill
-												status={deriveEscalationStatus(row)}
+												status={row.escalationStatus ?? "none"}
 											/>
 										</TableCell>
 										<TableCell

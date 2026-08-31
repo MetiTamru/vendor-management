@@ -15,7 +15,6 @@ import {
 } from "../../work-queue-types";
 import {
 	type EscalationStatus,
-	deriveEscalationStatus,
 } from "../../work-queue-analyst-escalation";
 import {
 	EMPTY_EDI_PROGRESS,
@@ -143,20 +142,36 @@ function progressDtoToConnection(
 	dto: MigrationCaseProgressDto | undefined,
 	fallback: ConnectionProgress
 ): ConnectionProgress {
-	if (!dto?.milestones?.length) return fallback;
+	if (!dto) return fallback;
 
-	const milestones = dto.milestones.map((m) => ({
-		key: m.key,
-		label: m.label,
-		weightPercent: m.weight_percent,
-		completedAt: m.completed_at ? formatDisplayDate(m.completed_at) : null,
-	}));
+	const milestones =
+		dto.milestones.length > 0
+			? dto.milestones.map((m) => ({
+					key: m.key,
+					label: m.label,
+					weightPercent: m.weight_percent,
+					completedAt: m.completed_at ? formatDisplayDate(m.completed_at) : null,
+				}))
+			: fallback.milestones;
 
-	return progressFromMilestones(milestones, {
+	const fromMilestones = progressFromMilestones(milestones, {
 		updatedBy: progressUserName(dto.updated_by),
 		updatedAt: formatDisplayDateTime(dto.updated_at ?? dto.last_updated_at),
 		notes: dto.notes ?? "",
 	});
+
+	return {
+		...fromMilestones,
+		percent: dto.percent ?? fromMilestones.percent,
+		currentMilestone:
+			dto.current_milestone_label?.trim() || fromMilestones.currentMilestone,
+		currentMilestoneKey:
+			dto.current_milestone_key?.trim() || fromMilestones.currentMilestoneKey,
+		lastUpdated: dto.last_updated_at
+			? formatDisplayDate(dto.last_updated_at)
+			: fromMilestones.lastUpdated,
+		milestones,
+	};
 }
 
 export function connectionProgressToApiInput(progress: ConnectionProgress) {
@@ -272,12 +287,7 @@ export function migrationCaseToRow(dto: MigrationCaseDto): TpaTpvRow {
 		escalationStatus: asEscalationStatus(dto.escalation_status),
 		...integrationFieldsFromMetadata(dto.metadata),
 	};
-	const apiEscalation = row.escalationStatus;
-	return {
-		...row,
-		escalationStatus:
-			apiEscalation !== "none" ? apiEscalation : deriveEscalationStatus(row),
-	};
+	return row;
 }
 
 export function kpisToCards(kpis: WorkQueueKpisDto) {

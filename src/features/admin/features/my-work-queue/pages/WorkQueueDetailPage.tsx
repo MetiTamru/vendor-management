@@ -1,12 +1,15 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
+	AlertTriangle,
 	ArrowLeft,
 	Calendar,
 	Clock3,
+	ExternalLink,
+	FileText,
 	History,
 	Link2,
 	Mail,
@@ -14,7 +17,9 @@ import {
 	Save,
 	Server,
 	ShieldCheck,
+	Trash2,
 	Truck,
+	Upload,
 	UserRound,
 	Waves,
 } from "lucide-react";
@@ -39,6 +44,13 @@ import { useVendorCoreUsersQuery } from "@/features/admin/features/users/feature
 
 import { WorkQueueProgressEditor } from "../components/work-queue-progress";
 import {
+	EscalationStatusPill,
+} from "../components/work-queue-analyst-escalation";
+import {
+	ESCALATION_STATUS_LABEL,
+	type EscalationStatus,
+} from "../work-queue-analyst-escalation";
+import {
 	CURRENT_STAGE_OPTIONS,
 	dateToApi,
 	stageToApi,
@@ -46,12 +58,16 @@ import {
 } from "../feature/mappers/workQueueMappers";
 import {
 	useAssignMigrationCaseMutation,
+	useDeleteMigrationCaseDocumentMutation,
 	useInvalidateVendorCore,
 	useMigrationCaseDetailQuery,
+	useMigrationCaseDocumentsQuery,
 	useMigrationCaseHistoryQuery,
+	useSetMigrationCaseEscalationMutation,
 	useSetMigrationCaseStatusMutation,
 	useUpdateMigrationCaseMutation,
 	useUpdateMigrationCaseProgressMutation,
+	useUploadMigrationCaseDocumentMutation,
 } from "../feature/queries/useWorkQueueQuery";
 import { workQueueErrorMessage } from "../feature/workQueueErrors";
 import {
@@ -69,6 +85,7 @@ type DetailTab =
 	| "sftp"
 	| "edi"
 	| "migration"
+	| "documents"
 	| "history";
 
 const FLAT_CARD_CLASS =
@@ -85,6 +102,7 @@ function tabFromQuery(value: string | null): DetailTab {
 		value === "sftp" ||
 		value === "edi" ||
 		value === "migration" ||
+		value === "documents" ||
 		value === "history"
 	) {
 		return value;
@@ -99,6 +117,7 @@ const TABS: { id: DetailTab; label: string; icon: typeof UserRound }[] = [
 	{ id: "sftp", label: "SFTP Progress", icon: Server },
 	{ id: "edi", label: "EDI Progress", icon: Server },
 	{ id: "migration", label: "Migration", icon: Truck },
+	{ id: "documents", label: "Documents", icon: FileText },
 	{ id: "history", label: "History", icon: History },
 ];
 
@@ -116,6 +135,12 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 			{children}
 		</label>
 	);
+}
+
+function formatDocumentSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function MigrationStatusPill({ status }: { status: MigrationStatus }) {
@@ -342,13 +367,18 @@ export function WorkQueueDetailPage({ caseId }: { caseId: string }) {
 function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 	const searchParams = useSearchParams();
 	const invalidate = useInvalidateVendorCore();
+	const documentInputRef = useRef<HTMLInputElement>(null);
 	const detailQ = useMigrationCaseDetailQuery(caseId, true);
 	const historyQ = useMigrationCaseHistoryQuery(caseId, true);
+	const documentsQ = useMigrationCaseDocumentsQuery(caseId, true);
 	const usersQ = useVendorCoreUsersQuery();
 	const updateCase = useUpdateMigrationCaseMutation();
 	const assignCase = useAssignMigrationCaseMutation();
 	const updateProgress = useUpdateMigrationCaseProgressMutation();
 	const setStatus = useSetMigrationCaseStatusMutation();
+	const setEscalation = useSetMigrationCaseEscalationMutation();
+	const uploadDoc = useUploadMigrationCaseDocumentMutation();
+	const deleteDoc = useDeleteMigrationCaseDocumentMutation();
 
 	const row: TpaTpvRow | null = detailQ.data ?? null;
 
@@ -399,6 +429,7 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 		currentStage: "data_exchange",
 		nextStep: "",
 		assignedToId: "",
+		escalationStatus: "none" as EscalationStatus,
 	});
 
 	useEffect(() => {
@@ -426,6 +457,7 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 			currentStage: stageToApi(row.currentStage),
 			nextStep: row.nextStep,
 			assignedToId: row.assignedToId ?? "",
+			escalationStatus: row.escalationStatus ?? "none",
 		});
 	}, [row]);
 
@@ -536,11 +568,47 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 					assigned_to_id: nextAssignedId,
 				});
 			}
+			const nextEscalation = migrationForm.escalationStatus;
+			const currentEscalation = row.escalationStatus ?? "none";
+			if (nextEscalation !== currentEscalation) {
+				await setEscalation.mutateAsync({
+					id: row.id,
+					escalation_status: nextEscalation,
+				});
+			}
 			await invalidate();
 			await detailQ.refetch();
 			toast.success("Migration details saved");
 		} catch (err) {
 			toast.error(workQueueErrorMessage(err, "Failed to save migration"));
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	async function handleDocumentUpload(file: File) {
+		if (!row) return;
+		setSaving(true);
+		try {
+			await uploadDoc.mutateAsync({ id: row.id, file });
+			await documentsQ.refetch();
+			toast.success("Document uploaded");
+		} catch (err) {
+			toast.error(workQueueErrorMessage(err, "Document upload failed"));
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	async function handleDocumentDelete(documentId: string) {
+		if (!row) return;
+		setSaving(true);
+		try {
+			await deleteDoc.mutateAsync({ caseId: row.id, documentId });
+			await documentsQ.refetch();
+			toast.success("Document removed");
+		} catch (err) {
+			toast.error(workQueueErrorMessage(err, "Failed to remove document"));
 		} finally {
 			setSaving(false);
 		}
@@ -731,6 +799,15 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 										label="Analyst"
 										icon={UserRound}
 										value={row.assignedAnalyst || "—"}
+									/>
+									<StatTile
+										label="Escalation"
+										icon={AlertTriangle}
+										value={
+											<EscalationStatusPill
+												status={row.escalationStatus ?? "none"}
+											/>
+										}
 									/>
 									<StatTile
 										label="Whitelist"
@@ -1106,7 +1183,12 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 							<Button
 								size="sm"
 								className="h-8"
-								disabled={saving || updateCase.isPending || setStatus.isPending}
+								disabled={
+									saving ||
+									updateCase.isPending ||
+									setStatus.isPending ||
+									setEscalation.isPending
+								}
 								onClick={() => void saveMigration()}
 							>
 								<Save className="mr-1.5 size-3.5" />
@@ -1135,6 +1217,33 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 										).map((key) => (
 											<SelectItem key={key} value={key}>
 												{MIGRATION_STATUS_LABEL[key]}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div>
+								<FieldLabel>Escalation Status</FieldLabel>
+								<Select
+									value={migrationForm.escalationStatus}
+									onValueChange={(v) =>
+										setMigrationForm((f) => ({
+											...f,
+											escalationStatus: v as EscalationStatus,
+										}))
+									}
+								>
+									<SelectTrigger className={fieldClass}>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{(
+											Object.keys(
+												ESCALATION_STATUS_LABEL
+											) as EscalationStatus[]
+										).map((key) => (
+											<SelectItem key={key} value={key}>
+												{ESCALATION_STATUS_LABEL[key]}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -1233,6 +1342,100 @@ function WorkQueueDetailBody({ caseId }: { caseId: string }) {
 								/>
 							</div>
 						</div>
+					</SectionCard>
+				) : null}
+
+				{tab === "documents" ? (
+					<SectionCard
+						title="Documents"
+						description="Files uploaded for this migration case"
+						action={
+							<>
+								<input
+									ref={documentInputRef}
+									type="file"
+									className="hidden"
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) void handleDocumentUpload(file);
+										e.target.value = "";
+									}}
+								/>
+								<Button
+									size="sm"
+									className="h-8"
+									disabled={saving || uploadDoc.isPending}
+									onClick={() => documentInputRef.current?.click()}
+								>
+									<Upload className="mr-1.5 size-3.5" />
+									Upload
+								</Button>
+							</>
+						}
+					>
+						{documentsQ.isLoading ? (
+							<p className="text-xs text-muted-foreground">Loading documents…</p>
+						) : (documentsQ.data ?? []).length === 0 ? (
+							<div className="rounded-sm border border-dashed border-border/60 bg-muted/10 px-4 py-8 text-center">
+								<FileText className="mx-auto size-8 text-muted-foreground/40" />
+								<p className="mt-2 text-sm font-medium text-foreground">
+									No documents yet
+								</p>
+								<p className="mt-1 text-xs text-muted-foreground">
+									Upload feed files or supporting documents for this case.
+								</p>
+							</div>
+						) : (
+							<ul className="divide-y divide-border/50 rounded-sm border border-border/40">
+								{(documentsQ.data ?? []).map((doc) => (
+									<li
+										key={doc.id}
+										className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5"
+									>
+										<div className="min-w-0 flex-1">
+											<p className="truncate text-sm font-medium">{doc.name}</p>
+											<p className="text-[11px] text-muted-foreground">
+												{doc.created_at
+													? new Date(doc.created_at).toLocaleString()
+													: "—"}
+												{doc.size_bytes != null
+													? ` · ${formatDocumentSize(doc.size_bytes)}`
+													: ""}
+											</p>
+										</div>
+										<div className="flex shrink-0 items-center gap-1">
+											{doc.web_url ? (
+												<Button
+													variant="ghost"
+													size="sm"
+													className="h-8"
+													asChild
+												>
+													<a
+														href={doc.web_url}
+														target="_blank"
+														rel="noopener noreferrer"
+													>
+														<ExternalLink className="mr-1 size-3.5" />
+														Open
+													</a>
+												</Button>
+											) : null}
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-8 text-destructive hover:text-destructive"
+												disabled={saving || deleteDoc.isPending}
+												onClick={() => void handleDocumentDelete(doc.id)}
+											>
+												<Trash2 className="mr-1 size-3.5" />
+												Remove
+											</Button>
+										</div>
+									</li>
+								))}
+							</ul>
+						)}
 					</SectionCard>
 				) : null}
 

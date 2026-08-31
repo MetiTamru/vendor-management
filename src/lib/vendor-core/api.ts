@@ -46,6 +46,7 @@ import type {
 	MigrationCaseBulkStatusInput,
 	MigrationCaseBulkStatusResultDto,
 	MigrationCaseCreateInput,
+	MigrationCaseDocumentDto,
 	MigrationCaseDto,
 	MigrationCaseEventDto,
 	MigrationCaseListQuery,
@@ -116,6 +117,7 @@ import {
 	normalizeJobRun,
 	normalizeMemberCoverage,
 	normalizeMigrationCase,
+	normalizeMigrationCaseDocument,
 	normalizeProcessingEvent,
 	normalizeProvider,
 	normalizeProviderRoster,
@@ -336,6 +338,8 @@ export const vendorCoreEndpoints = {
 		`/api/v1/migration-cases/${id}/documents/upload/`,
 	migrationCaseDocumentsList: (id: string) =>
 		`/api/v1/migration-cases/${id}/documents/list/`,
+	migrationCaseDocumentDelete: (caseId: string, docId: string) =>
+		`/api/v1/migration-cases/${caseId}/documents/${docId}/delete/`,
 	workQueueKpis: "/api/v1/work-queue/kpis/",
 	workQueueImport: "/api/v1/work-queue/import/",
 	workQueueSeed: "/api/v1/work-queue/seed/",
@@ -2434,12 +2438,25 @@ export const vendorCoreApi = {
 				headers: {},
 			}
 		);
-		return {
-			id: String(raw.id ?? ""),
-			reference_id:
-				typeof raw.reference_id === "string" ? raw.reference_id : undefined,
-			name: String(raw.name ?? file.name),
-			web_url: typeof raw.web_url === "string" ? raw.web_url : undefined,
-		};
+		return normalizeMigrationCaseDocument(raw);
+	},
+
+	listMigrationCaseDocuments: async (
+		id: string,
+		params?: { limit?: number; offset?: number }
+	) => {
+		const page = await vendorCoreFetch<
+			PaginatedResult<Record<string, unknown>>
+		>(vendorCoreEndpoints.migrationCaseDocumentsList(id), {
+			params: pageParams(params),
+		});
+		return mapPage(page, normalizeMigrationCaseDocument);
+	},
+
+	deleteMigrationCaseDocument: async (caseId: string, documentId: string) => {
+		await vendorCoreFetch<void>(
+			vendorCoreEndpoints.migrationCaseDocumentDelete(caseId, documentId),
+			{ method: "POST" }
+		);
 	},
 };

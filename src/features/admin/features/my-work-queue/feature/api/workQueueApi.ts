@@ -1,6 +1,7 @@
 import { vendorCoreApi } from "@/lib/vendor-core/api";
 import type {
 	MigrationCaseCreateInput,
+	MigrationCaseEscalationInput,
 	MigrationCaseListQuery,
 	MigrationCaseProgressUpdateInput,
 	MigrationCaseUpdateInput,
@@ -121,6 +122,30 @@ export async function importWorkQueueSpreadsheet(file: File) {
 
 export async function seedWorkQueue(body?: WorkQueueSeedInput) {
 	return vendorCoreApi.seedWorkQueue(body);
+}
+
+export async function setMigrationCaseEscalation(
+	id: string,
+	body: MigrationCaseEscalationInput
+) {
+	return vendorCoreApi
+		.setMigrationCaseEscalation(id, body)
+		.then(migrationCaseToRow);
+}
+
+export async function listMigrationCaseDocuments(
+	id: string,
+	params?: { limit?: number; offset?: number }
+) {
+	const page = await vendorCoreApi.listMigrationCaseDocuments(id, params);
+	return page.results ?? [];
+}
+
+export async function deleteMigrationCaseDocument(
+	caseId: string,
+	documentId: string
+) {
+	return vendorCoreApi.deleteMigrationCaseDocument(caseId, documentId);
 }
 
 export async function uploadMigrationCaseDocument(id: string, file: File) {

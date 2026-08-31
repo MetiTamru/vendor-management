@@ -171,16 +171,16 @@ export function summarizeEscalations(rows: TpaTpvRow[]): EscalationSummary {
 		resolved: 0,
 	};
 	for (const row of rows) {
-		const status = deriveEscalationStatus(row);
+		const status = row.escalationStatus ?? "none";
 		if (status === "none") continue;
-		summary[status] += 1;
+		if (status in summary) summary[status] += 1;
 	}
 	return summary;
 }
 
 export function countActiveEscalations(rows: TpaTpvRow[]): number {
 	return rows.filter((row) => {
-		const status = deriveEscalationStatus(row);
+		const status = row.escalationStatus ?? "none";
 		return (
 			status === "escalation_required" ||
 			status === "attention" ||
@@ -200,7 +200,7 @@ export type EscalationListItem = {
 };
 
 export function deriveEscalationReason(row: TpaTpvRow): string {
-	const status = deriveEscalationStatus(row);
+	const status = row.escalationStatus ?? "none";
 	if (status === "none") return "—";
 
 	if (!hasProgressData(row)) {
@@ -263,7 +263,7 @@ export function listEscalationItems(
 			code: row.code,
 			assignedAnalyst: row.assignedAnalyst || "Unassigned",
 			reason: deriveEscalationReason(row),
-			status: deriveEscalationStatus(row),
+			status: row.escalationStatus ?? "none",
 			lastUpdated: row.lastUpdated || "—",
 		}))
 		.filter((item) => item.status !== "none")

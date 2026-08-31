@@ -264,15 +264,23 @@ export function WorkQueueProgressOverview({
 	waveFilter = "all",
 	waves = [],
 	onWaveFilterChange,
+	waveSummaryUnavailable = false,
 }: {
 	summary?: ReturnType<typeof emptyProgressSummary>;
 	tracks?: GuideTrack[];
 	waveFilter?: string;
 	waves?: string[];
 	onWaveFilterChange?: (wave: string) => void;
+	waveSummaryUnavailable?: boolean;
 }) {
 	return (
-		<section className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-4">
+		<section className="space-y-2">
+			{waveSummaryUnavailable ? (
+				<p className="text-xs text-muted-foreground">
+					Wave summary unavailable — case list could not be loaded.
+				</p>
+			) : null}
+			<div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-4">
 			<CompletionStatCard
 				label="Overall SFTP Completion"
 				percentage={summary.sftp.percent}
@@ -291,6 +299,7 @@ export function WorkQueueProgressOverview({
 				color="green"
 			/>
 			<MilestoneStepperPanel tracks={tracks} className="lg:col-span-2" />
+			</div>
 		</section>
 	);
 }

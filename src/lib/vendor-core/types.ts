@@ -1344,8 +1344,13 @@ export type MigrationCaseEventDto = {
 export type MigrationCaseDocumentDto = {
 	id: string;
 	reference_id?: string;
+	migration_case_id?: string;
 	name: string;
+	mime_type?: string;
+	size_bytes?: number;
 	web_url?: string;
+	created_at?: string;
+	updated_at?: string;
 };
 
 export type MigrationCaseProgressMilestoneDto = {
@@ -2392,6 +2397,23 @@ function normalizeMigrationEvent(
 		tone: pickString(raw, "tone") || "blue",
 		actor: normalizeMigrationUser(raw.actor),
 		created_at: pickString(raw, "created_at") || "",
+	};
+}
+
+export function normalizeMigrationCaseDocument(
+	raw: Record<string, unknown>
+): MigrationCaseDocumentDto {
+	return {
+		id: String(raw.id ?? ""),
+		reference_id: pickString(raw, "reference_id") || undefined,
+		migration_case_id: pickString(raw, "migration_case_id") || undefined,
+		name: pickString(raw, "name") || "Document",
+		mime_type: pickString(raw, "mime_type") || undefined,
+		size_bytes:
+			raw.size_bytes != null ? Number(raw.size_bytes) : undefined,
+		web_url: pickString(raw, "web_url") || undefined,
+		created_at: pickString(raw, "created_at") || undefined,
+		updated_at: pickString(raw, "updated_at") || undefined,
 	};
 }
 

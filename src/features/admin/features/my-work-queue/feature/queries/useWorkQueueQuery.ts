@@ -18,10 +18,12 @@ import {
 	assignMigrationCase,
 	bulkSetMigrationCaseStatus,
 	createMigrationCase,
+	deleteMigrationCaseDocument,
 	getMigrationCaseDetail,
 	getWorkQueueKpiCards,
 	getWorkQueueKpisRaw,
 	importWorkQueueSpreadsheet,
+	listMigrationCaseDocuments,
 	listMigrationCaseHistory,
 	listWorkQueueRows,
 	listWorkQueueRowsPage,
@@ -29,6 +31,7 @@ import {
 	markMigrationCaseTesting,
 	markMigrationCaseWaitingOnVendor,
 	seedWorkQueue,
+	setMigrationCaseEscalation,
 	setMigrationCaseStatus,
 	updateMigrationCase,
 	updateMigrationCaseProgress,
@@ -210,6 +213,39 @@ export function useUploadMigrationCaseDocumentMutation() {
 		{ id: string; file: File }
 	>(domain, {
 		mutationFn: ({ id, file }) => uploadMigrationCaseDocument(id, file),
+	});
+}
+
+export function useSetMigrationCaseEscalationMutation() {
+	return useVendorCoreFeatureMutation<
+		Awaited<ReturnType<typeof setMigrationCaseEscalation>>,
+		{ id: string; escalation_status: string }
+	>(domain, {
+		mutationFn: ({ id, escalation_status }) =>
+			setMigrationCaseEscalation(id, { escalation_status }),
+	});
+}
+
+export function useMigrationCaseDocumentsQuery(
+	caseId: string,
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"documents",
+		() => listMigrationCaseDocuments(caseId, { limit: 50, offset: 0 }),
+		enabled && Boolean(caseId),
+		[caseId]
+	);
+}
+
+export function useDeleteMigrationCaseDocumentMutation() {
+	return useVendorCoreFeatureMutation<
+		void,
+		{ caseId: string; documentId: string }
+	>(domain, {
+		mutationFn: ({ caseId, documentId }) =>
+			deleteMigrationCaseDocument(caseId, documentId),
 	});
 }
 
