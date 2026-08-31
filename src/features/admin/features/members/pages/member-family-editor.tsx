@@ -86,7 +86,12 @@ function SectionShell({
 			)}
 		>
 			{title || action ? (
-				<div className="flex items-center gap-2 border-b border-border/40 bg-muted/10 px-3.5 py-2">
+				<div
+					className={cn(
+						"flex items-center gap-2 border-b border-border/40 px-3.5 py-2",
+						className?.includes("shadow-none") ? "bg-background" : "bg-muted/10"
+					)}
+				>
 					{title ? (
 						<h3 className="min-w-0 flex-1 text-[13px] font-semibold tracking-tight">
 							{title}
@@ -129,13 +134,17 @@ export function MemberFamilyDraftEditor({
 	value,
 	onChange,
 	flushRef,
+	variant = "default",
 }: {
 	vendorId?: string;
 	subscriberCardholderId?: string;
 	value: PendingFamilyDependent[];
 	onChange: (next: PendingFamilyDependent[]) => void;
 	flushRef?: React.MutableRefObject<MemberFamilyDraftHandle | null>;
+	/** Cleaner neutral layout for the create-member wizard. */
+	variant?: "default" | "wizard";
 }) {
+	const isWizard = variant === "wizard";
 	const [subTab, setSubTab] = useState<FamilySubTab>(
 		value.length > 0 ? "list" : "add"
 	);
@@ -281,22 +290,36 @@ export function MemberFamilyDraftEditor({
 	}
 
 	return (
-		<div className="space-y-3">
+		<div className={cn("space-y-3", isWizard && "space-y-5")}>
 			<div className="flex flex-wrap items-center gap-2">
-				<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
+				<div
+					className={cn(
+						"inline-flex rounded-md border p-0.5",
+						isWizard
+							? "border-border/50 bg-background"
+							: "border-border/70 bg-muted/20"
+					)}
+				>
 					<button
 						type="button"
 						className={cn(
 							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
 							subTab === "list"
-								? "bg-background text-foreground shadow-sm"
+								? isWizard
+									? "bg-muted text-foreground"
+									: "bg-background text-foreground shadow-sm"
 								: "text-muted-foreground hover:text-foreground"
 						)}
 						onClick={() => setSubTab("list")}
 					>
 						<Users className="size-3.5" />
 						Family members
-						<span className="rounded-sm bg-muted px-1.5 py-px text-[10px] tabular-nums">
+						<span
+							className={cn(
+								"rounded-sm px-1.5 py-px text-[10px] tabular-nums",
+								isWizard ? "bg-background text-muted-foreground" : "bg-muted"
+							)}
+						>
 							{value.length}
 						</span>
 					</button>
@@ -305,7 +328,9 @@ export function MemberFamilyDraftEditor({
 						className={cn(
 							"inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
 							subTab === "add"
-								? "bg-background text-foreground shadow-sm"
+								? isWizard
+									? "bg-muted text-foreground"
+									: "bg-background text-foreground shadow-sm"
 								: "text-muted-foreground hover:text-foreground"
 						)}
 						onClick={() => setSubTab("add")}
@@ -315,13 +340,20 @@ export function MemberFamilyDraftEditor({
 					</button>
 				</div>
 				<p className="text-xs text-muted-foreground sm:ml-auto">
-					Staged until member is created
+					{isWizard
+						? "Optional — linked after create"
+						: "Staged until member is created"}
 				</p>
 			</div>
 
 			{subTab === "list" ? (
 				<SectionShell
-					title="Family members"
+					title={isWizard ? undefined : "Family members"}
+					className={
+						isWizard
+							? "rounded-lg border-border/50 bg-background shadow-none"
+							: undefined
+					}
 					action={
 						<Button
 							type="button"
@@ -336,13 +368,28 @@ export function MemberFamilyDraftEditor({
 					}
 				>
 					{value.length === 0 ? (
-						<div className="rounded-md border border-dashed border-border/70 px-4 py-8 text-center">
+						<div
+							className={cn(
+								"px-4 py-8 text-center",
+								isWizard
+									? "rounded-lg border border-border/50"
+									: "rounded-md border border-dashed border-border/70"
+							)}
+						>
+							{isWizard ? (
+								<div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-full border border-border/60 bg-muted/20">
+									<Users className="size-4 text-muted-foreground" />
+								</div>
+							) : null}
 							<p className="text-sm text-muted-foreground">
-								No dependents staged yet.
+								{isWizard
+									? "No dependents added yet."
+									: "No dependents staged yet."}
 							</p>
 							<Button
 								type="button"
 								size="sm"
+								variant={isWizard ? "outline" : "default"}
 								className="mt-3"
 								onClick={() => setSubTab("add")}
 							>
@@ -407,6 +454,246 @@ export function MemberFamilyDraftEditor({
 						</div>
 					)}
 				</SectionShell>
+			) : isWizard ? (
+				<div className="space-y-6">
+					<div className="inline-flex rounded-md border border-border/50 bg-background p-0.5">
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+								addMode === "create"
+									? "bg-muted text-foreground"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("create")}
+						>
+							Create new
+						</button>
+						<button
+							type="button"
+							className={cn(
+								"rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+								addMode === "pick"
+									? "bg-muted text-foreground"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+							onClick={() => setAddMode("pick")}
+						>
+							Link existing
+						</button>
+					</div>
+
+					<div className="space-y-3">
+						<p className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+							Relationship
+						</p>
+						<div className="flex flex-wrap gap-2">
+							{REL_PRESETS.map((preset) => (
+								<button
+									key={preset.code}
+									type="button"
+									onClick={() => applyPreset(preset.code, preset.label)}
+									className={cn(
+										"rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+										relationshipCode === preset.code
+											? "border-foreground bg-foreground text-background"
+											: "border-border bg-background text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+									)}
+								>
+									{preset.label}
+									<span className="ml-1 font-mono text-[10px] opacity-70">
+										{preset.code}
+									</span>
+								</button>
+							))}
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<label className="grid gap-1.5">
+								<span className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+									Rel. code
+								</span>
+								<Input
+									className="h-11 font-mono"
+									value={relationshipCode}
+									onChange={(e) => setRelationshipCode(e.target.value)}
+								/>
+							</label>
+							<label className="grid gap-1.5">
+								<span className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+									Rel. label
+								</span>
+								<Input
+									className="h-11"
+									value={relationshipLabel}
+									onChange={(e) => setRelationshipLabel(e.target.value)}
+								/>
+							</label>
+						</div>
+					</div>
+
+					{addMode === "create" ? (
+						<div className="rounded-lg border border-border/50 p-4 sm:p-5">
+							<p className="text-sm font-medium text-foreground">
+								New dependent
+							</p>
+							<p className="mt-0.5 text-xs text-muted-foreground">
+								Created and linked when you finish the wizard.
+							</p>
+							<div className="mt-4 grid gap-4 sm:grid-cols-2">
+								<label className="grid gap-1.5">
+									<span className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+										First name
+									</span>
+									<Input
+										className="h-11"
+										value={newFirstName}
+										onChange={(e) => setNewFirstName(e.target.value)}
+									/>
+								</label>
+								<label className="grid gap-1.5">
+									<span className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+										Last name
+									</span>
+									<Input
+										className="h-11"
+										value={newLastName}
+										onChange={(e) => setNewLastName(e.target.value)}
+									/>
+								</label>
+								<label className="grid gap-1.5 sm:col-span-2">
+									<span className="text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
+										Cardholder ID
+									</span>
+									<Input
+										className="h-11 font-mono"
+										value={newCardholder}
+										onChange={(e) => setNewCardholder(e.target.value)}
+										placeholder="Auto-generated if empty"
+									/>
+								</label>
+							</div>
+						</div>
+					) : (
+						<div className="rounded-lg border border-border/50 p-4 sm:p-5">
+							<p className="text-sm font-medium text-foreground">
+								Link existing member
+							</p>
+							<p className="mt-0.5 text-xs text-muted-foreground">
+								Search the directory and stage a match.
+							</p>
+							<div className="mt-4 space-y-3">
+								{!vendorId ? (
+									<p className="text-xs text-destructive">
+										Select a vendor on the Account step first.
+									</p>
+								) : null}
+								<Input
+									className="h-11"
+									value={search}
+									onChange={(e) => {
+										setSearch(e.target.value);
+										setSelected(null);
+									}}
+									placeholder="Name or cardholder ID…"
+									disabled={!vendorId}
+								/>
+								{selected ? (
+									<div className="flex flex-wrap items-center gap-2 rounded-md border border-border/50 px-3 py-2 text-sm">
+										<span className="font-medium">
+											{[selected.firstName, selected.lastName]
+												.filter(Boolean)
+												.join(" ")}
+										</span>
+										<span className="font-mono text-xs text-muted-foreground">
+											{selected.memberId}
+										</span>
+										<Button
+											type="button"
+											size="sm"
+											variant="ghost"
+											className="ml-auto h-7 text-xs"
+											onClick={() => setSelected(null)}
+										>
+											Clear
+										</Button>
+									</div>
+								) : null}
+								<div className="max-h-52 overflow-auto rounded-md border border-border/50">
+									{!vendorId ? (
+										<p className="px-3 py-3 text-xs text-muted-foreground">
+											Vendor required.
+										</p>
+									) : browseQ.isLoading ? (
+										<p className="px-3 py-3 text-xs text-muted-foreground">
+											Loading…
+										</p>
+									) : candidates.length === 0 ? (
+										<p className="px-3 py-3 text-xs text-muted-foreground">
+											No match. Try Create new instead.
+										</p>
+									) : (
+										<ul className="divide-y divide-border/40 text-sm">
+											{candidates.map((m) => {
+												const name = [m.firstName, m.lastName]
+													.filter(Boolean)
+													.join(" ");
+												const active = selected?.id === m.id;
+												return (
+													<li key={m.id}>
+														<button
+															type="button"
+															className={cn(
+																"flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted/40",
+																active && "bg-muted/50"
+															)}
+															onClick={() => setSelected(m)}
+														>
+															<span className="min-w-0 flex-1 truncate font-medium">
+																{name}
+															</span>
+															<span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+																{m.memberId}
+															</span>
+														</button>
+													</li>
+												);
+											})}
+										</ul>
+									)}
+								</div>
+							</div>
+						</div>
+					)}
+
+					<div className="flex justify-end gap-2 border-t border-border/40 pt-4">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setSubTab("list")}
+						>
+							Cancel
+						</Button>
+						{addMode === "create" ? (
+							<Button
+								type="button"
+								disabled={!newFirstName.trim() || !newLastName.trim()}
+								onClick={stageCreate}
+							>
+								<UserPlus className="mr-1 size-3.5" />
+								Add to list
+							</Button>
+						) : (
+							<Button
+								type="button"
+								disabled={!selected || !vendorId}
+								onClick={stagePick}
+							>
+								<Plus className="mr-1 size-3.5" />
+								Add to list
+							</Button>
+						)}
+					</div>
+				</div>
 			) : (
 				<div className="space-y-4">
 					<div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">

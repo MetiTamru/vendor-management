@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { VendorCoreGate } from "@/components/vendor-core/VendorCoreGate";
@@ -11,16 +10,31 @@ import {
 	useCreateMemberMutation,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import {
+	EMPTY_MEMBER_WIZARD,
+	MemberFormWizard,
+	type MemberWizardValues,
+} from "@/features/admin/features/members/pages/MemberFormWizard";
 import type { PendingFamilyDependent } from "@/features/admin/features/members/pages/member-family-editor";
-import { MemberWriteForm } from "@/features/admin/features/members/pages/member-write-form";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { isMockEnabled } from "@/lib/mock-mode";
-import type { MemberWriteBody } from "@/lib/vendor-core/types";
+import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 function MemberCreatePageInner() {
 	const router = useRouter();
-	const [vendorId, setVendorId] = useState("");
+	const programFilter = useAdminModuleStore((s) => s.fileType);
+	const [values, setValues] = useState<MemberWizardValues>(() => ({
+		...EMPTY_MEMBER_WIZARD,
+		write: {
+			...EMPTY_MEMBER_WIZARD.write,
+			program: programFilter,
+		},
+	}));
+	const [pendingFamily, setPendingFamily] = useState<PendingFamilyDependent[]>(
+		[]
+	);
 	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const create = useCreateMemberMutation();
 	const vendorsQ = useVendorCoreVendors();
 	const vendors = (vendorsQ.data ?? [])
@@ -30,30 +44,37 @@ function MemberCreatePageInner() {
 			name: v.name || v.legal_name || v.id,
 		}));
 
-	async function handleSubmit(
-		body: MemberWriteBody,
-		pendingFamily: PendingFamilyDependent[] = []
-	) {
-		if (!vendorId) {
+	function patchValues(patch: Partial<MemberWizardValues>) {
+		setValues((prev) => ({ ...prev, ...patch }));
+	}
+
+	async function handleSubmit(flushedFamily: PendingFamilyDependent[]) {
+		const body = values.write;
+		if (!values.vendor_id.trim()) {
+			setError("Select a vendor.");
 			toast.error("Select a vendor");
 			return;
 		}
 		if (!body.cardholder_id?.trim()) {
+			setError("Cardholder ID is required.");
 			toast.error("Cardholder ID is required");
 			return;
 		}
 		if (!body.first_name?.trim() || !body.last_name?.trim()) {
+			setError("First and last name are required.");
 			toast.error("First and last name are required");
 			return;
 		}
 
 		setBusy(true);
+		setError(null);
 		try {
 			const detail = await create.mutateAsync({
 				...body,
-				vendor_id: vendorId,
+				vendor_id: values.vendor_id,
 			});
 			if (!detail?.id) {
+				setError("Member created but no id returned.");
 				toast.error("Member created but no id returned");
 				router.push("/admin/members");
 				return;
@@ -61,12 +82,12 @@ function MemberCreatePageInner() {
 
 			let linked = 0;
 			let failed = 0;
-			for (const dep of pendingFamily) {
+			for (const dep of flushedFamily) {
 				try {
 					let dependentId = dep.dependentId;
 					if (dep.kind === "create") {
 						const created = await create.mutateAsync({
-							vendor_id: vendorId,
+							vendor_id: values.vendor_id,
 							cardholder_id:
 								dep.cardholderId ||
 								`${body.cardholder_id}-D${linked + 1}`.slice(0, 32),
@@ -107,7 +128,7 @@ function MemberCreatePageInner() {
 				}
 			}
 
-			if (pendingFamily.length === 0) {
+			if (flushedFamily.length === 0) {
 				toast.success("Member created");
 			} else if (failed === 0) {
 				toast.success(
@@ -123,48 +144,26 @@ function MemberCreatePageInner() {
 
 			router.push(`/admin/members/${detail.id}`);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Create failed");
+			const message = err instanceof Error ? err.message : "Create failed";
+			setError(message);
+			toast.error(message);
 		} finally {
 			setBusy(false);
 		}
 	}
 
 	return (
-		<div className="flex w-full flex-col gap-5 pb-8">
-			<nav className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-				<Link href="/admin" className="hover:text-foreground">
-					Vendor Management
-				</Link>
-				<ChevronRight className="size-3.5 shrink-0 opacity-60" />
-				<Link href="/admin/members" className="hover:text-foreground">
-					Members
-				</Link>
-				<ChevronRight className="size-3.5 shrink-0 opacity-60" />
-				<span className="font-medium text-foreground">Add member</span>
-			</nav>
-
-			<header className="border-b border-border/50 pb-4">
-				<h1 className="text-xl font-semibold tracking-tight text-foreground">
-					Add member
-				</h1>
-			</header>
-
-			<section className="rounded-md border border-border/70 bg-card p-4 shadow-[0_1px_0_0_rgba(15,23,42,0.04)] sm:p-5">
-				<MemberWriteForm
-					vendorId={vendorId}
-					onVendorIdChange={setVendorId}
-					vendors={vendors}
-					pending={busy || create.isPending}
-					submitLabel="Create member"
-					requireIdentityFields
-					showFamily
-					onCancel={() => router.push("/admin/members")}
-					onSubmit={(body, pendingFamily) => {
-						void handleSubmit(body, pendingFamily);
-					}}
-				/>
-			</section>
-		</div>
+		<MemberFormWizard
+			values={values}
+			pendingFamily={pendingFamily}
+			onChange={patchValues}
+			onPendingFamilyChange={setPendingFamily}
+			vendors={vendors}
+			busy={busy || create.isPending}
+			error={error}
+			onCancelHref="/admin/members"
+			onSubmit={handleSubmit}
+		/>
 	);
 }
 
