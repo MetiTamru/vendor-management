@@ -9,7 +9,10 @@ import {
 	useVendorCoreFeatureQuery,
 } from "@/features/admin/shared/vendor-core-feature-query";
 import { isMockEnabled } from "@/lib/mock-mode";
-import type { MemberListQuery } from "@/lib/vendor-core/types";
+import type {
+	MemberDashboardStatsQuery,
+	MemberListQuery,
+} from "@/lib/vendor-core/types";
 
 import { getMemberSummaries } from "../../mock-data";
 import {
@@ -24,6 +27,7 @@ import {
 	deleteMemberException,
 	deleteMemberFamilyLink,
 	getMemberAccumulatorSummary,
+	getMemberDashboardStats,
 	getMemberDetail,
 	getMemberFamilyLink,
 	getMemberSourceRecord,
@@ -77,6 +81,19 @@ export function useMemberSummariesPageQuery(
 		() => listMemberSummariesPage(filters),
 		enabled,
 		[filters]
+	);
+}
+
+export function useMemberDashboardStatsQuery(
+	params?: MemberDashboardStatsQuery,
+	enabled = true
+) {
+	return useVendorCoreFeatureQuery(
+		domain,
+		"dashboard-stats",
+		() => getMemberDashboardStats(params),
+		enabled,
+		[params]
 	);
 }
 

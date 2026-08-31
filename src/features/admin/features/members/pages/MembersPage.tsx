@@ -1,22 +1,22 @@
 "use client";
 
-import {
-	type KeyboardEvent,
-	type ReactNode,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import {
+	AlertCircle,
+	CheckCircle2,
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	Clock3,
 	Download,
 	Filter,
 	Loader2,
+	PauseCircle,
 	RefreshCw,
 	Search,
+	UserX,
+	Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,23 +46,29 @@ import {
 	eligibilityLabelToApi,
 	exportMemberListCsv,
 	formatDate,
+	genderLabelToApi,
 	memberStatusLabelToApi,
 } from "@/features/admin/features/members/feature/api/membersApi";
 import {
 	useInvalidateVendorCore,
+	useMemberDashboardStatsQuery,
 	useMemberSummariesList,
 	useMemberSummariesPageQuery,
 	useVendorCoreVendors,
 } from "@/features/admin/features/members/feature/queries/useMembersQuery";
+import { getMember } from "@/features/admin/features/members/mock-data";
 import {
 	MemberDirectoryActions,
 	MemberListRowDelete,
 } from "@/features/admin/features/members/pages/member-list-actions";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { downloadBlob, stampFilename } from "@/lib/export/csv";
 import { isMockEnabled } from "@/lib/mock-mode";
 import { cn } from "@/lib/utils";
-import type { MemberListQuery } from "@/lib/vendor-core/types";
+import type {
+	MemberDashboardStatsQuery,
+	MemberListQuery,
+} from "@/lib/vendor-core/types";
 import { useAdminModuleStore } from "@/stores/admin-module-store";
 
 type GenderFilter = "all" | "Male" | "Female" | "Other" | "Unknown";
@@ -75,11 +81,14 @@ type MemberSearchFilters = {
 	dob: string;
 	gender: GenderFilter;
 	accountGroup: string;
+	groupId: string;
 	plan: string;
 	eligibilityStatus: string;
 	memberStatus: string;
 	effectiveFrom: string;
 	effectiveTo: string;
+	termFrom: string;
+	termTo: string;
 	search: string;
 	lob: string;
 	vendorId: string;
@@ -93,11 +102,14 @@ const EMPTY_MEMBER_FILTERS: MemberSearchFilters = {
 	dob: "",
 	gender: "all",
 	accountGroup: "all",
+	groupId: "",
 	plan: "all",
 	eligibilityStatus: "all",
 	memberStatus: "all",
 	effectiveFrom: "",
 	effectiveTo: "",
+	termFrom: "",
+	termTo: "",
 	search: "",
 	lob: "",
 	vendorId: "all",
@@ -112,11 +124,14 @@ function hasMemberFilters(filters: MemberSearchFilters): boolean {
 		filters.dob.length > 0 ||
 		filters.gender !== "all" ||
 		filters.accountGroup !== "all" ||
+		filters.groupId.trim().length > 0 ||
 		filters.plan !== "all" ||
 		filters.eligibilityStatus !== "all" ||
 		filters.memberStatus !== "all" ||
 		filters.effectiveFrom.length > 0 ||
 		filters.effectiveTo.length > 0 ||
+		filters.termFrom.length > 0 ||
+		filters.termTo.length > 0 ||
 		filters.search.trim().length > 0 ||
 		filters.lob.trim().length > 0 ||
 		filters.vendorId !== "all"
@@ -139,7 +154,9 @@ function buildMemberListQuery(
 	if (filters.firstName.trim()) q.first_name = filters.firstName.trim();
 	if (filters.lastName.trim()) q.last_name = filters.lastName.trim();
 	if (filters.dob) q.date_of_birth = filters.dob;
-	if (filters.gender !== "all") q.gender = filters.gender;
+	const gender = genderLabelToApi(filters.gender);
+	if (gender) q.gender = gender;
+	if (filters.groupId.trim()) q.group_id = filters.groupId.trim();
 	if (filters.plan !== "all") q.plan_name = filters.plan;
 	const elig = eligibilityLabelToApi(filters.eligibilityStatus);
 	if (elig) q.eligibility_status = elig;
@@ -153,6 +170,19 @@ function buildMemberListQuery(
 	if (filters.vendorId !== "all") q.vendor_id = filters.vendorId;
 	if (filters.accountGroup !== "all") q.account_group = filters.accountGroup;
 	return q;
+}
+
+function buildMemberStatsQuery(
+	filters: MemberSearchFilters,
+	programFilter: string
+): MemberDashboardStatsQuery {
+	const {
+		limit: _l,
+		offset: _o,
+		order_by: _ob,
+		...rest
+	} = buildMemberListQuery(filters, 1, 1, programFilter);
+	return rest;
 }
 
 function filterMockMembers(
@@ -192,6 +222,12 @@ function filterMockMembers(
 				m.accountGroup !== filters.accountGroup
 			)
 				return false;
+			if (filters.groupId.trim()) {
+				const detail = getMember(m.id);
+				const gid = detail?.groupId ?? m.accountGroup ?? "";
+				if (!gid.toLowerCase().includes(filters.groupId.trim().toLowerCase()))
+					return false;
+			}
 			if (filters.plan !== "all" && m.planName !== filters.plan) return false;
 			if (
 				filters.eligibilityStatus !== "all" &&
@@ -219,6 +255,16 @@ function filterMockMembers(
 				(m.coverageEffectiveDate ?? "") > filters.effectiveTo
 			)
 				return false;
+			if (filters.termFrom || filters.termTo) {
+				const detail = getMember(m.id);
+				const termDate =
+					detail?.statusTermDate ??
+					detail?.coverageEnd ??
+					(m.status === "termed" ? "2026-06-30" : null);
+				if (!termDate) return false;
+				if (filters.termFrom && termDate < filters.termFrom) return false;
+				if (filters.termTo && termDate > filters.termTo) return false;
+			}
 			if (filters.search.trim()) {
 				const s = filters.search.trim().toLowerCase();
 				const hay =
@@ -335,28 +381,41 @@ function MembersDirectoryPage() {
 	const vendorsQ = useVendorCoreVendors();
 	const programFilter = useAdminModuleStore((s) => s.fileType);
 
-	const [draftFilters, setDraftFilters] = useState(EMPTY_MEMBER_FILTERS);
-	const [appliedFilters, setAppliedFilters] = useState(EMPTY_MEMBER_FILTERS);
+	const [filters, setFilters] = useState(EMPTY_MEMBER_FILTERS);
+	const [debouncedFilters, setDebouncedFilters] =
+		useState(EMPTY_MEMBER_FILTERS);
 	const [showMoreFilters, setShowMoreFilters] = useState(false);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(20);
 	const [refreshing, setRefreshing] = useState(false);
 	const [exporting, setExporting] = useState(false);
 
-	const patchDraft = (patch: Partial<MemberSearchFilters>) => {
-		setDraftFilters((prev) => ({ ...prev, ...patch }));
+	const patchFilters = (patch: Partial<MemberSearchFilters>) => {
+		setFilters((prev) => ({ ...prev, ...patch }));
+		setPage(1);
 	};
+
+	useEffect(() => {
+		const handle = window.setTimeout(() => setDebouncedFilters(filters), 300);
+		return () => window.clearTimeout(handle);
+	}, [filters]);
 
 	useEffect(() => {
 		setPage(1);
 	}, [programFilter]);
 
 	const listQuery = useMemo(
-		() => buildMemberListQuery(appliedFilters, page, pageSize, programFilter),
-		[appliedFilters, page, pageSize, programFilter]
+		() => buildMemberListQuery(debouncedFilters, page, pageSize, programFilter),
+		[debouncedFilters, page, pageSize, programFilter]
+	);
+
+	const statsQuery = useMemo(
+		() => buildMemberStatsQuery(debouncedFilters, programFilter),
+		[debouncedFilters, programFilter]
 	);
 
 	const pageQ = useMemberSummariesPageQuery(listQuery, useApi);
+	const statsQ = useMemberDashboardStatsQuery(statsQuery, useApi);
 	const mockList = useMemberSummariesList();
 
 	const programMembers = useMemo(
@@ -366,8 +425,8 @@ function MembersDirectoryPage() {
 
 	const mockFiltered = useMemo(() => {
 		if (useApi) return [];
-		return filterMockMembers(mockList.members, appliedFilters, programFilter);
-	}, [useApi, mockList.members, appliedFilters, programFilter]);
+		return filterMockMembers(mockList.members, debouncedFilters, programFilter);
+	}, [useApi, mockList.members, debouncedFilters, programFilter]);
 
 	const totalCount = useApi ? (pageQ.data?.count ?? 0) : mockFiltered.length;
 	const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -398,10 +457,39 @@ function MembersDirectoryPage() {
 		).sort();
 	}, [programMembers]);
 
+	const kpiStats = useMemo(() => {
+		if (useApi && statsQ.data) {
+			return {
+				total: statsQ.data.total,
+				active: statsQ.data.active,
+				pending: statsQ.data.pending,
+				termed: statsQ.data.termed,
+				inactive: statsQ.data.inactive,
+			};
+		}
+		const source = hasMemberFilters(debouncedFilters)
+			? mockFiltered
+			: programMembers;
+		return {
+			total: source.length,
+			active: source.filter((m) => m.status === "active").length,
+			pending: source.filter((m) => m.status === "pending").length,
+			termed: source.filter((m) => m.status === "termed").length,
+			inactive: source.filter((m) => m.status === "inactive").length,
+		};
+	}, [useApi, statsQ.data, debouncedFilters, mockFiltered, programMembers]);
+
 	const isLoading = useApi ? pageQ.isLoading && !pageQ.data : false;
 	const error = useApi ? pageQ.error : null;
-	const hasActiveFilters = hasMemberFilters(appliedFilters);
-	const hasDraftFilters = hasMemberFilters(draftFilters);
+	const hasActiveFilters = hasMemberFilters(debouncedFilters);
+	const hasPendingFilterSync = useMemo(
+		() => JSON.stringify(filters) !== JSON.stringify(debouncedFilters),
+		[filters, debouncedFilters]
+	);
+	const hasUnsupportedLiveFilters =
+		useApi &&
+		(debouncedFilters.termFrom.length > 0 ||
+			debouncedFilters.termTo.length > 0);
 
 	async function handleRefresh() {
 		setRefreshing(true);
@@ -413,11 +501,6 @@ function MembersDirectoryPage() {
 		} finally {
 			setRefreshing(false);
 		}
-	}
-
-	function handleSearch() {
-		setAppliedFilters({ ...draftFilters });
-		setPage(1);
 	}
 
 	async function handleExportList() {
@@ -440,8 +523,8 @@ function MembersDirectoryPage() {
 	}
 
 	function clearFilters() {
-		setDraftFilters(EMPTY_MEMBER_FILTERS);
-		setAppliedFilters(EMPTY_MEMBER_FILTERS);
+		setFilters(EMPTY_MEMBER_FILTERS);
+		setDebouncedFilters(EMPTY_MEMBER_FILTERS);
 		setPage(1);
 	}
 
@@ -457,14 +540,6 @@ function MembersDirectoryPage() {
 
 	const rangeStart = totalCount === 0 ? 0 : (safePage - 1) * pageSize + 1;
 	const rangeEnd = Math.min(safePage * pageSize, totalCount);
-	const resultsMeta =
-		totalCount === 0
-			? "No results"
-			: `${totalCount.toLocaleString()} found · ${rangeStart}–${rangeEnd}`;
-
-	function onSearchKeyDown(event: KeyboardEvent) {
-		if (event.key === "Enter") handleSearch();
-	}
 
 	const pageButtons = Array.from({ length: pageCount }, (_, i) => i + 1).slice(
 		0,
@@ -479,7 +554,7 @@ function MembersDirectoryPage() {
 						Members
 					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Search and open member profiles · {programFilter} · {resultsMeta}
+						Member directory · {programFilter}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
@@ -520,20 +595,82 @@ function MembersDirectoryPage() {
 			) : null}
 
 			<section className="overflow-hidden rounded-lg border border-border bg-card">
+				<div className="grid grid-cols-2 divide-y divide-border sm:grid-cols-5 sm:divide-x sm:divide-y-0">
+					{(
+						[
+							{
+								label: "Total",
+								value: kpiStats.total,
+								icon: Users,
+								tone: "text-foreground",
+							},
+							{
+								label: "Active",
+								value: kpiStats.active,
+								icon: CheckCircle2,
+								tone: "text-emerald-700 dark:text-emerald-400",
+							},
+							{
+								label: "Pending",
+								value: kpiStats.pending,
+								icon: Clock3,
+								tone: "text-amber-700 dark:text-amber-400",
+							},
+							{
+								label: "Termed",
+								value: kpiStats.termed,
+								icon: UserX,
+								tone: "text-red-700 dark:text-red-400",
+							},
+							{
+								label: "Inactive",
+								value: kpiStats.inactive,
+								icon: PauseCircle,
+								tone: "text-muted-foreground",
+							},
+						] as const
+					).map((item) => {
+						const Icon = item.icon;
+						return (
+							<div key={item.label} className="px-4 py-3.5">
+								<div className="flex items-start justify-between gap-2">
+									<p className="text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
+										{item.label}
+									</p>
+									<Icon
+										className={cn("size-3.5 shrink-0 opacity-70", item.tone)}
+									/>
+								</div>
+								<p
+									className={cn(
+										"mt-1.5 text-2xl font-semibold tracking-tight tabular-nums",
+										item.tone
+									)}
+								>
+									{useApi && statsQ.isLoading
+										? "—"
+										: item.value.toLocaleString()}
+								</p>
+							</div>
+						);
+					})}
+				</div>
+			</section>
+
+			<section className="overflow-hidden rounded-lg border border-border bg-card">
 				<div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5">
 					<div className="relative min-w-[180px] flex-1">
 						<Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
 						<Input
-							value={draftFilters.search}
-							onChange={(e) => patchDraft({ search: e.target.value })}
-							onKeyDown={onSearchKeyDown}
+							value={filters.search}
+							onChange={(e) => patchFilters({ search: e.target.value })}
 							placeholder="Search name, member ID, alternate ID…"
 							className={cn(compactFieldClass, "pl-8")}
 						/>
 					</div>
 					<Select
-						value={draftFilters.memberStatus}
-						onValueChange={(value) => patchDraft({ memberStatus: value })}
+						value={filters.memberStatus}
+						onValueChange={(value) => patchFilters({ memberStatus: value })}
 					>
 						<SelectTrigger className={cn(compactFieldClass, "w-[140px]")}>
 							<SelectValue placeholder="All status" />
@@ -547,8 +684,8 @@ function MembersDirectoryPage() {
 						</SelectContent>
 					</Select>
 					<Select
-						value={draftFilters.plan}
-						onValueChange={(value) => patchDraft({ plan: value })}
+						value={filters.plan}
+						onValueChange={(value) => patchFilters({ plan: value })}
 					>
 						<SelectTrigger className={cn(compactFieldClass, "w-[150px]")}>
 							<SelectValue placeholder="All plans" />
@@ -581,7 +718,7 @@ function MembersDirectoryPage() {
 							)}
 						/>
 					</Button>
-					{hasActiveFilters || hasDraftFilters ? (
+					{hasActiveFilters || hasPendingFilterSync ? (
 						<Button
 							type="button"
 							variant="ghost"
@@ -592,25 +729,33 @@ function MembersDirectoryPage() {
 							Clear
 						</Button>
 					) : null}
-					<Button
-						type="button"
-						size="sm"
-						className="h-8"
-						onClick={handleSearch}
-					>
-						<Search className="mr-1.5 size-3.5" />
-						Search
-					</Button>
 				</div>
+
+				{hasUnsupportedLiveFilters ? (
+					<div className="flex items-start gap-2 border-b border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-950 dark:text-amber-100">
+						<AlertCircle className="mt-0.5 size-3.5 shrink-0" />
+						<p>
+							Term date filters are not applied on the live API yet. Results may
+							not match until backend ships{" "}
+							<code className="rounded bg-background/60 px-1 py-px text-[11px]">
+								status_term_from/to
+							</code>
+							. See{" "}
+							<code className="rounded bg-background/60 px-1 py-px text-[11px]">
+								docs/api-contracts/members-360.md
+							</code>
+							.
+						</p>
+					</div>
+				) : null}
 
 				{showMoreFilters ? (
 					<div className="grid gap-2 border-b border-border bg-muted/15 p-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
 						<CompactField id="member-id" label="Member ID">
 							<Input
 								id="member-id"
-								value={draftFilters.memberId}
-								onChange={(e) => patchDraft({ memberId: e.target.value })}
-								onKeyDown={onSearchKeyDown}
+								value={filters.memberId}
+								onChange={(e) => patchFilters({ memberId: e.target.value })}
 								placeholder="Member ID"
 								className={compactFieldClass}
 							/>
@@ -618,9 +763,8 @@ function MembersDirectoryPage() {
 						<CompactField id="alternate-id" label="Alternate ID">
 							<Input
 								id="alternate-id"
-								value={draftFilters.alternateId}
-								onChange={(e) => patchDraft({ alternateId: e.target.value })}
-								onKeyDown={onSearchKeyDown}
+								value={filters.alternateId}
+								onChange={(e) => patchFilters({ alternateId: e.target.value })}
 								placeholder="Alternate ID"
 								className={compactFieldClass}
 							/>
@@ -628,9 +772,8 @@ function MembersDirectoryPage() {
 						<CompactField id="first-name" label="First name">
 							<Input
 								id="first-name"
-								value={draftFilters.firstName}
-								onChange={(e) => patchDraft({ firstName: e.target.value })}
-								onKeyDown={onSearchKeyDown}
+								value={filters.firstName}
+								onChange={(e) => patchFilters({ firstName: e.target.value })}
 								placeholder="First"
 								className={compactFieldClass}
 							/>
@@ -638,9 +781,8 @@ function MembersDirectoryPage() {
 						<CompactField id="last-name" label="Last name">
 							<Input
 								id="last-name"
-								value={draftFilters.lastName}
-								onChange={(e) => patchDraft({ lastName: e.target.value })}
-								onKeyDown={onSearchKeyDown}
+								value={filters.lastName}
+								onChange={(e) => patchFilters({ lastName: e.target.value })}
 								placeholder="Last"
 								className={compactFieldClass}
 							/>
@@ -649,8 +791,8 @@ function MembersDirectoryPage() {
 							<Input
 								id="dob"
 								type="date"
-								value={draftFilters.dob}
-								onChange={(e) => patchDraft({ dob: e.target.value })}
+								value={filters.dob}
+								onChange={(e) => patchFilters({ dob: e.target.value })}
 								className={cn(
 									compactFieldClass,
 									"[color-scheme:light] dark:[color-scheme:dark]"
@@ -659,9 +801,9 @@ function MembersDirectoryPage() {
 						</CompactField>
 						<CompactField label="Gender">
 							<Select
-								value={draftFilters.gender}
+								value={filters.gender}
 								onValueChange={(value: GenderFilter) =>
-									patchDraft({ gender: value })
+									patchFilters({ gender: value })
 								}
 							>
 								<SelectTrigger className={compactFieldClass}>
@@ -678,9 +820,9 @@ function MembersDirectoryPage() {
 						</CompactField>
 						<CompactField label="Eligibility">
 							<Select
-								value={draftFilters.eligibilityStatus}
+								value={filters.eligibilityStatus}
 								onValueChange={(value) =>
-									patchDraft({ eligibilityStatus: value })
+									patchFilters({ eligibilityStatus: value })
 								}
 							>
 								<SelectTrigger className={compactFieldClass}>
@@ -695,10 +837,10 @@ function MembersDirectoryPage() {
 								</SelectContent>
 							</Select>
 						</CompactField>
-						<CompactField label="Account / group">
+						<CompactField label="Account / group name">
 							<Select
-								value={draftFilters.accountGroup}
-								onValueChange={(value) => patchDraft({ accountGroup: value })}
+								value={filters.accountGroup}
+								onValueChange={(value) => patchFilters({ accountGroup: value })}
 							>
 								<SelectTrigger className={compactFieldClass}>
 									<SelectValue />
@@ -713,24 +855,62 @@ function MembersDirectoryPage() {
 								</SelectContent>
 							</Select>
 						</CompactField>
-						<CompactField id="effective-from" label="Effective from">
+						<CompactField id="group-id" label="Group ID">
 							<Input
-								id="effective-from"
+								id="group-id"
+								value={filters.groupId}
+								onChange={(e) => patchFilters({ groupId: e.target.value })}
+								placeholder="Employer / group ID"
+								className={compactFieldClass}
+							/>
+						</CompactField>
+						<CompactField
+							id="coverage-effective-from"
+							label="Coverage eff. from"
+						>
+							<Input
+								id="coverage-effective-from"
 								type="date"
-								value={draftFilters.effectiveFrom}
-								onChange={(e) => patchDraft({ effectiveFrom: e.target.value })}
+								value={filters.effectiveFrom}
+								onChange={(e) =>
+									patchFilters({ effectiveFrom: e.target.value })
+								}
 								className={cn(
 									compactFieldClass,
 									"[color-scheme:light] dark:[color-scheme:dark]"
 								)}
 							/>
 						</CompactField>
-						<CompactField id="effective-to" label="Effective to">
+						<CompactField id="coverage-effective-to" label="Coverage eff. to">
 							<Input
-								id="effective-to"
+								id="coverage-effective-to"
 								type="date"
-								value={draftFilters.effectiveTo}
-								onChange={(e) => patchDraft({ effectiveTo: e.target.value })}
+								value={filters.effectiveTo}
+								onChange={(e) => patchFilters({ effectiveTo: e.target.value })}
+								className={cn(
+									compactFieldClass,
+									"[color-scheme:light] dark:[color-scheme:dark]"
+								)}
+							/>
+						</CompactField>
+						<CompactField id="term-from" label="Term from">
+							<Input
+								id="term-from"
+								type="date"
+								value={filters.termFrom}
+								onChange={(e) => patchFilters({ termFrom: e.target.value })}
+								className={cn(
+									compactFieldClass,
+									"[color-scheme:light] dark:[color-scheme:dark]"
+								)}
+							/>
+						</CompactField>
+						<CompactField id="term-to" label="Term to">
+							<Input
+								id="term-to"
+								type="date"
+								value={filters.termTo}
+								onChange={(e) => patchFilters({ termTo: e.target.value })}
 								className={cn(
 									compactFieldClass,
 									"[color-scheme:light] dark:[color-scheme:dark]"
@@ -740,17 +920,16 @@ function MembersDirectoryPage() {
 						<CompactField id="lob" label="LOB">
 							<Input
 								id="lob"
-								value={draftFilters.lob}
-								onChange={(e) => patchDraft({ lob: e.target.value })}
-								onKeyDown={onSearchKeyDown}
+								value={filters.lob}
+								onChange={(e) => patchFilters({ lob: e.target.value })}
 								placeholder="Line of business"
 								className={compactFieldClass}
 							/>
 						</CompactField>
 						<CompactField label="Vendor">
 							<Select
-								value={draftFilters.vendorId}
-								onValueChange={(value) => patchDraft({ vendorId: value })}
+								value={filters.vendorId}
+								onValueChange={(value) => patchFilters({ vendorId: value })}
 							>
 								<SelectTrigger className={compactFieldClass}>
 									<SelectValue placeholder="All" />
@@ -770,42 +949,54 @@ function MembersDirectoryPage() {
 					</div>
 				) : null}
 
-				<div className="w-full overflow-hidden">
-					<Table className="w-full table-fixed">
+				<div className="w-full overflow-x-auto">
+					<Table className="w-full min-w-[1080px] table-fixed">
 						<TableHeader>
 							<TableRow className="border-b border-border bg-muted/50 hover:bg-muted/50">
+								<TableHead className={cn(th, "w-[3%] text-center")}>
+									#
+								</TableHead>
 								<TableHead className={cn(th, "w-[11%]")}>Member ID</TableHead>
-								<TableHead className={cn(th, "w-[10%]")}>Alt ID</TableHead>
-								<TableHead className={cn(th, "w-[14%]")}>Name</TableHead>
-								<TableHead className={cn(th, "w-[8%]")}>DOB</TableHead>
-								<TableHead className={cn(th, "w-[5%]")}>Sex</TableHead>
-								<TableHead className={cn(th, "w-[9%]")}>Eligibility</TableHead>
-								<TableHead className={cn(th, "w-[12%]")}>Plan</TableHead>
-								<TableHead className={cn(th, "w-[10%]")}>Group</TableHead>
-								<TableHead className={cn(th, "w-[6%]")}>LOB</TableHead>
-								<TableHead className={cn(th, "w-[8%]")}>Status</TableHead>
-								<TableHead className={cn(th, "w-[7%]")}>Effective</TableHead>
-								<TableHead className={cn(th, "w-[6%]")}>Actions</TableHead>
+								<TableHead className={cn(th, "w-[13%]")}>Name</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Alt ID</TableHead>
+								<TableHead className={cn(th, "w-[7%]")}>DOB</TableHead>
+								<TableHead className={cn(th, "w-[4%]")}>Sex</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Eligibility</TableHead>
+								<TableHead className={cn(th, "w-[10%]")}>Plan</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Group</TableHead>
+								<TableHead className={cn(th, "w-[5%]")}>LOB</TableHead>
+								<TableHead className={cn(th, "w-[7%]")}>Status</TableHead>
+								<TableHead className={cn(th, "w-[8%]")}>Cov. eff.</TableHead>
+								<TableHead
+									className={cn(th, "w-[132px] min-w-[132px] text-right")}
+								>
+									Actions
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{pageRows.map((member) => (
+							{pageRows.map((member, index) => (
 								<TableRow
 									key={member.id}
 									className="cursor-pointer border-b border-border/70 hover:bg-muted/50"
 									onClick={() => router.push(`/admin/members/${member.id}`)}
 								>
 									<TableCell
-										className={cn(td, "truncate font-medium text-primary")}
+										className={cn(
+											td,
+											"text-center tabular-nums text-muted-foreground"
+										)}
+									>
+										{(safePage - 1) * pageSize + index + 1}
+									</TableCell>
+									<TableCell
+										className={cn(
+											td,
+											"truncate font-mono text-[11px] font-medium text-primary"
+										)}
 										title={member.memberId}
 									>
 										{member.memberId}
-									</TableCell>
-									<TableCell
-										className={cn(td, "truncate text-muted-foreground")}
-										title={member.alternateId ?? undefined}
-									>
-										{member.alternateId ?? "—"}
 									</TableCell>
 									<TableCell className={td}>
 										<span
@@ -814,6 +1005,12 @@ function MembersDirectoryPage() {
 										>
 											{displayName(member)}
 										</span>
+									</TableCell>
+									<TableCell
+										className={cn(td, "truncate text-muted-foreground")}
+										title={member.alternateId ?? undefined}
+									>
+										{member.alternateId ?? "—"}
 									</TableCell>
 									<TableCell className={cn(td, "tabular-nums")}>
 										{formatDate(member.dob)}
@@ -849,25 +1046,40 @@ function MembersDirectoryPage() {
 										<StatusPill status={member.status} />
 									</TableCell>
 									<TableCell
-										className={cn(td, "tabular-nums text-muted-foreground")}
+										className={cn(
+											td,
+											"truncate tabular-nums text-muted-foreground"
+										)}
+										title={formatDate(
+											member.coverageEffectiveDate ?? member.memberSince
+										)}
 									>
 										{formatDate(
 											member.coverageEffectiveDate ?? member.memberSince
 										)}
 									</TableCell>
-									<TableCell className={td}>
-										<MemberListRowDelete
-											memberId={member.id}
-											firstName={member.firstName}
-											lastName={member.lastName}
-										/>
+									<TableCell
+										className={cn(td, "w-[132px] min-w-[132px] text-right")}
+										onClick={(e) => e.stopPropagation()}
+									>
+										<div className="flex items-center justify-end gap-0.5 whitespace-nowrap">
+											<Button
+												asChild
+												variant="ghost"
+												size="sm"
+												className="h-7 shrink-0 px-2 text-xs"
+											>
+												<Link href={`/admin/members/${member.id}`}>Open</Link>
+											</Button>
+											<MemberListRowDelete memberId={member.id} />
+										</div>
 									</TableCell>
 								</TableRow>
 							))}
 							{pageRows.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={12}
+										colSpan={13}
 										className="h-20 text-center text-sm text-muted-foreground"
 									>
 										No members match your filters.

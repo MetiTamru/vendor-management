@@ -10,6 +10,7 @@ import type {
 	AccumulatorRowListQuery,
 	AccumulatorRowUpdateInput,
 	MemberCreateBody,
+	MemberDashboardStatsQuery,
 	MemberDetailDto,
 	MemberListQuery,
 	MemberWriteBody,
@@ -43,6 +44,7 @@ import {
 	mergeRecentAccumulatorTransactions,
 	sanitizeMemberWriteBody,
 } from "../../map-member-core";
+import { buildMockMemberChangeEvents } from "../../member-change-events-mock";
 import {
 	type AccumulatorRow,
 	type AccumulatorSummary,
@@ -56,7 +58,6 @@ import {
 	getMember,
 	getMemberSummaries,
 } from "../../mock-data";
-import { buildMockMemberChangeEvents } from "../../member-change-events-mock";
 import type {
 	MemberAccumulatorCreateBody,
 	MemberAccumulatorUpdateBody,
@@ -112,6 +113,40 @@ export function memberStatusLabelToApi(
 		Termed: "termed",
 	};
 	return map[label] ?? label.toLowerCase();
+}
+
+/** Map UI gender labels → backend `demographics.gender` (iexact). */
+export function genderLabelToApi(
+	label: string | undefined
+): string | undefined {
+	if (!label || label === "all") return undefined;
+	const map: Record<string, string> = {
+		Male: "Male",
+		Female: "Female",
+		Other: "Other",
+		Unknown: "Unknown",
+	};
+	return map[label] ?? label;
+}
+
+export async function getMemberDashboardStats(
+	params?: MemberDashboardStatsQuery
+) {
+	if (isMockEnabled()) {
+		const all = getMemberSummaries();
+		const program = params?.program;
+		const scoped = program ? all.filter((m) => m.program === program) : all;
+		return {
+			total: scoped.length,
+			active: scoped.filter((m) => m.status === "active").length,
+			pending: scoped.filter((m) => m.status === "pending").length,
+			termed: scoped.filter((m) => m.status === "termed").length,
+			inactive: scoped.filter((m) => m.status === "inactive").length,
+			program: program ?? "",
+			vendor_id: params?.vendor_id ?? null,
+		};
+	}
+	return vendorCoreApi.getMemberDashboardStats(params);
 }
 
 export async function listMemberSummaries(
